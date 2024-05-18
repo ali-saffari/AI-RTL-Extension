@@ -1,0 +1,223 @@
+.red {
+    background: red !important;
+}
+
+.FontSet {
+    font-family: iranyekan, sans-serif;
+}
+
+.items-stretch .items-start code, .items-stretch .items-start pre {
+    font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
+    direction: ltr !important;
+}
+
+.AsOkBtn {
+    background: green !important;
+}
+
+.AsRtl {
+    direction: rtl;
+}
+
+textarea.AsRtl {
+    padding-right: 2.75rem;
+}
+
+.AsBox {
+    text-align: center;
+    margin-top: 7px;
+    margin-bottom: 0px;
+}
+
+.AsBox img {
+    display: initial;
+    margin-right: 3px;
+    margin-top: -3px;
+    margin-left: 3px;
+    height: 22px;
+    width: 22px;
+    border-radius: 50px;
+    border: 1px solid;
+}
+
+
+.items-center .group.w-full .markdown.prose {
+    width: 100%;
+}
+
+
+.AsSBtn {
+    border: 1px solid;
+    padding: 0px 9px;
+    margin-right: 6px;
+}
+
+.AsSBtn:hover {
+    background: rgb(212 212 212)
+}
+
+.dark .AsSBtn:hover {
+    background: rgb(116 116 116);
+}
+
+.flex.w-full.setRight {
+    /*align-items: self-start;*/
+}
+
+.flex.w-full.setRight .absolute.bottom-0.group-hover\/conversation-turn\:block {
+    right: inherit;
+    margin-right: -5.2rem;
+}
+
+
+.AsRtlList .relative.grow.overflow-hidden {
+    text-align: right;
+    font-weight: 400;
+    font-size: .75rem;
+
+}
+
+.AsRtlList .absolute.bottom-0.right-0.top-0.items-center {
+    left: 0;
+    right: initial;
+    padding-left: .5rem;
+    padding-right: initial;
+}
+
+
+
+.AsRtlList .from-token-sidebar-surface-secondary {
+    transform: rotate(180deg);
+    left: 0;
+    right: initial;
+}
+
+.AsRtlList .from-token-sidebar-surface-primary {
+    transform: rotate(180deg);
+    left: 0;
+    right: initial;
+}
+
+.AsRtl_rowReverse {
+
+    flex-direction: row-reverse;
+
+}
+
+.AsRtl_rowReverse .items-center.justify-start.rounded-xl.p-1.z-10.-mt-1.bg-token-main-surface-primary {
+    right: 0px !important;
+}
+
+.AsRtl_rowReverse .mt-1.flex.gap-3.empty\:hidden.juice\:-ml-3 {
+
+    flex-direction: row-reverse;
+
+}
+
+/*---------------------------------*/
+
+
+.BinFarsiBtn {
+    /*color: #2467eb;*/
+    /*background-color: #f5f5f5;*/
+    /*border: 1px solid;*/
+    /*padding: 5px;*/
+    /*margin: 9px;*/
+
+}
+
+.BinFarsiBtn .AsSBtn, .BinFarsiBtn a {
+    color: #2467eb !important;
+    padding: 5px 10px 5px 37px;
+    position: relative;
+    /*background-color: #2467eb;*/
+    border: 1px solid rgb(100 147 239);
+
+    border-radius: 3px;
+    cursor: pointer;
+
+    /*padding: 5px;*/
+    /*margin: 9px;*/
+}
+
+.BinFarsiBtn img {
+    height: 29px;
+    top: 0;
+    left: 0;
+    border-radius: 3px;
+    position: absolute;
+    width: auto;
+}
+
+
+.BinFarsiBtn.farsiOk .AsSBtn {
+    padding: 5px 26px 5px 37px;
+    /*cursor: default;*/
+    color: #444 !important;
+    border: 1px solid rgb(141 198 63);
+}
+
+.farsiOk  svg {
+    height: 28px;
+    width: 28px;
+    position: absolute;
+    right: 4px;
+    top: 0px;
+}
+
+.AsRtl.FontSet.AsBox.AsBinBox {
+    position: fixed;
+    bottom: -11px;
+    right: 40px;
+    background: #fff;
+    border: 2px solid #205bec;
+    padding: 0px 10px 3px 10px;
+    display: inline;
+    border-radius: 15px 15px 0px 0px;
+    color: #000;
+}
+.AsRtl.FontSet.AsBox.AsBinBox img {
+    vertical-align: middle;
+}
+
+
+
+/*--------------------------------*/
+
+
+
+
+.FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
+    font-family: iranyekan, sans-serif;
+    line-height: 32px;
+    font-weight: 300;
+    font-size: 0.95rem;
+}
+
+
+.AsRtlClaudeUser {
+    align-items: end;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.AsRtlClaudeUser .group.relative.inline-flex.gap-2.bg-gradient-to-b.from-bg-300.pl-2\.5.pr-6 {
+
+
+    padding-left: 1.5rem;
+    padding-right: .625rem;
+
+
+}
+
+
+
+
+.AsRtlClaudeUser .flex.flex-row.gap-2 {
+    flex-direction: row-reverse;
+}
+.AsBox.AsBoxClaude {
+    font-size: 15px;
+    font-weight: 200;
+}
+

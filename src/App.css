@@ -1,0 +1,14 @@
+
+.App {
+    font-family: iranyekan, sans-serif;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    font-family: iranyekan, sans-serif;
+    width: 15rem;
+    height: 15rem;
+    background-color: green;
+
+}
