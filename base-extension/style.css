@@ -114,6 +114,19 @@ textarea.AsRtl {
 
 }
 
+
+
+
+
+.FontSet span.math.math-inline{
+    direction: ltr;
+    /*text-align: left;*/
+    display: inline-block;
+}
+.FontSet .math.math-display {
+    direction: ltr;
+}
+
 /*---------------------------------*/
 
 

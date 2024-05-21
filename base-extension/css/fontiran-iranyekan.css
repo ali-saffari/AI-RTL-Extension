@@ -17,19 +17,7 @@ This set of fonts are used in this project under the license: (T7RJ805N)
 *	
 **/
 
-.App {
-	font-family: iranyekan, sans-serif;
-	color: white;
-	text-align: center;
-}
 
-.container {
-	font-family: iranyekan, sans-serif;
-	width: 15rem;
-	height: 15rem;
-	background-color: green;
-
-}
 
 @font-face {
 	font-family: iranyekan;

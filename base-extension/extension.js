@@ -1,8 +1,5 @@
-let saffariLink = "http://alisaffari.ir/"
+let saffariLink = "http://alisaffari.ir/";
 
-
-
-// ijkhjkhjk
 
 function isPersian(str) {
 
@@ -305,7 +302,6 @@ ${alisaffari}" alt="ali saffari"></a>
 
     });
 
-
 }
 
 
@@ -317,13 +313,13 @@ ${alisaffari}" alt="ali saffari"></a>
 function setItems_ChatGpt() {
 
 
+    let fo = ".flex.h-full[role=\"presentation\"] .relative.px-2.py-2.text-center span"
+
+
     if (chrome.runtime?.id) {
 
         const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
         // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
-
-
-        let fo = ".flex.h-full[role=\"presentation\"] .relative.px-2.py-2.text-center span"
 
 
         // $(fo).addClass("red")
@@ -360,231 +356,101 @@ ${alisaffari}" alt="ali saffari">
 
     }
 
-    $('.bg-token-sidebar-surface-primary nav ol li').each(function (each) {
 
-        // $(this).addClass("red")
-        // let pList = $(this).find("p,ol,ul,h3")
-        const text = $(this).text()
-
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-
-            if (isPersian(text)) {
-                $(this).addClass('AsRtlList');
-                $(this).addClass('FontSet');
-            } else {
-                // backD = false
-            }
-
-        }
-
-
-    })
-
-
-    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
-
-
-        let pList = $(this).find(".relative.rounded-3xl")
-
-
-        if (pList.length) {
-
-
-            pList.each(function () {
-
-                // $(this).addClass('red')
-
-                if (!$(this).hasClass("AsOk")) {
-                    $(this).addClass('AsOk');
-
-
-                    const text = $(this).text()
-
-                    if (isPersian(text)) {
-
-                        // let BoxSend =     $(this).find('.relative.rounded-3xl')
-                        // if (   $(this).length) {
-                        $(this).parent().addClass("setRight")
-                        $(this).addClass('FontSet');
-                        // }
-
-                    }
-
-
-                }
-            });
-
-        }
-
-    })
-
-    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
-
-
-        let mx_auto = $(this).find(".mx-auto")
-
-        let message = $(this).find(".text-message")
-
-        console.log("message", message.css("direction"))
-
-
-        if (message.css("direction") === 'rtl') {
-            mx_auto.addClass('AsRtl_rowReverse')
-            $(this).addClass('FontSet');
-        }
-
-
-        // let pList = $(this).find("p,ol,ul,h3")
-        // let streaming = $(this).find(".result-streaming")
-        //
-        // if (pList.length) {
-        //
-        //     let backD = false
-        //     pList.each(function (index ) {
-        //
-        //
-        //
-        //
-        //         if (!$(this).hasClass("AsOk") || streaming.length) {
-        //             $(this).addClass('AsOk');
-        //             $(this).addClass('AAAAAAA');
-        //
-        //             //
-        //
-        //             if ($(this).prop('nodeName') === "P") {
-        //
-        //                 const text = $(this).text()
-        //                 console.log("text" , text)
-        //
-        //
-        //                 if (isPersian(text)) {
-        //                     // $(this).addClass('AsRtl');
-        //                     $(this).addClass('FontSet');
-        //
-        //
-        //
-        //
-        //                     backD = true
-        //                 } else {
-        //                     backD = false
-        //                 }
-        //
-        //             } else {
-        //                 if (backD) {
-        //                     // $(this).addClass('AsRtl');
-        //                     $(this).addClass('FontSet');
-        //                 }
-        //             }
-        //
-        //         }
-        //     });
-        //
-        // } else {
-        //
-        //     const D = $(this).find(".flex.flex-grow.flex-col.max-w-full")
-        //
-        //     // $(this).addClass('red')
-        //
-        //     if (!D.hasClass("AsOk") || streaming.length) {
-        //         D.addClass('AsOk');
-        //
-        //         D.addClass('BBBBBBBB');
-        //
-        //
-        //
-        //
-        //         const text = D.text()
-        //
-        //         if (isPersian(text)) {
-        //             // D.addClass('AsRtl');
-        //             D.addClass('FontSet');
-        //             //
-        //             // let BoxSend =  D.find('.relative.rounded-3xl')
-        //             // if (BoxSend.length) {
-        //             //     BoxSend.parent().addClass("setRight")
-        //             // }
-        //
-        //         }
-        //
-        //     }
-        //
-        //
-        // }
-
-    })
-
-
-    // $(".flex main.h-full .group.w-full").each(function (each) {
+    // $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
     //
+    //     $(this).addClass('FontSet');
     //
-    //     let pList = $(this).find("p,ol,ul,h3")
-    //     let streaming = $(this).find(".result-streaming")
+    //     let pList = $(this).find(".relative.rounded-3xl")
+    //
     //
     //     if (pList.length) {
     //
     //
-    //         let backD = false
     //         pList.each(function () {
     //
+    //             // $(this).addClass('red')
     //
-    //             // $(this).p
-    //             if (!$(this).hasClass("AsOk") || streaming.length) {
+    //             if (!$(this).hasClass("AsOk")) {
     //                 $(this).addClass('AsOk');
     //
     //
-    //                 if ($(this).prop('nodeName') === "P") {
+    //                 const text = $(this).text()
     //
-    //                     const text = $(this).text()
+    //                 if (isPersian(text)) {
     //
-    //                     if (isPersian(text)) {
-    //                         $(this).addClass('AsRtl');
-    //                         $(this).addClass('FontSet');
-    //                         backD = true
-    //                     } else {
-    //                         backD = false
-    //                     }
+    //                     // let BoxSend =     $(this).find('.relative.rounded-3xl')
+    //                     // if (   $(this).length) {
+    //                     $(this).parent().addClass("setRight")
+    //                     $(this).addClass('FontSet');
+    //                     // }
     //
-    //                 } else {
-    //                     if (backD) {
-    //                         $(this).addClass('AsRtl');
-    //                         $(this).addClass('FontSet');
-    //                     }
     //                 }
+    //
     //
     //             }
     //         });
     //
-    //     } else {
-    //
-    //         const D = $(this).find(".items-start")
-    //
-    //
-    //         if (!D.hasClass("AsOk") || streaming.length) {
-    //             D.addClass('AsOk');
-    //
-    //             const text = D.text()
-    //
-    //             if (isPersian(text)) {
-    //                 D.addClass('AsRtl');
-    //                 D.addClass('FontSet');
-    //
-    //                 let BoxSend =  D.find('.relative.rounded-3xl')
-    //                 if (BoxSend.length) {
-    //                     BoxSend.parent().addClass("setRight")
-    //                 }
-    //
-    //
-    //             }
-    //
-    //         }
-    //
-    //
     //     }
     //
-    //
-    // });
-    //
+    // })
+
+
+    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
+
+
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+
+
+            const text = $(this).text()
+
+            if (isPersian(text)) {
+
+                // let BoxSend =     $(this).find('.relative.rounded-3xl')
+                // if (   $(this).length) {
+                $(this).parent().addClass("setRight")
+
+            }
+
+
+        }
+
+
+    })
+
+
+    $('.flex.h-full[role="presentation"]').each(function (each) {
+
+
+        $(this).addClass('FontSet');
+
+    })
+
+
+    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
+
+
+        let streaming = $(this).find(".result-streaming")
+
+        if (streaming && streaming.length) {
+
+        } else {
+            let mx_auto = $(this).find(".mx-auto")
+
+            let message = $(this).find(".text-message")
+
+
+            if (message.css("direction") === 'rtl') {
+                mx_auto.addClass('AsRtl_rowReverse')
+
+            }
+        }
+
+        // }
+
+    })
+
     //
     $("textarea").each(function (each) {
 
@@ -644,6 +510,8 @@ ${alisaffari}" alt="ali saffari">
 
 
 function setItems_copilotBing() {
+
+
     let fo = `[role="complementary"]`
 
 
@@ -845,54 +713,40 @@ ${icon}" alt="ali saffari">
 function setItems_Claude() {
 
 
-   let interval = setInterval(() => {
+    let interval = setInterval(() => {
 
-       $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full").each(function (each) {
-           if (each === 0) {
-               console.log("setInterval")
-               set()
+        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full").each(function (each) {
+            if (each === 0) {
+                console.log("setInterval")
+                set()
 
-               const observer = new MutationObserver((mutations) => {
-                   mutations.forEach((mutation) => {
-                       console.log("تغیر" , mutation)
-                       set()
-
-
-                   });
-               });
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        console.log("تغیر", mutation)
+                        set()
 
 
-
-               const targetNode = document.querySelector('div.overflow-y-scroll');
-
-               const config = {childList: true, subtree: true};
-
-               observer.observe(targetNode, config);
-
-               clearInterval(interval)
-           }
+                    });
+                });
 
 
-       });
+                const targetNode = document.querySelector('div.overflow-y-scroll');
+
+                const config = {childList: true, subtree: true};
+
+                observer.observe(targetNode, config);
+
+                clearInterval(interval)
+            }
 
 
-
-    } , 200)
-
+        });
 
 
-
-
+    }, 200)
 
 
     function set() {
-
-
-
-
-
-
-
 
 
         if (chrome.runtime?.id) {
@@ -931,7 +785,6 @@ function setItems_Claude() {
         }
 
 
-
         $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div").each(function (each) {
             console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
             $(this).attr("dir", "auto");
@@ -942,15 +795,10 @@ function setItems_Claude() {
             }
 
 
-
-
-
         });
 
 
         $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div .mt-4").each(function (each) {
-
-
 
 
             const text = $(this).find(".font-user-message  p.break-words").text()
@@ -1007,6 +855,7 @@ function setItems_Claude() {
         });
 
     }
+
     // setInterval(() => {
     //     console.log("sss")
     //
@@ -1026,91 +875,165 @@ $(document).ready(function () {
     let site = window.location.host;
 
 
-    console.log("site", site)
+    function active_chatGpt() {
 
 
-    if (site === "claude.ai") {
+        if (site === "chatgpt.com") {
 
-        setItems_Claude()
-    }
-
-
-    if (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com") {
-
-        setItems_copilotBing()
-    }
-
-
-    if (site === "freegpt.one" || site === "freegpt.cc") {
-        setItems_freegpt()
-        // addAliSaffari()
-    }
-
-
-    if (site === "chatgpt.com") {
-
-        // addAliSaffari()
-        setItems_ChatGpt()
-
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                console.log("تغیر")
-
-
-                setTimeout(() => {
-                    setItems_ChatGpt()
-                }, 80)
-            });
-        });
-        const observerB = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                console.log("تغیر B")
-
-
-                // setTimeout(() => {
-                setItems_ChatGpt()
-                // }, 100)
-            });
-        });
-
-
-        const targetNode = document.querySelector('main.relative.h-full.w-full');
-
-        const config = {attributes: true, childList: true, subtree: true};
-
-        observer.observe(targetNode, config);
-
-
-        const targetNodeB = document.querySelector('.bg-token-sidebar-surface-primary');
-
-        const configB = {attributes: true, childList: true, subtree: true};
-
-        observerB.observe(targetNodeB, configB);
-
-
-    }
-
-
-    setInterval(() => {
-
-        if (site === "freegpt.one" || site === "freegpt.cc") {
-            setItems_freegpt()
             // addAliSaffari()
+            setItems_ChatGpt()
+
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    console.log("تغیر")
+
+
+                    setTimeout(() => {
+                        setItems_ChatGpt()
+                    }, 80)
+                });
+            });
+            const observerB = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    console.log("تغیر B")
+
+
+                    setTimeout(() => {
+
+
+                        $('.bg-token-sidebar-surface-primary nav ol li:not(.AsOkList)').each(function (each) {
+
+                            // $(this).addClass("red")
+                            // let pList = $(this).find("p,ol,ul,h3")
+                            const text = $(this).text()
+                            console.log("text", text)
+
+
+                            if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
+
+
+                                $(this).addClass('AsOkList');
+
+                                if (isPersian(text)) {
+                                    $(this).addClass('AsRtlList');
+                                    $(this).addClass('FontSet');
+                                } else {
+                                    // backD = false
+                                }
+
+                            }
+
+
+                        })
+
+                    }, 100)
+                });
+            });
+
+
+            const targetNode = document.querySelector('main.relative.h-full.w-full');
+
+            const config = {attributes: true, childList: true, subtree: true};
+
+            observer.observe(targetNode, config);
+
+
+            const targetNodeB = document.querySelector('.bg-token-sidebar-surface-primary');
+
+            const configB = {attributes: true, childList: true, subtree: true};
+
+            observerB.observe(targetNodeB, configB);
+
+
         }
 
 
-        // if (site === "chatgpt.com" ) {
-        //     setItems_ChatGpt()
-        //
-        //
-        //
-        //
-        //     // addAliSaffari()
-        // }
-        //
+    }
 
 
-    }, 1000)
+    // console.log("site", site)
+    //     ['chatGpt' , 'claude' ,  'copilot' ,  'freegpt']
+
+
+    chrome.storage.sync.onChanged.addListener((changes) => {
+
+        console.log(changes)
+
+        if (changes.chatGpt && site === "chatgpt.com") location.reload();
+        if (changes.claude && site === "claude.ai") location.reload();
+        if (changes.copilot && (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com")) location.reload();
+        if (changes.freegpt && (site === "freegpt.one" || site === "freegpt.cc")) location.reload();
+
+    });
+
+
+    chrome.storage.sync.get(["chatGpt"]).then((result) => {
+
+        if (result.chatGpt) {
+            active_chatGpt()
+        }
+
+
+    });
+
+
+    chrome.storage.sync.get(["claude"]).then((result) => {
+
+        if (result.claude) {
+            if (site === "claude.ai") {
+
+                setItems_Claude()
+            }
+        }
+
+
+    });
+    chrome.storage.sync.get(["copilot"]).then((result) => {
+
+        if (result.copilot) {
+            if (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com") {
+
+                setItems_copilotBing()
+            }
+        }
+
+
+    });
+
+    chrome.storage.sync.get(["freegpt"]).then((result) => {
+
+
+        if (result.freegpt) {
+            if (site === "freegpt.one" || site === "freegpt.cc") {
+                setItems_freegpt()
+                // addAliSaffari()
+            }
+
+
+            setInterval(() => {
+
+                if (site === "freegpt.one" || site === "freegpt.cc") {
+                    setItems_freegpt()
+                    // addAliSaffari()
+                }
+
+
+                // if (site === "chatgpt.com" ) {
+                //     setItems_ChatGpt()
+                //
+                //
+                //
+                //
+                //     // addAliSaffari()
+                // }
+                //
+
+
+            }, 1000)
+
+        }
+
+    });
 
 
 });

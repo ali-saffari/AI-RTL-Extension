@@ -1,14 +1,58 @@
 
 .App {
+    /*direction: rtl;*/
     font-family: iranyekan, sans-serif;
-    color: white;
-    text-align: center;
+    /*color: white;*/
+    /*text-align: center;*/
+    padding-bottom: 13px;
 }
 
 .container {
     font-family: iranyekan, sans-serif;
-    width: 15rem;
-    height: 15rem;
-    background-color: green;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
 
+.appinfo-note p {
+    font-size: 11px;
+    padding: 3px 10px;
+    font-weight: 300;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+.MuiListItemText-primary {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.appinfo {
+    direction: rtl;
+    text-align: center;
+    padding: 1px 10px;
+}
+.appinfo-name {
+    font-size: 16px;
+    font-weight: 400;
+    border-bottom: 1px solid #8d8d8d;
+    padding-bottom: 5px;
+    padding-top: 8px;
+}
+.appinfo img{
+    width: 40px;
+    height: 40px;
+}
+
+.appinfo-name {
+
+}
+
+.appinfo-link a {
+    display: inline-block;
+    padding: 1px 5px;
+    color: #00e9ff;
 }
