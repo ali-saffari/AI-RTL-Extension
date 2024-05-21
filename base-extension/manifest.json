@@ -1,14 +1,14 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
-    "name": "RTL (Persian/Farsi): ChatGPT,Claude,Copilot",
-    "version": "2.03",
+    "name": "RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi",
+    "version": "2.04",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"
     },
     "author": "alisaffari1377@gmail.com",
     "permissions": ["storage"],
-    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. فعال برای : ChatGPT,Claude,Copilot,freegpt",
+    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. فعال برای : ChatGPT,Claude,Copilot,freegpt,TheBAi",
     "manifest_version": 3,
     "icons": {
         "16": "images/icon-16.png",
@@ -19,12 +19,12 @@
     "content_scripts": [ {
         "css": [ "css/fontiran-iranyekan.css", "style.css" ],
         "js": ["jquery-3.6.4.min.js", "extension.js" ],
-        "matches": [ "https://chat.openai.com/*" , "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*" , "https://copilot.microsoft.com/*" , "https://bing.com/*", "https://www.bing.com/*" , "https://claude.ai/*"]
+        "matches": [  "https://chatbot.theb.ai/*" , "https://beta.theb.ai/*" ,"https://chat.openai.com/*" , "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*" , "https://copilot.microsoft.com/*" , "https://bing.com/*", "https://www.bing.com/*" , "https://claude.ai/*"]
     } ],
     "web_accessible_resources": [
         {
             "resources": ["images/*" , "fonts/*"],
-            "matches": [  "https://chat.openai.com/*" , "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*", "https://copilot.microsoft.com/*", "https://bing.com/*", "https://www.bing.com/*" , "https://claude.ai/*"]
+            "matches": [  "https://chatbot.theb.ai/*" , "https://beta.theb.ai/*" ,"https://chat.openai.com/*" , "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*", "https://copilot.microsoft.com/*", "https://bing.com/*", "https://www.bing.com/*" , "https://claude.ai/*"]
         }
     ],
     "action": {

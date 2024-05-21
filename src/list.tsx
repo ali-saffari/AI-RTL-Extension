@@ -14,7 +14,8 @@ export default function SwitchListSecondary() {
         chatGpt: true,
         claude: true,
         copilot: true,
-        freegpt: true
+        freegpt: true,
+        thebAi: true
     });
 
 
@@ -29,7 +30,7 @@ export default function SwitchListSecondary() {
     useEffect(() => {
 
 
-        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt'], (data) => {
+        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi'], (data) => {
             // @ts-ignore
 
             console.log("Get DAta" , data)
@@ -50,7 +51,7 @@ export default function SwitchListSecondary() {
     let chatgptIconURL = chrome.runtime.getURL("/images/chatgpt-icon.png");
     let claudeIconURL = chrome.runtime.getURL("/images/claude-icon.png");
     let openAiIconURL = chrome.runtime.getURL("/images/openAi-icon.png");
-
+    let thebAiIconURL = chrome.runtime.getURL("/images/theb-ai-icon.png");
 
     return (
         <List
@@ -181,6 +182,44 @@ export default function SwitchListSecondary() {
 
                     </ListItemButton>
                 </ListItem>
+
+
+
+
+
+
+            </a>
+            <Divider/>
+            <a href={'https://beta.theb.ai'} target={'_blank'}>
+                <ListItem disablePadding>
+                    <ListItemButton>
+
+                        <ListItemIcon sx={{minWidth: 40}}>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="TheB AI" src={thebAiIconURL}/>
+                        </ListItemIcon>
+                        <ListItemText id="switch-list-label-freegpt" primary="TheB AI"/>
+                        <Switch
+                            edge="end"
+                            onChange={(e , aa) => {
+                                console.log("onChange" , e, aa)
+
+                                chrome.storage.sync.set({ thebAi: aa });
+
+                                return setChecked({...checked , thebAi: aa });
+
+
+                                // setChatgpt(aa);
+                            }}
+                            checked={checked && checked.thebAi ? true : false}
+                            inputProps={{
+                                'aria-labelledby': 'switch-list-label-freegpt',
+                            }}
+                        />
+
+                    </ListItemButton>
+                </ListItem>
+
+
 
             </a>
 

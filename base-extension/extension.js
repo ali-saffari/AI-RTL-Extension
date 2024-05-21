@@ -963,7 +963,7 @@ $(document).ready(function () {
         if (changes.claude && site === "claude.ai") location.reload();
         if (changes.copilot && (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com")) location.reload();
         if (changes.freegpt && (site === "freegpt.one" || site === "freegpt.cc")) location.reload();
-
+        if (changes.thebAi && (site === "beta.theb.ai" || site === "chatbot.theb.ai")) location.reload();
     });
 
 
@@ -1034,6 +1034,150 @@ $(document).ready(function () {
         }
 
     });
+
+
+
+    chrome.storage.sync.get(["thebAi"]).then((result) => {
+
+
+        if (result.thebAi) {
+            if (site === "beta.theb.ai" || site === "chatbot.theb.ai") {
+
+
+
+                function setTheb() {
+                    $(".overflow-y-auto .whitespace-pre-wrap.break-words.flex-col").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                }
+
+
+                setTheb()
+
+                let interval = setInterval(() => {
+
+                    $(".max-w-full .overflow-y-auto").each(function (each) {
+                        if (each === 0) {
+                            console.log("setInterval")
+
+
+
+
+
+
+
+                            const observer = new MutationObserver((mutations) => {
+                                mutations.forEach((mutation) => {
+                                    // console.log("تغیر", mutation)
+                                    setTheb()
+
+
+                                });
+                            });
+
+
+                            const targetNode = document.querySelector('.max-w-full div.overflow-y-auto');
+
+                            const config = {childList: true, subtree: true};
+
+                            observer.observe(targetNode, config);
+
+
+
+
+
+                            $('.history .scrollbar-test > div').each(function (each) {
+                                $(this).attr("dir", "auto");
+
+
+                                if (!$(this).hasClass("FontSet")) {
+                                    $(this).addClass('FontSet');
+                                }
+
+                            })
+
+                            const observerB = new MutationObserver((mutations) => {
+                                mutations.forEach((mutation) => {
+                                    console.log("تغیر B")
+
+
+                                    setTimeout(() => {
+
+
+                                        $('.history .scrollbar-test > div').each(function (each) {
+                                            $(this).attr("dir", "auto");
+
+
+                                            if (!$(this).hasClass("FontSet")) {
+                                                $(this).addClass('FontSet');
+                                            }
+
+                                        })
+
+                                    }, 100)
+                                });
+                            });
+
+
+
+
+                            const targetNodeB = document.querySelector('.history');
+
+                            const configB = {attributes: true, childList: true, subtree: true};
+
+                            observerB.observe(targetNodeB, configB);
+
+
+
+
+
+                            clearInterval(interval)
+                        }
+
+
+                    });
+
+
+                }, 200)
+
+
+
+                setInterval(() => {
+
+
+
+
+                }, 1000)
+            }
+
+
+        }
+
+    });
+
+
 
 
 });
