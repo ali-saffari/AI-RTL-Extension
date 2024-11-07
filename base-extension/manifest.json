@@ -1,14 +1,14 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
-    "name": "RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi",
-    "version": "2.04",
+    "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi",
+    "version": "2.06",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"
     },
     "author": "alisaffari1377@gmail.com",
     "permissions": ["storage"],
-    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. فعال برای : ChatGPT,Claude,Copilot,freegpt,TheBAi",
+    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. ChatGPT,Claude,Copilot,freegpt,TheBAi",
     "manifest_version": 3,
     "icons": {
         "16": "images/icon-16.png",

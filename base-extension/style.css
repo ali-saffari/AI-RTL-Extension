@@ -61,7 +61,7 @@ textarea.AsRtl {
 }
 
 .flex.w-full.setRight {
-    /*align-items: self-start;*/
+    align-items: self-start;
 }
 
 .flex.w-full.setRight .absolute.bottom-0.group-hover\/conversation-turn\:block {
@@ -84,6 +84,15 @@ textarea.AsRtl {
     padding-right: initial;
 }
 
+
+.AsRtlList .absolute.bottom-0.top-0.items-center.flex {
+    left: 8px;
+    right: inherit;
+}
+
+.AsRtlList .ltr\:right-0:where([dir=ltr],[dir=ltr] *) {
+    left: 8px ;
+}
 
 
 .AsRtlList .from-token-sidebar-surface-secondary {
@@ -117,7 +126,16 @@ textarea.AsRtl {
 
 
 
+.FontSet span.katex-display{
+    direction: ltr;
+}
 
+.FontSet .katex{
+    direction: ltr;
+    display: inline-block;
+}
+
+.
 .FontSet span.math.math-inline{
     direction: ltr;
     /*text-align: left;*/

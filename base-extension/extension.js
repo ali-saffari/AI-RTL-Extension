@@ -313,8 +313,9 @@ ${alisaffari}" alt="ali saffari"></a>
 function setItems_ChatGpt() {
 
 
-    let fo = ".flex.h-full[role=\"presentation\"] .relative.px-2.py-2.text-center span"
-
+    let presentation = ".relative.flex.h-full.overflow-hidden "
+    let fo = presentation + " .relative.text-center .min-h-4 div"
+    let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
 
     if (chrome.runtime?.id) {
 
@@ -322,7 +323,8 @@ function setItems_ChatGpt() {
         // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
 
-        // $(fo).addClass("red")
+        // $(foTest).addClass("red")
+
 
 
         if (!$(fo).parent().hasClass("AsOk")) {
@@ -396,11 +398,11 @@ ${alisaffari}" alt="ali saffari">
     // })
 
 
-    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
+    $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
 
 
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
+        if (!$(this).parent().hasClass("AsOk")) {
+            $(this).parent().addClass('AsOk');
 
 
             const text = $(this).text()
@@ -419,8 +421,14 @@ ${alisaffari}" alt="ali saffari">
 
     })
 
+    $('body').each(function (each) {
 
-    $('.flex.h-full[role="presentation"]').each(function (each) {
+
+        $(this).addClass('FontSet');
+
+    })
+
+    $(presentation).each(function (each) {
 
 
         $(this).addClass('FontSet');
@@ -428,7 +436,7 @@ ${alisaffari}" alt="ali saffari">
     })
 
 
-    $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
+    $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
 
 
         let streaming = $(this).find(".result-streaming")
@@ -879,6 +887,40 @@ $(document).ready(function () {
 
 
         if (site === "chatgpt.com") {
+
+
+            setInterval(() => {
+                setItems_ChatGpt()
+
+                $('.bg-token-sidebar-surface-primary nav ol li:not(.AsOkList)').each(function (each) {
+
+                    // $(this).addClass("red")
+                    // let pList = $(this).find("p,ol,ul,h3")
+                    const text = $(this).text()
+                    console.log("text", text)
+
+
+                    if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
+
+
+                        $(this).addClass('AsOkList');
+
+                        if (isPersian(text)) {
+                            $(this).addClass('AsRtlList');
+                            $(this).addClass('FontSet');
+                        } else {
+                            // backD = false
+                        }
+
+                    }
+
+
+                })
+
+
+
+            }, 1000)
+
 
             // addAliSaffari()
             setItems_ChatGpt()
