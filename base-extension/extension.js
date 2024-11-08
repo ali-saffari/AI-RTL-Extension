@@ -1,3 +1,5 @@
+
+
 let saffariLink = "http://alisaffari.ir/";
 
 
@@ -35,6 +37,11 @@ function countChars(str) {
 
 function countWords(text) {
     // جدا کردن کلمات از متن
+
+
+    if (typeof text == "boolean") {
+        return false;
+    }
     const words = text.split(" ");
 
     let leftCount = 0;
@@ -326,7 +333,6 @@ function setItems_ChatGpt() {
         // $(foTest).addClass("red")
 
 
-
         if (!$(fo).parent().hasClass("AsOk")) {
             $(fo).parent().addClass("AsOk")
             $(fo).parent().append(`<div class="AsRtl FontSet AsBox">
@@ -460,7 +466,7 @@ ${alisaffari}" alt="ali saffari">
     })
 
     //
-    $("textarea").each(function (each) {
+    $("#prompt-textarea").each(function (each) {
 
         if (!$(this).hasClass("AsOk")) {
 
@@ -481,30 +487,35 @@ ${alisaffari}" alt="ali saffari">
                     if (isPersian(text)) {
                         lastD = true
                         if (!$(this).hasClass("FontSet")) {
-                            // $(this).addClass('AsRtl');
+                            $(this).addClass('AsRtl');
                             $(this).addClass('FontSet');
                         }
                     } else {
                         if ($(this).hasClass("FontSet")) {
                             lastD = false
-                            // $(this).removeClass('AsRtl');
+                            $(this).removeClass('AsRtl');
                             $(this).removeClass('FontSet');
                         }
                     }
                 } else {
-                    if (lastD) {
 
-                        if (!$(this).hasClass("FontSet")) {
-                            // $(this).addClass('AsRtl');
-                            $(this).addClass('FontSet');
-                        }
-                    } else {
-                        if ($(this).hasClass("FontSet")) {
+                    $(this).removeClass('AsRtl');
+                    $(this).removeClass('FontSet');
 
-                            // $(this).removeClass('AsRtl');
-                            $(this).removeClass('FontSet');
-                        }
-                    }
+
+                    // if (lastD) {
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('AsRtl');
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    // } else {
+                    //     if ($(this).hasClass("FontSet")) {
+                    //
+                    //         $(this).removeClass('AsRtl');
+                    //         $(this).removeClass('FontSet');
+                    //     }
+                    // }
 
                 }
             })
@@ -512,6 +523,59 @@ ${alisaffari}" alt="ali saffari">
 
 
     });
+
+    $('.markdown pre').each(function (each) {
+
+        let code = $(this).find("code").text()
+
+
+        let plaintext = $(this).find(".language-plaintext")
+
+
+        // console.log("plaintext" , plaintext)
+
+
+        if (!$(this).hasClass("AsOk")) {
+
+
+            $(this).addClass('AsOk');
+
+            let p = isPersian(code);
+
+
+            if (plaintext) {
+
+                if ( isPersian(plaintext.text())) {
+
+
+                    $(this).find("[dir=ltr]").attr("dir", "rtl").addClass('FontSet')
+
+                    // $(this).find("[dir=ltr]").addClass('FontSet');
+                    $(this).find("code").addClass('FontSet');
+                }
+
+
+            }
+
+            if (p) {
+
+
+                $(this).addClass('AsSetRtl');
+                // $(this).addClass('FontSet');
+
+
+
+            } else {
+                $(this).addClass('AsSetLtr');
+                // backD = false
+            }
+
+        }
+
+
+    })
+
+
 
 
 }
@@ -521,57 +585,58 @@ function setItems_copilotBing() {
 
 
     let fo = `[role="complementary"]`
+    console.log("setItems_copilotBing")
 
 
-    var url = new URL(window.location);
-    let params = url.searchParams;
-    let lang = params.get("setlang");
+    // var url = new URL(window.location);
+    // let params = url.searchParams;
+    // let lang = params.get("setlang");
+    //
+    //
+    // console.log("lang", lang)
 
 
-    console.log("lang", lang)
-
-
-    setInterval(() => {
+//     setInterval(() => {
+// //
+//         if (chrome.runtime?.id && lang === 'fa') {
+//             const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+// //                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
+// //
+// //
+//             let fo2 = `[role="complementary"]`
 //
-        if (chrome.runtime?.id && lang === 'fa') {
-            const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
-//                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
+//             console.log("adddddd")
+//
+// //
+// //
+// //                 $(fo2).addClass("red")
+// //
+// //
+//             if (!$(fo2).hasClass("AsOk")) {
+//                 $(fo2).addClass("AsOk")
+//                 $(fo2).append(`<div class="AsRtl FontSet AsBox AsBinBox">
 //
 //
-            let fo2 = `[role="complementary"]`
-
-            console.log("adddddd")
-
+//                 <a href="${saffariLink}" target="_blank">
+//
+//               <img src="${alisaffari}" alt="ali saffari"></a>
 //
 //
-//                 $(fo2).addClass("red")
+//
+//                 امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید.
 //
 //
-            if (!$(fo2).hasClass("AsOk")) {
-                $(fo2).addClass("AsOk")
-                $(fo2).append(`<div class="AsRtl FontSet AsBox AsBinBox">
-
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید.
-
-
-
-
-
-            </div>`)
-
-
 //
-            }
-        }
 //
-    }, 1000)
+//
+//             </div>`)
+//
+//
+// //
+//             }
+//         }
+// //
+//     }, 1000)
 
     function setBing() {
         var r = document.querySelector(':root');
@@ -580,85 +645,71 @@ function setItems_copilotBing() {
         if (chrome.runtime?.id) {
 
 
-            const icon = chrome.runtime.getURL('images/icon-32.png')
-            // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
+            $('.pointer-events-none.absolute.bottom-0.flex.w-full').each(function (each) {
+
+                    // $(this).addClass('red');
 
 
-            if (lang === 'fa') {
 
-                $('.BinFarsiBtn').remove()
-                $(fo).removeClass("AsOk_BinFarsiBtn")
-                r.style.setProperty('--cib-font-text', 'iranyekan, sans-serif');
 
-                $(fo).prepend(`<span id="langChange" class="FontSet BinFarsiBtn langdisp b_hide farsiOk">
-         
+                const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
-               <a class="AsSBtn" href="${saffariLink}" target="_blank"> 
+
+                // $(foTest).addClass("red")
+
+
+                let fo = $(this).find(".relative.mb-4.flex.w-full.flex-col.items-center")
+
+
+
+
+                if (!  $(this).hasClass("AsOk")) {
+                    $(this).addClass("AsOk")
+                    fo.append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
+
+
+         <a href="${saffariLink}" target="_blank">
                 
-              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
-<path fill="#c8e6c9" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#4caf50" d="M34.586,14.586l-13.57,13.586l-5.602-5.586l-2.828,2.828l8.434,8.414l16.395-16.414L34.586,14.586z"></path>
-</svg>
-                
+                <img src="
+${alisaffari}" alt="ali saffari">
 
-        <img src="
-${icon}" alt="ali saffari">
 </a>
-              
-              
+
+              امیداورم از نسخه راست چین و بهینه شده برای فارسی زبانان لذت ببرید. 
+
+
+       
+
+
+<!--               <a class="AsSBtn" href="https://alisaffari.ir/supporters-of-rtl-chatgpt-extension/">حامیان</a>-->
+<!--              -->
+<!--              -->
 
 
 
-            </span>`)
-
-
-            } else {
-
-
-                // if (lang) {
-                //     url.searchParams.set('form', 'LGWQS2');
-                var url = new URL(window.location);
-                url.searchParams.set('setlang', 'fa');
-                // } else {
-                //     url.searchParams.append('setlang', 'fa');
-                // }
-
-                if (!$(fo).hasClass("AsOk_BinFarsiBtn")) {
-                    $(fo).addClass("AsOk_BinFarsiBtn")
-                    $(fo).prepend(`<span id="langChange" class="FontSet BinFarsiBtn langdisp b_hide ">
-         
-
-               <a class="AsSBtn" href="${url.href}"> 
-                
-                فارسی (بهینه)
-                
-
-        <img src="
-${icon}" alt="ali saffari">
-</a>
-              
-              
-
-
-
-            </span>`)
+            </div></div>`)
 
 
                 }
 
 
-            }
 
 
-            // url.searchParams.append('setlang', 'fa')
+            })
 
 
-// If your expected result is "http://foo.bar/?x=1&y=2&x=42";
 
-// // If your expected result is "http://foo.bar/?x=42&y=2"
-//                 url.searchParams.set('x', 42);
 
 
         }
+
+
+
+
+
+
+
 
 
         // alert("sett")
@@ -667,16 +718,76 @@ ${icon}" alt="ali saffari">
     }
 
 
-    var r = document.querySelector(':root');
-    var rs = getComputedStyle(r);
-    let font = rs.getPropertyValue('--cib-font-text')
+    let setBingInterval = () => {
 
 
-    if (font) {
         setBing()
+
+
+        $('.space-y-3').each(function (each) {
+            // console.log(each)
+            if (!$(this).hasClass("CopilotFontSet")) {
+                $(this).attr("dir", "auto");
+
+                $(this).addClass('CopilotFontSet');
+
+            }
+
+        })
+
+        $('.t-table th, .t-table td').each(function (each) {
+
+
+
+            let text = $(this).text()
+
+
+
+            if (!$(this).hasClass("AsOk")) {
+
+
+                $(this).addClass('AsOk');
+
+
+
+                if ( isPersian(text + "")) {
+
+                    $(this).addClass('AsAlignRtl');
+
+
+                }
+
+                // else if (/^\d+$/.test(text)) {
+                //     $(this).addClass('AsAlignC');
+                // }
+
+
+            }
+
+        })
+
+
+
     }
 
-    //
+
+    setInterval(() => {
+        setBingInterval()
+    }, 1000)
+    setBingInterval()
+
+
+
+
+
+
+
+
+
+
+        setBing()
+
+
 
 
     const observer = new MutationObserver((mutations) => {
@@ -688,21 +799,23 @@ ${icon}" alt="ali saffari">
                 // $('.BinFarsiBtn').remove()
                 // $(fo).removeClass("AsOk_BinFarsiBtn")
 
-
-                if ($(mutation.target).hasClass("b_sydConvMode")) {
-
-                    setTimeout(() => {
-                        $('.BinFarsiBtn').remove()
-                        $(fo).removeClass("AsOk_BinFarsiBtn")
-                        setBing()
-                    }, 500)
+                // setBing()
 
 
-                } else {
-                    $('.BinFarsiBtn').remove()
-                    $(fo).removeClass("AsOk_BinFarsiBtn")
-
-                }
+                // if ($(mutation.target).hasClass("b_sydConvMode")) {
+                //
+                //     setTimeout(() => {
+                //         $('.BinFarsiBtn').remove()
+                //         // $(fo).removeClass("AsOk_BinFarsiBtn")
+                //         setBing()
+                //     }, 500)
+                //
+                //
+                // } else {
+                //     $('.BinFarsiBtn').remove()
+                //     // $(fo).removeClass("AsOk_BinFarsiBtn")
+                //
+                // }
 
             }
 
@@ -760,7 +873,7 @@ function setItems_Claude() {
         if (chrome.runtime?.id) {
             const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
 
-            let fo2 = `.w-full.sticky .flex.flex-col.flex-1`
+            let fo2 = `.sticky .flex.flex-col`
 
             console.log("adddddd")
 
@@ -806,7 +919,7 @@ function setItems_Claude() {
         });
 
 
-        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div .mt-4").each(function (each) {
+        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div .mb-1.mt-1").each(function (each) {
 
 
             const text = $(this).find(".font-user-message  p.break-words").text()
@@ -877,11 +990,58 @@ function setItems_Claude() {
 }
 
 
+let setList_ChatGpt = () => {
+
+    $('.bg-token-sidebar-surface-primary nav ol li .relative.grow.overflow-hidden').each(function (each) {
+
+        // $(this).addClass("red")
+        // let pList = $(this).find("p,ol,ul,h3")
+        const text = $(this).text()
+        // console.log("text", text)
+        let p = isPersian(text);
+
+
+        if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
+
+
+            $(this).addClass('AsOkList');
+
+            if (p) {
+                $(this).addClass('AsRtlList');
+                $(this).addClass('FontSet');
+            } else {
+                // backD = false
+            }
+
+        }
+
+
+        let absoluteItem = $(this).parent().parent().find(".absolute.bottom-0")
+
+
+        if (!absoluteItem.hasClass("AsOk")) {
+
+
+            absoluteItem.addClass('AsOk');
+
+
+            if (p) {
+                absoluteItem.addClass('AsOkList_absolute');
+            }
+
+
+        }
+
+
+    })
+
+}
 $(document).ready(function () {
 
 
     let site = window.location.host;
 
+    console.log("site" , site)
 
     function active_chatGpt() {
 
@@ -892,30 +1052,10 @@ $(document).ready(function () {
             setInterval(() => {
                 setItems_ChatGpt()
 
-                $('.bg-token-sidebar-surface-primary nav ol li:not(.AsOkList)').each(function (each) {
+                // !overflow-visible
 
-                    // $(this).addClass("red")
-                    // let pList = $(this).find("p,ol,ul,h3")
-                    const text = $(this).text()
-                    console.log("text", text)
+                setList_ChatGpt()
 
-
-                    if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
-
-
-                        $(this).addClass('AsOkList');
-
-                        if (isPersian(text)) {
-                            $(this).addClass('AsRtlList');
-                            $(this).addClass('FontSet');
-                        } else {
-                            // backD = false
-                        }
-
-                    }
-
-
-                })
 
 
 
@@ -924,6 +1064,8 @@ $(document).ready(function () {
 
             // addAliSaffari()
             setItems_ChatGpt()
+            setList_ChatGpt()
+
 
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
@@ -943,30 +1085,8 @@ $(document).ready(function () {
                     setTimeout(() => {
 
 
-                        $('.bg-token-sidebar-surface-primary nav ol li:not(.AsOkList)').each(function (each) {
+                        setList_ChatGpt()
 
-                            // $(this).addClass("red")
-                            // let pList = $(this).find("p,ol,ul,h3")
-                            const text = $(this).text()
-                            console.log("text", text)
-
-
-                            if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
-
-
-                                $(this).addClass('AsOkList');
-
-                                if (isPersian(text)) {
-                                    $(this).addClass('AsRtlList');
-                                    $(this).addClass('FontSet');
-                                } else {
-                                    // backD = false
-                                }
-
-                            }
-
-
-                        })
 
                     }, 100)
                 });
@@ -1078,7 +1198,6 @@ $(document).ready(function () {
     });
 
 
-
     chrome.storage.sync.get(["thebAi"]).then((result) => {
 
 
@@ -1086,8 +1205,9 @@ $(document).ready(function () {
             if (site === "beta.theb.ai" || site === "chatbot.theb.ai") {
 
 
-
                 function setTheb() {
+
+
                     $(".overflow-y-auto .whitespace-pre-wrap.break-words.flex-col").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
@@ -1125,11 +1245,6 @@ $(document).ready(function () {
                             console.log("setInterval")
 
 
-
-
-
-
-
                             const observer = new MutationObserver((mutations) => {
                                 mutations.forEach((mutation) => {
                                     // console.log("تغیر", mutation)
@@ -1147,10 +1262,7 @@ $(document).ready(function () {
                             observer.observe(targetNode, config);
 
 
-
-
-
-                            $('.history .scrollbar-test > div').each(function (each) {
+                            $('.history .scrollbar-test .relative.mt-2').each(function (each) {
                                 $(this).attr("dir", "auto");
 
 
@@ -1159,7 +1271,6 @@ $(document).ready(function () {
                                 }
 
                             })
-
                             const observerB = new MutationObserver((mutations) => {
                                 mutations.forEach((mutation) => {
                                     console.log("تغیر B")
@@ -1168,7 +1279,7 @@ $(document).ready(function () {
                                     setTimeout(() => {
 
 
-                                        $('.history .scrollbar-test > div').each(function (each) {
+                                        $('.history .scrollbar-test .relative.mt-2').each(function (each) {
                                             $(this).attr("dir", "auto");
 
 
@@ -1177,12 +1288,9 @@ $(document).ready(function () {
                                             }
 
                                         })
-
                                     }, 100)
                                 });
                             });
-
-
 
 
                             const targetNodeB = document.querySelector('.history');
@@ -1190,9 +1298,6 @@ $(document).ready(function () {
                             const configB = {attributes: true, childList: true, subtree: true};
 
                             observerB.observe(targetNodeB, configB);
-
-
-
 
 
                             clearInterval(interval)
@@ -1203,7 +1308,6 @@ $(document).ready(function () {
 
 
                 }, 200)
-
 
 
                 setInterval(() => {
@@ -1218,8 +1322,6 @@ $(document).ready(function () {
         }
 
     });
-
-
 
 
 });

@@ -6,6 +6,8 @@
     font-family: iranyekan, sans-serif;
 }
 
+
+
 .items-stretch .items-start code, .items-stretch .items-start pre {
     font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
     direction: ltr !important;
@@ -77,6 +79,9 @@ textarea.AsRtl {
 
 }
 
+
+
+
 .AsRtlList .absolute.bottom-0.right-0.top-0.items-center {
     left: 0;
     right: initial;
@@ -105,6 +110,34 @@ textarea.AsRtl {
     transform: rotate(180deg);
     left: 0;
     right: initial;
+}
+
+
+
+/*------------------------*/
+
+.AsRtlList.relative.grow.overflow-hidden {
+    text-align: right;
+    font-weight: 400;
+    font-size: .75rem;
+
+}
+
+.AsOkList_absolute.absolute {
+    left: 0px;
+    right: inherit;
+    padding-right: inherit;
+    padding-left: .5rem;
+}
+
+
+pre.AsSetLtr {
+    text-align: left;
+    direction: rtl;
+}
+
+.language-plaintext.FontSet {
+    font-family: iranyekan, sans-serif !important;
 }
 
 .AsRtl_rowReverse {
@@ -220,9 +253,9 @@ textarea.AsRtl {
 
 .FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
     font-family: iranyekan, sans-serif;
-    line-height: 32px;
+    /*line-height: 32px;*/
     font-weight: 300;
-    font-size: 0.95rem;
+    /*font-size: 0.95rem;*/
 }
 
 
@@ -250,5 +283,77 @@ textarea.AsRtl {
 .AsBox.AsBoxClaude {
     font-size: 15px;
     font-weight: 200;
+}
+
+
+
+
+
+[dir=ltr] .prose :where(table):not(:where([class~=not-prose] *)) {
+    text-align: right !important;
+    direction: ltr !important;
+}
+
+
+[dir=rtl] .prose :where(table):not(:where([class~=not-prose] *)) {
+    text-align: right !important;
+    direction: ltr !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*-------------------
+copilot
+*/
+
+
+.CopilotFontSet {
+    font-family: iranyekan, sans-serif;
+}
+
+.space-y-3.CopilotFontSet {
+    font-weight: 300;
+    color: #fff;
+    line-height: 2rem;
+}
+
+.CopilotFontSet pre {
+    direction: ltr;
+}
+
+
+.AsAlignRtl {
+    text-align: right !important;
+}
+
+.AsBox_copilotBing {
+    transform: scale(0.8);
+}
+
+
+.AsBox_copilotBingBlock {
+    margin-bottom: -25px;
+    padding-top: 8px;
+    font-weight: 100;
+
+}
+
+
+
+.FontSet svg.inline-block.mr-2 {
+    margin-right: .5rem;
+    margin-left: .5rem;
 }
 

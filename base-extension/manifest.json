@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi",
-    "version": "2.06",
+    "version": "2.24.11",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"
