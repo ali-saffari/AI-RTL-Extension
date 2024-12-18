@@ -6,7 +6,24 @@
     font-family: iranyekan, sans-serif;
 }
 
+.FontSet p{
+    font-family: iranyekan, sans-serif !important;
+}
 
+textarea.FontSetImportant{
+    font-family: iranyekan, sans-serif !important;
+}
+
+.FontSetImportant2 {
+    font-family: iranyekan, sans-serif !important;
+}
+
+
+
+
+.FontSetImportant p{
+    font-family: iranyekan, sans-serif !important;
+}
 
 .items-stretch .items-start code, .items-stretch .items-start pre {
     font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
@@ -357,3 +374,39 @@ copilot
     margin-left: .5rem;
 }
 
+
+/*---------------*/
+
+.AsBoxDuckduckgo a {
+    vertical-align: -webkit-baseline-middle;
+}
+.AsBoxDuckduckgo {
+    color: #888888;
+}
+
+/*----*/
+
+
+.FontSetPerplexity .font-sans {
+    font-family: iranyekan, sans-serif !important;
+}
+
+.FontSetPerplexity h2 {
+    font-family: iranyekan, sans-serif !important;
+}
+
+.FontSetPerplexity code {
+    direction: ltr !important;
+}
+
+
+.AsBoxPerplexity {
+    grid-column: span 8 / span 8;
+    color: #888888;
+    margin-top: 0px;
+    margin-bottom: -15px;
+    width: max-content;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 10px 24px 8px 24px;
+}

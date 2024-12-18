@@ -1,7 +1,7 @@
 
 
 let saffariLink = "http://alisaffari.ir/";
-
+let textSaffari = "امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
 
 function isPersian(str) {
 
@@ -114,7 +114,7 @@ function setItems_freegpt() {
 ${alisaffari}" alt="ali saffari"></a>
 
 
-                امیداورم از نسخه راست چین و بهینه شده برای فارسی زبانان لذت ببرید. 
+               ${textSaffari}
 
 
 
@@ -344,19 +344,7 @@ function setItems_ChatGpt() {
 ${alisaffari}" alt="ali saffari">
 
 </a>
-
-              امیداورم از نسخه راست چین و بهینه شده برای فارسی زبانان لذت ببرید. 
-
-
-       
-
-
-<!--               <a class="AsSBtn" href="https://alisaffari.ir/supporters-of-rtl-chatgpt-extension/">حامیان</a>-->
-<!--              -->
-<!--              -->
-
-
-
+${textSaffari}
             </div>`)
 
 
@@ -442,28 +430,28 @@ ${alisaffari}" alt="ali saffari">
     })
 
 
-    $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
-
-
-        let streaming = $(this).find(".result-streaming")
-
-        if (streaming && streaming.length) {
-
-        } else {
-            let mx_auto = $(this).find(".mx-auto")
-
-            let message = $(this).find(".text-message")
-
-
-            if (message.css("direction") === 'rtl') {
-                mx_auto.addClass('AsRtl_rowReverse')
-
-            }
-        }
-
-        // }
-
-    })
+    // $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
+    //
+    //
+    //     let streaming = $(this).find(".result-streaming")
+    //
+    //     if (streaming && streaming.length) {
+    //
+    //     } else {
+    //         let mx_auto = $(this).find(".mx-auto")
+    //
+    //         let message = $(this).find(".text-message")
+    //
+    //
+    //         if (message.css("direction") === 'rtl') {
+    //             mx_auto.addClass('AsRtl_rowReverse')
+    //
+    //         }
+    //     }
+    //
+    //     // }
+    //
+    // })
 
     //
     $("#prompt-textarea").each(function (each) {
@@ -676,17 +664,7 @@ ${alisaffari}" alt="ali saffari">
 
 </a>
 
-              امیداورم از نسخه راست چین و بهینه شده برای فارسی زبانان لذت ببرید. 
-
-
-       
-
-
-<!--               <a class="AsSBtn" href="https://alisaffari.ir/supporters-of-rtl-chatgpt-extension/">حامیان</a>-->
-<!--              -->
-<!--              -->
-
-
+${textSaffari}
 
             </div></div>`)
 
@@ -890,16 +868,8 @@ function setItems_Claude() {
                 <a href="${saffariLink}" target="_blank">
 
               <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید.
-
-
-
-
-
-            </div>`)
+${textSaffari}
+ </div>`)
 
 
             }
@@ -1126,6 +1096,13 @@ $(document).ready(function () {
         if (changes.copilot && (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com")) location.reload();
         if (changes.freegpt && (site === "freegpt.one" || site === "freegpt.cc")) location.reload();
         if (changes.thebAi && (site === "beta.theb.ai" || site === "chatbot.theb.ai")) location.reload();
+        if (changes.duckduckgo && site === "duckduckgo.com") location.reload();
+
+        if (changes.perplexity && (site === "www.perplexity.ai" || site === "perplexity.ai")) location.reload();
+
+
+
+
     });
 
 
@@ -1316,6 +1293,411 @@ $(document).ready(function () {
 
 
                 }, 1000)
+            }
+
+
+        }
+
+    });
+
+
+
+
+    chrome.storage.sync.get(["perplexity"]).then((result) => {
+
+
+        console.log("site" , site)
+
+        if (result.perplexity) {
+            if ((site === "www.perplexity.ai" || site === "perplexity.ai")) {
+                console.log("setPerplexity" )
+
+
+                function setPerplexity() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `.bottom-mobileNavHeight .pointer-events-auto`
+
+                        console.log("adddddd")
+
+//
+//
+//                 $(fo2).addClass("red")
+//
+//
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxPerplexity bg-background dark:bg-backgroundDark">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+
+                    //
+                    $(".kOMSj8TE0LBty6yatos7").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".JXNYs5FNOplxLlVAOswQ").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+
+
+                    $(".mx-auto.h-full.w-full.max-w-threadWidth .text-3xl").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant2');
+
+
+
+
+                        }
+
+
+                    });
+
+                    $(".mx-auto.h-full.w-full.max-w-threadWidth .items .font-sans").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant2');
+                            $(this).removeClass('text-left');
+                        }
+
+
+                    });
+
+                    $("body").each(function (each) {
+
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetPerplexity');
+                        }
+
+
+                    });
+
+
+
+
+                    $(".text-left.font-sans").each(function (each) {
+                        $(this).removeClass('text-left');
+                        $(this).attr("dir", "auto");
+                    });
+                    $(".group.flex.cursor-pointer.items-center.justify-between.py-sm").each(function (each) {
+                        $(this).attr("dir", "auto");
+                    });
+
+
+
+
+
+
+                    $(".grow.block .w-full ").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+                        // $(this).addClass('red');
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                            $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+
+                     // mx-auto size-full sm:max-w-screen-md sm:px-md md:px-lg
+
+
+                    // $("body").each(function (each) {
+                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                    //     // $(this).attr("dir", "auto");
+                    //
+                    //     // $(this).addClass('red');
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //
+                    //         $(this).addClass('FontSetImportant');
+                    //
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                    // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
+                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                }
+
+
+                setPerplexity()
+
+
+
+                let interval = setInterval(() => {
+
+
+                    setPerplexity()
+
+
+                    // $("body").each(function (each) {
+                    //     if (each === 0) {
+                    //         console.log("setInterval")
+                    //
+                    //
+                    //         const observer = new MutationObserver((mutations) => {
+                    //             mutations.forEach((mutation) => {
+                    //                 // console.log("تغیر", mutation)
+                    //                 setPerplexity()
+                    //
+                    //
+                    //             });
+                    //         });
+                    //
+                    //
+                    //         const targetNode = document.querySelector('body');
+                    //
+                    //         const config = {childList: true, subtree: true};
+                    //
+                    //         observer.observe(targetNode, config);
+                    //
+                    //
+                    //         clearInterval(interval)
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                }, 200)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+
+
+
+
+
+    chrome.storage.sync.get(["duckduckgo"]).then((result) => {
+
+
+        if (result.duckduckgo) {
+            if (site === "duckduckgo.com" ) {
+
+
+                function setDuckduckgo() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `.eRjZTOsvr6gqJe3E2Yc6`
+
+                        console.log("adddddd")
+
+//
+//
+//                 $(fo2).addClass("red")
+//
+//
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+
+                    //
+                    $(".kOMSj8TE0LBty6yatos7").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".JXNYs5FNOplxLlVAOswQ").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+
+                    $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                            $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+
+
+                    // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
+                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                }
+
+
+                setDuckduckgo()
+
+
+
+                let interval = setInterval(() => {
+
+                    $(".is-duckchat").each(function (each) {
+                        if (each === 0) {
+                            console.log("setInterval")
+
+
+                            const observer = new MutationObserver((mutations) => {
+                                mutations.forEach((mutation) => {
+                                    // console.log("تغیر", mutation)
+                                    setDuckduckgo()
+
+
+                                });
+                            });
+
+
+                            const targetNode = document.querySelector('.is-duckchat');
+
+                            const config = {childList: true, subtree: true};
+
+                            observer.observe(targetNode, config);
+
+
+                            clearInterval(interval)
+                        }
+
+
+                    });
+
+
+                }, 200)
+
+
             }
 
 

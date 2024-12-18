@@ -15,7 +15,9 @@ export default function SwitchListSecondary() {
         claude: true,
         copilot: true,
         freegpt: true,
-        thebAi: true
+        thebAi: true,
+        duckduckgo: true,
+        perplexity: true,
     });
 
 
@@ -30,7 +32,7 @@ export default function SwitchListSecondary() {
     useEffect(() => {
 
 
-        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi'], (data) => {
+        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi' , 'duckduckgo'  , 'perplexity'], (data) => {
             // @ts-ignore
 
             console.log("Get DAta" , data)
@@ -52,6 +54,10 @@ export default function SwitchListSecondary() {
     let claudeIconURL = chrome.runtime.getURL("/images/claude-icon.png");
     let openAiIconURL = chrome.runtime.getURL("/images/openAi-icon.png");
     let thebAiIconURL = chrome.runtime.getURL("/images/theb-ai-icon.png");
+    let duckduckgoIconURL = chrome.runtime.getURL("/images/duckduckgo.png");
+    let perplexityIconURL = chrome.runtime.getURL("/images/White on Turquiose.png");
+
+
 
     return (
         <List
@@ -222,6 +228,81 @@ export default function SwitchListSecondary() {
 
 
             </a>
+
+            <Divider/>
+            <a href={'https://duckduckgo.com/aichat'} target={'_blank'}>
+                <ListItem disablePadding>
+                    <ListItemButton>
+
+                        <ListItemIcon sx={{minWidth: 40}}>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="DuckDuckGo  AI" src={duckduckgoIconURL}/>
+                        </ListItemIcon>
+                        <ListItemText id="switch-list-label-freegpt" primary="DuckDuckGo  AI"/>
+                        <Switch
+                            edge="end"
+                            onChange={(e , aa) => {
+                                console.log("onChange" , e, aa)
+
+                                chrome.storage.sync.set({ duckduckgo: aa });
+
+                                return setChecked({...checked , duckduckgo: aa });
+
+
+                                // setChatgpt(aa);
+                            }}
+                            checked={checked && checked.duckduckgo ? true : false}
+                            inputProps={{
+                                'aria-labelledby': 'switch-list-label-freegpt',
+                            }}
+                        />
+
+                    </ListItemButton>
+                </ListItem>
+
+
+
+            </a>
+            <Divider/>
+            <a href={'https://perplexity.ai'} target={'_blank'}>
+                <ListItem disablePadding>
+                    <ListItemButton>
+
+                        <ListItemIcon sx={{minWidth: 40}}>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="perplexity  AI" src={perplexityIconURL}/>
+                        </ListItemIcon>
+                        <ListItemText id="switch-list-label-freegpt" primary="perplexity  AI"/>
+                        <Switch
+                            edge="end"
+                            onChange={(e , aa) => {
+                                console.log("onChange" , e, aa)
+
+                                chrome.storage.sync.set({ perplexity: aa });
+
+                                return setChecked({...checked , perplexity: aa });
+
+
+                                // setChatgpt(aa);
+                            }}
+                            checked={checked && checked.perplexity ? true : false}
+                            inputProps={{
+                                'aria-labelledby': 'switch-list-label-freegpt',
+                            }}
+                        />
+
+                    </ListItemButton>
+                </ListItem>
+
+
+
+            </a>
+
+
+
+
+
+
+
+
 
         </List>
     )
