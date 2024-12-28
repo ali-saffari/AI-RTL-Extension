@@ -430,6 +430,48 @@ ${textSaffari}
     })
 
 
+
+    $(presentation + '#prosemirror-editor-container').each(function (each) {
+
+
+
+
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            $(this).attr("dir", "auto");
+            $(this).addClass('flex-row-reverse');
+
+
+
+        }
+
+
+    })
+
+
+
+    //
+    // $(presentation + '#prosemirror-editor-container .pointer-events-none.relative').each(function (each) {
+    //
+    //
+    //
+    //
+    //     if (!$(this).parent().hasClass("AsOk")) {
+    //         $(this).parent().addClass('AsOk');
+    //
+    //         $(this).attr("dir", "left");
+    //
+    //     }
+    //
+    //
+    // })
+
+
+
+
+
+
+
     // $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
     //
     //

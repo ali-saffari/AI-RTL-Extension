@@ -410,3 +410,12 @@ copilot
     margin-left: auto;
     padding: 10px 24px 8px 24px;
 }
+
+/*-----------------*/
+
+
+.AsOk.flex-row-reverse .pointer-events-none.relative.flex.h-full {
+    /*position: absolute !important;*/
+    /*right: -20px !important;*/
+    margin-left: 24px;
+}
