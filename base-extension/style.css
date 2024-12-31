@@ -450,3 +450,10 @@ ms-code-block {
     right: 0;
     left: 0;
 }
+
+/*-----------------*/
+
+
+.md-code-block {
+    direction: ltr;
+}

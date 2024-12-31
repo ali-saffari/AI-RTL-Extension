@@ -18,7 +18,8 @@ export default function SwitchListSecondary() {
         thebAi: true,
         duckduckgo: true,
         perplexity: true,
-        aiStudio: true
+        aiStudio: true,
+        deepseek: true
     });
 
 
@@ -33,7 +34,7 @@ export default function SwitchListSecondary() {
     useEffect(() => {
 
 
-        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi' , 'duckduckgo'  , 'perplexity' , 'aiStudio'], (data) => {
+        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi' , 'duckduckgo'  , 'perplexity' , 'aiStudio' , 'deepseek'], (data) => {
             // @ts-ignore
 
             console.log("Get DAta" , data)
@@ -58,6 +59,10 @@ export default function SwitchListSecondary() {
     let duckduckgoIconURL = chrome.runtime.getURL("/images/duckduckgo.png");
     let perplexityIconURL = chrome.runtime.getURL("/images/White on Turquiose.png");
     let aiStudioIconURL = chrome.runtime.getURL("/images/google-ai-studio.png");
+    let deepseekIconURL = chrome.runtime.getURL("/images/deepseek.jpg");
+
+
+
 
 
     return (
@@ -108,7 +113,7 @@ export default function SwitchListSecondary() {
                     <ListItemButton>
 
                         <ListItemIcon sx={{minWidth: 40}}>
-                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="copilot" src={aiStudioIconURL}/>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="Ai Studio" src={aiStudioIconURL}/>
                         </ListItemIcon>
                         <ListItemText id="switch-list-label-copilot" primary="Ai Studio"/>
                         <Switch
@@ -193,6 +198,40 @@ export default function SwitchListSecondary() {
                 </ListItem>
 
             </a>
+
+            <Divider/>
+            <a href={'https://chat.deepseek.com'} target={'_blank'}>
+                <ListItem disablePadding>
+                    <ListItemButton>
+
+                        <ListItemIcon sx={{minWidth: 40}}>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="DeepSeek" src={deepseekIconURL}/>
+                        </ListItemIcon>
+                        <ListItemText id="switch-list-label-claude" primary="DeepSeek"/>
+                        <Switch
+                            edge="end"
+                            onChange={(e , aa) => {
+                                console.log("onChange" , e, aa)
+
+                                chrome.storage.sync.set({ deepseek: aa });
+
+                                return setChecked({...checked , deepseek: aa });
+
+
+                                // setChatgpt(aa);
+                            }}
+                            checked={checked && checked.deepseek ? true : false}
+                            inputProps={{
+                                'aria-labelledby': 'switch-list-label-claude',
+                            }}
+                        />
+
+                    </ListItemButton>
+                </ListItem>
+
+            </a>
+
+
 
             <Divider/>
             <a href={'https://freegpt.cc/'} target={'_blank'}>

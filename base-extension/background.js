@@ -39,6 +39,9 @@ chrome.runtime.onInstalled.addListener((details) => {
             if (!storedData.hasOwnProperty('aiStudio')) {
                 updates.aiStudio = true;
             }
+            if (!storedData.hasOwnProperty('deepseek')) {
+                updates.deepseek = true;
+            }
 
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم

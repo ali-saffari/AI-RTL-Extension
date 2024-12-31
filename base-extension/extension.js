@@ -1098,6 +1098,11 @@ $(document).ready(function () {
 
         if (changes.aiStudio && site === "aistudio.google.com") location.reload();
 
+        if (changes.deepseek && site === "chat.deepseek.com") location.reload();
+
+
+
+
 
     });
 
@@ -1659,6 +1664,175 @@ $(document).ready(function () {
                             clearInterval(interval)
                         }
 
+
+                    });
+
+
+                }, 200)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+
+
+
+    chrome.storage.sync.get(["deepseek"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.deepseek) {
+            if (site === "chat.deepseek.com") {
+
+                // console.log(":ssssssssssssssssss")
+
+
+                function setDeepSeek() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `.cbcaa82c`
+
+                        // console.log("adddddd")
+
+//
+//
+//                 $(fo2).addClass("red")
+//
+//
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+                    //
+                    $(".f9bf7997").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+                    $(".fa81").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        // $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+
+
+                    $(".fad49dec").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                            $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+
+
+                    // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
+                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                }
+
+
+                setDeepSeek()
+
+
+                let interval = setInterval(() => {
+
+                    $("#root").each(function (each) {
+                        if (each === 0) {
+                            console.log("setInterval")
+
+
+                            const observer = new MutationObserver((mutations) => {
+                                mutations.forEach((mutation) => {
+                                    // console.log("تغیر", mutation)
+                    setDeepSeek()
+
+
+                                });
+                            });
+
+
+                            const targetNode = document.querySelector('#root');
+
+                            const config = {childList: true, subtree: true};
+
+                            observer.observe(targetNode, config);
+
+
+                            clearInterval(interval)
+                        }
 
                     });
 
