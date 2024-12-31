@@ -18,6 +18,7 @@ export default function SwitchListSecondary() {
         thebAi: true,
         duckduckgo: true,
         perplexity: true,
+        aiStudio: true
     });
 
 
@@ -32,7 +33,7 @@ export default function SwitchListSecondary() {
     useEffect(() => {
 
 
-        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi' , 'duckduckgo'  , 'perplexity'], (data) => {
+        chrome.storage.sync.get(['chatGpt' , 'claude' ,  'copilot' ,  'freegpt' , 'thebAi' , 'duckduckgo'  , 'perplexity' , 'aiStudio'], (data) => {
             // @ts-ignore
 
             console.log("Get DAta" , data)
@@ -56,7 +57,7 @@ export default function SwitchListSecondary() {
     let thebAiIconURL = chrome.runtime.getURL("/images/theb-ai-icon.png");
     let duckduckgoIconURL = chrome.runtime.getURL("/images/duckduckgo.png");
     let perplexityIconURL = chrome.runtime.getURL("/images/White on Turquiose.png");
-
+    let aiStudioIconURL = chrome.runtime.getURL("/images/google-ai-studio.png");
 
 
     return (
@@ -96,6 +97,40 @@ export default function SwitchListSecondary() {
 
                     </ListItemButton>
                 </ListItem>
+            </a>
+
+
+
+
+            <Divider/>
+            <a href={'https://aistudio.google.com/'} target={'_blank'}>
+                <ListItem disablePadding>
+                    <ListItemButton>
+
+                        <ListItemIcon sx={{minWidth: 40}}>
+                            <Avatar sx={{width: 30, height: 30}} sizes={'small'} alt="copilot" src={aiStudioIconURL}/>
+                        </ListItemIcon>
+                        <ListItemText id="switch-list-label-copilot" primary="Ai Studio"/>
+                        <Switch
+                            edge="end"
+                            onChange={(e , aa) => {
+                                console.log("onChange" , e, aa)
+
+                                chrome.storage.sync.set({ aiStudio: aa });
+
+                                return setChecked({...checked , aiStudio: aa });
+
+
+                                // setChatgpt(aa);
+                            }}
+                            checked={checked && checked.aiStudio ? true : false}
+                            inputProps={{
+                                'aria-labelledby': 'switch-list-label-copilot',
+                            }}
+                        />
+                    </ListItemButton>
+                </ListItem>
+
             </a>
             <Divider/>
             <a href={'https://www.bing.com/chat?setlang=fa'} target={'_blank'}>

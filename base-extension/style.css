@@ -419,3 +419,34 @@ copilot
     /*right: -20px !important;*/
     margin-left: 24px;
 }
+
+
+
+
+
+/*----------------*/
+
+
+ms-text-chunk.FontSet {
+    width: 100%;
+}
+
+.FontSet .text-chunk{
+    width: 100%;
+}
+
+ms-code-block {
+    direction: ltr;
+}
+
+.app-prompts footer {
+    position: relative;
+    padding-bottom: 36px !important;
+}
+
+.app-prompts footer .AsBox {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}

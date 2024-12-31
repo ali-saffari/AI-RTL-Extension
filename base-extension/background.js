@@ -36,6 +36,11 @@ chrome.runtime.onInstalled.addListener((details) => {
                 updates.perplexity = true;
             }
 
+            if (!storedData.hasOwnProperty('aiStudio')) {
+                updates.aiStudio = true;
+            }
+
+
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم
             if (Object.keys(updates).length > 0) {
                 chrome.storage.sync.set(updates, () => {

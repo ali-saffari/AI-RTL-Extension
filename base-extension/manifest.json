@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi,...",
-    "version": "2.50.20",
+    "version": "2.50.30",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"
@@ -24,7 +24,9 @@
             "https://freegpt.one/*" , "https://chatgpt.com/*" ,
             "https://freegpt.cc/*" , "https://copilot.microsoft.com/*" ,
             "https://bing.com/*", "https://www.bing.com/*" ,
-            "https://claude.ai/*" , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*"]
+            "https://claude.ai/*" , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*",
+        "https://aistudio.google.com/*"
+        ]
     } ],
     "web_accessible_resources": [
         {
@@ -33,7 +35,9 @@
                 "https://beta.theb.ai/*" ,"https://chat.openai.com/*" ,
                 "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*",
                 "https://copilot.microsoft.com/*", "https://bing.com/*", "https://www.bing.com/*"
-            , "https://claude.ai/*"  , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*"]
+            , "https://claude.ai/*"  , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*",
+                "https://aistudio.google.com/*"
+            ]
         }
     ],
     "action": {

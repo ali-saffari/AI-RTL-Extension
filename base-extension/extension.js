@@ -1,5 +1,3 @@
-
-
 let saffariLink = "http://alisaffari.ir/";
 let textSaffari = "امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
 
@@ -430,10 +428,7 @@ ${textSaffari}
     })
 
 
-
     $(presentation + '#prosemirror-editor-container').each(function (each) {
-
-
 
 
         if (!$(this).hasClass("AsOk")) {
@@ -442,12 +437,10 @@ ${textSaffari}
             $(this).addClass('flex-row-reverse');
 
 
-
         }
 
 
     })
-
 
 
     //
@@ -465,11 +458,6 @@ ${textSaffari}
     //
     //
     // })
-
-
-
-
-
 
 
     // $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
@@ -575,7 +563,7 @@ ${textSaffari}
 
             if (plaintext) {
 
-                if ( isPersian(plaintext.text())) {
+                if (isPersian(plaintext.text())) {
 
 
                     $(this).find("[dir=ltr]").attr("dir", "rtl").addClass('FontSet')
@@ -594,7 +582,6 @@ ${textSaffari}
                 // $(this).addClass('FontSet');
 
 
-
             } else {
                 $(this).addClass('AsSetLtr');
                 // backD = false
@@ -604,8 +591,6 @@ ${textSaffari}
 
 
     })
-
-
 
 
 }
@@ -677,9 +662,7 @@ function setItems_copilotBing() {
 
             $('.pointer-events-none.absolute.bottom-0.flex.w-full').each(function (each) {
 
-                    // $(this).addClass('red');
-
-
+                // $(this).addClass('red');
 
 
                 const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
@@ -692,9 +675,7 @@ function setItems_copilotBing() {
                 let fo = $(this).find(".relative.mb-4.flex.w-full.flex-col.items-center")
 
 
-
-
-                if (!  $(this).hasClass("AsOk")) {
+                if (!$(this).hasClass("AsOk")) {
                     $(this).addClass("AsOk")
                     fo.append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
 
@@ -714,22 +695,10 @@ ${textSaffari}
                 }
 
 
-
-
             })
 
 
-
-
-
         }
-
-
-
-
-
-
-
 
 
         // alert("sett")
@@ -758,9 +727,7 @@ ${textSaffari}
         $('.t-table th, .t-table td').each(function (each) {
 
 
-
             let text = $(this).text()
-
 
 
             if (!$(this).hasClass("AsOk")) {
@@ -769,8 +736,7 @@ ${textSaffari}
                 $(this).addClass('AsOk');
 
 
-
-                if ( isPersian(text + "")) {
+                if (isPersian(text + "")) {
 
                     $(this).addClass('AsAlignRtl');
 
@@ -787,7 +753,6 @@ ${textSaffari}
         })
 
 
-
     }
 
 
@@ -797,17 +762,7 @@ ${textSaffari}
     setBingInterval()
 
 
-
-
-
-
-
-
-
-
-        setBing()
-
-
+    setBing()
 
 
     const observer = new MutationObserver((mutations) => {
@@ -1053,7 +1008,7 @@ $(document).ready(function () {
 
     let site = window.location.host;
 
-    console.log("site" , site)
+    console.log("site", site)
 
     function active_chatGpt() {
 
@@ -1067,8 +1022,6 @@ $(document).ready(function () {
                 // !overflow-visible
 
                 setList_ChatGpt()
-
-
 
 
             }, 1000)
@@ -1143,6 +1096,7 @@ $(document).ready(function () {
         if (changes.perplexity && (site === "www.perplexity.ai" || site === "perplexity.ai")) location.reload();
 
 
+        if (changes.aiStudio && site === "aistudio.google.com") location.reload();
 
 
     });
@@ -1332,8 +1286,6 @@ $(document).ready(function () {
                 setInterval(() => {
 
 
-
-
                 }, 1000)
             }
 
@@ -1343,16 +1295,14 @@ $(document).ready(function () {
     });
 
 
-
-
     chrome.storage.sync.get(["perplexity"]).then((result) => {
 
 
-        console.log("site" , site)
+        console.log("site", site)
 
         if (result.perplexity) {
             if ((site === "www.perplexity.ai" || site === "perplexity.ai")) {
-                console.log("setPerplexity" )
+                console.log("setPerplexity")
 
 
                 function setPerplexity() {
@@ -1394,8 +1344,6 @@ $(document).ready(function () {
                     }
 
 
-
-
                     //
                     $(".kOMSj8TE0LBty6yatos7").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
@@ -1423,8 +1371,6 @@ $(document).ready(function () {
                     });
 
 
-
-
                     $(".mx-auto.h-full.w-full.max-w-threadWidth .text-3xl").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
@@ -1433,8 +1379,6 @@ $(document).ready(function () {
                         if (!$(this).hasClass("FontSet")) {
                             $(this).addClass('FontSet');
                             $(this).addClass('FontSetImportant2');
-
-
 
 
                         }
@@ -1459,7 +1403,6 @@ $(document).ready(function () {
                     $("body").each(function (each) {
 
 
-
                         if (!$(this).hasClass("FontSet")) {
                             $(this).addClass('FontSet');
                             $(this).addClass('FontSetPerplexity');
@@ -1469,8 +1412,6 @@ $(document).ready(function () {
                     });
 
 
-
-
                     $(".text-left.font-sans").each(function (each) {
                         $(this).removeClass('text-left');
                         $(this).attr("dir", "auto");
@@ -1478,10 +1419,6 @@ $(document).ready(function () {
                     $(".group.flex.cursor-pointer.items-center.justify-between.py-sm").each(function (each) {
                         $(this).attr("dir", "auto");
                     });
-
-
-
-
 
 
                     $(".grow.block .w-full ").each(function (each) {
@@ -1501,7 +1438,7 @@ $(document).ready(function () {
 
                     });
 
-                     // mx-auto size-full sm:max-w-screen-md sm:px-md md:px-lg
+                    // mx-auto size-full sm:max-w-screen-md sm:px-md md:px-lg
 
 
                     // $("body").each(function (each) {
@@ -1539,7 +1476,6 @@ $(document).ready(function () {
 
 
                 setPerplexity()
-
 
 
                 let interval = setInterval(() => {
@@ -1588,17 +1524,11 @@ $(document).ready(function () {
     });
 
 
-
-
-
-
-
-
     chrome.storage.sync.get(["duckduckgo"]).then((result) => {
 
 
         if (result.duckduckgo) {
-            if (site === "duckduckgo.com" ) {
+            if (site === "duckduckgo.com") {
 
 
                 function setDuckduckgo() {
@@ -1640,8 +1570,6 @@ $(document).ready(function () {
                     }
 
 
-
-
                     //
                     $(".kOMSj8TE0LBty6yatos7").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
@@ -1667,7 +1595,6 @@ $(document).ready(function () {
 
 
                     });
-
 
 
                     $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
@@ -1705,7 +1632,6 @@ $(document).ready(function () {
                 setDuckduckgo()
 
 
-
                 let interval = setInterval(() => {
 
                     $(".is-duckchat").each(function (each) {
@@ -1738,6 +1664,203 @@ $(document).ready(function () {
 
 
                 }, 200)
+
+
+            }
+
+
+        }
+
+    });
+
+
+    chrome.storage.sync.get(["aiStudio"]).then((result) => {
+
+
+        if (result.aiStudio) {
+            if (site === "aistudio.google.com") {
+
+
+                function setAiStudio() {
+
+
+                    console.log("sdfsdfsdf")
+
+                    // console.log("$(this).text()" , $(this).text())
+
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `.app-prompts footer`
+
+                        console.log("adddddd")
+
+//
+//
+//                 $(fo2).addClass("red")
+//
+//
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+                    $("ms-chat-turn").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+
+                            // console.log(this.textContent)
+
+                            // console.log(this.innerText, "innerText")
+
+
+                            // if ( isPersian($(this).text())) {
+                            //
+                            //     $(this).attr("dir", "rtl");
+                            //
+                            // }
+
+
+                            // $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+
+
+                    $("ms-text-chunk").each(function (each) {
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+                        // $(this).attr("dir", "rtl");
+
+
+                        let rtl = 0
+
+
+                        $(this).find("p").each(function (each) {
+
+                            if (isPersian(this.textContent)) {
+                                rtl++
+                                // $(this).attr("dir", "rtl");
+
+                            }
+
+                        });
+
+                        if (rtl) {
+                            $(this).attr("dir", "rtl");
+                        }
+
+                        console.log("rtl , rtl"  , rtl)
+
+
+                    });
+
+
+                    $("ms-text-chunk textarea").each(function (each) {
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant2');
+                            $(this).attr("dir", "auto");
+
+                        }
+
+
+
+                    });
+
+
+
+
+                    //
+                    // $("ms-text-chunk ul,ms-text-chunk span").each(function (each) {
+                    //
+                    //
+                    //     console.log("ul this.textContent" , this.textContent , isPersian(this.textContent))
+                    //
+                    //
+                    //
+                    //
+                    //
+                    //     if (isPersian(this.textContent)) {
+                    //     //
+                    //         $(this).attr("dir", "rtl");
+                    //     //
+                    //     }
+                    //
+                    // });
+
+
+
+
+
+                }
+
+
+                setAiStudio()
+
+
+                let interval = setInterval(() => {
+
+                    // $(".is-duckchat").each(function (each) {
+                    //     if (each === 0) {
+                    //         console.log("setInterval")
+                    //
+                    //
+                    //         const observer = new MutationObserver((mutations) => {
+                    //             mutations.forEach((mutation) => {
+                    //                 // console.log("تغیر", mutation)
+                    setAiStudio()
+                    //
+                    //
+                    //             });
+                    //         });
+                    //
+                    //
+                    //         const targetNode = document.querySelector('.is-duckchat');
+                    //
+                    //         const config = {childList: true, subtree: true};
+                    //
+                    //         observer.observe(targetNode, config);
+                    //
+                    //
+                    //         clearInterval(interval)
+                    //     }
+                    //
+                    //
+                    // });
+
+
+                }, 1000)
 
 
             }
