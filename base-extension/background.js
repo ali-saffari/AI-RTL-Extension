@@ -42,6 +42,13 @@ chrome.runtime.onInstalled.addListener((details) => {
             if (!storedData.hasOwnProperty('deepseek')) {
                 updates.deepseek = true;
             }
+            if (!storedData.hasOwnProperty('youCom')) {
+                updates.youCom = true;
+            }
+            if (!storedData.hasOwnProperty('qwenlm')) {
+                updates.qwenlm = true;
+            }
+
 
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم

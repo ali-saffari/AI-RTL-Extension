@@ -1,14 +1,14 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
-    "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,Claude,Copilot,TheBAi,...",
-    "version": "2.50.50",
+    "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Claude,Copilot,...",
+    "version": "2.50.60",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"
     },
     "author": "alisaffari1377@gmail.com",
     "permissions": ["storage"],
-    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. ChatGPT,Claude,Copilot,freegpt,TheBAi,...",
+    "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. ChatGPT.DeepSeek,Claude,Copilot,TheBAi,...",
     "manifest_version": 3,
     "icons": {
         "16": "images/icon-16.png",
@@ -25,7 +25,8 @@
             "https://freegpt.cc/*" , "https://copilot.microsoft.com/*" ,
             "https://bing.com/*", "https://www.bing.com/*" ,
             "https://claude.ai/*" , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*",
-        "https://aistudio.google.com/*" ,"https://chat.deepseek.com/*"
+        "https://aistudio.google.com/*" ,"https://chat.deepseek.com/*",
+            "https://you.com/*" , "https://chat.qwenlm.ai/*"
         ]
     } ],
     "web_accessible_resources": [
@@ -36,7 +37,8 @@
                 "https://freegpt.one/*" , "https://chatgpt.com/*" , "https://freegpt.cc/*",
                 "https://copilot.microsoft.com/*", "https://bing.com/*", "https://www.bing.com/*"
             , "https://claude.ai/*"  , "https://perplexity.ai/*", "https://www.perplexity.ai/*"  , "https://duckduckgo.com/*",
-                "https://aistudio.google.com/*","https://chat.deepseek.com/*"
+                "https://aistudio.google.com/*","https://chat.deepseek.com/*",
+                "https://you.com/*", "https://chat.qwenlm.ai/*"
             ]
         }
     ],

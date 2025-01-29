@@ -1092,14 +1092,11 @@ $(document).ready(function () {
         if (changes.freegpt && (site === "freegpt.one" || site === "freegpt.cc")) location.reload();
         if (changes.thebAi && (site === "beta.theb.ai" || site === "chatbot.theb.ai")) location.reload();
         if (changes.duckduckgo && site === "duckduckgo.com") location.reload();
-
         if (changes.perplexity && (site === "www.perplexity.ai" || site === "perplexity.ai")) location.reload();
-
-
         if (changes.aiStudio && site === "aistudio.google.com") location.reload();
-
         if (changes.deepseek && site === "chat.deepseek.com") location.reload();
-
+        if (changes.youCom && site === "you.com") location.reload();
+        if (changes.qwenlm && site === "chat.qwenlm.ai") location.reload();
 
 
 
@@ -1334,13 +1331,7 @@ $(document).ready(function () {
 
               <img src="${alisaffari}" alt="ali saffari"></a>
 
-
-
                 ${textSaffari}
-
-
-
-
 
             </div>`)
 
@@ -1443,38 +1434,7 @@ $(document).ready(function () {
 
                     });
 
-                    // mx-auto size-full sm:max-w-screen-md sm:px-md md:px-lg
 
-
-                    // $("body").each(function (each) {
-                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
-                    //     // $(this).attr("dir", "auto");
-                    //
-                    //     // $(this).addClass('red');
-                    //
-                    //
-                    //     if (!$(this).hasClass("FontSet")) {
-                    //         $(this).addClass('FontSet');
-                    //
-                    //         $(this).addClass('FontSetImportant');
-                    //
-                    //     }
-                    //
-                    //
-                    // });
-
-
-                    // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
-                    //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
-                    //     $(this).attr("dir", "auto");
-                    //
-                    //
-                    //     if (!$(this).hasClass("FontSet")) {
-                    //         $(this).addClass('FontSet');
-                    //     }
-                    //
-                    //
-                    // });
 
 
                 }
@@ -1733,7 +1693,7 @@ $(document).ready(function () {
 
 
                     //
-                    $(".f9bf7997").each(function (each) {
+                    $(".f9bf7997 .ds-markdown").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2043,6 +2003,367 @@ $(document).ready(function () {
         }
 
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    chrome.storage.sync.get(["youCom"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.youCom) {
+            if (site === "you.com") {
+
+                console.log(":ssssssssssssssssss")
+
+
+                function setYouCom() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `#ChatQueryBar`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+
+                    $(".gdhZwr").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+                    $(".hEYYiC").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+
+                    $(".suggested-chat-chip").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                        }
+
+
+                    });
+
+
+                    $(".fQvrap").each(function (each) {
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+
+                    $(".fQvrap textarea").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+
+
+
+
+                    $(".AnswerParser_AnswerParserSharedStyles__0GZUj").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+
+
+                    });
+
+
+
+                    $(".AnswerParser_TextContainer__z_Iiv ,.AnswerParser_AnswerParserUnorderedList__P_1FW ,.AnswerParser_AnswerParserH4__ghxg8").each(function (each) {
+
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                        }
+
+
+                    });
+
+
+
+
+                }
+
+
+                setYouCom()
+
+
+                let interval = setInterval(() => {
+
+                    // $(".AppProvider_Wrapper").each(function (each) {
+                    //     if (each === 0) {
+                    //         console.log("setInterval")
+                    //
+                    //
+                    //         const observer = new MutationObserver((mutations) => {
+                    //             mutations.forEach((mutation) => {
+                                    // console.log("تغیر", mutation)
+                                    setYouCom()
+
+                    //
+                    //             });
+                    //         });
+                    //
+                    //
+                    //         const targetNode = document.querySelector('.AppProvider_Wrapper');
+                    //
+                    //         const config = {childList: true, subtree: true};
+                    //
+                    //         observer.observe(targetNode, config);
+                    //
+                    //
+                    //         clearInterval(interval)
+                    //     }
+                    //
+                    // });
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+    chrome.storage.sync.get(["qwenlm"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.qwenlm) {
+            if (site === "chat.qwenlm.ai") {
+
+                console.log(":ssssssssssssssssss")
+
+
+                function setYouCom() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+
+                        let fo2 = `.messageInput`
+
+
+                        if (!$(fo2).parent().hasClass("AsOk")) {
+                            $(fo2).parent().addClass("AsOk")
+                            $(fo2).parent().parent().append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+
+                    // $(".gdhZwr").each(function (each) {
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //
+                    //     }
+                    //
+                    //
+                    // });
+
+                    $(".chat-assistant , .user-message , #chat-input").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                        }
+
+
+                    });
+
+
+                    $(".font-primary ,.scrollbar-hidden").each(function (each) {
+
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+                    // $("#response-content-container").each(function (each) {
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    // });
+
+
+
+
+
+
+
+
+
+                }
+
+
+                setYouCom()
+
+
+                let interval = setInterval(() => {
+
+                    // $(".AppProvider_Wrapper").each(function (each) {
+                    //     if (each === 0) {
+                    //         console.log("setInterval")
+                    //
+                    //
+                    //         const observer = new MutationObserver((mutations) => {
+                    //             mutations.forEach((mutation) => {
+                    // console.log("تغیر", mutation)
+                    setYouCom()
+
+                    //
+                    //             });
+                    //         });
+                    //
+                    //
+                    //         const targetNode = document.querySelector('.AppProvider_Wrapper');
+                    //
+                    //         const config = {childList: true, subtree: true};
+                    //
+                    //         observer.observe(targetNode, config);
+                    //
+                    //
+                    //         clearInterval(interval)
+                    //     }
+                    //
+                    // });
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+
+
 
 
 });

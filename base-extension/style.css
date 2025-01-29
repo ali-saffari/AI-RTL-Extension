@@ -340,11 +340,21 @@ copilot
     font-family: iranyekan, sans-serif;
 }
 
+
+
 .space-y-3.CopilotFontSet {
     font-weight: 300;
-    color: #fff;
+    /*color: #fff;*/
     line-height: 2rem;
 }
+
+
+.space-y-3.CopilotFontSet:is([data-theme=dark] *) {
+
+    color: #fff;
+
+}
+
 
 .CopilotFontSet pre {
     direction: ltr;
@@ -456,4 +466,19 @@ ms-code-block {
 
 .md-code-block {
     direction: ltr;
+}
+
+
+/*------you.com----*/
+
+.AlignSet {
+    text-align: start !important;
+}
+
+.code-block {
+    text-align: left;
+    direction: ltr;
+}
+.fQvrap.FontSet textarea {
+    padding-right: 11px;
 }
