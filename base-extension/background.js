@@ -4,8 +4,11 @@ const copilot = true;
 const freegpt = true;
 const thebAi = true
 const duckduckgo = true
-
-
+const perplexity = true
+const aiStudio = true
+const deepseek = true
+const youCom = true
+const qwenlm = true
 
 
 // chrome.runtime.onInstalled.addListener(() => {
@@ -19,7 +22,11 @@ const duckduckgo = true
 chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') {
         // در نصب اولیه، مقادیر پیش‌فرض را تنظیم می‌کنیم
-        chrome.storage.sync.set({ chatGpt, claude, copilot, freegpt, thebAi });
+        chrome.storage.sync.set({
+            chatGpt, claude, copilot,
+            freegpt, thebAi, duckduckgo, perplexity,
+            aiStudio,deepseek, youCom , qwenlm
+        });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
         // در صورت به‌روزرسانی، بررسی می‌کنیم که مقادیر duckduckgo و perplexity وجود دارند یا خیر
@@ -48,7 +55,6 @@ chrome.runtime.onInstalled.addListener((details) => {
             if (!storedData.hasOwnProperty('qwenlm')) {
                 updates.qwenlm = true;
             }
-
 
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم

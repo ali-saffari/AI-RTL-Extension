@@ -7,6 +7,17 @@ function isPersian(str) {
 
 }
 
+function getTextDirection(text) {
+    // شمارش کاراکترهای فارسی و عربی
+    const rtlChars = text.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || [];
+    // شمارش کاراکترهای لاتین
+    const ltrChars = text.match(/[A-Za-z]/g) || [];
+  
+    // اگر تعداد کاراکترهای فارسی بیشتر بود، rtl برگردان
+    return rtlChars.length > ltrChars.length ? true : false;
+  }
+
+
 
 function countChars(str) {
     let rightToLeft = 0;
@@ -325,11 +336,7 @@ function setItems_ChatGpt() {
     if (chrome.runtime?.id) {
 
         const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
-        // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
-
-
-        // $(foTest).addClass("red")
-
+   
 
         if (!$(fo).parent().hasClass("AsOk")) {
             $(fo).parent().addClass("AsOk")
@@ -348,47 +355,69 @@ ${textSaffari}
 
         }
 
+
+        let fo2 = `.w-full.text-center.\\@lg\\/thread\\:absolute.\\@lg\\/thread\\:bottom-0.\\@lg\\/thread\\:left-0`
+
+
+
+        if (!$(fo2).hasClass("AsOk")) {
+            $(fo2).addClass("AsOk")
+            $(fo2).append(`<div class="AsRtl FontSet AsBox">
+
+
+         <a href="${saffariLink}" target="_blank">
+                
+                <img src="
+${alisaffari}" alt="ali saffari">
+
+</a>
+${textSaffari}
+            </div>`)
+
+
+        }
+
+
+
+
     }
 
 
-    // $('.flex.h-full[role="presentation"] .h-full .w-full.text-token-text-primary').each(function (each) {
-    //
-    //     $(this).addClass('FontSet');
-    //
-    //     let pList = $(this).find(".relative.rounded-3xl")
-    //
-    //
-    //     if (pList.length) {
-    //
-    //
-    //         pList.each(function () {
-    //
-    //             // $(this).addClass('red')
-    //
-    //             if (!$(this).hasClass("AsOk")) {
-    //                 $(this).addClass('AsOk');
-    //
-    //
-    //                 const text = $(this).text()
-    //
-    //                 if (isPersian(text)) {
-    //
-    //                     // let BoxSend =     $(this).find('.relative.rounded-3xl')
-    //                     // if (   $(this).length) {
-    //                     $(this).parent().addClass("setRight")
-    //                     $(this).addClass('FontSet');
-    //                     // }
-    //
-    //                 }
-    //
-    //
-    //             }
-    //         });
-    //
-    //     }
-    //
-    // })
 
+
+
+    
+
+
+    $('.text-message').each(function (each) {
+
+
+
+
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+
+//
+
+            $(this).attr("dir", "auto");
+
+            $(this).addClass('FontSetImportantGPT');
+
+//  const text = $(this).text()
+//
+//  if (typeof text == "string") {
+//     $(this).attr("dir", getTextDirection(text) ? "rtl" : "ltr");
+// }
+
+
+
+        }
+
+
+
+
+
+    })
 
     $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
 
@@ -398,6 +427,9 @@ ${textSaffari}
 
 
             const text = $(this).text()
+
+            $(this).addClass('FontSetImportantGPT');
+
 
             if (isPersian(text)) {
 
@@ -435,6 +467,7 @@ ${textSaffari}
             $(this).addClass('AsOk');
             $(this).attr("dir", "auto");
             $(this).addClass('flex-row-reverse');
+            $(this).addClass('FontSetImportantGPT');
 
 
         }
@@ -443,47 +476,7 @@ ${textSaffari}
     })
 
 
-    //
-    // $(presentation + '#prosemirror-editor-container .pointer-events-none.relative').each(function (each) {
-    //
-    //
-    //
-    //
-    //     if (!$(this).parent().hasClass("AsOk")) {
-    //         $(this).parent().addClass('AsOk');
-    //
-    //         $(this).attr("dir", "left");
-    //
-    //     }
-    //
-    //
-    // })
 
-
-    // $(presentation + ' .h-full .w-full.text-token-text-primary').each(function (each) {
-    //
-    //
-    //     let streaming = $(this).find(".result-streaming")
-    //
-    //     if (streaming && streaming.length) {
-    //
-    //     } else {
-    //         let mx_auto = $(this).find(".mx-auto")
-    //
-    //         let message = $(this).find(".text-message")
-    //
-    //
-    //         if (message.css("direction") === 'rtl') {
-    //             mx_auto.addClass('AsRtl_rowReverse')
-    //
-    //         }
-    //     }
-    //
-    //     // }
-    //
-    // })
-
-    //
     $("#prompt-textarea").each(function (each) {
 
         if (!$(this).hasClass("AsOk")) {
@@ -850,13 +843,7 @@ function setItems_Claude() {
 
             let fo2 = `.sticky .flex.flex-col`
 
-            console.log("adddddd")
 
-//
-//
-//                 $(fo2).addClass("red")
-//
-//
             if (!$(fo2).hasClass("AsOk")) {
                 $(fo2).addClass("AsOk")
                 $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxClaude">
@@ -901,57 +888,12 @@ ${textSaffari}
             }
 
 
-            //
-            // let dir = console.log("dddd", $(this).css("direction"))
-            //
-            //
-            // $(this).addClass('FontSet');
-            //
-            //
-            // let Block = this;
-            // let user_message = $(this).find(".font-user-message")
-            //
-            //
-            // if (user_message.length) {
-            //
-            //
-            //     const m4 = $(this).find(".mt-4")
-            //
-            //     const text = m4.find(".font-user-message  p.break-words").text()
-            //     console.log("text", text, isPersian(text))
-            //
-            //
-            //     if (isPersian(text)) {
-            //         m4.addClass('red');
-            //         m4.addClass('AsRtl_rowReverse')
-            //         m4.addClass(text)
-            //     }
-            //
-            //
-            //     //
-            //     // if (dir === 'rtl') {
-            //     //
-            //     //     $(this).find(".mt-4").addClass('red');
-            //     //     $(this).find(".mt-4").addClass('AsRtl_rowReverse')
-            //     //     // $(this).addClass('FontSet');
-            //     // }
-            //
-            //
-            // }
 
 
         });
 
     }
 
-    // setInterval(() => {
-    //     console.log("sss")
-    //
-    //
-    //     set()
-    //
-    //
-    // }, 500)
 
 
 }
@@ -976,6 +918,9 @@ let setList_ChatGpt = () => {
             if (p) {
                 $(this).addClass('AsRtlList');
                 $(this).addClass('FontSet');
+
+                $(this).parent().addClass('AsRtlList_parent');
+
             } else {
                 // backD = false
             }
@@ -1083,24 +1028,29 @@ $(document).ready(function () {
 
 
     chrome.storage.sync.onChanged.addListener((changes) => {
+        const siteMap = {
+            chatGpt: "chatgpt.com",
+            claude: "claude.ai",
+            copilot: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
+            freegpt: ["freegpt.one", "freegpt.cc"],
+            thebAi: ["beta.theb.ai", "chatbot.theb.ai"],
+            duckduckgo: "duckduckgo.com",
+            perplexity: ["www.perplexity.ai", "perplexity.ai"],
+            aiStudio: "aistudio.google.com",
+            deepseek: "chat.deepseek.com",
+            youCom: "you.com",
+            qwenlm: "chat.qwenlm.ai"
+        };
 
-        console.log(changes)
-
-        if (changes.chatGpt && site === "chatgpt.com") location.reload();
-        if (changes.claude && site === "claude.ai") location.reload();
-        if (changes.copilot && (site === "copilot.microsoft.com" || site === "bing.com" || site === "www.bing.com")) location.reload();
-        if (changes.freegpt && (site === "freegpt.one" || site === "freegpt.cc")) location.reload();
-        if (changes.thebAi && (site === "beta.theb.ai" || site === "chatbot.theb.ai")) location.reload();
-        if (changes.duckduckgo && site === "duckduckgo.com") location.reload();
-        if (changes.perplexity && (site === "www.perplexity.ai" || site === "perplexity.ai")) location.reload();
-        if (changes.aiStudio && site === "aistudio.google.com") location.reload();
-        if (changes.deepseek && site === "chat.deepseek.com") location.reload();
-        if (changes.youCom && site === "you.com") location.reload();
-        if (changes.qwenlm && site === "chat.qwenlm.ai") location.reload();
-
-
-
-
+        Object.entries(siteMap).forEach(([key, urls]) => {
+            if (changes[key] && (
+                (Array.isArray(urls) && urls.includes(site)) || 
+                urls === site
+            )) {
+                location.reload();
+                return;
+            }
+        });
     });
 
 
@@ -1689,7 +1639,95 @@ $(document).ready(function () {
 
 
                         }
+
+
+
+                        let fo3 = `.fcaa63f8.d9fb9344`
+
+
+
+                        if (!$(fo3).hasClass("AsOk")) {
+                            $(fo3).addClass("AsOk")
+                            $(fo3).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+         <a href="${saffariLink}" target="_blank">
+           
+                <img src="
+${alisaffari}" alt="ali saffari">
+</a>
+${textSaffari}
+            </div>`)
+
+
+                        }
+
+
+
                     }
+
+
+
+
+                    // لیست
+                    $(".f9edaa3c").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        const text = $(this).text()
+                        // console.log("text", text)
+                        let p = isPersian(text);
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                        if (p) {
+                            $(this).addClass('AsOkRList');
+                        }
+
+                        //
+                        // if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
+                        //
+                        //
+                        //     $(this).addClass('AsOkList');
+                        //
+                        //     if (p) {
+                        //         $(this).addClass('AsRtlList');
+                        //         $(this).addClass('FontSet');
+                        //
+                        //         $(this).parent().addClass('AsRtlList_parent');
+                        //
+                        //     } else {
+                        //         // backD = false
+                        //     }
+                        //
+                        // }
+                        //
+                        //
+                        // let absoluteItem = $(this).parent().parent().find(".absolute.bottom-0")
+                        //
+                        //
+                        // if (!absoluteItem.hasClass("AsOk")) {
+                        //
+                        //
+                        //     absoluteItem.addClass('AsOk');
+                        //
+                        //
+                        //     if (p) {
+                        //         absoluteItem.addClass('AsOkList_absolute');
+                        //     }
+                        //
+                        //
+                        // }
+                        //
+
+
+
+                    });
+
 
 
                     //

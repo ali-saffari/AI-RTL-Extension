@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Claude,Copilot,...",
-    "version": "2.50.60",
+    "version": "2.70.10",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "background.js"

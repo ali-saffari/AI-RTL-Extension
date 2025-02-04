@@ -53,6 +53,9 @@ module.exports = {
         path: path.join(__dirname, "dist/js"),
         filename: "[name].js",
     },
+    // optimization: {
+    //     minimize: false, // فشرده‌سازی کد را غیرفعال می‌کند
+    // },
 };
 
 // function getHtmlPlugins(chunks) {
