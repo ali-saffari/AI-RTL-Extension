@@ -1,5 +1,8 @@
-let saffariLink = "http://alisaffari.ir/";
+let saffariLink = "https://chromewebstore.google.com/detail/chatgpt-rtl-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne";
 let textSaffari = "امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
+// let imagePath = "images/alisaffari11.jpg";
+
+let imagePath = "images/myLogo.png";
 
 function isPersian(str) {
 
@@ -104,7 +107,7 @@ function setItems_freegpt() {
 
     if (chrome.runtime?.id) {
 
-        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+        const alisaffari = chrome.runtime.getURL(imagePath)
         // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
 
@@ -335,7 +338,7 @@ function setItems_ChatGpt() {
 
     if (chrome.runtime?.id) {
 
-        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+        const alisaffari = chrome.runtime.getURL(imagePath)
    
 
         if (!$(fo).parent().hasClass("AsOk")) {
@@ -607,7 +610,7 @@ function setItems_copilotBing() {
 //     setInterval(() => {
 // //
 //         if (chrome.runtime?.id && lang === 'fa') {
-//             const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+//             const alisaffari = chrome.runtime.getURL(imagePath)
 // //                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 // //
 // //
@@ -658,7 +661,7 @@ function setItems_copilotBing() {
                 // $(this).addClass('red');
 
 
-                const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                const alisaffari = chrome.runtime.getURL(imagePath)
                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
 
@@ -839,7 +842,7 @@ function setItems_Claude() {
 
 
         if (chrome.runtime?.id) {
-            const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+            const alisaffari = chrome.runtime.getURL(imagePath)
 
             let fo2 = `.sticky .flex.flex-col`
 
@@ -1039,7 +1042,11 @@ $(document).ready(function () {
             aiStudio: "aistudio.google.com",
             deepseek: "chat.deepseek.com",
             youCom: "you.com",
-            qwenlm: "chat.qwenlm.ai"
+            qwenlm: "chat.qwenlm.ai",
+            poeCom:  "poe.com",
+            monica:  "monica.im",
+
+
         };
 
         Object.entries(siteMap).forEach(([key, urls]) => {
@@ -1052,6 +1059,253 @@ $(document).ready(function () {
             }
         });
     });
+
+
+
+    chrome.storage.sync.get(["monica"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.monica) {
+            if (site === "monica.im") {
+
+                console.log(":ssssssssssssssssss")
+
+
+                function setMonica() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.input-wrapper--oYXfL`
+
+
+                        if (!$(fo2).parent().hasClass("AsOk")) {
+                            $(fo2).parent().addClass("AsOk")
+                            $(fo2).parent().append(`<div class="AsRtl FontSet AsBox AsBoxMonica">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+                    $('body').each(function (each) {
+
+
+                        $(this).addClass('FontSet');
+
+                    })
+
+
+                    $('textarea').each(function (each) {
+
+                        $(this).attr("dir", "auto");
+                        $(this).addClass('FontSetImportant');
+
+                    })
+
+
+                    $('.markdown--UqDin').each(function (each) {
+
+                        if (!$(this).hasClass("AsOk")) {
+                            $(this).addClass('AsOk');
+                            $(this).attr("dir", "auto");
+                            $(this).css("text-align", "initial");
+                        }
+
+
+
+
+                    })
+
+
+
+
+
+
+
+
+                        // .textarea--JX_6f.textarea--JX_6f.textarea-primary--OH3BL
+
+
+
+
+                    // $(".GrowingTextArea_textArea__ZWQbP , .ResendRemixFollowupButton_right__du4Gd ").each(function (each) {
+                    //
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //
+                    //     }
+                    //
+                    //
+                    // });
+                    //
+                    //
+                    //
+                    //
+                    // $(".Message_messageTextContainer__w64Sc").each(function (each) {
+                    //
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    //
+                    //
+                    // });
+
+
+
+
+
+                }
+
+
+                setMonica()
+
+
+                let interval = setInterval(() => {
+
+
+                    setMonica()
+
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+
+
+
+
+    chrome.storage.sync.get(["poeCom"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.poeCom) {
+            if (site === "poe.com") {
+
+                console.log(":ssssssssssssssssss")
+
+
+                function setPoeCom() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.ChatPageMainFooter_footerInner__BEj26`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+                    $(".GrowingTextArea_textArea__ZWQbP , .ResendRemixFollowupButton_right__du4Gd ").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                        }
+
+
+                    });
+
+
+
+
+                    $(".Message_messageTextContainer__w64Sc").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+
+
+
+                }
+
+
+                setPoeCom()
+
+
+                let interval = setInterval(() => {
+
+
+                    setPoeCom()
+
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
 
 
     chrome.storage.sync.get(["chatGpt"]).then((result) => {
@@ -1261,7 +1515,7 @@ $(document).ready(function () {
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `.bottom-mobileNavHeight .pointer-events-auto`
 
@@ -1450,7 +1704,7 @@ $(document).ready(function () {
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `.eRjZTOsvr6gqJe3E2Yc6`
 
@@ -1607,7 +1861,7 @@ $(document).ready(function () {
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `.cbcaa82c`
 
@@ -1863,7 +2117,7 @@ ${textSaffari}
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `.app-prompts footer`
 
@@ -2071,7 +2325,7 @@ ${textSaffari}
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `#ChatQueryBar`
 
@@ -2267,7 +2521,7 @@ ${textSaffari}
 
 
                     if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL('images/alisaffari11.jpg')
+                        const alisaffari = chrome.runtime.getURL(imagePath)
 
                         let fo2 = `.messageInput`
 

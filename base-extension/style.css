@@ -520,3 +520,27 @@ ms-code-block {
 .fad49dec.FontSet textarea {
     padding-right: 10px;
 }
+
+
+
+
+/*poe*/
+
+.MarkdownCodeBlock_container__nRn2j {
+    direction: ltr;
+}
+
+
+.Message_messageTextContainer__w64Sc.FontSet , .Message_messageTextContainer__w64Sc.FontSet p , .Message_messageTextContainer__w64Sc.FontSet li {
+    font-weight: 300;
+    line-height: 32px;
+}
+
+
+/*monica*/
+ .input-wrapper--oYXfL {
+    max-height: 250px;
+}
+.AsBox.AsBoxMonica {
+    margin-bottom: 10px;
+}

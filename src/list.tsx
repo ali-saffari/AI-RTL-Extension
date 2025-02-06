@@ -23,8 +23,14 @@ export default function SwitchListSecondary() {
         aiStudio: true,
         deepseek: true,
         youCom: true,
-        qwenlm: true
+        qwenlm: true,
+        poeCom: true,
+        monica: true,
+
+
     });
+
+
 
     const services = [
         { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
@@ -37,8 +43,12 @@ export default function SwitchListSecondary() {
         { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
         { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
         { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
-        { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwenlm.ai' }
+        { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwenlm.ai' },
+        { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/' },
+        { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' }
     ];
+
+
 
     useEffect(() => {
         chrome.storage.sync.get(
