@@ -404,6 +404,7 @@ copilot
     color: #888888;
 }
 
+
 /*----*/
 
 
@@ -544,3 +545,16 @@ ms-code-block {
 .AsBox.AsBoxMonica {
     margin-bottom: 10px;
 }
+
+
+/*Gemini*/
+
+.AsBoxGemini a {
+    vertical-align: -webkit-baseline-middle;
+}
+.AsBoxGemini {
+    color: #888888;
+}
+
+
+

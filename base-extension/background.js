@@ -11,8 +11,8 @@ const youCom = true
 const qwenlm = true
 const poeCom = true
 const monica = true
-
-
+const gemini = true
+const grok = true
 
 // chrome.runtime.onInstalled.addListener(() => {
 //     chrome.storage.sync.set({ chatGpt , claude ,  copilot ,  freegpt , thebAi , duckduckgo});
@@ -28,7 +28,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
             freegpt, thebAi, duckduckgo, perplexity,
-            aiStudio,deepseek, youCom , qwenlm , poeCom , monica
+            aiStudio,deepseek, youCom , qwenlm , poeCom , monica , gemini , grok
         });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
@@ -64,6 +64,14 @@ chrome.runtime.onInstalled.addListener((details) => {
             if (!storedData.hasOwnProperty('monica')) {
                 updates.monica = true;
             }
+            if (!storedData.hasOwnProperty('gemini')) {
+                updates.gemini = true;
+            }
+            if (!storedData.hasOwnProperty('grok')) {
+                updates.grok = true;
+            }
+
+
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم
             if (Object.keys(updates).length > 0) {

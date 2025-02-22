@@ -1,5 +1,5 @@
 let saffariLink = "https://chromewebstore.google.com/detail/chatgpt-rtl-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne";
-let textSaffari = "امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
+let textSaffari = "امیدوارم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
 // let imagePath = "images/alisaffari11.jpg";
 
 let imagePath = "images/myLogo.png";
@@ -1045,6 +1045,10 @@ $(document).ready(function () {
             qwenlm: "chat.qwenlm.ai",
             poeCom:  "poe.com",
             monica:  "monica.im",
+            gemini: "gemini.google.com",
+            grok: "grok.com"
+
+
 
 
         };
@@ -1061,6 +1065,245 @@ $(document).ready(function () {
     });
 
 
+    chrome.storage.sync.get(["grok"]).then((result) => {
+
+        console.log("grok.com ok")
+
+        if (result.grok) {
+            if (site === "grok.com") {
+
+
+
+                function setGrok() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.bottom-0.w-full.text-base.flex.flex-col`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxGemini">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+
+                    $(".message-bubble > *").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    // $(".break-words").each(function (each) {
+                    //
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //     }
+                    //
+                    //
+                    // });
+
+
+
+
+                    $(".bottom-0 textarea").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".text-sm").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $("a.col-start-1").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).parent().hasClass("FontSetImportant")) {
+                            $(this).parent().addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+
+                }
+
+
+                setGrok()
+
+
+                let interval = setInterval(() => {
+
+
+                    setGrok()
+
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+
+
+    chrome.storage.sync.get(["gemini"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.gemini) {
+            if (site === "gemini.google.com") {
+
+                console.log(":ssssssssssssssssss")
+
+
+                function setGemini() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.capabilities-disclaimer`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxGemini">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+
+
+
+
+            </div>`)
+
+
+                        }
+                    }
+
+
+                    $('.markdown , .user-query-container , .conversation-title ').each(function (each) {
+
+
+                        $(this).addClass('FontSet');
+
+                    })
+
+
+                    $('.textarea').each(function (each) {
+
+                        $(this).attr("dir", "auto");
+                        $(this).addClass('FontSetImportant');
+                        $(this).css("unicode-bidi", "normal");
+                    })
+
+
+
+
+                    //
+                    //
+                    // $('.markdown--UqDin').each(function (each) {
+                    //
+                    //     if (!$(this).hasClass("AsOk")) {
+                    //         $(this).addClass('AsOk');
+                    //         $(this).attr("dir", "auto");
+                    //         $(this).css("text-align", "initial");
+                    //     }
+                    //
+                    //
+                    //
+                    //
+                    // })
+                    //
+
+
+
+
+                }
+
+
+                setGemini()
+
+
+                let interval = setInterval(() => {
+
+
+                    setGemini()
+
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
 
     chrome.storage.sync.get(["monica"]).then((result) => {
 
@@ -1069,7 +1312,7 @@ $(document).ready(function () {
         if (result.monica) {
             if (site === "monica.im") {
 
-                console.log(":ssssssssssssssssss")
+
 
 
                 function setMonica() {
@@ -1214,7 +1457,7 @@ $(document).ready(function () {
         if (result.poeCom) {
             if (site === "poe.com") {
 
-                console.log(":ssssssssssssssssss")
+
 
 
                 function setPoeCom() {
@@ -1854,7 +2097,7 @@ $(document).ready(function () {
         if (result.deepseek) {
             if (site === "chat.deepseek.com") {
 
-                // console.log(":ssssssssssssssssss")
+
 
 
                 function setDeepSeek() {
@@ -2011,7 +2254,7 @@ ${textSaffari}
 
 
 
-                    $(".fad49dec").each(function (each) {
+                    $(".fad49dec , .e1675d8b").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2318,7 +2561,7 @@ ${textSaffari}
         if (result.youCom) {
             if (site === "you.com") {
 
-                console.log(":ssssssssssssssssss")
+
 
 
                 function setYouCom() {
@@ -2514,7 +2757,7 @@ ${textSaffari}
         if (result.qwenlm) {
             if (site === "chat.qwenlm.ai") {
 
-                console.log(":ssssssssssssssssss")
+
 
 
                 function setYouCom() {
