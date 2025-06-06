@@ -333,39 +333,39 @@ function setItems_ChatGpt() {
 
 
     let presentation = ".relative.flex.h-full.overflow-hidden "
-    let fo = presentation + " .relative.text-center .min-h-4 div"
+    let fo = presentation + " .isolate.w-full.basis-auto .justify-center.min-h-8.text-xs.text-token-text-secondary "
     let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
+
+
+
+
+
+
+
+
+
 
     if (chrome.runtime?.id) {
 
+
+
+        // relative mt-auto flex min-h-8 w-full items-center justify-center p-2 text-center text-xs text-token-text-secondary md:px-[60px]
+
+
+
         const alisaffari = chrome.runtime.getURL(imagePath)
-   
-
-        if (!$(fo).parent().hasClass("AsOk")) {
-            $(fo).parent().addClass("AsOk")
-            $(fo).parent().append(`<div class="AsRtl FontSet AsBox">
-
-
-         <a href="${saffariLink}" target="_blank">
-                
-                <img src="
-${alisaffari}" alt="ali saffari">
-
-</a>
-${textSaffari}
-            </div>`)
-
-
-        }
-
-
-        let fo2 = `.w-full.text-center.\\@lg\\/thread\\:absolute.\\@lg\\/thread\\:bottom-0.\\@lg\\/thread\\:left-0`
 
 
 
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`<div class="AsRtl FontSet AsBox">
+        $(fo).each(function (each) {
+
+
+            // $(this).addClass('red');
+
+
+            if (!$(this).parent().hasClass("AsOk")) {
+                $(this).parent().addClass("AsOk")
+                $(this).parent().append(`<div class="AsRtl FontSet AsBox text-xs text-token-text-secondary">
 
 
          <a href="${saffariLink}" target="_blank">
@@ -378,8 +378,40 @@ ${textSaffari}
             </div>`)
 
 
-        }
+            }
 
+
+
+
+
+        })
+
+
+
+
+//
+//
+//         let fo2 = `.w-full.text-center.\\@lg\\/thread\\:absolute.\\@lg\\/thread\\:bottom-0.\\@lg\\/thread\\:left-0`
+//
+//
+//
+//         if (!$(fo2).hasClass("AsOk")) {
+//             $(fo2).addClass("AsOk")
+//             $(fo2).append(`<div class="AsRtl FontSet AsBox">
+//
+//
+//          <a href="${saffariLink}" target="_blank">
+//
+//                 <img src="
+// ${alisaffari}" alt="ali saffari">
+//
+// </a>
+// ${textSaffari}
+//             </div>`)
+//
+//
+//         }
+//
 
 
 
@@ -389,7 +421,24 @@ ${textSaffari}
 
 
 
-    
+
+
+
+    $('.hljs-comment').each(function (each) {
+
+
+
+
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            $(this).attr("dir", "auto");
+        }
+
+
+
+
+
+    })
 
 
     $('.text-message').each(function (each) {
@@ -656,7 +705,8 @@ function setItems_copilotBing() {
         if (chrome.runtime?.id) {
 
 
-            $('.pointer-events-none.absolute.bottom-0.flex.w-full').each(function (each) {
+
+            $('.pointer-events-none.absolute.bottom-0.flex').each(function (each) {
 
                 // $(this).addClass('red');
 
@@ -665,14 +715,14 @@ function setItems_copilotBing() {
                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
 
-                // $(foTest).addClass("red")
 
 
-                let fo = $(this).find(".relative.mb-4.flex.w-full.flex-col.items-center")
 
+                let fo = $(this).find(".relative.mb-4.flex.w-full.flex-col-reverse.items-center")
+                // fo.addClass("red")
 
-                if (!$(this).hasClass("AsOk")) {
-                    $(this).addClass("AsOk")
+                if (!fo.hasClass("AsOk")) {
+                    fo.addClass("AsOk")
                     fo.append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
 
 
@@ -707,6 +757,22 @@ ${textSaffari}
 
 
         setBing()
+
+
+
+
+        // اینپوت
+
+        $('.min-h-user-input').each(function (each) {
+            // console.log(each)
+            if (!$(this).hasClass("CopilotFontSet")) {
+                $(this).attr("dir", "auto");
+
+                $(this).addClass('CopilotFontSet');
+
+            }
+
+        })
 
 
         $('.space-y-3').each(function (each) {
@@ -807,35 +873,38 @@ function setItems_Claude() {
 
     let interval = setInterval(() => {
 
-        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full").each(function (each) {
-            if (each === 0) {
-                console.log("setInterval")
-                set()
 
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        console.log("تغیر", mutation)
-                        set()
+        set()
+
+        // $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full").each(function (each) {
+        //     if (each === 0) {
+        //         console.log("setInterval")
+        //         set()
+        //
+        //         const observer = new MutationObserver((mutations) => {
+        //             mutations.forEach((mutation) => {
+        //                 console.log("تغیر", mutation)
+        //                 set()
+        //
+        //
+        //             });
+        //         });
+        //
+        //
+        //         const targetNode = document.querySelector('div.overflow-y-scroll');
+        //
+        //         const config = {childList: true, subtree: true};
+        //
+        //         observer.observe(targetNode, config);
+        //
+        //         clearInterval(interval)
+        //     }
+        //
+        //
+        // });
 
 
-                    });
-                });
-
-
-                const targetNode = document.querySelector('div.overflow-y-scroll');
-
-                const config = {childList: true, subtree: true};
-
-                observer.observe(targetNode, config);
-
-                clearInterval(interval)
-            }
-
-
-        });
-
-
-    }, 200)
+    }, 500)
 
 
     function set() {
@@ -844,12 +913,12 @@ function setItems_Claude() {
         if (chrome.runtime?.id) {
             const alisaffari = chrome.runtime.getURL(imagePath)
 
-            let fo2 = `.sticky .flex.flex-col`
+            let fo2 = `.sticky fieldset.flex.flex-col .items-stretch.transition-all`
 
 
             if (!$(fo2).hasClass("AsOk")) {
                 $(fo2).addClass("AsOk")
-                $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxClaude">
+                $(fo2).parent().append(`<div class="AsRtl FontSet AsBox AsBoxClaude">
 
 
                 <a href="${saffariLink}" target="_blank">
@@ -863,22 +932,26 @@ ${textSaffari}
         }
 
 
-        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div").each(function (each) {
+
+
+        $(".ProseMirror").each(function (each) {
             console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
-            $(this).attr("dir", "auto");
+            $(this).parent().attr("dir", "auto");
 
 
-            if (!$(this).hasClass("FontSet")) {
-                $(this).addClass('FontSet');
+            if (!$(this).parent().hasClass("FontSet")) {
+                $(this).parent().addClass('FontSet');
             }
 
 
         });
 
 
-        $(".w-full.flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col.mx-auto.w-full > div .mb-1.mt-1").each(function (each) {
+
+        $(".flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col  .mb-1.mt-1 ").each(function (each) {
 
 
+            // $(this).addClass('red');
             const text = $(this).find(".font-user-message  p.break-words").text()
             // console.log("text", text, isPersian(text))
             if (isPersian(text)) {
@@ -894,6 +967,21 @@ ${textSaffari}
 
 
         });
+
+
+        $(".flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col > div").each(function (each) {
+            console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+            $(this).attr("dir", "auto");
+
+
+            if (!$(this).hasClass("FontSet")) {
+                $(this).addClass('FontSet');
+            }
+
+
+        });
+
+
 
     }
 
@@ -1250,6 +1338,15 @@ $(document).ready(function () {
 
                     })
 
+
+
+
+                    $('.gds-label-m-alt ').each(function (each) {
+
+
+                        $(this).addClass('FontSet');
+
+                    })
 
                     $('.textarea').each(function (each) {
 
@@ -2106,7 +2203,9 @@ $(document).ready(function () {
                     if (chrome.runtime?.id) {
                         const alisaffari = chrome.runtime.getURL(imagePath)
 
-                        let fo2 = `.cbcaa82c`
+
+                        // صفحه شروع جت
+                        let fo2 = `._0fcaa63._7941d9f`
 
                         // console.log("adddddd")
 
@@ -2138,14 +2237,14 @@ $(document).ready(function () {
                         }
 
 
-
-                        let fo3 = `.fcaa63f8.d9fb9344`
+// صفحه چت
+                        let fo3 = `._0fcaa63`
 
 
 
                         if (!$(fo3).hasClass("AsOk")) {
                             $(fo3).addClass("AsOk")
-                            $(fo3).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
+                            $(fo3).parent().append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
 
          <a href="${saffariLink}" target="_blank">
            
@@ -2166,7 +2265,7 @@ ${textSaffari}
 
 
                     // لیست
-                    $(".f9edaa3c").each(function (each) {
+                    $("._83421f9").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2227,8 +2326,8 @@ ${textSaffari}
 
 
 
-                    //
-                    $(".f9bf7997 .ds-markdown").each(function (each) {
+                    //پاسخ
+                    $("._4f9bf79 .ds-markdown").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2239,7 +2338,10 @@ ${textSaffari}
 
 
                     });
-                    $(".fa81").each(function (each) {
+
+
+                    //سوال
+                    $("._9663006").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         // $(this).attr("dir", "auto");
 
@@ -2254,7 +2356,10 @@ ${textSaffari}
 
 
 
-                    $(".fad49dec , .e1675d8b").each(function (each) {
+
+
+                    // اینپوت
+                    $("._24fad49").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2267,33 +2372,69 @@ ${textSaffari}
                     });
 
 
-                    $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
+                    // تینگ
+                    $(".e1675d8b").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
 
                         if (!$(this).hasClass("FontSet")) {
                             $(this).addClass('FontSet');
-
-                            $(this).addClass('FontSetImportant');
-
                         }
 
 
                     });
 
 
-                    // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
+                    // هدر
+                    $(".f8d1e4c0").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    // اینپوت داخل چت
+                    $(".ds-textarea__textarea").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+
+
+
+                    //
+                    //
+                    // $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
                     //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                     //     $(this).attr("dir", "auto");
                     //
                     //
                     //     if (!$(this).hasClass("FontSet")) {
                     //         $(this).addClass('FontSet');
+                    //
+                    //         $(this).addClass('FontSetImportant');
+                    //
                     //     }
                     //
                     //
                     // });
+
+
 
 
                 }
@@ -2599,6 +2740,42 @@ ${textSaffari}
 
 
 
+
+
+
+                    //هدر
+                    $(".ebfm092").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+
+                    //عنوان
+                    $("._1bxvbd41").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
                     $(".gdhZwr").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
@@ -2673,6 +2850,19 @@ ${textSaffari}
 
 
 
+                    $("textarea").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
 
 
 

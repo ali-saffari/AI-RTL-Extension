@@ -25,9 +25,26 @@ textarea.FontSetImportant{
 }
 
 
-.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li , .FontSetImportantGPT * {
+/*.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li , .FontSetImportantGPT * {*/
+/*    font-family: iranyekan, sans-serif !important;*/
+/*}*/
+
+.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li  {
     font-family: iranyekan, sans-serif !important;
 }
+
+/*.FontSetImportantGPT .katex  , .FontSetImportantGPT .katex * {*/
+/*    font-family : KaTeX_Main, Times New Roman, serif ;*/
+
+
+/*    !*font-family*!*/
+
+
+
+/*}*/
+
+
+
 
 
 .items-stretch .items-start code, .items-stretch .items-start pre {
@@ -132,6 +149,13 @@ textarea.AsRtl {
     transform: rotate(180deg);
     left: 0;
     right: initial;
+}
+
+
+
+
+.hljs-comment {
+    unicode-bidi: embed;
 }
 
 
@@ -273,7 +297,7 @@ pre.AsSetLtr {
 
 
 
-/*--------------------------------*/
+/*----------------claud----------------*/
 
 
 
@@ -326,9 +350,6 @@ pre.AsSetLtr {
     text-align: right !important;
     direction: ltr !important;
 }
-
-
-
 
 
 
@@ -490,9 +511,15 @@ ms-code-block {
     text-align: left;
     direction: ltr;
 }
-.fQvrap.FontSet textarea {
+
+textarea#search-input-textarea {
     padding-right: 11px;
 }
+
+
+
+
+
 
 
 
@@ -503,22 +530,25 @@ ms-code-block {
 
 
 
-.f9edaa3c.AsOkRList .aa7b7ebb {
+
+._83421f9.AsOkRList ._2090548 {
     left: 15px;
     right: inherit;
 }
 
 
-.f9edaa3c.AsOkRList .f8773756, .f9edaa3c.AsOkRList .eaaaba55 {
+._83421f9.AsOkRList ._2f87737, ._83421f9.AsOkRList .eaaaba55 {
 
     left: 0;
     right: inherit;
 }
- .f9edaa3c.AsOkRList .eaaaba55 {
-     transform: rotate(180deg);
+._83421f9.AsOkRList .eaaaba55 {
+    transform: rotate(180deg);
 }
 
-.fad49dec.FontSet textarea {
+
+
+._24fad49.FontSet textarea {
     padding-right: 10px;
 }
 
