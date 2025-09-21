@@ -1,86 +1,44 @@
-import * as React from 'react';
-import {ThemeProvider, createTheme} from '@mui/material/styles';
+import React from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import Button from '@mui/material/Button';
-import List from './list'
-import "./App.css"
-
-
-
-
-
-
-
-
-
-
-
+import ServiceList from './list';
+import './App.css';
 
 const darkTheme = createTheme({
-    // direction: 'rtl',
     palette: {
         mode: 'dark',
     },
     typography: {
-        fontFamily: [
-            '"iranyekan"',
-        ].join(','),
+        fontFamily: ['"iranyekan"'].join(','),
         fontSize: 10,
     },
-
 });
 
-
 function App() {
-
-    let iconURL = chrome.runtime.getURL("/images/icon-48.png");
-
-
     return (
         <ThemeProvider theme={darkTheme}>
-            <CssBaseline/>
+            <CssBaseline />
             <div className="App">
-
-
                 <div className="appinfo">
-                    {/*<img src={iconURL} alt=""/>*/}
-
                     <div className="appinfo-name">
                         ChatGPT RTL (Persian/Farsi)
                     </div>
-
                     <div className="appinfo-text">
                         <p>
                             این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد.
                         </p>
-
-
                     </div>
-
-
                 </div>
-
-                {/*<Button variant="contained">Hello world</Button>*/}
 
                 <div className="listSite">
-                    <List/>
+                    <ServiceList />
                 </div>
 
-
                 <div className="appinfo">
-
-
                     <div className="appinfo-note">
-
-
-                      <span>
-                          یاداشت برنامه نویس
-                      </span>
+                        <span>یاداشت برنامه نویس</span>
                         <p>
-
-                            در ابتدا این افزونه صرفا برای
-                            ChatGPT
-                            اصلی ساخته شده بود...
+                            در ابتدا این افزونه صرفا برای ChatGPT اصلی ساخته شده بود...
                             ولی با توجه به استقبال فراوان و درخواست کاربران برای سایت های دیگر نیز فعال شد.
                         </p>
                         <p>
@@ -89,72 +47,47 @@ function App() {
                             کار نکند.
                             در صورت مشاهده به من خبر دهید تا با نسخه جدید سازگار کنم!
                         </p>
-
-
                     </div>
 
-
                     <div className="appinfo-link">
-
-                        <a href={'https://alisaffari.ir/'} target={'_blank'}>
+                        <a href="https://alisaffari.ir/" target="_blank" rel="noopener noreferrer">
                             ارتباط با من
                         </a>
-
-
                     </div>
 
-
                     <div className="appinfo-note">
-
                         <p>
-
-                            اگر دوست داشتید برای افزونه نظر ثبت کنید تا این افزونه بیشتر دیده بشه و من بیشتر انرژی بگیرم
-                            😀
+                            اگر دوست داشتید برای افزونه نظر ثبت کنید تا این افزونه بیشتر دیده بشه و من بیشتر انرژی بگیرم 😀
                         </p>
-
-
                     </div>
 
                     <div className="appinfo-link">
-
-                        <a href={'https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne'}
-                           target={'_blank'}>
+                        <a 
+                            href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne"
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                        >
                             صفحه افزونه
                         </a>
                     </div>
 
-
                     <div className="appinfo-note">
-
                         <p>
-
                             افزونه‌ی ChatGPT RTL (Persian/Farsi) با عشق برای فارسی‌زبان‌ها ساخته شده و رایگانه. اگه برات مفید بوده و دوست داری توسعه‌ش ادامه پیدا کنه، می‌تونی با یه دونیت کوچیک ازم حمایت کنی.
-
+                            <br />
                             ✔️ حمایت‌ها صرف به‌روزرسانی، اضافه کردن امکانات جدید و بهتر شدن افزونه می‌شن.
-
-
                         </p>
-
-
                     </div>
 
-
                     <div className="appinfo-link">
-
-                        <a href={'https://zarinp.al/719522'}
-                           target={'_blank'}>
+                        <a href="https://zarinp.al/719522" target="_blank" rel="noopener noreferrer">
                             حمایت مالی (دونیت)
                         </a>
                     </div>
-
-
                 </div>
-
-
             </div>
         </ThemeProvider>
     );
 }
-
 
 export default App;

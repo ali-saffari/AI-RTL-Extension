@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
     List,
     ListItem,
@@ -8,11 +8,22 @@ import {
     Switch,
     Avatar,
     Divider,
-    ListItemButton
+    ListItemButton,
 } from '@mui/material';
 
-export default function SwitchListSecondary() {
-    const [checked, setChecked] = useState<{ [key: string]: boolean }>({
+interface Service {
+    key: string;
+    name: string;
+    icon: string;
+    url: string;
+}
+
+interface CheckedState {
+    [key: string]: boolean;
+}
+
+export default function ServiceList() {
+    const [checked, setChecked] = useState<CheckedState>({
         chatGpt: true,
         claude: true,
         copilot: true,
@@ -30,14 +41,10 @@ export default function SwitchListSecondary() {
         mistral: true,
         manus: true,
         kimi: true,
-        blackbox: true
-
-
+        blackbox: true,
     });
 
-
-
-    const services = [
+    const services: Service[] = [
         { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
         { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
         { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
@@ -57,13 +64,7 @@ export default function SwitchListSecondary() {
         { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
         { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
         { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
-
-
-
-
     ];
-
-
 
     useEffect(() => {
         chrome.storage.sync.get(
@@ -94,7 +95,6 @@ export default function SwitchListSecondary() {
                                 <ListItemIcon sx={{ minWidth: 40 }}>
                                     <Avatar 
                                         sx={{ width: 30, height: 30 }} 
-                                        sizes="small" 
                                         alt={service.name} 
                                         src={chrome.runtime.getURL(service.icon)}
                                     />
@@ -103,7 +103,7 @@ export default function SwitchListSecondary() {
                                 <Switch
                                     edge="end"
                                     onChange={handleChange(service.key)}
-                                    checked={checked && checked[service.key] || false}
+                                    checked={checked?.[service.key] || false}
                                     inputProps={{
                                         'aria-labelledby': `switch-list-label-${service.key}`,
                                     }}

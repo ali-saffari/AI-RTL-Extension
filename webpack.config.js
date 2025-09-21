@@ -1,70 +1,46 @@
-const path = require("path");
-const HTMLPlugin = require("html-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin")
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: {
-        index: "./src/index.tsx"
+        popup: './src/popup/index.tsx',
+        content: './src/content/index.ts',
+        background: './src/background/index.ts',
     },
-    mode: "production",
+    mode: 'production',
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
                 use: [
                     {
-                        loader: "ts-loader",
+                        loader: 'ts-loader',
                         options: {
                             compilerOptions: { noEmit: false },
-                        }
-                    }],
+                        },
+                    },
+                ],
                 exclude: /node_modules/,
             },
             {
-                exclude: /node_modules/,
                 test: /\.css$/i,
-                use: [
-                    "style-loader",
-                    "css-loader"
-                ]
-
+                exclude: /node_modules/,
+                use: ['style-loader', 'css-loader'],
             },
         ],
     },
     plugins: [
         new CopyPlugin({
             patterns: [
-                // { from: "manifest.json", to: "../manifest.json" },
-                // { from: "extension.js", to: "../extension.js" },
-                // { from: "style.css", to: "../style.css" },
-                // { from: "jquery-3.6.4.min.js", to: "../jquery-3.6.4.min.js" },
-                // { from: "images", to: "../images" },
-                // { from: "fonts", to: "../fonts" },
-                { from: "base-extension", to: ".." },
-
+                { from: 'base-extension', to: '..' },
             ],
         }),
-        // ...getHtmlPlugins(["index"]),
     ],
     resolve: {
-        extensions: [".tsx", ".ts", ".js"],
+        extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-        path: path.join(__dirname, "dist/js"),
-        filename: "[name].js",
+        path: path.join(__dirname, 'dist/js'),
+        filename: '[name].js',
     },
-    // optimization: {
-    //     minimize: false, // فشرده‌سازی کد را غیرفعال می‌کند
-    // },
 };
-
-// function getHtmlPlugins(chunks) {
-//     return chunks.map(
-//         (chunk) =>
-//             new HTMLPlugin({
-//                 title: "React extension",
-//                 filename: `${chunk}.html`,
-//                 chunks: [chunk],
-//             })
-//     );
-// }

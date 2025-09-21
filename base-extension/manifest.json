@@ -4,7 +4,7 @@
     "version": "2.90.10",
     "short_name": "RTL ChatGPT",
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "js/background.js"
     },
     "author": "alisaffari1377@gmail.com",
     "permissions": ["storage"],
@@ -18,7 +18,7 @@
     },
     "content_scripts": [ {
         "css": [ "css/fontiran-iranyekan.css", "style.css" ],
-        "js": ["jquery-3.6.4.min.js", "extension.js" ],
+        "js": ["jquery-3.6.4.min.js", "js/content.js" ],
         "matches": [  "https://chatbot.theb.ai/*" ,
             "https://beta.theb.ai/*" ,"https://chat.openai.com/*" ,
             "https://freegpt.one/*" , "https://chatgpt.com/*" ,

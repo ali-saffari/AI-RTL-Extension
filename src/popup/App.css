@@ -1,9 +1,6 @@
 
 .App {
-    /*direction: rtl;*/
     font-family: iranyekan, sans-serif;
-    /*color: white;*/
-    /*text-align: center;*/
     padding-bottom: 13px;
 }
 
@@ -35,6 +32,7 @@ a {
     text-align: center;
     padding: 1px 10px;
 }
+
 .appinfo-name {
     font-size: 16px;
     font-weight: 400;
@@ -42,13 +40,10 @@ a {
     padding-bottom: 5px;
     padding-top: 8px;
 }
-.appinfo img{
+
+.appinfo img {
     width: 40px;
     height: 40px;
-}
-
-.appinfo-name {
-
 }
 
 .appinfo-link a {
