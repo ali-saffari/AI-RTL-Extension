@@ -28,29 +28,89 @@ function analyzeTextDirection(text) {
     const words = text.trim().split(/\s+/).filter(w => w.length > 0);
     if (words.length === 0) return 'ltr';
 
-    // محاسبه تعداد کلمه‌ای که بررسی می‌کنیم (30% کلمات، حداقل 5 و حداکثر 10)
-    let checkWordsCount = Math.ceil(words.length * 0.3);
-    checkWordsCount = Math.min(Math.max(checkWordsCount, 5), 10);
-    if (words.length < checkWordsCount) checkWordsCount = words.length;
-
-    const wordsToCheck = words.slice(0, checkWordsCount);
-
-    let rtlWordsCount = 0;
-    for (const word of wordsToCheck) {
-        if ([...word].some(isRTLChar)) rtlWordsCount++;
+    // بررسی اولویت‌های خاص برای تشخیص جهت
+    if (words.length >= 2) {
+        const firstWord = words[0];
+        const lastWord = words[words.length - 1];
+        const firstWordIsRTL = [...firstWord].some(isRTLChar);
+        const lastWordIsRTL = [...lastWord].some(isRTLChar);
+        
+        // اگر متن با فارسی شروع و با فارسی تمام شود
+        if (firstWordIsRTL && lastWordIsRTL) {
+            // برای متن‌های خیلی کوتاه (2-3 کلمه)، همیشه RTL
+            if (words.length <= 3) {
+                return 'rtl';
+            }
+        }
+        
+        // اگر متن با انگلیسی شروع و با انگلیسی تمام شود
+        if (!firstWordIsRTL && !lastWordIsRTL) {
+            // برای متن‌های خیلی کوتاه (2-3 کلمه)، همیشه LTR
+            if (words.length <= 3) {
+                return 'ltr';
+            }
+        }
     }
 
-    if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
-    if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
+    // برای متن‌های کوتاه (کمتر از 5 کلمه)، کل متن را بررسی کن
+    if (words.length < 5) {
+        let rtlWordsCount = 0;
+        for (const word of words) {
+            if ([...word].some(isRTLChar)) rtlWordsCount++;
+        }
+        return rtlWordsCount > 0 ? 'rtl' : 'ltr';
+    }
 
-    // اگر مساوی یا نامشخص، کل متن را بررسی کن
+    // برای متن‌های متوسط (5-10 کلمه)، 50% اول را بررسی کن
+    if (words.length <= 10) {
+        let checkWordsCount = Math.ceil(words.length * 0.5);
+        const wordsToCheck = words.slice(0, checkWordsCount);
+        
+        let rtlWordsCount = 0;
+        for (const word of wordsToCheck) {
+            if ([...word].some(isRTLChar)) rtlWordsCount++;
+        }
+        
+        if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
+        if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
+        
+        // اگر مساوی، کل متن را بررسی کن
+        let totalRTLWords = 0;
+        for (const word of words) {
+            if ([...word].some(isRTLChar)) totalRTLWords++;
+        }
+        return totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+    }
+
+    // برای متن‌های طولانی، ابتدا کل متن را بررسی کن
     let totalRTLWords = 0;
     for (const word of words) {
         if ([...word].some(isRTLChar)) totalRTLWords++;
     }
 
-    if (totalRTLWords > words.length / 2) return 'rtl';
-    else return 'ltr';
+    const firstWord = words[0];
+    const lastWord = words[words.length - 1];
+    const firstWordIsRTL = [...firstWord].some(isRTLChar);
+    const lastWordIsRTL = [...lastWord].some(isRTLChar);
+    
+    // اگر هر دو ابتدا و انتها RTL باشند، RTL
+    if (firstWordIsRTL && lastWordIsRTL) return 'rtl';
+    // اگر هر دو ابتدا و انتها LTR باشند، LTR
+    if (!firstWordIsRTL && !lastWordIsRTL) return 'ltr';
+
+    // اگر ابتدا و انتها متفاوت هستند، بررسی کن که آیا تفاوت زیاد است
+    const difference = Math.abs(totalRTLWords - (words.length - totalRTLWords));
+    
+    // اگر تفاوت کم است (کمتر یا مساوی 10)، اولویت با ابتدا و انتها
+    if (difference <= 10) {
+        // اگر ابتدا RTL است، RTL
+        if (firstWordIsRTL) return 'rtl';
+        // اگر ابتدا LTR است، LTR
+        return 'ltr';
+    }
+
+    // اگر تفاوت زیاد است، بر اساس اکثریت تصمیم بگیر
+    return totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
 }
 
 
@@ -60,7 +120,7 @@ function analyzeTextDirection(text) {
  * @param {string} text - Text to analyze
  * @returns {string} - "rtl" if text is RTL, "ltr" if text is LTR
  */
-export function detectTextDirection(text) {
+function detectTextDirection(text) {
     return analyzeTextDirection(text);
 }
 
@@ -70,7 +130,14 @@ export function detectTextDirection(text) {
  * @param {string} text - Text to analyze
  * @returns {boolean} - True if text is RTL
  */
-export function isRTL(text) {
+function isRTL(text) {
     return analyzeTextDirection(text) === "rtl";
 }
+
+// Export functions for CommonJS
+module.exports = {
+    analyzeTextDirection,
+    detectTextDirection,
+    isRTL
+};
 
