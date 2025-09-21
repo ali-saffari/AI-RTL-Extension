@@ -1,2 +1,2 @@
 // Content script entry point
-import './content.js';
+import './main.js';
