@@ -191,8 +191,6 @@ function countWords(text) {
 
 
 
-
-
 function isRTL(text) {
     let dir = detectTextDirection(text)
 
