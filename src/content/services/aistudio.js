@@ -27,17 +27,31 @@ export function setAiStudio() {
         // پردازش عناصر متنی مقاله
         processTextElements($(this), getArticleTextElements(), (element) => element.textContent);
 
-        // پردازش عناصر با attributes مربوط به مقالات
-        processTextElements($(this), getAttributeTextElements(), (element) => 
-            element.title || element.alt || element.getAttribute('aria-label') || element.textContent
-        );
+   
     });
 
     $("ms-text-chunk textarea").each(function (each) {
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
             $(this).addClass('FontSetImportant2');
-            $(this).attr("dir", "auto");
+            
+            const text = $(this).val() || $(this).text();
+
+            if (text && text.trim()) {
+                $(this).attr("dir", analyzeTextDirection(text));
+            } else {
+                $(this).attr("dir", "auto");
+            }
+
+            // Add input event listener for real-time direction detection
+            $(this).on('input keyup paste', function() {
+                const currentText = $(this).val();
+                if (currentText && currentText.trim()) {
+                    $(this).attr("dir", analyzeTextDirection(currentText));
+                } else {
+                    $(this).attr("dir", "auto");
+                }
+            });
         }
     });
 }
