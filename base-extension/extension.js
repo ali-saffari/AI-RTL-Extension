@@ -4,6 +4,92 @@ let textSaffari = "امیدوارم از نسخه بهینه شده برای ف�
 
 let imagePath = "images/myLogo.png";
 
+
+function modalDonateFun() {
+    const modal = document.getElementById('Asmodal');
+    const openBtn = document.getElementById('AsopenBtn');
+    const closeBtn = document.getElementById('AscloseBtn');
+
+
+    if (openBtn)
+        openBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+    if (closeBtn)
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+}
+
+
+function modalDonate() {
+
+
+    return `
+         
+            <div class="As-modal-backdrop FontSet" id="Asmodal">
+  <div class="As-modal">
+ <h2 style="margin-top:0; color:#e67e22;">💛 ممنون که همراه ما هستی!</h2>
+   <p>
+اگر از این اکستنشن خوشت اومده، می‌تونی با این سه روش از ما حمایت کنی و مارو برای به‌روزرسانی و اضافه کردن قابلیت‌های جدید دلگرم نگه داری:
+
+
+</p>
+
+
+
+<div class="As-modal-block">
+    <h3 style="color:#27ae60;">💸 ۱. حمایت مالی</h3>
+    
+    
+    <p>حمایت مالی شما به ما کمک می‌کنه تا امکانات جدید اضافه کنیم، مشکلات رو سریع‌تر برطرف کنیم و تجربه کاربری بهتری بسازیم. هر مبلغی که دوست داری، واقعاً تاثیرگذار و دلگرم‌کننده است!</p>
+    <a href="https://zarinp.al/719522" target="_blank" 
+      style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
+">
+      حمایت مالی
+    </a>
+    
+<!--    <p><small>هر مبلغی که دوست داری، کمک بزرگیه!</small></p>-->
+
+</div>
+
+
+<div class="As-modal-block">
+    <h3 style="color:#f39c12;">⭐ ۲. دادن ۵ ستاره</h3>
+    <p>اگر نمی‌تونی حمایت مالی کنی، اشکالی نداره! فقط با دادن ۵ ستاره به اکستنشن، کلی دلگرمی بهمون می‌دی و نشون می‌دی که کنارمون هستی!</p>
+    
+       <a href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" 
+      style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;       margin-top: 11px;
+">
+      صفحه رسمی اکستنشن
+    </a>
+    
+    
+</div>
+
+<div class="As-modal-block">
+    <h3 style="color:#2980b9;">📢 ۳. معرفی به دوستان</h3>
+    <p>معرفی این اکستنشن به دوستات، بهترین کمکه که می‌تونه باعث شه ما بیشتر دیده بشیم و بتونیم بهتر و سریع‌تر پیشرفت کنیم. فقط کافیه یه لحظه وقت بذاری و بهشون خبر بدی!
+باورت نمی‌شه چقدر این کار کوچک، تاثیر بزرگی داره.</p>
+</div>
+
+
+    <button class="As-close-btn" id="AscloseBtn">بستن</button>
+  </div>
+</div>
+
+`
+
+}
+
+
+function BtnDonate() {
+
+    return `<div class="AsSBtn AsDonate" id="AsopenBtn" style="z-index: 900">دوست داری ازش حمایت کنی ؟</div>`
+}
+
 function isPersian(str) {
 
     return countWords(str)
@@ -15,11 +101,10 @@ function getTextDirection(text) {
     const rtlChars = text.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || [];
     // شمارش کاراکترهای لاتین
     const ltrChars = text.match(/[A-Za-z]/g) || [];
-  
+
     // اگر تعداد کاراکترهای فارسی بیشتر بود، rtl برگردان
     return rtlChars.length > ltrChars.length ? true : false;
-  }
-
+}
 
 
 function countChars(str) {
@@ -102,6 +187,73 @@ function countWords(text) {
 }
 
 
+
+
+
+
+
+
+function isRTL(text) {
+    let dir = detectTextDirection(text)
+
+
+    console.log("ALI")
+
+    // console.log(
+    //     dir , text
+    // )
+
+
+    if (dir === "rtl") {
+        return true
+    }
+    return false
+}
+
+function detectTextDirection(text) {
+    const rtlCharRanges = [
+        [0x0590, 0x05FF], // عبری
+        [0x0600, 0x06FF], // عربی و فارسی
+        [0x0750, 0x077F], // عربی افزوده
+        [0x08A0, 0x08FF], // عربی اضافی
+        [0xFB50, 0xFDFF], // عربی نمایشی
+        [0xFE70, 0xFEFF], // عربی نمایشی
+    ];
+
+    function isRTLChar(char) {
+        const code = char.charCodeAt(0);
+        return rtlCharRanges.some(([start, end]) => code >= start && code <= end);
+    }
+
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length === 0) return 'ltr';
+
+    // محاسبه تعداد کلمه‌ای که بررسی می‌کنیم (30% کلمات، حداقل 5 و حداکثر 10)
+    let checkWordsCount = Math.ceil(words.length * 0.3);
+    checkWordsCount = Math.min(Math.max(checkWordsCount, 5), 10);
+    if (words.length < checkWordsCount) checkWordsCount = words.length;
+
+    const wordsToCheck = words.slice(0, checkWordsCount);
+
+    let rtlWordsCount = 0;
+    for (const word of wordsToCheck) {
+        if ([...word].some(isRTLChar)) rtlWordsCount++;
+    }
+
+    if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
+    if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
+
+    // اگر مساوی یا نامشخص، کل متن را بررسی کن
+    let totalRTLWords = 0;
+    for (const word of words) {
+        if ([...word].some(isRTLChar)) totalRTLWords++;
+    }
+
+    if (totalRTLWords > words.length / 2) return 'rtl';
+    else return 'ltr';
+}
+
+
 function setItems_freegpt() {
 
 
@@ -134,9 +286,23 @@ ${alisaffari}" alt="ali saffari"></a>
 <!--              -->
 <!--              -->
 
+${BtnDonate()}
 
 
             </div>`)
+
+
+            $('body').each(function (each) {
+
+                // ${BtnDonate()}
+
+
+                if (!$(this).hasClass("AsDonateOk")) {
+                    $(this).append(modalDonate())
+                }
+
+            })
+            modalDonateFun()
 
 
         }
@@ -286,7 +452,7 @@ ${alisaffari}" alt="ali saffari"></a>
                 console.log("textarea keypress", text);
 
                 if (text && text !== "") {
-                    if (isPersian(text)) {
+                    if (isRTL(text)) {
                         lastD = true
                         if (!$(this).hasClass("AsRtl")) {
                             $(this).addClass('AsRtl');
@@ -332,29 +498,21 @@ ${alisaffari}" alt="ali saffari"></a>
 function setItems_ChatGpt() {
 
 
-    let presentation = ".relative.flex.h-full.overflow-hidden "
+    let presentation = ".relative.flex.h-full "
     let fo = presentation + " .isolate.w-full.basis-auto .justify-center.min-h-8.text-xs.text-token-text-secondary "
     let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
 
 
-
-
-
-
-
-
+    // $(presentation).addClass('red');
 
 
     if (chrome.runtime?.id) {
 
 
-
         // relative mt-auto flex min-h-8 w-full items-center justify-center p-2 text-center text-xs text-token-text-secondary md:px-[60px]
 
 
-
         const alisaffari = chrome.runtime.getURL(imagePath)
-
 
 
         $(fo).each(function (each) {
@@ -375,18 +533,40 @@ ${alisaffari}" alt="ali saffari">
 
 </a>
 ${textSaffari}
+
+
+
+ ${BtnDonate()}
+
+
+ 
+
+
+
             </div>`)
+
+
+                $('body').each(function (each) {
+
+                    // ${BtnDonate()}
+
+
+                    if (!$(this).hasClass("AsDonateOk")) {
+                        $(this).append(modalDonate())
+                    }
+
+                })
+                modalDonateFun()
+
+                // document.addEventListener("DOMContentLoaded", () => {
+
+                // });
 
 
             }
 
 
-
-
-
         })
-
-
 
 
 //
@@ -414,28 +594,16 @@ ${textSaffari}
 //
 
 
-
     }
 
 
-
-
-
-
-
-
     $('.hljs-comment').each(function (each) {
-
-
 
 
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             $(this).attr("dir", "auto");
         }
-
-
-
 
 
     })
@@ -444,29 +612,23 @@ ${textSaffari}
     $('.text-message').each(function (each) {
 
 
-
-
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
 
 //
 
-            $(this).attr("dir", "auto");
+            // $(this).attr("dir", "auto");
 
             $(this).addClass('FontSetImportantGPT');
 
-//  const text = $(this).text()
+ const text = $(this).text()
 //
-//  if (typeof text == "string") {
-//     $(this).attr("dir", getTextDirection(text) ? "rtl" : "ltr");
-// }
-
+ if (typeof text == "string") {
+    $(this).attr("dir", detectTextDirection(text) ? "rtl" : "ltr");
+}
 
 
         }
-
-
-
 
 
     })
@@ -529,7 +691,12 @@ ${textSaffari}
 
 
 
+
+
     $("#prompt-textarea").each(function (each) {
+
+
+
 
         if (!$(this).hasClass("AsOk")) {
 
@@ -544,10 +711,10 @@ ${textSaffari}
 
 
                 const text = $(this).text()
-                console.log("textarea keypress", text);
+
 
                 if (text && text !== "") {
-                    if (isPersian(text)) {
+                    if (isRTL(text)) {
                         lastD = true
                         if (!$(this).hasClass("FontSet")) {
                             $(this).addClass('AsRtl');
@@ -586,6 +753,65 @@ ${textSaffari}
 
 
     });
+
+
+    // /* $("#prompt-textarea").each(function (each) {
+    //
+    //      if (!$(this).hasClass("AsOk")) {
+    //
+    //
+    //          $(this).addClass("AsOk")
+    //
+    //          // $(this).addClass('FontSet');
+    //
+    //          let lastD = false
+    //
+    //          $(this).keyup(function () {
+    //
+    //
+    //              const text = $(this).text()
+    //              console.log("textarea keypress", text);
+    //
+    //              if (text && text !== "") {
+    //                  if (isPersian(text)) {
+    //                      lastD = true
+    //                      if (!$(this).hasClass("FontSet")) {
+    //                          $(this).addClass('AsRtl');
+    //                          $(this).addClass('FontSet');
+    //                      }
+    //                  } else {
+    //                      if ($(this).hasClass("FontSet")) {
+    //                          lastD = false
+    //                          $(this).removeClass('AsRtl');
+    //                          $(this).removeClass('FontSet');
+    //                      }
+    //                  }
+    //              } else {
+    //
+    //                  $(this).removeClass('AsRtl');
+    //                  $(this).removeClass('FontSet');
+    //
+    //
+    //                  // if (lastD) {
+    //                  //
+    //                  //     if (!$(this).hasClass("FontSet")) {
+    //                  //         $(this).addClass('AsRtl');
+    //                  //         $(this).addClass('FontSet');
+    //                  //     }
+    //                  // } else {
+    //                  //     if ($(this).hasClass("FontSet")) {
+    //                  //
+    //                  //         $(this).removeClass('AsRtl');
+    //                  //         $(this).removeClass('FontSet');
+    //                  //     }
+    //                  // }
+    //
+    //              }
+    //          })
+    //      }
+    //
+    //
+    //  });*/
 
     $('.markdown pre').each(function (each) {
 
@@ -705,7 +931,6 @@ function setItems_copilotBing() {
         if (chrome.runtime?.id) {
 
 
-
             $('.pointer-events-none.absolute.bottom-0.flex').each(function (each) {
 
                 // $(this).addClass('red');
@@ -715,15 +940,12 @@ function setItems_copilotBing() {
                 // const fontiran = chrome.runtime.getURL('images/fontiran-72.png')
 
 
-
-
-
-                let fo = $(this).find(".relative.mb-4.flex.w-full.flex-col-reverse.items-center")
+                let fo = $(this).find(".relative.max-h-full.w-expanded-composer.max-w-chat")
                 // fo.addClass("red")
 
                 if (!fo.hasClass("AsOk")) {
                     fo.addClass("AsOk")
-                    fo.append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
+                    fo.parent().append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
 
 
          <a href="${saffariLink}" target="_blank">
@@ -734,8 +956,22 @@ ${alisaffari}" alt="ali saffari">
 </a>
 
 ${textSaffari}
+     ${BtnDonate()}
 
             </div></div>`)
+
+
+                    $('body').each(function (each) {
+
+                        // ${BtnDonate()}
+
+
+                        if (!$(this).hasClass("AsDonateOk")) {
+                            $(this).append(modalDonate())
+                        }
+
+                    })
+                    modalDonateFun()
 
 
                 }
@@ -757,8 +993,6 @@ ${textSaffari}
 
 
         setBing()
-
-
 
 
         // اینپوت
@@ -924,14 +1158,25 @@ function setItems_Claude() {
                 <a href="${saffariLink}" target="_blank">
 
               <img src="${alisaffari}" alt="ali saffari"></a>
-${textSaffari}
+${textSaffari} ${BtnDonate()}
  </div>`)
+
+
+                $('body').each(function (each) {
+
+                    // ${BtnDonate()}
+
+
+                    if (!$(this).hasClass("AsDonateOk")) {
+                        $(this).append(modalDonate())
+                    }
+
+                })
+                modalDonateFun()
 
 
             }
         }
-
-
 
 
         $(".ProseMirror").each(function (each) {
@@ -945,7 +1190,6 @@ ${textSaffari}
 
 
         });
-
 
 
         $(".flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col  .mb-1.mt-1 ").each(function (each) {
@@ -964,8 +1208,6 @@ ${textSaffari}
             }
 
 
-
-
         });
 
 
@@ -982,9 +1224,7 @@ ${textSaffari}
         });
 
 
-
     }
-
 
 
 }
@@ -992,7 +1232,7 @@ ${textSaffari}
 
 let setList_ChatGpt = () => {
 
-    $('.bg-token-sidebar-surface-primary nav ol li .relative.grow.overflow-hidden').each(function (each) {
+    $('#history .__menu-item').each(function (each) {
 
         // $(this).addClass("red")
         // let pList = $(this).find("p,ol,ul,h3")
@@ -1006,7 +1246,12 @@ let setList_ChatGpt = () => {
 
             $(this).addClass('AsOkList');
 
+
             if (p) {
+
+                $(this).attr("dir", "rtl");
+
+
                 $(this).addClass('AsRtlList');
                 $(this).addClass('FontSet');
 
@@ -1130,26 +1375,589 @@ $(document).ready(function () {
             aiStudio: "aistudio.google.com",
             deepseek: "chat.deepseek.com",
             youCom: "you.com",
-            qwenlm: "chat.qwenlm.ai",
-            poeCom:  "poe.com",
-            monica:  "monica.im",
+            qwenlm: ["chat.qwenlm.ai", "chat.qwen.ai"],
+            poeCom: "poe.com",
+            monica: "monica.im",
             gemini: "gemini.google.com",
-            grok: "grok.com"
-
-
+            grok: "grok.com",
+            mistral: "chat.mistral.ai",
+            manus: "manus.im",
+            kimi: "www.kimi.com",
+            blackbox: "www.blackbox.ai"
 
 
         };
 
         Object.entries(siteMap).forEach(([key, urls]) => {
             if (changes[key] && (
-                (Array.isArray(urls) && urls.includes(site)) || 
+                (Array.isArray(urls) && urls.includes(site)) ||
                 urls === site
             )) {
                 location.reload();
                 return;
             }
         });
+    });
+
+
+    chrome.storage.sync.get(["blackbox"]).then((result) => {
+
+        console.log("blackbox ok")
+
+        if (result.blackbox) {
+            if (site === "www.blackbox.ai") {
+
+
+                function setBlackBox() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.relative.min-w-40.mx-auto.px-6.pb-4 > .px-4`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+
+
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`
+<div class="AsRtl FontSet AsBox AsKimi">
+
+
+                <a href="${saffariLink}" style="margin-bottom: 10px" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari" style="vertical-align: middle;"></a>
+
+
+
+                ${textSaffari}
+                
+                    ${BtnDonate()}
+
+
+
+
+            </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
+                        }
+                    }
+
+
+                    $("body textarea").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".chat-input-editor").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".whitespace-pre-wrap").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".break-words ").each(function (each) {
+
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                            // $(this).css("text-align", "initial");
+                        }
+
+
+                    });
+
+
+                }
+
+
+                setBlackBox()
+
+
+                let interval = setInterval(() => {
+
+
+                    setBlackBox()
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+    chrome.storage.sync.get(["kimi"]).then((result) => {
+
+
+        if (result.kimi) {
+            if (site === "www.kimi.com") {
+
+
+                function setKimi() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.chat-action`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+
+
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div style="display: flex">
+<div class="AsRtl FontSet AsBox AsKimi">
+
+
+                <a href="${saffariLink}" style="margin-bottom: 10px" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari" style="vertical-align: middle;"></a>
+
+
+
+                ${textSaffari}
+                
+                    ${BtnDonate()}
+
+
+
+
+            </div>
+</div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
+                        }
+                    }
+
+
+                    $("body textarea").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".chat-input-editor").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".user-content").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".paragraph , .markdown *  ").each(function (each) {
+
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                            // $(this).css("text-align", "initial");
+                        }
+
+
+                    });
+
+
+                    $(".paragraph , .markdown li ").each(function (each) {
+
+                        // $(this).attr("dir", "auto");
+
+
+                        const text = $(this).text()
+                        if (isPersian(text)) {
+                            $(this).attr("dir", "rtl");
+                            $(this).css("text-align", "right");
+                        }
+
+
+                        // if (!$(this).hasClass("FontSet")) {
+                        //     $(this).addClass('FontSet');
+                        //
+                        //     //
+                        // }
+
+
+                    });
+
+
+                }
+
+
+                setKimi()
+
+
+                let interval = setInterval(() => {
+
+
+                    setKimi()
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+    chrome.storage.sync.get(["manus"]).then((result) => {
+
+        console.log("manus ok")
+
+        if (result.manus) {
+            if (site === "manus.im") {
+
+
+                function setManusl() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.flex.flex-col.sticky.bottom-0`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+
+
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsMistral">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+                
+                    ${BtnDonate()}
+
+
+
+
+            </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
+                        }
+                    }
+
+
+                    $("body textarea").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".ProseMirror").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".whitespace-pre-wrap").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".break-words , .u-break-words ").each(function (each) {
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".whitespace-pre-wrap , .truncate , .w-full.flex.pl-4.items-end.justify-between.pb-4").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                }
+
+
+                setManusl()
+
+
+                let interval = setInterval(() => {
+
+
+                    setManusl()
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
+
+
+    chrome.storage.sync.get(["mistral"]).then((result) => {
+
+        console.log("mistral ok")
+
+        if (result.mistral) {
+            if (site === "chat.mistral.ai") {
+
+
+                function setMistral() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `form.mb-0.rounded-xl.large-box-shadow.delay-150.w-full`
+
+
+                        if (!$(fo2).hasClass("AsOk")) {
+
+
+                            $(fo2).addClass("AsOk")
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsMistral">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+                
+                    ${BtnDonate()}
+
+
+
+
+            </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
+                        }
+                    }
+
+
+                    $("body textarea").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+                    $(".ProseMirror").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".whitespace-pre-wrap").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                    $(".break-words").each(function (each) {
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
+
+
+                }
+
+
+                setMistral()
+
+
+                let interval = setInterval(() => {
+
+
+                    setMistral()
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
     });
 
 
@@ -1161,19 +1969,36 @@ $(document).ready(function () {
             if (site === "grok.com") {
 
 
-
                 function setGrok() {
 
 
                     if (chrome.runtime?.id) {
                         const alisaffari = chrome.runtime.getURL(imagePath)
 
-                        let fo2 = `.bottom-0.w-full.text-base.flex.flex-col`
+                        let fo2 = `.bottom-0.absolute.mx-auto.inset-x-0`
+                        // absolute bottom-0 mx-auto inset-x-0
 
+
+                        // absolute bottom-0 w-full h-10 bg-background chat-input-backdrop
+
+
+                        if (!$(fo2).find('.absolute.chat-input-backdrop').hasClass("AsOk")) {
+
+
+                            $(fo2).find('.absolute.chat-input-backdrop').addClass("AsOk")
+                            $(fo2).find('.absolute.chat-input-backdrop').hide()
+                            $(fo2).find('.absolute.chat-input-backdrop').removeClass("bg-background")
+                        }
 
                         if (!$(fo2).hasClass("AsOk")) {
+
+
+                            // absolute bottom-0 w-full h-10 bg-background chat-input-backdrop
+
+
+                            // $(fo2).removeClass(".bg-background")
                             $(fo2).addClass("AsOk")
-                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxGemini">
+                            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxgrok AsBoxGemini">
 
 
                 <a href="${saffariLink}" target="_blank">
@@ -1183,7 +2008,8 @@ $(document).ready(function () {
 
 
                 ${textSaffari}
-
+                
+                    ${BtnDonate()}
 
 
 
@@ -1191,9 +2017,21 @@ $(document).ready(function () {
             </div>`)
 
 
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
                         }
                     }
-
 
 
                     $(".message-bubble > *").each(function (each) {
@@ -1221,6 +2059,19 @@ $(document).ready(function () {
                     // });
 
 
+                    $(".text-fg-secondary").each(function (each) {
+
+
+                        let t = $(this).text();
+
+                        console.log(" tt", t)
+
+                        if (t === "چگونه Grok میتواند کمک کd؟") {
+                            $(this).text("چگونه Grok میتواند کمک کند ؟");
+                        }
+
+
+                    });
 
 
                     $(".bottom-0 textarea").each(function (each) {
@@ -1261,7 +2112,6 @@ $(document).ready(function () {
                     });
 
 
-
                 }
 
 
@@ -1274,7 +2124,6 @@ $(document).ready(function () {
                     setGrok()
 
 
-
                 }, 1000)
 
 
@@ -1284,8 +2133,6 @@ $(document).ready(function () {
         }
 
     });
-
-
 
 
     chrome.storage.sync.get(["gemini"]).then((result) => {
@@ -1320,11 +2167,24 @@ $(document).ready(function () {
 
                 ${textSaffari}
 
-
+ ${BtnDonate()}
 
 
 
             </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
 
                         }
@@ -1337,8 +2197,6 @@ $(document).ready(function () {
                         $(this).addClass('FontSet');
 
                     })
-
-
 
 
                     $('.gds-label-m-alt ').each(function (each) {
@@ -1354,8 +2212,6 @@ $(document).ready(function () {
                         $(this).addClass('FontSetImportant');
                         $(this).css("unicode-bidi", "normal");
                     })
-
-
 
 
                     //
@@ -1375,8 +2231,6 @@ $(document).ready(function () {
                     //
 
 
-
-
                 }
 
 
@@ -1387,7 +2241,6 @@ $(document).ready(function () {
 
 
                     setGemini()
-
 
 
                 }, 1000)
@@ -1401,15 +2254,12 @@ $(document).ready(function () {
     });
 
 
-
     chrome.storage.sync.get(["monica"]).then((result) => {
 
         // console.log("Sdfsdfsdfsdfsdfsdf")
 
         if (result.monica) {
             if (site === "monica.im") {
-
-
 
 
                 function setMonica() {
@@ -1434,11 +2284,23 @@ $(document).ready(function () {
 
                 ${textSaffari}
 
-
+${BtnDonate()}
 
 
 
             </div>`)
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
 
                         }
@@ -1470,20 +2332,10 @@ $(document).ready(function () {
                         }
 
 
-
-
                     })
 
 
-
-
-
-
-
-
-                        // .textarea--JX_6f.textarea--JX_6f.textarea-primary--OH3BL
-
-
+                    // .textarea--JX_6f.textarea--JX_6f.textarea-primary--OH3BL
 
 
                     // $(".GrowingTextArea_textArea__ZWQbP , .ResendRemixFollowupButton_right__du4Gd ").each(function (each) {
@@ -1515,9 +2367,6 @@ $(document).ready(function () {
                     // });
 
 
-
-
-
                 }
 
 
@@ -1528,7 +2377,6 @@ $(document).ready(function () {
 
 
                     setMonica()
-
 
 
                 }, 1000)
@@ -1542,19 +2390,12 @@ $(document).ready(function () {
     });
 
 
-
-
-
-
-
     chrome.storage.sync.get(["poeCom"]).then((result) => {
 
         // console.log("Sdfsdfsdfsdfsdfsdf")
 
         if (result.poeCom) {
             if (site === "poe.com") {
-
-
 
 
                 function setPoeCom() {
@@ -1579,11 +2420,24 @@ $(document).ready(function () {
 
                 ${textSaffari}
 
-
+${BtnDonate()}
 
 
 
             </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
 
                         }
@@ -1604,8 +2458,6 @@ $(document).ready(function () {
                     });
 
 
-
-
                     $(".Message_messageTextContainer__w64Sc").each(function (each) {
 
 
@@ -1617,9 +2469,6 @@ $(document).ready(function () {
 
 
                     });
-
-
-
 
 
                 }
@@ -1634,7 +2483,6 @@ $(document).ready(function () {
                     setPoeCom()
 
 
-
                 }, 1000)
 
 
@@ -1644,8 +2492,6 @@ $(document).ready(function () {
         }
 
     });
-
-
 
 
     chrome.storage.sync.get(["chatGpt"]).then((result) => {
@@ -1857,7 +2703,7 @@ $(document).ready(function () {
                     if (chrome.runtime?.id) {
                         const alisaffari = chrome.runtime.getURL(imagePath)
 
-                        let fo2 = `.bottom-mobileNavHeight .pointer-events-auto`
+                        let fo2 = `.bottom-safeAreaInsetBottom .pointer-events-auto`
 
                         console.log("adddddd")
 
@@ -1877,7 +2723,22 @@ $(document).ready(function () {
 
                 ${textSaffari}
 
+${BtnDonate()}
+
             </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
 
                         }
@@ -1979,8 +2840,6 @@ $(document).ready(function () {
                     });
 
 
-
-
                 }
 
 
@@ -2067,20 +2926,32 @@ $(document).ready(function () {
 
 
                 ${textSaffari}
-
+ ${BtnDonate()}
 
 
 
 
             </div>`)
 
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
 
                         }
                     }
 
 
-                    //
-                    $(".kOMSj8TE0LBty6yatos7").each(function (each) {
+                    // فرستنده
+                    $(".IwPq3HoxJc8guGUBwTKv").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2093,7 +2964,8 @@ $(document).ready(function () {
                     });
 
 
-                    $(".JXNYs5FNOplxLlVAOswQ").each(function (each) {
+                    //جواب
+                    $(".ucB71mHYvyHsWKjYfYKI").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2105,6 +2977,8 @@ $(document).ready(function () {
 
                     });
 
+
+                    //اینپوت
 
                     $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
@@ -2121,6 +2995,19 @@ $(document).ready(function () {
 
                     });
 
+
+                    //لیست
+                    $(".clS_s3a7onj0_NFty2Qh").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                        }
+
+
+                    });
 
                     // $(".overflow-y-auto .markdown.overflow-x-auto.prose").each(function (each) {
                     //     // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
@@ -2183,18 +3070,12 @@ $(document).ready(function () {
     });
 
 
-
-
-
-
     chrome.storage.sync.get(["deepseek"]).then((result) => {
 
         // console.log("Sdfsdfsdfsdfsdfsdf")
 
         if (result.deepseek) {
             if (site === "chat.deepseek.com") {
-
-
 
 
                 function setDeepSeek() {
@@ -2227,11 +3108,24 @@ $(document).ready(function () {
 
                 ${textSaffari}
 
-
+${BtnDonate()}
 
 
 
             </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
 
                         }
@@ -2239,7 +3133,6 @@ $(document).ready(function () {
 
 // صفحه چت
                         let fo3 = `._0fcaa63`
-
 
 
                         if (!$(fo3).hasClass("AsOk")) {
@@ -2251,17 +3144,24 @@ $(document).ready(function () {
                 <img src="
 ${alisaffari}" alt="ali saffari">
 </a>
-${textSaffari}
+${textSaffari}${BtnDonate()}
             </div>`)
+                            $('body').each(function (each) {
 
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
                         }
 
 
-
                     }
-
-
 
 
                     // لیست
@@ -2321,9 +3221,7 @@ ${textSaffari}
                         //
 
 
-
                     });
-
 
 
                     //پاسخ
@@ -2352,10 +3250,6 @@ ${textSaffari}
 
 
                     });
-
-
-
-
 
 
                     // اینپوت
@@ -2414,9 +3308,6 @@ ${textSaffari}
                     });
 
 
-
-
-
                     //
                     //
                     // $(".JRDRiEf5NPKWK43sArdC").each(function (each) {
@@ -2435,8 +3326,6 @@ ${textSaffari}
                     // });
 
 
-
-
                 }
 
 
@@ -2453,7 +3342,7 @@ ${textSaffari}
                             const observer = new MutationObserver((mutations) => {
                                 mutations.forEach((mutation) => {
                                     // console.log("تغیر", mutation)
-                    setDeepSeek()
+                                    setDeepSeek()
 
 
                                 });
@@ -2499,7 +3388,6 @@ ${textSaffari}
                     // console.log("$(this).text()" , $(this).text())
 
 
-
                     if (chrome.runtime?.id) {
                         const alisaffari = chrome.runtime.getURL(imagePath)
 
@@ -2525,16 +3413,27 @@ ${textSaffari}
 
                 ${textSaffari}
 
-
+${BtnDonate()}
 
 
 
             </div>`)
 
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
 
                         }
                     }
-
 
 
                     $("ms-chat-turn").each(function (each) {
@@ -2590,7 +3489,7 @@ ${textSaffari}
                             $(this).attr("dir", "rtl");
                         }
 
-                        console.log("rtl , rtl"  , rtl)
+                        console.log("rtl , rtl", rtl)
 
 
                     });
@@ -2605,10 +3504,7 @@ ${textSaffari}
                         }
 
 
-
                     });
-
-
 
 
                     //
@@ -2628,9 +3524,6 @@ ${textSaffari}
                     //     }
                     //
                     // });
-
-
-
 
 
                 }
@@ -2681,28 +3574,12 @@ ${textSaffari}
     });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     chrome.storage.sync.get(["youCom"]).then((result) => {
 
         // console.log("Sdfsdfsdfsdfsdfsdf")
 
         if (result.youCom) {
             if (site === "you.com") {
-
-
 
 
                 function setYouCom() {
@@ -2728,19 +3605,27 @@ ${textSaffari}
                 ${textSaffari}
 
 
+${BtnDonate()}
+
 
 
 
             </div>`)
 
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
 
                         }
                     }
-
-
-
-
-
 
 
                     //هدر
@@ -2759,9 +3644,23 @@ ${textSaffari}
                     });
 
 
-
                     //عنوان
                     $("._1bxvbd41").each(function (each) {
+                        // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
+                        $(this).attr("dir", "auto");
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('AlignSet');
+                            $(this).addClass('FontSetImportant');
+                        }
+
+
+                    });
+
+
+                    $("._1vwisb38 , ._1vwisb37 , ._1vwisb34 , ._1vwisb33 ").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
@@ -2806,7 +3705,6 @@ ${textSaffari}
                     });
 
 
-
                     $(".suggested-chat-chip").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
@@ -2833,7 +3731,6 @@ ${textSaffari}
                     });
 
 
-
                     $(".fQvrap textarea").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
@@ -2847,7 +3744,6 @@ ${textSaffari}
 
 
                     });
-
 
 
                     $("textarea").each(function (each) {
@@ -2865,20 +3761,15 @@ ${textSaffari}
                     });
 
 
-
                     $(".AnswerParser_AnswerParserSharedStyles__0GZUj").each(function (each) {
                         // console.log("asdasdasdasdasdasdadasdasdasdasdasdad")
                         $(this).attr("dir", "auto");
 
 
-
-
                     });
 
 
-
                     $(".AnswerParser_TextContainer__z_Iiv ,.AnswerParser_AnswerParserUnorderedList__P_1FW ,.AnswerParser_AnswerParserH4__ghxg8").each(function (each) {
-
 
 
                         if (!$(this).hasClass("FontSet")) {
@@ -2888,155 +3779,6 @@ ${textSaffari}
 
 
                     });
-
-
-
-
-                }
-
-
-                setYouCom()
-
-
-                let interval = setInterval(() => {
-
-                    // $(".AppProvider_Wrapper").each(function (each) {
-                    //     if (each === 0) {
-                    //         console.log("setInterval")
-                    //
-                    //
-                    //         const observer = new MutationObserver((mutations) => {
-                    //             mutations.forEach((mutation) => {
-                                    // console.log("تغیر", mutation)
-                                    setYouCom()
-
-                    //
-                    //             });
-                    //         });
-                    //
-                    //
-                    //         const targetNode = document.querySelector('.AppProvider_Wrapper');
-                    //
-                    //         const config = {childList: true, subtree: true};
-                    //
-                    //         observer.observe(targetNode, config);
-                    //
-                    //
-                    //         clearInterval(interval)
-                    //     }
-                    //
-                    // });
-
-
-                }, 1000)
-
-
-            }
-
-
-        }
-
-    });
-
-
-
-    chrome.storage.sync.get(["qwenlm"]).then((result) => {
-
-        // console.log("Sdfsdfsdfsdfsdfsdf")
-
-        if (result.qwenlm) {
-            if (site === "chat.qwenlm.ai") {
-
-
-
-
-                function setYouCom() {
-
-
-                    if (chrome.runtime?.id) {
-                        const alisaffari = chrome.runtime.getURL(imagePath)
-
-                        let fo2 = `.messageInput`
-
-
-                        if (!$(fo2).parent().hasClass("AsOk")) {
-                            $(fo2).parent().addClass("AsOk")
-                            $(fo2).parent().parent().append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
-
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                ${textSaffari}
-
-
-
-
-
-            </div>`)
-
-
-                        }
-                    }
-
-
-
-
-                    // $(".gdhZwr").each(function (each) {
-                    //
-                    //     $(this).attr("dir", "auto");
-                    //
-                    //
-                    //     if (!$(this).hasClass("FontSet")) {
-                    //         $(this).addClass('FontSet');
-                    //
-                    //     }
-                    //
-                    //
-                    // });
-
-                    $(".chat-assistant , .user-message , #chat-input").each(function (each) {
-
-
-                        $(this).attr("dir", "auto");
-
-                        if (!$(this).hasClass("FontSet")) {
-                            $(this).addClass('FontSet');
-
-                        }
-
-
-                    });
-
-
-                    $(".font-primary ,.scrollbar-hidden").each(function (each) {
-
-
-
-                        if (!$(this).hasClass("FontSet")) {
-                            $(this).addClass('FontSet');
-                            $(this).addClass('FontSetImportant');
-
-                        }
-
-
-                    });
-                    // $("#response-content-container").each(function (each) {
-                    //
-                    //     $(this).attr("dir", "auto");
-                    //
-                    //
-                    // });
-
-
-
-
-
-
-
 
 
                 }
@@ -3086,9 +3828,165 @@ ${textSaffari}
     });
 
 
+    chrome.storage.sync.get(["qwenlm"]).then((result) => {
+
+        // console.log("Sdfsdfsdfsdfsdfsdf")
+
+        if (result.qwenlm) {
+            if (site === "chat.qwenlm.ai" || site === "chat.qwen.ai") {
+
+
+                function setQwenlm() {
+
+
+                    if (chrome.runtime?.id) {
+                        const alisaffari = chrome.runtime.getURL(imagePath)
+
+                        let fo2 = `.chat-message-input`
+
+
+                        if (!$(fo2).parent().hasClass("AsOk")) {
+                            $(fo2).parent().addClass("AsOk")
+                            $(fo2).parent().parent().append(`<div style="z-index: 900" class="AsRtl FontSet AsBox AsBoxDuckduckgo AsBoxqwenlm">
+
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
 
 
 
+                ${textSaffari}
+${BtnDonate()}
+
+
+
+
+            </div>`)
+
+
+                            $('body').each(function (each) {
+
+                                // ${BtnDonate()}
+
+
+                                if (!$(this).hasClass("AsDonateOk")) {
+                                    $(this).append(modalDonate())
+                                }
+
+                            })
+                            modalDonateFun()
+
+
+                        }
+                    }
+
+
+                    // $(".gdhZwr").each(function (each) {
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    //     if (!$(this).hasClass("FontSet")) {
+                    //         $(this).addClass('FontSet');
+                    //
+                    //     }
+                    //
+                    //
+                    // });
+
+                    $(".chat-assistant , .user-message , #chat-input").each(function (each) {
+
+
+                        $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                        }
+
+
+                    });
+
+
+                    $(".chat-item-drag").each(function (each) {
+
+
+                        // $(this).attr("dir", "auto");
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+
+                        }
+
+
+                    });
+
+
+                    $(".font-primary ,.scrollbar-hidden").each(function (each) {
+
+
+                        if (!$(this).hasClass("FontSet")) {
+                            $(this).addClass('FontSet');
+                            $(this).addClass('FontSetImportant');
+
+                        }
+
+
+                    });
+                    // $("#response-content-container").each(function (each) {
+                    //
+                    //     $(this).attr("dir", "auto");
+                    //
+                    //
+                    // });
+
+
+                }
+
+
+                setQwenlm()
+
+
+                let interval = setInterval(() => {
+
+                    // $(".AppProvider_Wrapper").each(function (each) {
+                    //     if (each === 0) {
+                    //         console.log("setInterval")
+                    //
+                    //
+                    //         const observer = new MutationObserver((mutations) => {
+                    //             mutations.forEach((mutation) => {
+                    // console.log("تغیر", mutation)
+                    setQwenlm()
+
+                    //
+                    //             });
+                    //         });
+                    //
+                    //
+                    //         const targetNode = document.querySelector('.AppProvider_Wrapper');
+                    //
+                    //         const config = {childList: true, subtree: true};
+                    //
+                    //         observer.observe(targetNode, config);
+                    //
+                    //
+                    //         clearInterval(interval)
+                    //     }
+                    //
+                    // });
+
+
+                }, 1000)
+
+
+            }
+
+
+        }
+
+    });
 
 
 });

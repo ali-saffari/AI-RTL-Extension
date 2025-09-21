@@ -10,6 +10,20 @@
     font-family: iranyekan, sans-serif !important;
 }
 
+.FontSet h1{
+    font-family: iranyekan, sans-serif !important;
+}
+.FontSet h2{
+    font-family: iranyekan, sans-serif !important;
+}
+
+.FontSet h3{
+    font-family: iranyekan, sans-serif !important;
+}
+.FontSet li{
+    font-family: iranyekan, sans-serif !important;
+}
+
 textarea.FontSetImportant{
     font-family: iranyekan, sans-serif !important;
 }
@@ -57,7 +71,7 @@ textarea.FontSetImportant{
 }
 
 .AsRtl {
-    direction: rtl;
+    direction: rtl !important;
 }
 
 textarea.AsRtl {
@@ -111,7 +125,7 @@ textarea.AsRtl {
 }
 
 
-.AsRtlList .relative.grow.overflow-hidden {
+.AsRtlList  {
     text-align: right;
     font-weight: 400;
     font-size: .75rem;
@@ -402,8 +416,13 @@ copilot
 
 
 .AsBox_copilotBingBlock {
-    margin-bottom: -25px;
-    padding-top: 8px;
+
+    margin-bottom: -30px;
+    padding-top: 0px;
+
+
+    /*margin-bottom: -25px;*/
+    /*padding-top: 8px;*/
     font-weight: 100;
 
 }
@@ -586,5 +605,115 @@ textarea#search-input-textarea {
     color: #888888;
 }
 
+/*grok*/
+.AsBoxgrok {
+    margin-top: 1px;
+    margin-bottom: 10px;
+}
+
+
+
+/*qwenlm*/
+
+
+
+
+
+.AsBoxqwenlm {
+    margin-bottom: 22px;
+    margin-top: -22px;
+    font-size: 14px;
+}
+
+
+.max-w-6xl .AsBoxqwenlm {
+    margin-bottom: 0px;
+    margin-top: 0px;
+    font-size: 14px;
+}
+
+
+
+
+
+
+/*دونیت*/
+.AsDonate {
+    display: inline;
+    cursor: pointer;
+}
+.As-modal-backdrop {
+    direction: rtl;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* پس‌زمینه نیمه‌شفاف */
+    /*display: flex;*/
+    align-items: center;
+    justify-content: center;
+    z-index: 800;
+}
+
+.As-modal {
+    background-color: white;
+    padding: 1.5rem;
+    color: #333333;
+    border-radius: 10px;
+    max-width: 560px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    font-size: 16px;
+}
+.As-modal-block {
+    margin-top: 16px;
+}
+.As-close-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.As-close-btn:hover {
+    background-color: #555;
+}
+
+
+.As-modal h2 {
+    font-size: 21px;
+    margin-bottom: 7px;
+
+}
+
+.As-modal h3 {
+    font-size: 20px;
+    margin-bottom: 6px;
+
+}
+
+
+/*-----Mistral-------*/
+
+
+.AsMistral {
+    color: rgb(136, 136, 136);
+    margin-bottom: -8px;
+    margin-top: 10px;
+}
+/*-----Kimi -------*/
+
+.AsKimi {
+    color: rgb(136, 136, 136);
+    margin-bottom: -4px;
+    margin-top: 3px;
+}
 
 

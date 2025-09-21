@@ -26,7 +26,11 @@ export default function SwitchListSecondary() {
         qwenlm: true,
         poeCom: true,
         monica: true,
-        gemini: true
+        gemini: true,
+        mistral: true,
+        manus: true,
+        kimi: true,
+        blackbox: true
 
 
     });
@@ -39,16 +43,24 @@ export default function SwitchListSecondary() {
         { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
         { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
         { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
+        { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
         { key: 'thebAi', name: 'TheB AI', icon: '/images/theb-ai-icon.png', url: 'https://beta.theb.ai' },
         { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/' },
         { key: 'freegpt', name: 'FreeGPT', icon: '/images/chatgpt-icon.png', url: 'https://freegpt.cc/' },
         { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
         { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
         { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
-        { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwenlm.ai' },
+        { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },
         { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/' },
         { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
-        { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
+        { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
+        { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
+        { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
+        { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
+
+
+
+
     ];
 
 

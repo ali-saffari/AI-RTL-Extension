@@ -14,6 +14,17 @@ const monica = true
 const gemini = true
 const grok = true
 
+const mistral = true
+const manus = true
+const kimi = true
+const blackbox = true
+
+
+
+
+
+
+
 // chrome.runtime.onInstalled.addListener(() => {
 //     chrome.storage.sync.set({ chatGpt , claude ,  copilot ,  freegpt , thebAi , duckduckgo});
 //     console.log('Default chatGpt', chatGpt);
@@ -28,7 +39,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
             freegpt, thebAi, duckduckgo, perplexity,
-            aiStudio,deepseek, youCom , qwenlm , poeCom , monica , gemini , grok
+            aiStudio,deepseek, youCom , qwenlm , poeCom , monica , gemini , grok , mistral , manus , kimi
         });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
@@ -69,6 +80,20 @@ chrome.runtime.onInstalled.addListener((details) => {
             }
             if (!storedData.hasOwnProperty('grok')) {
                 updates.grok = true;
+            }
+
+            if (!storedData.hasOwnProperty('mistral')) {
+                updates.mistral = true;
+            }
+            if (!storedData.hasOwnProperty('manus')) {
+                updates.manus = true;
+            }
+
+            if (!storedData.hasOwnProperty('kimi')) {
+                updates.kimi = true;
+            }
+            if (!storedData.hasOwnProperty('blackbox')) {
+                updates.blackbox = true;
             }
 
 
