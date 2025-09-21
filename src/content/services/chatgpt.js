@@ -1,7 +1,7 @@
 // ChatGPT service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isPersian, detectTextDirection } from '../utils/textDirection.js';
+import { isRTL, detectTextDirection } from '../utils/textDirection.js';
 
 export function initializeChatGptElements() {
     let presentation = ".relative.flex.h-full "
@@ -45,7 +45,7 @@ ${textSaffari}
             $(this).addClass('FontSetImportantGPT');
             const text = $(this).text()
             if (typeof text == "string") {
-                $(this).attr("dir", detectTextDirection(text) ? "rtl" : "ltr");
+                $(this).attr("dir", detectTextDirection(text));
             }
         }
     })
@@ -55,7 +55,7 @@ ${textSaffari}
             $(this).parent().addClass('AsOk');
             const text = $(this).text()
             $(this).addClass('FontSetImportantGPT');
-            if (isPersian(text)) {
+            if (isRTL(text)) {
                 $(this).parent().addClass("setRight")
             }
         }
@@ -90,7 +90,7 @@ ${textSaffari}
 export function initializeChatGptHistory() {
     $('#history .__menu-item').each(function (each) {
         const text = $(this).text()
-        let p = isPersian(text);
+        let p = isRTL(text);
 
         if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
             $(this).addClass('AsOkList');

@@ -1,14 +1,38 @@
 // perplexity.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isPersian, detectTextDirection } from '../utils/textDirection.js';
 
 export function setPerplexity() {
     if (chrome.runtime?.id) {
         const alisaffari = chrome.runtime.getURL(imagePath)
 
-        // Add service-specific implementation here
-        console.log("perplexity service initialized");
+        let fo2 = `.bottom-safeAreaInsetBottom .pointer-events-auto`
+
+        if (!$(fo2).hasClass("AsOk")) {
+            $(fo2).addClass("AsOk")
+            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxPerplexity bg-background dark:bg-backgroundDark">
+
+                <a href="${saffariLink}" target="_blank">
+
+              <img src="${alisaffari}" alt="ali saffari"></a>
+
+
+
+                ${textSaffari}
+
+${BtnDonate()}
+
+
+
+            </div>`)
+
+            $('body').each(function (each) {
+                if (!$(this).hasClass("AsDonateOk")) {
+                    $(this).append(modalDonate())
+                }
+            })
+            modalDonateFun()
+        }
     }
 
     // Add RTL functionality

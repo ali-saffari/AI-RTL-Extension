@@ -1,7 +1,6 @@
 // claude.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isPersian, detectTextDirection } from '../utils/textDirection.js';
 
 // Claude service functions
 export function setItems_Claude() {

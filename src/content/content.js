@@ -329,7 +329,7 @@ ${BtnDonate()}
 
                         const text = $(this).text()
 
-                        if (isPersian(text)) {
+                        if (isRTL(text)) {
                             $(this).addClass('AsRtl');
                             $(this).addClass('FontSet');
                             backD = true
@@ -357,7 +357,7 @@ ${BtnDonate()}
 
                 const text = D.text()
 
-                if (isPersian(text)) {
+                if (isRTL(text)) {
                     D.addClass('AsRtl');
                     D.addClass('FontSet');
                 }
@@ -392,7 +392,7 @@ ${BtnDonate()}
 
                         const text = $(this).text()
 
-                        if (isPersian(text)) {
+                        if (isRTL(text)) {
                             $(this).addClass('AsRtl');
                             $(this).addClass('FontSet');
                             backD = true
@@ -420,7 +420,7 @@ ${BtnDonate()}
 
                 const text = D.text()
 
-                if (isPersian(text)) {
+                if (isRTL(text)) {
                     D.addClass('AsRtl');
                     D.addClass('FontSet');
                 }
@@ -643,7 +643,7 @@ ${textSaffari}
             $(this).addClass('FontSetImportantGPT');
 
 
-            if (isPersian(text)) {
+            if (isRTL(text)) {
 
                 // let BoxSend =     $(this).find('.relative.rounded-3xl')
                 // if (   $(this).length) {
@@ -771,7 +771,7 @@ ${textSaffari}
     //              console.log("textarea keypress", text);
     //
     //              if (text && text !== "") {
-    //                  if (isPersian(text)) {
+    //                  if (isRTL(text)) {
     //                      lastD = true
     //                      if (!$(this).hasClass("FontSet")) {
     //                          $(this).addClass('AsRtl');
@@ -827,12 +827,12 @@ ${textSaffari}
 
             $(this).addClass('AsOk');
 
-            let p = isPersian(code);
+            let p = isRTL(code);
 
 
             if (plaintext) {
 
-                if (isPersian(plaintext.text())) {
+                if (isRTL(plaintext.text())) {
 
 
                     $(this).find("[dir=ltr]").attr("dir", "rtl").addClass('FontSet')
@@ -1030,7 +1030,7 @@ ${textSaffari}
                 $(this).addClass('AsOk');
 
 
-                if (isPersian(text + "")) {
+                if (isRTL(text + "")) {
 
                     $(this).addClass('AsAlignRtl');
 
@@ -1196,7 +1196,7 @@ ${textSaffari} ${BtnDonate()}
             // $(this).addClass('red');
             const text = $(this).find(".font-user-message  p.break-words").text()
             // console.log("text", text, isPersian(text))
-            if (isPersian(text)) {
+            if (isRTL(text)) {
                 // $(this).addClass('red');
                 if (!$(this).hasClass("AsRtlClaudeUser")) {
                     $(this).addClass('AsRtlClaudeUser');
@@ -1236,7 +1236,7 @@ let setList_ChatGpt = () => {
         // let pList = $(this).find("p,ol,ul,h3")
         const text = $(this).text()
         // console.log("text", text)
-        let p = isPersian(text);
+        let p = isRTL(text);
 
 
         if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
@@ -1649,7 +1649,7 @@ $(document).ready(function () {
 
 
                         const text = $(this).text()
-                        if (isPersian(text)) {
+                        if (isRTL(text)) {
                             $(this).attr("dir", "rtl");
                             $(this).css("text-align", "right");
                         }
@@ -3170,7 +3170,7 @@ ${textSaffari}${BtnDonate()}
 
                         const text = $(this).text()
                         // console.log("text", text)
-                        let p = isPersian(text);
+                        let p = isRTL(text);
 
 
                         if (!$(this).hasClass("FontSet")) {
@@ -3475,7 +3475,7 @@ ${BtnDonate()}
 
                         $(this).find("p").each(function (each) {
 
-                            if (isPersian(this.textContent)) {
+                            if (isRTL(this.textContent)) {
                                 rtl++
                                 // $(this).attr("dir", "rtl");
 

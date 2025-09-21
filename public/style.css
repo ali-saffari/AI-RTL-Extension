@@ -717,3 +717,23 @@ textarea#search-input-textarea {
 }
 
 
+
+
+
+
+
+
+
+
+/* Copyright */
+
+.AsBoxB {
+    margin: auto;
+    color: #888888;
+
+}
+
+.AsBoxB a {
+    vertical-align: -webkit-baseline-middle;
+}
+

@@ -1,35 +1,51 @@
 // aistudio.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isPersian, detectTextDirection } from '../utils/textDirection.js';
+import { isRTL } from '../utils/textDirection.js';
+import { addCopyright } from '../utils/copyright.js';
 
 export function setAiStudio() {
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
-        // Add service-specific implementation here
-        console.log("aistudio service initialized");
+        let fo2 = `section footer`;
+        addCopyright($(fo2), 'AsBoxB', 'margin-top: 14px');
     }
 
-    // Add RTL functionality
-    $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            $(this).attr("dir", "auto");
+    $("ms-chat-turn").each(function (each) {
+        if (!$(this).hasClass("FontSet")) {
+            $(this).addClass('FontSet');
         }
-    })
+    });
 
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+    $("ms-text-chunk").each(function (each) {
+        if (!$(this).hasClass("FontSet")) {
+            $(this).addClass('FontSet');
+        }
+
+        let rtl = 0;
+
+        $(this).find("p").each(function (each) {
+            if (isRTL(this.textContent)) {
+                rtl++;
+            }
+        });
+
+        if (rtl) {
+            $(this).attr("dir", "rtl");
+        }
+    });
+
+    $("ms-text-chunk textarea").each(function (each) {
+        if (!$(this).hasClass("FontSet")) {
+            $(this).addClass('FontSet');
+            $(this).addClass('FontSetImportant2');
             $(this).attr("dir", "auto");
         }
-    })
+    });
 }
-
-
 
 // Main activation function for Aistudio
 export function activateAistudio() {
     setAiStudio();
+    
+    let interval = setInterval(() => {
+        setAiStudio();
+    }, 1000);
 }

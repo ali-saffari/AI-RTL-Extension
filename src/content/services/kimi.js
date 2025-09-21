@@ -1,7 +1,6 @@
 // kimi.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isPersian, detectTextDirection } from '../utils/textDirection.js';
 
 // Kimi service functions
 export function setKimi() {
