@@ -1,7 +1,7 @@
 // ChatGPT service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { isRTL, detectTextDirection } from '../utils/textDirection.js';
+import { isRTL, detectTextDirection } from '../utils/analyzeDirection.js';
 
 export function initializeChatGptElements() {
     let presentation = ".relative.flex.h-full "

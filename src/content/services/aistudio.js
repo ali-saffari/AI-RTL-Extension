@@ -1,5 +1,12 @@
 // aistudio.js service functions
-import { isRTL } from '../utils/textDirection.js';
+import { 
+    analyzeTextDirection
+} from '../utils/analyzeDirection.js';
+import { 
+    processTextElements,
+    getArticleTextElements,
+    getAttributeTextElements
+} from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';
 
 export function setAiStudio() {
@@ -15,21 +22,15 @@ export function setAiStudio() {
     });
 
     $("ms-text-chunk").each(function (each) {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
-        }
 
-        let rtl = 0;
 
-        $(this).find("p").each(function (each) {
-            if (isRTL(this.textContent)) {
-                rtl++;
-            }
-        });
+        // پردازش عناصر متنی مقاله
+        processTextElements($(this), getArticleTextElements(), (element) => element.textContent);
 
-        if (rtl) {
-            $(this).attr("dir", "rtl");
-        }
+        // پردازش عناصر با attributes مربوط به مقالات
+        processTextElements($(this), getAttributeTextElements(), (element) => 
+            element.title || element.alt || element.getAttribute('aria-label') || element.textContent
+        );
     });
 
     $("ms-text-chunk textarea").each(function (each) {
