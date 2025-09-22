@@ -12,9 +12,9 @@ export function setBlackBox() {
     }
 
     $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
+        if (!$(this).hasClass("AsOk")) {
             $(this).addClass('FontSet');
-            $(this).addClass('AsRtl');
+            $(this).addClass('AsOk');
             const text = $(this).val() || $(this).text();
             if (text && text.trim()) {
                 $(this).attr("dir", detectTextDirection(text));
