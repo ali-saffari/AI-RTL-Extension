@@ -196,7 +196,7 @@ textarea.AsRtl {
 }
 
 
-pre.AsSetLtr {
+code.AsSetLtr , pre.AsSetLtr {
     text-align: left;
     direction: rtl;
 }

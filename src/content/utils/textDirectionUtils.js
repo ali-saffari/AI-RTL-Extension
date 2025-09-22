@@ -4,7 +4,8 @@
  */
 
 // Import analysis functions from analyzeDirection.js
-import { analyzeTextDirection, detectTextDirection, isRTL } from './analyzeDirection.js';
+import { analyzeTextDirection, detectTextDirection, isRTL, isCode } from './analyzeDirection.js';
+
 
 /**
  * Universal function to set text direction and font for any element
@@ -117,14 +118,53 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
  */
 function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
     selectors.forEach(selector => {
-        container.find(selector).each(function (each) {
+        container.children(selector).each(function (each) {
             if (!$(this).hasClass(processedClass)) {
                 $(this).addClass(processedClass);
                 
                 // Special handling for paragraph elements with <br> tags
                 if (selector === 'p') {
                     processParagraphWithBreaks(this, fontClass);
-                } else {
+                } 
+                // Special handling for code elements - use code detection algorithm
+                else if (['blockquote', 'pre', 'code'].includes(selector)) {
+                    const text = textExtractor(this);
+                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
+                    const isCodeContent = !hasLanguageTextClass && isCode(text);
+                    
+                    console.log("processTextElements (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
+                    
+                    if (isCodeContent) {
+                        // If content is detected as code, always force LTR
+                        // Remove all dir attributes from child elements
+                        // $(this).find('*').removeAttr('dir');
+                        
+                        $(this).attr("dir", "ltr");
+                        if (fontClass) {
+                            $(this).addClass(fontClass);
+                        }
+                        $(this).addClass('AsSetLtr');
+                        console.log("processTextElements (LTR Code)", this, "Forced LTR for detected code element");
+                    } else {
+                        // If not code or has language-text class, use normal direction detection
+                        $(this).find('*').removeAttr('dir');
+                        setTextDirectionAndFont(this, text, fontClass);
+                        console.log("processTextElements (Normal)", this, "Normal direction detection for non-code element");
+                    }
+                }
+                // Special handling for list elements - recursively process their children
+                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd'].includes(selector)) {
+                    const text = textExtractor(this);
+                    console.log("processTextElements", this)
+                    setTextDirectionAndFont(this, text, fontClass);
+
+                    // console.log("processTextElements (List)", this, "Forced LTR for list element");
+                    
+                    // Recursively process children of list elements
+                    const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 'mark', 'small'];
+                    processTextElements($(this), selectors, textExtractor, fontClass, processedClass);
+                } 
+                else {
                     const text = textExtractor(this);
                     console.log("processTextElements", this , text)
                     setTextDirectionAndFont(this, text, fontClass);
@@ -178,6 +218,7 @@ export {
         analyzeTextDirection,
         detectTextDirection,
         isRTL,
+        isCode,
         setTextDirectionAndFont,
         processParagraphWithBreaks,
         processTextElements,
