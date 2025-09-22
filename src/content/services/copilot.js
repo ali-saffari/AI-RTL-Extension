@@ -1,6 +1,7 @@
 // copilot.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { detectTextDirection } from '../utils/analyzeDirection.js';
 
 // Copilot/Bing service functions
 export function setItems_copilotBing() {
@@ -39,14 +40,20 @@ export function setItems_copilotBing() {
     $('.cib-message-content').each(function (each) {
         if (!$(this).hasClass("CopilotFontSet")) {
             $(this).addClass('CopilotFontSet');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 
     $('.cib-message-content p').each(function (each) {
         if (!$(this).hasClass("CopilotFontSet")) {
             $(this).addClass('CopilotFontSet');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 }
@@ -55,7 +62,10 @@ export function setBing() {
     $('.cib-message-content').each(function (each) {
         if (!$(this).hasClass("CopilotFontSet")) {
             $(this).addClass('CopilotFontSet');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 }

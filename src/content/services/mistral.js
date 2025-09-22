@@ -1,6 +1,7 @@
 // mistral.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { detectTextDirection } from '../utils/analyzeDirection.js';
 
 export function setMistral() {
     if (chrome.runtime?.id) {
@@ -39,14 +40,20 @@ export function setMistral() {
     $("body textarea").each(function (each) {
         if (!$(this).hasClass("AsRtl")) {
             $(this).addClass('AsRtl');
-            $(this).attr("dir", "auto");
+            const text = $(this).val() || $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 
     $("body p").each(function (each) {
         if (!$(this).hasClass("AsRtl")) {
             $(this).addClass('AsRtl');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 }

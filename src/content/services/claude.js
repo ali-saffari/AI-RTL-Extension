@@ -1,6 +1,7 @@
 // claude.js service functions
 import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { detectTextDirection } from '../utils/analyzeDirection.js';
 
 // Claude service functions
 export function setItems_Claude() {
@@ -43,7 +44,10 @@ export function setItems_Claude() {
         $('[data-testid="conversation-turn-3"]').each(function (each) {
             if (!$(this).hasClass("AsRtlClaudeUser")) {
                 $(this).addClass('AsRtlClaudeUser');
-                $(this).attr("dir", "auto");
+                const text = $(this).text();
+                if (text && text.trim()) {
+                    $(this).attr("dir", detectTextDirection(text));
+                }
             }
         })
     }

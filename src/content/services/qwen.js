@@ -1,5 +1,6 @@
 // qwen.js service functions
 import { addCopyright } from '../utils/copyright.js';
+import { detectTextDirection } from '../utils/analyzeDirection.js';
 
 export function setQwenlm() {
     if (chrome.runtime?.id) {
@@ -11,14 +12,20 @@ export function setQwenlm() {
     $("body textarea").each(function (each) {
         if (!$(this).hasClass("AsRtl")) {
             $(this).addClass('AsRtl');
-            $(this).attr("dir", "auto");
+            const text = $(this).val() || $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 
     $("body p").each(function (each) {
         if (!$(this).hasClass("AsRtl")) {
             $(this).addClass('AsRtl');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 }

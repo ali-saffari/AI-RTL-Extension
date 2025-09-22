@@ -1,7 +1,6 @@
 // ChatGPT service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
 import { isRTL, detectTextDirection } from '../utils/analyzeDirection.js';
+import { addCopyright } from '../utils/copyright.js';
 
 export function initializeChatGptElements() {
     let presentation = ".relative.flex.h-full "
@@ -9,25 +8,9 @@ export function initializeChatGptElements() {
     let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
 
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
         $(fo).each(function (each) {
             if (!$(this).parent().hasClass("AsOk")) {
-                $(this).parent().addClass("AsOk")
-                $(this).parent().append(`<div class="AsRtl FontSet AsBox text-xs text-token-text-secondary">
-         <a href="${saffariLink}" target="_blank">
-                <img src="${alisaffari}" alt="ali saffari">
-</a>
-${textSaffari}
- ${BtnDonate()}
-            </div>`)
-
-                $('body').each(function (each) {
-                    if (!$(this).hasClass("AsDonateOk")) {
-                        $(this).append(modalDonate())
-                    }
-                })
-                modalDonateFun()
+                addCopyright($(this).parent(), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
             }
         })
     }
@@ -35,7 +18,10 @@ ${textSaffari}
     $('.hljs-comment').each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
         }
     })
 
@@ -47,6 +33,7 @@ ${textSaffari}
             if (typeof text == "string") {
                 $(this).attr("dir", detectTextDirection(text));
             }
+
         }
     })
 
@@ -58,6 +45,7 @@ ${textSaffari}
             if (isRTL(text)) {
                 $(this).parent().addClass("setRight")
             }
+
         }
     })
 
@@ -72,7 +60,10 @@ ${textSaffari}
     $(presentation + '#prosemirror-editor-container').each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
             $(this).addClass('flex-row-reverse');
             $(this).addClass('FontSetImportantGPT');
         }
@@ -81,7 +72,10 @@ ${textSaffari}
     $("#prompt-textarea").each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
-            $(this).attr("dir", "auto");
+            const text = $(this).text();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
             $(this).addClass('FontSetImportantGPT');
         }
     })
@@ -164,4 +158,6 @@ export function activateChatGptRTL() {
         console.log('targetNodeB not found - observerB not started');
     }
 }
+
+
 

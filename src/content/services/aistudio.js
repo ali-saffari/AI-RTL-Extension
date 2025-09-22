@@ -39,8 +39,6 @@ export function setAiStudio() {
 
             if (text && text.trim()) {
                 $(this).attr("dir", analyzeTextDirection(text));
-            } else {
-                $(this).attr("dir", "auto");
             }
 
             // Add input event listener for real-time direction detection
@@ -48,8 +46,6 @@ export function setAiStudio() {
                 const currentText = $(this).val();
                 if (currentText && currentText.trim()) {
                     $(this).attr("dir", analyzeTextDirection(currentText));
-                } else {
-                    $(this).attr("dir", "auto");
                 }
             });
         }
