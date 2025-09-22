@@ -11,6 +11,7 @@
  * @returns {string} - "rtl" or "ltr"
  */
 function analyzeTextDirection(text) {
+    
     const rtlCharRanges = [
         [0x0590, 0x05FF], // عبری
         [0x0600, 0x06FF], // عربی و فارسی
@@ -25,41 +26,39 @@ function analyzeTextDirection(text) {
         return rtlCharRanges.some(([start, end]) => code >= start && code <= end);
     }
 
+    // Emoji-aware normalization: remove all emojis before analysis
     function isEmoji(char) {
         const codePoint = char.codePointAt(0);
         return (
-            // Common emoji blocks
-            (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) || // Misc Symbols and Pictographs
-            (codePoint >= 0x1F600 && codePoint <= 0x1F64F) || // Emoticons
-            (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) || // Transport and Map
-            (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) || // Supplemental Symbols and Pictographs
-            (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) || // Symbols & Pictographs Extended-A
-            (codePoint >= 0x2600 && codePoint <= 0x26FF) ||   // Misc symbols
-            (codePoint >= 0x2700 && codePoint <= 0x27BF) ||   // Dingbats
-            // Emoji components
-            (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) || // Skin tones
-            (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) || // Regional indicators
-            codePoint === 0x200D ||                           // Zero-width joiner
-            (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||   // Variation selectors
-            codePoint === 0x20E3 ||                           // Combining enclosing keycap
-            (codePoint >= 0xE0020 && codePoint <= 0xE007F)    // Tags (emoji sequences)
+            (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) ||
+            (codePoint >= 0x1F600 && codePoint <= 0x1F64F) ||
+            (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) ||
+            (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) ||
+            (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) ||
+            (codePoint >= 0x2600 && codePoint <= 0x26FF) ||
+            (codePoint >= 0x2700 && codePoint <= 0x27BF) ||
+            (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
+            (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
+            codePoint === 0x200D ||
+            (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||
+            codePoint === 0x20E3 ||
+            (codePoint >= 0xE0020 && codePoint <= 0xE007F)
         );
     }
 
-    // Remove all emojis and their components from the entire text
     function removeAllEmojis(input) {
         if (!input) return input;
         let result = '';
-        for (let i = 0; i < input.length; ) {
+        for (let i = 0; i < input.length;) {
             const codePoint = input.codePointAt(i);
             const char = String.fromCodePoint(codePoint);
             const isEmojiComponent = (
-                (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) || // Skin tones
-                (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) || // Regional indicators
-                (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||   // Variation selectors
-                codePoint === 0x200D ||                           // Zero-width joiner
-                codePoint === 0x20E3 ||                           // Keycap combining
-                (codePoint >= 0xE0020 && codePoint <= 0xE007F)    // Tags
+                (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
+                (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
+                (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||
+                codePoint === 0x200D ||
+                codePoint === 0x20E3 ||
+                (codePoint >= 0xE0020 && codePoint <= 0xE007F)
             );
             if (!isEmoji(char) && !isEmojiComponent) {
                 result += char;
@@ -69,48 +68,43 @@ function analyzeTextDirection(text) {
         return result;
     }
 
-    function isPunctuation(char) {
-        const code = char.charCodeAt(0);
-        return (
-            (code >= 0x0020 && code <= 0x002F) ||   // Basic punctuation
-            (code >= 0x003A && code <= 0x0040) ||   // More punctuation
-            (code >= 0x005B && code <= 0x0060) ||   // Brackets and more
-            (code >= 0x007B && code <= 0x007E) ||   // Braces and tilde
-            (code >= 0x2000 && code <= 0x206F) ||   // General punctuation
-            (code >= 0x2E00 && code <= 0x2E7F) ||   // Supplemental punctuation
-            (code >= 0x3000 && code <= 0x303F) ||   // CJK symbols and punctuation
-            (code >= 0xFE50 && code <= 0xFE6F) ||   // Small form variants
-            (code >= 0xFF00 && code <= 0xFFEF)      // Halfwidth and fullwidth forms
-        );
+    // Remove brackets/parentheses/quotes to avoid direction bias
+    function removeBracketsAndQuotes(input) {
+        if (!input) return input;
+        const charsToRemove = new Set([
+            '(', ')', '[', ']', '{', '}', '<', '>',
+            '«', '»', '“', '”', '„', '‟', '′', '″',
+            '‘', '’', '‹', '›', '"', "'"
+        ]);
+        let result = '';
+        for (let i = 0; i < input.length;) {
+            const codePoint = input.codePointAt(i);
+            const char = String.fromCodePoint(codePoint);
+            if (!charsToRemove.has(char)) {
+                result += char;
+            }
+            i += char.length;
+        }
+        return result;
     }
 
-    // حذف تمام ایموجی‌ها از کل متن و سپس حذف علائم نگارشی ابتدایی برای تحلیل بهتر
-    let cleanText = removeAllEmojis(text).trim();
-    while (cleanText.length > 0 && (isPunctuation(cleanText[0]))) {
-        cleanText = cleanText.slice(1).trim();
-    }
-    
-    // اگر متن خالی شد، متن اصلی را بررسی کن
-    if (cleanText.length === 0) {
-        cleanText = text.trim();
-    }
-
-    const words = cleanText.split(/\s+/).filter(w => w.length > 0);
+    const normalizedText = removeBracketsAndQuotes(removeAllEmojis(text)).trim();
+    const words = normalizedText.split(/\s+/).filter(w => w.length > 0);
     if (words.length === 0) return 'ltr';
 
+    console.log('Normalized text:', normalizedText);
+
     // بررسی اولویت‌های خاص برای تشخیص جهت
+    
+    // اگر شروع و پایان متن با فارسی بود، RTL است
     if (words.length >= 2) {
         const firstWord = words[0];
         const lastWord = words[words.length - 1];
         const firstWordIsRTL = [...firstWord].some(isRTLChar);
         const lastWordIsRTL = [...lastWord].some(isRTLChar);
         
-        // اگر متن با فارسی شروع و با فارسی تمام شود
         if (firstWordIsRTL && lastWordIsRTL) {
-            // برای متن‌های خیلی کوتاه (2-3 کلمه)، همیشه RTL
-            if (words.length <= 3) {
-                return 'rtl';
-            }
+            return 'rtl';
         }
         
         // اگر متن با انگلیسی شروع و با انگلیسی تمام شود
@@ -129,27 +123,6 @@ function analyzeTextDirection(text) {
             if ([...word].some(isRTLChar)) rtlWordsCount++;
         }
         return rtlWordsCount > 0 ? 'rtl' : 'ltr';
-    }
-
-    // بررسی خاص برای متن‌هایی که با فارسی شروع می‌شوند
-    if (words.length > 0) {
-        const firstWord = words[0];
-        const firstWordIsRTL = [...firstWord].some(isRTLChar);
-        
-        // اگر اولین کلمه فارسی است، احتمالاً کل متن RTL است
-        if (firstWordIsRTL) {
-            // بررسی چند کلمه اول
-            let rtlWordsInFirstThree = 0;
-            const wordsToCheck = words.slice(0, Math.min(3, words.length));
-            for (const word of wordsToCheck) {
-                if ([...word].some(isRTLChar)) rtlWordsInFirstThree++;
-            }
-            
-            // اگر حداقل یکی از کلمات اول فارسی است، RTL
-            if (rtlWordsInFirstThree > 0) {
-                return 'rtl';
-            }
-        }
     }
 
     // برای متن‌های متوسط (5-10 کلمه)، 50% اول را بررسی کن
