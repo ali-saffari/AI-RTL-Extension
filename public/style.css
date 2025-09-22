@@ -233,7 +233,7 @@ code.AsSetLtr , pre.AsSetLtr {
     display: inline-block;
 }
 
-.
+
 .FontSet span.math.math-inline{
     direction: ltr;
     /*text-align: left;*/
@@ -309,6 +309,15 @@ code.AsSetLtr , pre.AsSetLtr {
     vertical-align: middle;
 }
 
+
+
+/* ------------chaGPT----------------- */
+
+
+ blockquote.AsOkText::after{
+    right: 0;
+    left: initial;
+}
 
 
 /*----------------claud----------------*/
