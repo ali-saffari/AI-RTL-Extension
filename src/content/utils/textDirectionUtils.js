@@ -127,7 +127,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     processParagraphWithBreaks(this, fontClass);
                 } 
                 // Special handling for code elements - use code detection algorithm
-                else if (['blockquote', 'pre', 'code'].includes(selector)) {
+                else if (['pre', 'code'].includes(selector)) {
                     const text = textExtractor(this);
                     const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
                     const isCodeContent = !hasLanguageTextClass && isCode(text);
@@ -153,7 +153,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     }
                 }
                 // Special handling for list elements - recursively process their children
-                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd'].includes(selector)) {
+                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'blockquote'].includes(selector)) {
                     const text = textExtractor(this);
                     console.log("processTextElements", this)
                     setTextDirectionAndFont(this, text, fontClass);
@@ -167,6 +167,107 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                 else {
                     const text = textExtractor(this);
                     console.log("processTextElements", this , text)
+                    setTextDirectionAndFont(this, text, fontClass);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * Claude-specific function to process text elements with smart direction detection
+ * @param {jQuery} container - Container to search in
+ * @param {Array} selectors - Array of CSS selectors
+ * @param {Function} textExtractor - Function to extract text from element
+ * @param {string} fontClass - Font class to apply (optional)
+ * @param {string} processedClass - Class to mark processed elements (optional)
+ */
+function processTextElementsClaude(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+    selectors.forEach(selector => {
+        container.children(selector).each(function (each) {
+            if (!$(this).hasClass(processedClass)) {
+                $(this).addClass(processedClass);
+                
+                // Special handling for paragraph elements with <br> tags
+                if (selector === 'p') {
+                    processParagraphWithBreaks(this, fontClass);
+                } 
+                // Special handling for code elements - use code detection algorithm
+                else if (['blockquote', 'pre', 'code'].includes(selector)) {
+                    const text = textExtractor(this);
+                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
+                    const isCodeContent = !hasLanguageTextClass && isCode(text);
+                    
+                    console.log("processTextElementsClaude (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
+                    
+                    if (isCodeContent) {
+                        // If content is detected as code, always force LTR
+                        $(this).attr("dir", "ltr");
+                        if (fontClass) {
+                            $(this).addClass(fontClass);
+                        }
+                        $(this).addClass('AsSetLtr');
+                        $(this).addClass('FontSetCode');
+                        
+                        console.log("processTextElementsClaude (LTR Code)", this, "Forced LTR for detected code element");
+                    } else {
+                        // If not code or has language-text class, use normal direction detection
+                        $(this).find('*').removeAttr('dir');
+                        setTextDirectionAndFont(this, text, fontClass);
+                        console.log("processTextElementsClaude (Normal)", this, "Normal direction detection for non-code element");
+                    }
+                }
+                // Special handling for list elements - check if has children first
+                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'div' , 'p'].includes(selector)) {
+                    const $element = $(this);
+                    const hasChildren = $element.children().length > 0;
+                    
+                    if (hasChildren) {
+                        // If has children, first process them recursively
+                        processTextElementsClaude($element, selectors, textExtractor, fontClass, processedClass);
+                        
+                        // Then count RTL vs LTR children to decide parent direction
+                        const children = $element.find('*[dir]');
+                        let rtlCount = 0;
+                        let ltrCount = 0;
+                        
+                        children.each(function() {
+                            const dir = $(this).attr('dir');
+                            if (dir === 'rtl') {
+                                rtlCount++;
+                            } else if (dir === 'ltr') {
+                                ltrCount++;
+                            }
+                        });
+                        
+                        // Decide parent direction based on children majority
+                        const parentDirection = rtlCount > ltrCount ? 'rtl' : 'ltr';
+                        $element.attr('dir', parentDirection);
+                        
+                        if (fontClass) {
+                            $element.addClass(fontClass);
+                        }
+                        
+                        // Check if children are li elements
+                        const hasLiChildren = $element.children('li').length > 0;
+                        
+                        if (hasLiChildren) {
+                            // If children are li elements, set the final direction to the li elements
+                            $element.children('li').attr('dir', parentDirection);
+                            console.log("processTextElementsClaude (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
+                        } else {
+                            console.log("processTextElementsClaude (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
+                        }
+                    } else {
+                        // If no children, decide based on own content
+                        const text = textExtractor(this);
+                        setTextDirectionAndFont(this, text, fontClass);
+                        console.log("processTextElementsClaude (List/Div without children)", this, "Based on own content");
+                    }
+                } 
+                else {
+                    const text = textExtractor(this);
+                    console.log("processTextElementsClaude", this , text)
                     setTextDirectionAndFont(this, text, fontClass);
                 }
             }
@@ -222,6 +323,7 @@ export {
         setTextDirectionAndFont,
         processParagraphWithBreaks,
         processTextElements,
+        processTextElementsClaude,
         getArticleTextElements,
         getAttributeTextElements
     };

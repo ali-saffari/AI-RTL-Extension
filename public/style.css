@@ -339,21 +339,28 @@ code.AsSetLtr , pre.AsSetLtr {
     flex-direction: row-reverse;
 }
 
-.AsRtlClaudeUser .group.relative.inline-flex.gap-2.bg-gradient-to-b.from-bg-300.pl-2\.5.pr-6 {
-
-
-    padding-left: 1.5rem;
-    padding-right: .625rem;
-
-
-}
-
-
-
 
 .AsRtlClaudeUser .flex.flex-row.gap-2 {
     flex-direction: row-reverse;
+} 
+
+
+
+.AsRtlClaudeUser .group.relative.inline-flex.gap-2.break-words.flex-col.pr-6 {
+
+
+    padding-left: 1rem;
+    padding-right: .825rem;
+
+
 }
+
+
+
+
+
+
+
 .AsBox.AsBoxClaude {
     font-size: 15px;
     font-weight: 200;

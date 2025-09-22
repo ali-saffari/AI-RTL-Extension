@@ -1,77 +1,121 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElements, getArticleTextElements, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { processTextElementsClaude, getArticleTextElements, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
 
-// Claude service functions
-export function setItems_Claude() {
-    let interval = setInterval(() => {
-        set()
-    }, 500)
-
-    function set() {
-        // Add copyright using utility function
-        const $targetElement = $('.sticky fieldset.flex.flex-col .items-stretch.transition-all');
-        if ($targetElement.length > 0) {
-            addCopyright($targetElement.parent(), 'AsBoxClaude', '');
+// Element Processing Map - آرایه ای از آبجکت ها شامل target و function
+const ELEMENT_MAP = [
+    {
+        target: '.sticky fieldset.flex.flex-col .items-stretch.transition-all',
+        function: (element) => {
+            if ($(element).length > 0) {
+                addCopyright($(element).parent(), 'AsBoxClaude', '');
+            }
         }
-
-        
-        $(".ProseMirror").each(function (each) {
-            if (!$(this).hasClass("AsOk")) {
-                $(this).addClass('AsOk');
-                $(this).addClass('FontClaude')
-
+    },
+    {
+        target: '.ProseMirror , textarea',
+        function: (element) => {
+            if (!$(element).hasClass("AsOk")) {
+                $(element).addClass('AsOk FontClaude');
                 
-                const text = $(this).text();
-                setTextDirectionAndFont(this, text, 'FontSet');
+                // Use appropriate method based on element type
+                const text = $(element).is('textarea') ? $(element).val() : $(element).text();
+                setTextDirectionAndFont(element, text, 'FontSet');
                 
-                // Add event listener for direction detection (removed 'input' to avoid React conflicts)
-                $(this).on('keyup paste', function() {
-                    const currentText = $(this).text();
+                $(element).on('keyup paste input', function() {
+                    // Use appropriate method based on element type
+                    const currentText = $(this).is('textarea') ? $(this).val() : $(this).text();
                     console.log('Prompt textarea text:', currentText);
                     
-                    // Use requestAnimationFrame to avoid React conflicts
                     requestAnimationFrame(() => {
                         setTextDirectionAndFont(this, currentText, 'FontSet');
                     });
                 });
             }
-        })
+        }
+    },
+    {
+        target: '.mb-1.mt-1',
+        function: (element) => {
 
-        
 
-        // Process user messages for RTL detection
-        $(".flex.flex-1.overflow-y-scroll.overflow-x-hidden.relative .flex-1.flex.flex-col  .mb-1.mt-1 ").each(function (each) {
-            const text = $(this).find(".font-user-message  p.break-words").text()
-            if (isRTL(text)) {
-                if (!$(this).hasClass("AsRtlClaudeUser")) {
-                    $(this).addClass('AsRtlClaudeUser');
-                }
+            const text = $(element).find('.break-words').text();
+            
+            if (isRTL(text) && !$(element).hasClass("AsRtlClaudeUser")) {
+                $(element).addClass('AsRtlClaudeUser');
+                $(element).addClass('FontSet');
             }
-        });
+        }
+    },
+    {
 
-        $('.standard-markdown').each(function (each) {
-            if (!$(this).hasClass("AsOk")) {
-                $(this).addClass('AsOk');
-                $(this).addClass('FontSet');
-                $(this).addClass('FontClaude')
+        //پاسخ های کلاود
+        target: '.standard-markdown , .progressive-markdown',
+        function: (element) => {
+            if (!$(element).hasClass("AsOk")) {
+                $(element).addClass('AsOk FontSet FontClaude');
                 
-                
-
-
-                processTextElements(
-                    $(this), 
+                processTextElementsClaude(
+                    $(element), 
                     getArticleTextElements(), 
                     (element) => element.textContent,
                     'FontSet FontClaude',
                     'AsOkText'
                 );
             }
-             
-        })
+        }
+    },
+    {
 
-     
+        //بخشی که سمت راست باز میشود
+        target: '#standard-markdown-artifact , #markdown-artifact',
+        function: (element) => {
+            if (!$(element).hasClass("AsOk")) {
+                $(element).addClass('AsOk FontSet FontClaude');
+                
+                processTextElementsClaude(
+                    $(element), 
+                    getArticleTextElements(), 
+                    (element) => element.textContent,
+                    'FontSet FontClaude',
+                    'AsOkText'
+                );
+            }
+        }
+    },
+    {
+
+        //بخش مقاله وسط متن ها
+        target: '.artifact-block-cell .leading-tight',
+        function: (element) => {
+            if (!$(element).hasClass("AsOk")) {
+                $(element).addClass('AsOk FontClaude');
+                
+                const text = $(element).text();
+                setTextDirectionAndFont($(element), text, 'FontSet');
+                
+            }
+        }
+    }
+];
+
+
+
+
+// Claude service functions
+export function setItems_Claude() {
+    let interval = setInterval(() => {
+        set()
+    }, 500)
+    set()
+    function set() {
+        // Process all elements using the mapping array
+        ELEMENT_MAP.forEach(({ target, function: processFunction }) => {
+            $(target).each(function() {
+                processFunction(this);
+            });
+        });
     }
 }
 
@@ -79,9 +123,6 @@ export function setItems_Claude() {
 export function activateClaude() {
     console.log("activateClaude");
     setItems_Claude();
-    let interval = setInterval(() => {
-        setItems_Claude();
-    }, 1000);
 }
 
 
