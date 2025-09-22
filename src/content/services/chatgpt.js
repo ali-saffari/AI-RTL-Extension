@@ -44,12 +44,12 @@ export function initializeChatGptElements() {
                 'AsOkText'
             );
             
-            // Also analyze the main text-message content
-            const mainText = $(this).text();
-            if (mainText && mainText.trim()) {
-                setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
-                console.log('Main text-message processed:', mainText);
-            }
+            // // Also analyze the main text-message content
+            // const mainText = $(this).text();
+            // if (mainText && mainText.trim()) {
+            //     setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
+            //     console.log('Main text-message processed:', mainText);
+            // }
         }
     })
 

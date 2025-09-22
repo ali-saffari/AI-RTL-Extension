@@ -26,18 +26,47 @@ function analyzeTextDirection(text) {
     }
 
     function isEmoji(char) {
-        const code = char.charCodeAt(0);
+        const codePoint = char.codePointAt(0);
         return (
-            (code >= 0x1F600 && code <= 0x1F64F) || // Emoticons
-            (code >= 0x1F300 && code <= 0x1F5FF) || // Misc Symbols and Pictographs
-            (code >= 0x1F680 && code <= 0x1F6FF) || // Transport and Map
-            (code >= 0x1F1E0 && code <= 0x1F1FF) || // Regional indicator symbols
-            (code >= 0x2600 && code <= 0x26FF) ||   // Misc symbols
-            (code >= 0x2700 && code <= 0x27BF) ||   // Dingbats
-            (code >= 0xFE00 && code <= 0xFE0F) ||   // Variation Selectors
-            (code >= 0x1F900 && code <= 0x1F9FF) || // Supplemental Symbols and Pictographs
-            (code >= 0x1FA70 && code <= 0x1FAFF)    // Symbols and Pictographs Extended-A
+            // Common emoji blocks
+            (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) || // Misc Symbols and Pictographs
+            (codePoint >= 0x1F600 && codePoint <= 0x1F64F) || // Emoticons
+            (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) || // Transport and Map
+            (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) || // Supplemental Symbols and Pictographs
+            (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) || // Symbols & Pictographs Extended-A
+            (codePoint >= 0x2600 && codePoint <= 0x26FF) ||   // Misc symbols
+            (codePoint >= 0x2700 && codePoint <= 0x27BF) ||   // Dingbats
+            // Emoji components
+            (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) || // Skin tones
+            (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) || // Regional indicators
+            codePoint === 0x200D ||                           // Zero-width joiner
+            (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||   // Variation selectors
+            codePoint === 0x20E3 ||                           // Combining enclosing keycap
+            (codePoint >= 0xE0020 && codePoint <= 0xE007F)    // Tags (emoji sequences)
         );
+    }
+
+    // Remove all emojis and their components from the entire text
+    function removeAllEmojis(input) {
+        if (!input) return input;
+        let result = '';
+        for (let i = 0; i < input.length; ) {
+            const codePoint = input.codePointAt(i);
+            const char = String.fromCodePoint(codePoint);
+            const isEmojiComponent = (
+                (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) || // Skin tones
+                (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) || // Regional indicators
+                (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||   // Variation selectors
+                codePoint === 0x200D ||                           // Zero-width joiner
+                codePoint === 0x20E3 ||                           // Keycap combining
+                (codePoint >= 0xE0020 && codePoint <= 0xE007F)    // Tags
+            );
+            if (!isEmoji(char) && !isEmojiComponent) {
+                result += char;
+            }
+            i += char.length;
+        }
+        return result;
     }
 
     function isPunctuation(char) {
@@ -55,9 +84,9 @@ function analyzeTextDirection(text) {
         );
     }
 
-    // حذف ایموجی‌ها و علائم نگارشی از ابتدای متن برای تحلیل بهتر
-    let cleanText = text.trim();
-    while (cleanText.length > 0 && (isEmoji(cleanText[0]) || isPunctuation(cleanText[0]))) {
+    // حذف تمام ایموجی‌ها از کل متن و سپس حذف علائم نگارشی ابتدایی برای تحلیل بهتر
+    let cleanText = removeAllEmojis(text).trim();
+    while (cleanText.length > 0 && (isPunctuation(cleanText[0]))) {
         cleanText = cleanText.slice(1).trim();
     }
     

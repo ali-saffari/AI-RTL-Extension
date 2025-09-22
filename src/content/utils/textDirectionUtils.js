@@ -29,24 +29,18 @@ function setTextDirectionAndFont(element, text, fontClass = 'FontSet') {
  */
 function processParagraphWithBreaks(element, fontClass = 'FontSet') {
     const $element = $(element);
-    console.log('Processing paragraph:', $element[0]);
     
     // Check if already processed using data attribute
     if ($element.data('rtl-processed')) {
-        console.log('Already processed, skipping');
         return;
     }
     
     // Process each line separated by <br> tags
     const htmlContent = $element.html();
-    console.log('HTML content:', htmlContent);
     
     if (htmlContent && htmlContent.includes('<br')) {
-        console.log('Found <br> tags, processing...');
-        
         // Split by <br> tags and process each part (including br tags with attributes)
         const parts = htmlContent.split(/<br[^>]*>/i);
-        console.log('Split parts:', parts);
         
         // If we have multiple parts with different directions, we need to restructure
         if (parts.length > 1) {
@@ -62,20 +56,14 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
                         const direction = detectTextDirection(cleanText);
                         directions.push(direction);
                         texts.push(cleanText);
-                        console.log(`Paragraph part ${index + 1}:`, cleanText, 'Direction:', direction);
                     }
                 }
             });
             
-            console.log('All directions:', directions);
-            
             // Check if we have mixed directions
             const uniqueDirections = [...new Set(directions)];
-            console.log('Unique directions:', uniqueDirections);
             
             if (uniqueDirections.length > 1) {
-                console.log('Mixed directions detected, restructuring...');
-                
                 // Create separate elements for each part with different directions
                 let newHtml = '';
                 parts.forEach((part, index) => {
@@ -91,24 +79,18 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
                     }
                 });
                 
-                console.log('New HTML:', newHtml);
-                
                 // Replace the content
                 $element.html(newHtml);
                 $element.addClass(fontClass);
                 $element.data('rtl-processed', true);
-                
-                console.log('Paragraph restructured successfully');
             } else {
                 // All parts have the same direction, apply to the main element
-                console.log('Same direction for all parts:', directions[0]);
                 $element.attr("dir", directions[0]);
                 $element.addClass(fontClass);
                 $element.data('rtl-processed', true);
             }
         } else {
             // Single part, process normally
-            console.log('Single part, processing normally');
             const mainText = $element.text();
             if (mainText && mainText.trim()) {
                 setTextDirectionAndFont(element, mainText, fontClass);
@@ -117,7 +99,6 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
         }
     } else {
         // No <br> tags, process normally
-        console.log('No <br> tags, processing normally');
         const mainText = $element.text();
         if (mainText && mainText.trim()) {
             setTextDirectionAndFont(element, mainText, fontClass);
@@ -142,11 +123,10 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                 
                 // Special handling for paragraph elements with <br> tags
                 if (selector === 'p') {
-
-                    console.log("processParagraphWithBreaks", this)
                     processParagraphWithBreaks(this, fontClass);
                 } else {
                     const text = textExtractor(this);
+                    console.log("processTextElements", this , text)
                     setTextDirectionAndFont(this, text, fontClass);
                 }
             }
