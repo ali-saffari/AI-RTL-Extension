@@ -187,7 +187,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     processParagraphWithBreaks(this, fontClass);
                 } 
                 // Special handling for code elements - use code detection algorithm
-                else if (['blockquote', 'pre', 'code'].includes(selector)) {
+                else if ([ 'pre', 'code'].includes(selector)) {
                     const text = textExtractor(this);
                     const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
                     const isCodeContent = !hasLanguageTextClass && isCode(text);
@@ -299,6 +299,126 @@ function getArticleTextElements() {
 }
 
 /**
+ * Advanced recursive text processing function that examines all elements
+ * @param {jQuery} container - Container to search in
+ * @param {string} fontClass - Font class to apply (optional)
+ * @param {string} processedClass - Class to mark processed elements (optional)
+ */
+function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk') {
+    // Get all elements in the container, including deeply nested ones
+    const allElements = container.find('*').addBack();
+    
+    allElements.each(function() {
+        const $element = $(this);
+        
+        // Skip if already processed
+        if ($element.hasClass(processedClass)) {
+            return;
+        }
+        
+        // Mark as processed
+        $element.addClass(processedClass);
+        
+        // Get element tag name
+        const tagName = this.tagName.toLowerCase();
+        
+        // Skip ms-code-block elements completely
+        console.log("processTextElementsAdvanced", tagName)
+        if (tagName === 'ms-code-block') {
+            console.log("ms-code-block return")
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
+        // Special handling for code elements - use code detection algorithm
+        if (['pre', 'code'].includes(tagName)) {
+            const text = $element.text();
+            const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
+            const isCodeContent = !hasLanguageTextClass && isCode(text);
+            
+            if (isCodeContent) {
+                // If content is detected as code, always force LTR
+                $element.attr("dir", "ltr");
+                if (fontClass) {
+                    $element.addClass(fontClass);
+                }
+                $element.addClass('AsSetLtr');
+                $element.addClass('FontSetCode');
+            } else {
+                // If not code or has language-text class, use normal direction detection
+                $element.find('*').removeAttr('dir');
+                setTextDirectionAndFont(this, text, fontClass);
+            }
+        }
+        // For all other elements, check if they have children
+        else {
+            const hasChildren = $element.children().length > 0;
+            
+            if (hasChildren) {
+                // If has children, first process them recursively
+                processTextElementsAdvanced($element, fontClass, processedClass);
+                
+                // Smart direction decision based on children and element type
+                const children = $element.find('*[dir]');
+                let rtlCount = 0;
+                let ltrCount = 0;
+                let textContent = '';
+                
+                children.each(function() {
+                    const dir = $(this).attr('dir');
+                    if (dir === 'rtl') {
+                        rtlCount++;
+                    } else if (dir === 'ltr') {
+                        ltrCount++;
+                    }
+                });
+                
+                // For li elements, also consider direct text content
+                if (tagName === 'li') {
+                    const directText = $element.clone().children().remove().end().text().trim();
+                    if (directText) {
+                        const directDirection = detectTextDirection(directText);
+                        if (directDirection === 'rtl') {
+                            rtlCount++;
+                        } else {
+                            ltrCount++;
+                        }
+                    }
+                }
+                
+                // Decide parent direction based on children majority and element type
+                let parentDirection;
+                if (rtlCount > ltrCount) {
+                    parentDirection = 'rtl';
+                } else if (ltrCount > rtlCount) {
+                    parentDirection = 'ltr';
+                } else {
+                    // If equal counts, check element's own text content
+                    const elementText = $element.text().trim();
+                    if (elementText) {
+                        parentDirection = detectTextDirection(elementText);
+                    } else {
+                        parentDirection = 'ltr'; // Default fallback
+                    }
+                }
+                $element.attr('dir', parentDirection);
+                
+                if (fontClass) {
+                    $element.addClass(fontClass);
+                }
+            } else {
+                // If no children, decide based on own text content
+                const text = $element.text();
+                if (text && text.trim()) {
+                    setTextDirectionAndFont(this, text, fontClass);
+                }
+            }
+        }
+    });
+}
+
+/**
  * Get common attribute selectors for text content
  * @returns {Array} Array of CSS selectors for elements with text attributes
  */
@@ -318,6 +438,7 @@ export {
         processParagraphWithBreaks,
         processTextElementsChatGPT,
         processTextElements,
+        processTextElementsAdvanced,
         getArticleTextElements,
         getAttributeTextElements
     };

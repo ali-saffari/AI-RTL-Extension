@@ -3,7 +3,7 @@ import {
     analyzeTextDirection
 } from '../utils/analyzeDirection.js';
 import { 
-    processTextElementsChatGPT,
+    processTextElementsAdvanced,
     getArticleTextElements,
     getAttributeTextElements
 } from '../utils/textDirectionUtils.js';
@@ -24,8 +24,8 @@ export function setAiStudio() {
     $("ms-text-chunk").each(function (each) {
 
 
-        // پردازش عناصر متنی مقاله
-        processTextElementsChatGPT($(this), getArticleTextElements(), (element) => element.textContent);
+        // پردازش پیشرفته تمام عناصر متنی
+        processTextElementsAdvanced($(this), 'FontSetNotimportant', 'AsOk');
 
    
     });
