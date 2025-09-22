@@ -1,8 +1,15 @@
 // ChatGPT service functions
 import { isRTL, detectTextDirection } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
+import { processTextElements, getArticleTextElements, setTextDirectionAndFont, processParagraphWithBreaks } from '../utils/textDirectionUtils.js';
 
 export function initializeChatGptElements() {
+    // Check if React is still hydrating
+    if (document.querySelector('[data-reactroot]') && !document.querySelector('[data-reactroot]').__reactInternalInstance) {
+        console.log('React is still hydrating, skipping...');
+        return;
+    }
+    
     let presentation = ".relative.flex.h-full "
     let fo = presentation + " .isolate.w-full.basis-auto .justify-center.min-h-8.text-xs.text-token-text-secondary "
     let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
@@ -19,21 +26,30 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+            setTextDirectionAndFont(this, text);
         }
     })
 
-    $('.text-message').each(function (each) {
+    $('.text-message .markdown').each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             $(this).addClass('FontSetImportantGPT');
-            const text = $(this).text()
-            if (typeof text == "string") {
-                $(this).attr("dir", detectTextDirection(text));
+            
+            // Use textDirectionUtils for comprehensive text analysis
+            processTextElements(
+                $(this), 
+                getArticleTextElements(), 
+                (element) => element.textContent,
+                'FontSetImportantGPT',
+                'AsOkText'
+            );
+            
+            // Also analyze the main text-message content
+            const mainText = $(this).text();
+            if (mainText && mainText.trim()) {
+                setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
+                console.log('Main text-message processed:', mainText);
             }
-
         }
     })
 
@@ -61,11 +77,8 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+            setTextDirectionAndFont(this, text, 'FontSetImportantGPT');
             $(this).addClass('flex-row-reverse');
-            $(this).addClass('FontSetImportantGPT');
         }
     })
 
@@ -73,10 +86,18 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-            $(this).addClass('FontSetImportantGPT');
+            setTextDirectionAndFont(this, text, 'FontSetImportantGPT');
+            
+            // Add event listener for direction detection (removed 'input' to avoid React conflicts)
+            $(this).on('keyup paste', function() {
+                const currentText = $(this).text();
+                console.log('Prompt textarea text:', currentText);
+                
+                // Use requestAnimationFrame to avoid React conflicts
+                requestAnimationFrame(() => {
+                    setTextDirectionAndFont(this, currentText, 'FontSetImportantGPT');
+                });
+            });
         }
     })
 }
@@ -111,9 +132,11 @@ export function initializeChatGptHistory() {
 
 // Main activation function for ChatGPT
 export function activateChatGptRTL() {
-    // Initial setup
-    initializeChatGptElements();
-    initializeChatGptHistory();
+    // Wait for React to fully load before initializing
+    setTimeout(() => {
+        initializeChatGptElements();
+        initializeChatGptHistory();
+    }, 1000);
 
     // SetInterval for periodic updates
     setInterval(() => {
@@ -121,23 +144,22 @@ export function activateChatGptRTL() {
         initializeChatGptHistory();
     }, 1000);
 
-    // MutationObserver for content changes
+    // MutationObserver for content changes with debouncing
+    let timeoutId;
     const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
             console.log("تغیر");
-            setTimeout(() => {
-                initializeChatGptElements();
-            }, 80);
-        });
+            initializeChatGptElements();
+        }, 200);
     });
 
     const observerB = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
             console.log("تغیر B");
-            setTimeout(() => {
-                initializeChatGptHistory();
-            }, 100);
-        });
+            initializeChatGptHistory();
+        }, 300);
     });
 
     const targetNode = document.querySelector('main.relative.h-full.w-full');

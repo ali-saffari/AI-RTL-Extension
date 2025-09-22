@@ -2,22 +2,21 @@ const chatGpt = true;
 const claude = true;
 const copilot = true;
 const freegpt = true;
-const thebAi = true
-const duckduckgo = true
-const perplexity = true
-const aiStudio = true
-const deepseek = true
-const youCom = true
-const qwenlm = true
-const poeCom = true
-const monica = true
-const gemini = true
-const grok = true
-
-const mistral = true
-const manus = true
-const kimi = true
-const blackbox = true
+const thebAi = true;
+const duckduckgo = true;
+const perplexity = true;
+const aiStudio = true;
+const deepseek = true;
+const youCom = true;
+const qwenlm = true;
+const poeCom = true;
+const monica = true;
+const gemini = true;
+const grok = true;
+const mistral = true;
+const manus = true;
+const kimi = true;
+const blackbox = true;
 
 
 
@@ -39,7 +38,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
             freegpt, thebAi, duckduckgo, perplexity,
-            aiStudio,deepseek, youCom , qwenlm , poeCom , monica , gemini , grok , mistral , manus , kimi
+            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox
         });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {

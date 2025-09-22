@@ -7,7 +7,8 @@ module.exports = {
         content: './src/content/index.ts',
         background: './src/background/index.ts',
     },
-    mode: 'production',
+    mode: 'development',
+    devtool: 'source-map',
     module: {
         rules: [
             {
