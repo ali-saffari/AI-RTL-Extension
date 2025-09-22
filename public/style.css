@@ -405,7 +405,9 @@ copilot
     font-family: iranyekan, sans-serif;
 }
 
-
+.listboxRtlCopilot {
+    flex-direction: row-reverse;
+}
 
 .space-y-3.CopilotFontSet {
     font-weight: 400;

@@ -51,9 +51,9 @@ const ELEMENT_MAP = [
     {
 
         //پاسخ های کلاود
-        target: '.standard-markdown , .progressive-markdown',
+        target: '.standard-markdown , .progressive-markdown , .whitespace-normal',
         function: (element) => {
-            if (!$(element).hasClass("AsOk")) {
+            // if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontSet FontClaude');
                 
                 processTextElements(
@@ -63,7 +63,7 @@ const ELEMENT_MAP = [
                     'FontSet FontClaude',
                     'AsOkText',
                 );
-            }
+            // }
         }
     },
     {
@@ -71,7 +71,7 @@ const ELEMENT_MAP = [
         //بخشی که سمت راست باز میشود
         target: '#standard-markdown-artifact , #markdown-artifact',
         function: (element) => {
-            if (!$(element).hasClass("AsOk")) {
+            // if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontSet FontClaude');
                 
                 processTextElements(
@@ -81,7 +81,7 @@ const ELEMENT_MAP = [
                     'FontSet FontClaude',
                     'AsOkText',
                 );
-            }
+            // }
         }
     },
     {

@@ -22,11 +22,44 @@ export function setItems_copilotBing() {
 
     // Process all text elements using processTextElementsAdvanced
     $('[data-content="ai-message"] .break-words').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
+        // if (!$(this).hasClass("AsOk")) {
     
             processTextElementsAdvanced($(this), 'CopilotFontSet', 'AsOk', true);
+        // }
+    });
+
+    $('[data-content="user-message"] .break-words').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            const text = $(this).text();
+            if (text && text.trim()) {
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                $(this).addClass('CopilotFontSet');
+                $(this).addClass('AsOk');
+            }
         }
     });
+
+    // Process listbox options for text direction detection
+    $('[role="listbox"] [role="option"]').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            const text = $(this).text();
+            if (text && text.trim()) {
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                $(this).addClass('CopilotFontSet');
+                $(this).addClass('AsOk');
+                
+                // Add RTL specific class if direction is RTL
+                if (direction === 'rtl') {
+                    $(this).addClass('listboxRtlCopilot');
+                }
+            }
+        }
+    });
+
+    
+
 
 
     // Process textarea elements for text direction detection

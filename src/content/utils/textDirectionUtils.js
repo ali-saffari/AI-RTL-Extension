@@ -201,7 +201,6 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
  */
 function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
 
-
     // Then process other elements as before
     selectors.forEach(selector => {
         container.children(selector).each(function (each) {
@@ -323,6 +322,7 @@ function getArticleTextElements() {
         // لیست‌ها
         'li', 'ul', 'ol', 'dl', 'dt', 'dd',
         // جداول - بهبود یافته برای پوشش کامل
+        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
         // ساختار مقاله
         'article', 'section', 'aside', 'header', 'footer',
         // عناصر متنی خاص
@@ -332,23 +332,144 @@ function getArticleTextElements() {
         // لینک‌ها
         'a',
         // عناصر اضافی برای جدول‌ها
+        '[role="table"]', '[role="row"]', '[role="cell"]', '[role="columnheader"]', '[role="rowheader"]'
     ];
 }
 
+/**
+ * Process tables in container with unified direction decision
+ * @param {jQuery} container - Container to search in
+ * @param {string} fontClass - Font class to apply (optional)
+ * @param {string} processedClass - Class to mark processed elements (optional)
+ */
+export function processTablesInContainer(container, fontClass = 'FontSet', processedClass = 'AsOk') {
+    // Find all table elements in the container
+    container.find('table').each(function() {
+        const $table = $(this);
+        
+        // Check if all table items are already processed
+        const allTableItems = $table.find('th, td, caption, tr');
+        const unprocessedItems = allTableItems.filter(function() {
+            return !$(this).hasClass(processedClass);
+        });
+        
+        // If there are unprocessed items, skip this table for now
+        if (unprocessedItems.length > 0) {
+            console.log(`Table skipped - ${unprocessedItems.length} items not processed yet`);
+            return;
+        }
+        
+        // Collect all text content from the entire table
+        let allTableText = '';
+        const tableElements = $table.find('th, td, caption').add($table.find('tr').not(':has(th, td)'));
+        
+        tableElements.each(function() {
+            const text = $(this).text();
+            if (text && text.trim()) {
+                allTableText += ' ' + text.trim();
+            }
+        });
+        
+        // Make unified direction decision for entire table
+        if (allTableText.trim()) {
+            const tableDirection = detectTextDirection(allTableText.trim());
+            
+            // Apply direction to table and all its elements
+            $table.attr('dir', tableDirection);
+            $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').attr('dir', tableDirection);
+            
+            // Set text alignment for all cells based on table direction
+            if (tableDirection === 'rtl') {
+                $table.find('th, td').css('text-align', 'right');
+            } else {
+                $table.find('th, td').css('text-align', 'left');
+            }
+            
+            // Apply font class to all table elements
+            if (fontClass) {
+                $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(fontClass);
+            }
+            
+            // Mark all table elements as processed
+            $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(processedClass);
+            
+            console.log(`Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
+        }
+    });
+    
+    // Also process ARIA table roles
+    container.find('[role="table"]').each(function() {
+        const $table = $(this);
+        
+        // Check if all ARIA table items are already processed
+        const allAriaTableItems = $table.find('[role="cell"], [role="columnheader"], [role="rowheader"], [role="row"]');
+        const unprocessedAriaItems = allAriaTableItems.filter(function() {
+            return !$(this).hasClass(processedClass);
+        });
+        
+        // If there are unprocessed items, skip this table for now
+        if (unprocessedAriaItems.length > 0) {
+            console.log(`ARIA Table skipped - ${unprocessedAriaItems.length} items not processed yet`);
+            return;
+        }
+        
+        // Collect all text content from the entire table
+        let allTableText = '';
+        const tableElements = $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]');
+        
+        tableElements.each(function() {
+            const text = $(this).text();
+            if (text && text.trim()) {
+                allTableText += ' ' + text.trim();
+            }
+        });
+        
+        // Make unified direction decision for entire table
+        if (allTableText.trim()) {
+            const tableDirection = detectTextDirection(allTableText.trim());
+            
+            // Apply direction to table and all its elements
+            $table.attr('dir', tableDirection);
+            $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').attr('dir', tableDirection);
+            
+            // Set text alignment for all cells based on table direction
+            if (tableDirection === 'rtl') {
+                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'right');
+            } else {
+                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'left');
+            }
+            
+            // Apply font class to all table elements
+            if (fontClass) {
+                $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').addClass(fontClass);
+            }
+            
+            // Mark all table elements as processed
+            $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').addClass(processedClass);
+            
+            console.log(`ARIA Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
+        }
+    });
+}
 
 /**
  * Advanced recursive text processing function that examines all elements
  * @param {jQuery} container - Container to search in
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
- * @param {boolean} isMainContainer - Whether this is the main container
+ * @param {boolean} isContainer - Whether this is a container element (optional)
  */
-function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk', isMainContainer = true) {
+function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false) {
+    console.log(`processTextElementsAdvanced called, isContainer: ${isContainer}`);
 
-    // Get all elements in the container, excluding the container itself
-    const allElements = container.find('*');
+    // If this is a container, process tables first
+    if (isContainer) {
+        processTablesInContainer(container, fontClass, processedClass);
+    }
+
+    // Get all elements in the container, including deeply nested ones
+    const allElements = container.find('*').addBack();
     
-
     allElements.each(function() {
         const $element = $(this);
         
@@ -387,6 +508,12 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
             return;
         }
         
+        // Skip table elements - they are processed by processTablesInContainer
+        if (['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'].includes(tagName)) {
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
         
         // Special handling for code elements - use code detection algorithm
         if (['pre', 'code'].includes(tagName)) {
@@ -426,7 +553,7 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                     }
                 } else {
                     // If has other types of children, process them recursively
-                    processTextElementsAdvanced($element, fontClass, processedClass, false);
+                    processTextElementsAdvanced($element, fontClass, processedClass);
                     
                     // Smart direction decision based on children and element type
                     const children = $element.find('*[dir]');
