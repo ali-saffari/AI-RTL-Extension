@@ -1,7 +1,7 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsClaude, getArticleTextElements, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { processTextElements, getArticleTextElements, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
 
 // Element Processing Map - آرایه ای از آبجکت ها شامل target و function
 const ELEMENT_MAP = [
@@ -56,7 +56,7 @@ const ELEMENT_MAP = [
             if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontSet FontClaude');
                 
-                processTextElementsClaude(
+                processTextElements(
                     $(element), 
                     getArticleTextElements(), 
                     (element) => element.textContent,
@@ -74,7 +74,7 @@ const ELEMENT_MAP = [
             if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontSet FontClaude');
                 
-                processTextElementsClaude(
+                processTextElements(
                     $(element), 
                     getArticleTextElements(), 
                     (element) => element.textContent,

@@ -3,7 +3,7 @@ import {
     analyzeTextDirection
 } from '../utils/analyzeDirection.js';
 import { 
-    processTextElements,
+    processTextElementsChatGPT,
     getArticleTextElements,
     getAttributeTextElements
 } from '../utils/textDirectionUtils.js';
@@ -25,7 +25,7 @@ export function setAiStudio() {
 
 
         // پردازش عناصر متنی مقاله
-        processTextElements($(this), getArticleTextElements(), (element) => element.textContent);
+        processTextElementsChatGPT($(this), getArticleTextElements(), (element) => element.textContent);
 
    
     });

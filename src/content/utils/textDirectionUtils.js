@@ -116,7 +116,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
  */
-function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+function processTextElementsChatGPT(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
     selectors.forEach(selector => {
         container.children(selector).each(function (each) {
             if (!$(this).hasClass(processedClass)) {
@@ -132,7 +132,6 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
                     const isCodeContent = !hasLanguageTextClass && isCode(text);
                     
-                    console.log("processTextElements (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
                     
                     if (isCodeContent) {
                         // If content is detected as code, always force LTR
@@ -144,29 +143,24 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                             $(this).addClass(fontClass);
                         }
                         $(this).addClass('AsSetLtr');
-                        console.log("processTextElements (LTR Code)", this, "Forced LTR for detected code element");
                     } else {
                         // If not code or has language-text class, use normal direction detection
                         $(this).find('*').removeAttr('dir');
                         setTextDirectionAndFont(this, text, fontClass);
-                        console.log("processTextElements (Normal)", this, "Normal direction detection for non-code element");
                     }
                 }
                 // Special handling for list elements - recursively process their children
                 else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'blockquote'].includes(selector)) {
                     const text = textExtractor(this);
-                    console.log("processTextElements", this)
                     setTextDirectionAndFont(this, text, fontClass);
 
-                    // console.log("processTextElements (List)", this, "Forced LTR for list element");
                     
                     // Recursively process children of list elements
                     const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 'mark', 'small'];
-                    processTextElements($(this), selectors, textExtractor, fontClass, processedClass);
+                    processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass);
                 } 
                 else {
                     const text = textExtractor(this);
-                    console.log("processTextElements", this , text)
                     setTextDirectionAndFont(this, text, fontClass);
                 }
             }
@@ -182,7 +176,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
  */
-function processTextElementsClaude(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
     selectors.forEach(selector => {
         container.children(selector).each(function (each) {
             if (!$(this).hasClass(processedClass)) {
@@ -198,7 +192,7 @@ function processTextElementsClaude(container, selectors, textExtractor, fontClas
                     const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
                     const isCodeContent = !hasLanguageTextClass && isCode(text);
                     
-                    console.log("processTextElementsClaude (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
+                    console.log("processTextElements (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
                     
                     if (isCodeContent) {
                         // If content is detected as code, always force LTR
@@ -209,12 +203,12 @@ function processTextElementsClaude(container, selectors, textExtractor, fontClas
                         $(this).addClass('AsSetLtr');
                         $(this).addClass('FontSetCode');
                         
-                        console.log("processTextElementsClaude (LTR Code)", this, "Forced LTR for detected code element");
+                        console.log("processTextElements (LTR Code)", this, "Forced LTR for detected code element");
                     } else {
                         // If not code or has language-text class, use normal direction detection
                         $(this).find('*').removeAttr('dir');
                         setTextDirectionAndFont(this, text, fontClass);
-                        console.log("processTextElementsClaude (Normal)", this, "Normal direction detection for non-code element");
+                        console.log("processTextElements (Normal)", this, "Normal direction detection for non-code element");
                     }
                 }
                 // Special handling for list elements - check if has children first
@@ -224,7 +218,7 @@ function processTextElementsClaude(container, selectors, textExtractor, fontClas
                     
                     if (hasChildren) {
                         // If has children, first process them recursively
-                        processTextElementsClaude($element, selectors, textExtractor, fontClass, processedClass);
+                        processTextElements($element, selectors, textExtractor, fontClass, processedClass);
                         
                         // Then count RTL vs LTR children to decide parent direction
                         const children = $element.find('*[dir]');
@@ -254,20 +248,20 @@ function processTextElementsClaude(container, selectors, textExtractor, fontClas
                         if (hasLiChildren) {
                             // If children are li elements, set the final direction to the li elements
                             $element.children('li').attr('dir', parentDirection);
-                            console.log("processTextElementsClaude (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
+                            console.log("processTextElements (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
                         } else {
-                            console.log("processTextElementsClaude (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
+                            console.log("processTextElements (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
                         }
                     } else {
                         // If no children, decide based on own content
                         const text = textExtractor(this);
                         setTextDirectionAndFont(this, text, fontClass);
-                        console.log("processTextElementsClaude (List/Div without children)", this, "Based on own content");
+                        console.log("processTextElements (List/Div without children)", this, "Based on own content");
                     }
                 } 
                 else {
                     const text = textExtractor(this);
-                    console.log("processTextElementsClaude", this , text)
+                    console.log("processTextElements", this , text)
                     setTextDirectionAndFont(this, text, fontClass);
                 }
             }
@@ -322,8 +316,8 @@ export {
         isCode,
         setTextDirectionAndFont,
         processParagraphWithBreaks,
+        processTextElementsChatGPT,
         processTextElements,
-        processTextElementsClaude,
         getArticleTextElements,
         getAttributeTextElements
     };
