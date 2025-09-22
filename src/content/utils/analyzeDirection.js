@@ -25,7 +25,48 @@ function analyzeTextDirection(text) {
         return rtlCharRanges.some(([start, end]) => code >= start && code <= end);
     }
 
-    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+    function isEmoji(char) {
+        const code = char.charCodeAt(0);
+        return (
+            (code >= 0x1F600 && code <= 0x1F64F) || // Emoticons
+            (code >= 0x1F300 && code <= 0x1F5FF) || // Misc Symbols and Pictographs
+            (code >= 0x1F680 && code <= 0x1F6FF) || // Transport and Map
+            (code >= 0x1F1E0 && code <= 0x1F1FF) || // Regional indicator symbols
+            (code >= 0x2600 && code <= 0x26FF) ||   // Misc symbols
+            (code >= 0x2700 && code <= 0x27BF) ||   // Dingbats
+            (code >= 0xFE00 && code <= 0xFE0F) ||   // Variation Selectors
+            (code >= 0x1F900 && code <= 0x1F9FF) || // Supplemental Symbols and Pictographs
+            (code >= 0x1FA70 && code <= 0x1FAFF)    // Symbols and Pictographs Extended-A
+        );
+    }
+
+    function isPunctuation(char) {
+        const code = char.charCodeAt(0);
+        return (
+            (code >= 0x0020 && code <= 0x002F) ||   // Basic punctuation
+            (code >= 0x003A && code <= 0x0040) ||   // More punctuation
+            (code >= 0x005B && code <= 0x0060) ||   // Brackets and more
+            (code >= 0x007B && code <= 0x007E) ||   // Braces and tilde
+            (code >= 0x2000 && code <= 0x206F) ||   // General punctuation
+            (code >= 0x2E00 && code <= 0x2E7F) ||   // Supplemental punctuation
+            (code >= 0x3000 && code <= 0x303F) ||   // CJK symbols and punctuation
+            (code >= 0xFE50 && code <= 0xFE6F) ||   // Small form variants
+            (code >= 0xFF00 && code <= 0xFFEF)      // Halfwidth and fullwidth forms
+        );
+    }
+
+    // حذف ایموجی‌ها و علائم نگارشی از ابتدای متن برای تحلیل بهتر
+    let cleanText = text.trim();
+    while (cleanText.length > 0 && (isEmoji(cleanText[0]) || isPunctuation(cleanText[0]))) {
+        cleanText = cleanText.slice(1).trim();
+    }
+    
+    // اگر متن خالی شد، متن اصلی را بررسی کن
+    if (cleanText.length === 0) {
+        cleanText = text.trim();
+    }
+
+    const words = cleanText.split(/\s+/).filter(w => w.length > 0);
     if (words.length === 0) return 'ltr';
 
     // بررسی اولویت‌های خاص برای تشخیص جهت
@@ -59,6 +100,27 @@ function analyzeTextDirection(text) {
             if ([...word].some(isRTLChar)) rtlWordsCount++;
         }
         return rtlWordsCount > 0 ? 'rtl' : 'ltr';
+    }
+
+    // بررسی خاص برای متن‌هایی که با فارسی شروع می‌شوند
+    if (words.length > 0) {
+        const firstWord = words[0];
+        const firstWordIsRTL = [...firstWord].some(isRTLChar);
+        
+        // اگر اولین کلمه فارسی است، احتمالاً کل متن RTL است
+        if (firstWordIsRTL) {
+            // بررسی چند کلمه اول
+            let rtlWordsInFirstThree = 0;
+            const wordsToCheck = words.slice(0, Math.min(3, words.length));
+            for (const word of wordsToCheck) {
+                if ([...word].some(isRTLChar)) rtlWordsInFirstThree++;
+            }
+            
+            // اگر حداقل یکی از کلمات اول فارسی است، RTL
+            if (rtlWordsInFirstThree > 0) {
+                return 'rtl';
+            }
+        }
     }
 
     // برای متن‌های متوسط (5-10 کلمه)، 50% اول را بررسی کن
