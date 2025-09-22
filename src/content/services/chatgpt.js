@@ -16,9 +16,7 @@ export function initializeChatGptElements() {
 
     if (chrome.runtime?.id) {
         $(fo).each(function (each) {
-            if (!$(this).parent().hasClass("AsOk")) {
                 addCopyright($(this).parent(), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
-            }
         })
     }
 
@@ -35,7 +33,6 @@ export function initializeChatGptElements() {
             $(this).addClass('AsOk');
             $(this).addClass('FontSetImportantGPT');
             
-            // Use textDirectionUtils for comprehensive text analysis
             processTextElements(
                 $(this), 
                 getArticleTextElements(), 
@@ -44,12 +41,7 @@ export function initializeChatGptElements() {
                 'AsOkText'
             );
             
-            // // Also analyze the main text-message content
-            // const mainText = $(this).text();
-            // if (mainText && mainText.trim()) {
-            //     setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
-            //     console.log('Main text-message processed:', mainText);
-            // }
+        
         }
     })
 
