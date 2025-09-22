@@ -1,68 +1,83 @@
 // blackbox.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { processTextElements, getArticleTextElements } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
 export function setBlackBox() {
-    if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
-        let fo2 = `.relative.min-w-40.mx-auto.px-6.pb-4 > .px-4`
-
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`
-<div class="AsRtl FontSet AsBox AsKimi">
-
-                <a href="${saffariLink}" style="margin-bottom: 10px" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari" style="vertical-align: middle;"></a>
-
-
-
-                ${textSaffari}
-                
-                    ${BtnDonate()}
-
-
-
-
-            </div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
-        }
+    // Add copyright using utility function
+    const $targetElement = $('.relative.min-w-40 > .px-4');
+    if ($targetElement.length > 0) {
+        addCopyright($targetElement, 'AsKimi AsBoxB', 'margin-bottom: 0px; ');
     }
 
     $("body textarea").each(function (each) {
         if (!$(this).hasClass("AsRtl")) {
+            $(this).addClass('FontSet');
             $(this).addClass('AsRtl');
             const text = $(this).val() || $(this).text();
             if (text && text.trim()) {
                 $(this).attr("dir", detectTextDirection(text));
             }
+
+            $(this).on('input keyup paste', function() {
+                const text = $(this).val();
+                if (text && text.trim()) {
+                    $(this).attr("dir", detectTextDirection(text));
+                }
+            })
+
+
         }
     })
 
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+    // Add event listeners for real-time text direction detection on textareas
+
+
+
+    $('.prose').each(function (each) {
+
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            $(this).addClass('FontSet');
+            
+            // Use textDirectionUtils for comprehensive text analysis
+            processTextElements(
+                $(this), 
+                getArticleTextElements(), 
+                (element) => element.textContent,
+                'FontSetImportantGPT',
+                'AsOkText'
+            );
+            
+            // // Also analyze the main text-message content
+            // const mainText = $(this).text();
+            // if (mainText && mainText.trim()) {
+            //     setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
+            //     console.log('Main text-message processed:', mainText);
+            // }
         }
     })
+
+
+    // $("body p").each(function (each) {
+    //     if (!$(this).hasClass("AsRtl")) {
+    //         $(this).addClass('AsRtl');
+    //         const text = $(this).text();
+    //         if (text && text.trim()) {
+    //             $(this).attr("dir", detectTextDirection(text));
+    //         }
+    //     }
+    // })
 }
 
 
 
 // Main activation function for Blackbox
 export function activateBlackbox() {
+    console.log("activateBlackbox");
     setBlackBox();
+    let interval = setInterval(() => {
+        setBlackBox();
+    }, 1000);
 }

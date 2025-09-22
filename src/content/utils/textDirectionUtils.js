@@ -4,7 +4,7 @@
  */
 
 // Import analysis functions from analyzeDirection.js
-const { analyzeTextDirection, detectTextDirection, isRTL } = require('./analyzeDirection.js');
+import { analyzeTextDirection, detectTextDirection, isRTL } from './analyzeDirection.js';
 
 /**
  * Universal function to set text direction and font for any element
@@ -174,7 +174,7 @@ function getAttributeTextElements() {
 }
 
 
-    module.exports = {
+export {
         analyzeTextDirection,
         detectTextDirection,
         isRTL,
