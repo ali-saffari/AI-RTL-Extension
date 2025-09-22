@@ -61,7 +61,7 @@ const ELEMENT_MAP = [
                     getArticleTextElements(), 
                     (element) => element.textContent,
                     'FontSet FontClaude',
-                    'AsOkText'
+                    'AsOkText',
                 );
             }
         }
@@ -79,7 +79,7 @@ const ELEMENT_MAP = [
                     getArticleTextElements(), 
                     (element) => element.textContent,
                     'FontSet FontClaude',
-                    'AsOkText'
+                    'AsOkText',
                 );
             }
         }

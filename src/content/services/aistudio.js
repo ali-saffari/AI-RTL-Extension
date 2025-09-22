@@ -25,7 +25,7 @@ export function setAiStudio() {
 
 
         // پردازش پیشرفته تمام عناصر متنی
-        processTextElementsAdvanced($(this), 'FontSetNotimportant', 'AsOk');
+        processTextElementsAdvanced($(this), 'FontSetNotimportant', 'AsOk', true);
 
    
     });

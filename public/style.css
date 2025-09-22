@@ -2,6 +2,7 @@
     background: red !important;
 }
 
+
 .FontSet {
     font-family: iranyekan, sans-serif !important;
 }
@@ -407,9 +408,9 @@ copilot
 
 
 .space-y-3.CopilotFontSet {
-    font-weight: 300;
+    font-weight: 400;
     /*color: #fff;*/
-    line-height: 2rem;
+    line-height: 1.8rem;
 }
 
 
@@ -431,6 +432,7 @@ copilot
 
 .AsBox_copilotBing {
     transform: scale(0.8);
+    color: #8d8783;
 }
 
 

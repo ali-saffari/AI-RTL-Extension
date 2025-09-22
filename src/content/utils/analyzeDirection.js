@@ -294,7 +294,6 @@ function analyzeTextDirection(text) {
     const words = normalizedText.split(/\s+/).filter(w => w.length > 0);
     if (words.length === 0) return 'ltr';
 
-    // console.log('Normalized text:', normalizedText);
 
     // بررسی اولویت‌های خاص برای تشخیص جهت
     
@@ -359,6 +358,7 @@ function analyzeTextDirection(text) {
     const firstWordIsRTL = [...firstWord].some(isRTLChar);
     const lastWordIsRTL = [...lastWord].some(isRTLChar);
     
+    
     // اگر هر دو ابتدا و انتها RTL باشند، RTL
     if (firstWordIsRTL && lastWordIsRTL) return 'rtl';
     // اگر هر دو ابتدا و انتها LTR باشند، LTR
@@ -366,6 +366,16 @@ function analyzeTextDirection(text) {
 
     // اگر ابتدا و انتها متفاوت هستند، بررسی کن که آیا تفاوت زیاد است
     const difference = Math.abs(totalRTLWords - (words.length - totalRTLWords));
+    const rtlPercentage = (totalRTLWords / words.length) * 100;
+    
+    
+    // اگر اکثریت قوی وجود دارد (بیش از 70%)، اولویت با اکثریت
+    if (rtlPercentage >= 70 || rtlPercentage <= 30) {
+        const result = totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+        
+        
+        return result;
+    }
     
     // اگر تفاوت کم است (کمتر یا مساوی 10)، اولویت با ابتدا و انتها
     if (difference <= 10) {
@@ -376,7 +386,10 @@ function analyzeTextDirection(text) {
     }
 
     // اگر تفاوت زیاد است، بر اساس اکثریت تصمیم بگیر
-    return totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+    const result = totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+    
+    
+    return result;
 }
 
 

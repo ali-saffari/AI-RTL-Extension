@@ -17,6 +17,8 @@ function setTextDirectionAndFont(element, text, fontClass = 'FontSet') {
     if (!text || !text.trim()) return;
     
     const direction = detectTextDirection(text.trim());
+
+    console.log("setTextDirectionAndFont", element, text, direction)
     $(element).attr("dir", direction);
     if (fontClass) {
         $(element).addClass(fontClass);
@@ -117,6 +119,8 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
  * @param {string} processedClass - Class to mark processed elements (optional)
  */
 function processTextElementsChatGPT(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+
+    // Then process other elements as before
     selectors.forEach(selector => {
         container.children(selector).each(function (each) {
             if (!$(this).hasClass(processedClass)) {
@@ -151,13 +155,32 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                 }
                 // Special handling for list elements - recursively process their children
                 else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'blockquote'].includes(selector)) {
-                    const text = textExtractor(this);
-                    setTextDirectionAndFont(this, text, fontClass);
-
+                    const $element = $(this);
+                    const hasChildren = $element.children().length > 0;
                     
-                    // Recursively process children of list elements
-                    const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 'mark', 'small'];
-                    processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass);
+                    if (hasChildren) {
+                        // Check if element contains any formatting tags
+                        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span'];
+                        const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
+                        
+                        if (hasFormattingTags) {
+                            // If contains formatting tags, process directly without examining children
+                            const text = textExtractor(this);
+                            setTextDirectionAndFont(this, text, fontClass);
+                        } else {
+                            // If has children but no strong tags, process them recursively
+                            const text = textExtractor(this);
+                            setTextDirectionAndFont(this, text, fontClass);
+                            
+                            // Recursively process children of list elements
+                            const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
+                            processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass);
+                        }
+                    } else {
+                        // If no children, decide based on own content
+                        const text = textExtractor(this);
+                        setTextDirectionAndFont(this, text, fontClass);
+                    }
                 } 
                 else {
                     const text = textExtractor(this);
@@ -177,6 +200,9 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
  * @param {string} processedClass - Class to mark processed elements (optional)
  */
 function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+
+
+    // Then process other elements as before
     selectors.forEach(selector => {
         container.children(selector).each(function (each) {
             if (!$(this).hasClass(processedClass)) {
@@ -217,40 +243,51 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     const hasChildren = $element.children().length > 0;
                     
                     if (hasChildren) {
-                        // If has children, first process them recursively
-                        processTextElements($element, selectors, textExtractor, fontClass, processedClass);
+                        // Check if element contains any formatting tags
+                        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span'];
+                        const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
                         
-                        // Then count RTL vs LTR children to decide parent direction
-                        const children = $element.find('*[dir]');
-                        let rtlCount = 0;
-                        let ltrCount = 0;
-                        
-                        children.each(function() {
-                            const dir = $(this).attr('dir');
-                            if (dir === 'rtl') {
-                                rtlCount++;
-                            } else if (dir === 'ltr') {
-                                ltrCount++;
-                            }
-                        });
-                        
-                        // Decide parent direction based on children majority
-                        const parentDirection = rtlCount > ltrCount ? 'rtl' : 'ltr';
-                        $element.attr('dir', parentDirection);
-                        
-                        if (fontClass) {
-                            $element.addClass(fontClass);
-                        }
-                        
-                        // Check if children are li elements
-                        const hasLiChildren = $element.children('li').length > 0;
-                        
-                        if (hasLiChildren) {
-                            // If children are li elements, set the final direction to the li elements
-                            $element.children('li').attr('dir', parentDirection);
-                            console.log("processTextElements (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
+                        if (hasFormattingTags) {
+                            // If contains formatting tags, process directly without examining children
+                            const text = textExtractor(this);
+                            setTextDirectionAndFont(this, text, fontClass);
+                            console.log("processTextElements (With formatting tags)", this, "Processed directly");
                         } else {
-                            console.log("processTextElements (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
+                            // If has children but no strong tags, process them recursively
+                            processTextElements($element, selectors, textExtractor, fontClass, processedClass);
+                            
+                            // Then count RTL vs LTR children to decide parent direction
+                            const children = $element.find('*[dir]');
+                            let rtlCount = 0;
+                            let ltrCount = 0;
+                            
+                            children.each(function() {
+                                const dir = $(this).attr('dir');
+                                if (dir === 'rtl') {
+                                    rtlCount++;
+                                } else if (dir === 'ltr') {
+                                    ltrCount++;
+                                }
+                            });
+                            
+                            // Decide parent direction based on children majority
+                            const parentDirection = rtlCount > ltrCount ? 'rtl' : 'ltr';
+                            $element.attr('dir', parentDirection);
+                            
+                            if (fontClass) {
+                                $element.addClass(fontClass);
+                            }
+                            
+                            // Check if children are li elements
+                            const hasLiChildren = $element.children('li').length > 0;
+                            
+                            if (hasLiChildren) {
+                                // If children are li elements, set the final direction to the li elements
+                                $element.children('li').attr('dir', parentDirection);
+                                console.log("processTextElements (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
+                            } else {
+                                console.log("processTextElements (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
+                            }
                         }
                     } else {
                         // If no children, decide based on own content
@@ -280,13 +317,12 @@ function getArticleTextElements() {
         // عناوین
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         // فرمت‌بندی متن
-        'strong', 'em', 'b', 'i', 'u', 'mark', 'small',
+        'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span',
         // نقل‌قول و کد
         'blockquote', 'pre', 'code',
         // لیست‌ها
         'li', 'ul', 'ol', 'dl', 'dt', 'dd',
-        // جداول
-        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
+        // جداول - بهبود یافته برای پوشش کامل
         // ساختار مقاله
         'article', 'section', 'aside', 'header', 'footer',
         // عناصر متنی خاص
@@ -294,20 +330,25 @@ function getArticleTextElements() {
         // تصاویر و رسانه
         'figcaption', 'figure',
         // لینک‌ها
-        'a'
+        'a',
+        // عناصر اضافی برای جدول‌ها
     ];
 }
+
 
 /**
  * Advanced recursive text processing function that examines all elements
  * @param {jQuery} container - Container to search in
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
+ * @param {boolean} isMainContainer - Whether this is the main container
  */
-function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk') {
-    // Get all elements in the container, including deeply nested ones
-    const allElements = container.find('*').addBack();
+function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk', isMainContainer = true) {
+
+    // Get all elements in the container, excluding the container itself
+    const allElements = container.find('*');
     
+
     allElements.each(function() {
         const $element = $(this);
         
@@ -322,14 +363,30 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
         // Get element tag name
         const tagName = this.tagName.toLowerCase();
         
-        // Skip ms-code-block elements completely
-        console.log("processTextElementsAdvanced", tagName)
+        // Skip ms-code-block elements completely (for AI Studio code sections)
+        // console.log("processTextElementsAdvanced", tagName , $element)
         if (tagName === 'ms-code-block') {
             console.log("ms-code-block return")
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
         }
+        
+        // Skip formatting tags completely
+        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time' , 'ms-cmark-node'];
+        if (formattingTags.includes(tagName)) {
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
+        // Skip div elements with rounded-xl class (for Copilot code sections)
+        if (tagName === 'div' && $element.hasClass('rounded-xl')) {
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
         
         // Special handling for code elements - use code detection algorithm
         if (['pre', 'code'].includes(tagName)) {
@@ -356,56 +413,69 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
             const hasChildren = $element.children().length > 0;
             
             if (hasChildren) {
-                // If has children, first process them recursively
-                processTextElementsAdvanced($element, fontClass, processedClass);
+                // Check if element contains any formatting tags
+                const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
+                const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
                 
-                // Smart direction decision based on children and element type
-                const children = $element.find('*[dir]');
-                let rtlCount = 0;
-                let ltrCount = 0;
-                let textContent = '';
                 
-                children.each(function() {
-                    const dir = $(this).attr('dir');
-                    if (dir === 'rtl') {
-                        rtlCount++;
-                    } else if (dir === 'ltr') {
-                        ltrCount++;
+                if (hasFormattingTags) {
+                    // If contains formatting tags, process directly without examining children
+                    const text = $element.text();
+                    if (text && text.trim()) {
+                        setTextDirectionAndFont(this, text, fontClass);
                     }
-                });
-                
-                // For li elements, also consider direct text content
-                if (tagName === 'li') {
-                    const directText = $element.clone().children().remove().end().text().trim();
-                    if (directText) {
-                        const directDirection = detectTextDirection(directText);
-                        if (directDirection === 'rtl') {
+                } else {
+                    // If has other types of children, process them recursively
+                    processTextElementsAdvanced($element, fontClass, processedClass, false);
+                    
+                    // Smart direction decision based on children and element type
+                    const children = $element.find('*[dir]');
+                    let rtlCount = 0;
+                    let ltrCount = 0;
+                    let textContent = '';
+                    
+                    children.each(function() {
+                        const dir = $(this).attr('dir');
+                        if (dir === 'rtl') {
                             rtlCount++;
-                        } else {
+                        } else if (dir === 'ltr') {
                             ltrCount++;
                         }
+                    });
+                    
+                    // For li elements, also consider direct text content
+                    if (tagName === 'li') {
+                        const directText = $element.clone().children().remove().end().text().trim();
+                        if (directText) {
+                            const directDirection = detectTextDirection(directText);
+                            if (directDirection === 'rtl') {
+                                rtlCount++;
+                            } else {
+                                ltrCount++;
+                            }
+                        }
                     }
-                }
-                
-                // Decide parent direction based on children majority and element type
-                let parentDirection;
-                if (rtlCount > ltrCount) {
-                    parentDirection = 'rtl';
-                } else if (ltrCount > rtlCount) {
-                    parentDirection = 'ltr';
-                } else {
-                    // If equal counts, check element's own text content
-                    const elementText = $element.text().trim();
-                    if (elementText) {
-                        parentDirection = detectTextDirection(elementText);
+                    
+                    // Decide parent direction based on children majority and element type
+                    let parentDirection;
+                    if (rtlCount > ltrCount) {
+                        parentDirection = 'rtl';
+                    } else if (ltrCount > rtlCount) {
+                        parentDirection = 'ltr';
                     } else {
-                        parentDirection = 'ltr'; // Default fallback
+                        // If equal counts, check element's own text content
+                        const elementText = $element.text().trim();
+                        if (elementText) {
+                            parentDirection = detectTextDirection(elementText);
+                        } else {
+                            parentDirection = 'ltr'; // Default fallback
+                        }
                     }
-                }
-                $element.attr('dir', parentDirection);
-                
-                if (fontClass) {
-                    $element.addClass(fontClass);
+                    $element.attr('dir', parentDirection);
+                    
+                    if (fontClass) {
+                        $element.addClass(fontClass);
+                    }
                 }
             } else {
                 // If no children, decide based on own text content
@@ -417,6 +487,8 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
         }
     });
 }
+
+
 
 /**
  * Get common attribute selectors for text content

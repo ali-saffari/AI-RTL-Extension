@@ -1,78 +1,67 @@
 // copilot.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
 
 // Copilot/Bing service functions
 export function setItems_copilotBing() {
-    let fo = `[role="complementary"]`
+    let fo = `.relative.max-h-full.w-expanded-composer.max-w-chat`
     console.log("setItems_copilotBing")
 
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
-        if (!$(fo).hasClass("AsOk")) {
-            $(fo).addClass("AsOk")
-            $(fo).append(`<div class="relative max-h-full  AsBox_copilotBingBlock" style=""><div class="AsRtl FontSet AsBox AsBox_copilotBing">
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
+        // Add copyright using utility function
+        const targetElement = $(fo);
+        // targetElement.addClass("red")
 
 
 
-                امیداورم از نسخه بهینه شده برای فارسی زبانان لذت ببرید.
-
-
-
-
-            </div></div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
+        if (targetElement.length > 0) {
+            addCopyright(targetElement, 'AsBox_copilotBing', 'margin-top: 5px; padding: 0px;');
         }
     }
 
-    $('.cib-message-content').each(function (each) {
-        if (!$(this).hasClass("CopilotFontSet")) {
-            $(this).addClass('CopilotFontSet');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+    // Process all text elements using processTextElementsAdvanced
+    $('[data-content="ai-message"] .break-words').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+    
+            processTextElementsAdvanced($(this), 'CopilotFontSet', 'AsOk', true);
         }
-    })
+    });
 
-    $('.cib-message-content p').each(function (each) {
-        if (!$(this).hasClass("CopilotFontSet")) {
-            $(this).addClass('CopilotFontSet');
-            const text = $(this).text();
+
+    // Process textarea elements for text direction detection
+    $('textarea').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            const text = $(this).val();
             if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                $(this).addClass('CopilotFontSet');
+                $(this).addClass('AsOk');
             }
+            
+            // Add event listener for real-time text direction detection
+            $(this).on('input keyup', function() {
+                const currentText = $(this).val();
+                if (currentText && currentText.trim()) {
+                    const direction = detectTextDirection(currentText);
+                    $(this).attr('dir', direction);
+                } else {
+                    $(this).removeAttr('dir');
+                }
+            });
         }
-    })
+    });
 }
 
-export function setBing() {
-    $('.cib-message-content').each(function (each) {
-        if (!$(this).hasClass("CopilotFontSet")) {
-            $(this).addClass('CopilotFontSet');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-        }
-    })
-}
+
 
 // Main activation function for Copilot
 export function activateCopilot() {
     setItems_copilotBing();
-    setBing();
+
+    setInterval(() => {
+        setItems_copilotBing();
+    }, 1000);
 }
 
