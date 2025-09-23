@@ -1,69 +1,100 @@
 // kimi.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { addCopyright } from '../utils/copyright.js';
+import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
+import { processTextElements, setTextDirectionAndFont, getArticleTextElements } from '../utils/textDirectionUtils.js';
 
 // Kimi service functions
 export function setKimi() {
+    // Add copyright using utility function
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
         let fo2 = `.chat-action`
-
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`<div style="display: flex">
-<div class="AsRtl FontSet AsBox AsKimi">
-
-                <a href="${saffariLink}" style="margin-bottom: 10px" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari" style="vertical-align: middle;"></a>
-
-
-
-                ${textSaffari}
-                
-                    ${BtnDonate()}
-
-
-
-
-            </div>
-</div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
-        }
+        addCopyright($(fo2), 'AsKimi', 'margin-bottom: 10px');
     }
 
-    $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).val() || $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+    // Process markdown-container elements with processTextElements
+    $('.markdown-container').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            processTextElements(
+                $(this), 
+                getArticleTextElements(), 
+                (element) => element.textContent,
+                'FontSet',
+                'AsOkText',
+                true
+            );
         }
-    })
+    });
 
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+    // // Process textarea elements with improved text direction detection
+    // $("body textarea").each(function (each) {
+    //     if (!$(this).hasClass("AsOk")) {
+    //         $(this).addClass('AsOk');
+    //         const text = $(this).val() || $(this).text();
+    //         setTextDirectionAndFont(this, text, 'FontSet');
+            
+    //         // Add event listener for real-time direction detection
+    //         $(this).on('keyup paste input', function() {
+    //             const currentText = $(this).val() || $(this).text();
+    //             requestAnimationFrame(() => {
+    //                 setTextDirectionAndFont(this, currentText, 'FontSet');
+    //             });
+    //         });
+    //     }
+    // });
+
+    // Process paragraph elements with advanced text processing
+    $(".user-content , .user-name").each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            const text = $(this).text();
+            setTextDirectionAndFont(this, text, 'FontSet');
+        }
+    });
+
+    // // Process other common text elements
+    $(" body span, body h1, body h2, body h3, body h4, body h5, body h6 , .chat-input-editor").each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
             const text = $(this).text();
             if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
+                setTextDirectionAndFont(this, text, 'FontSet');
             }
         }
-    })
+    });
 }
 
 
 
 // Main activation function for Kimi
 export function activateKimi() {
+    console.log("activateKimi");
+    
+    // Initial setup
     setKimi();
+    
+    // SetInterval for continuous processing
+    setInterval(() => {
+        setKimi();
+    }, 1000);
+    
+    // MutationObserver for dynamic content updates
+    let timeoutId;
+    const observer = new MutationObserver((mutations) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            console.log("Kimi content changed - reprocessing");
+            setKimi();
+        }, 200);
+    });
+    
+    const config = {attributes: true, childList: true, subtree: true};
+    const targetNode = document.body;
+    
+    if (targetNode) {
+        observer.observe(targetNode, config);
+        console.log('Kimi observer started');
+    } else {
+        console.log('Kimi targetNode not found - observer not started');
+    }
 }
