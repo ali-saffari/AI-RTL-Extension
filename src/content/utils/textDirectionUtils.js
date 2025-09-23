@@ -519,6 +519,36 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
             return;
         }
         
+        // Special handling for div elements with ds-scroll-area class
+        if (tagName === 'div' && $element.hasClass('ds-scroll-area')) {
+            const text = $element.text();
+            if (text && text.trim()) {
+                const direction = detectTextDirection(text);
+                $element.attr('dir', direction);
+                if (fontClass) {
+                    $element.addClass(fontClass);
+                }
+                $element.addClass('AsOk2');
+            }
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
+        // Special handling for div elements with md-code-block class (code content)
+        if (tagName === 'div' && $element.hasClass('md-code-block')) {
+            // Force LTR for code blocks
+            $element.attr("dir", "ltr");
+            if (fontClass) {
+                $element.addClass(fontClass);
+            }
+            $element.addClass('AsSetLtr');
+            $element.addClass('FontSetCode');
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
         // Skip table elements - they are processed by processTablesInContainer
         if (['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'].includes(tagName)) {
             // Mark all children as processed without processing them

@@ -317,19 +317,40 @@ function analyzeTextDirection(text) {
         }
     }
 
-    // برای متن‌های کوتاه (کمتر از 5 کلمه)، کل متن را بررسی کن
-    if (words.length < 5) {
+    // تابع برای تشخیص کلمات واقعی (غیر از اعداد انگلیسی و علائم)
+    function isRealWord(word) {
+        // اعداد فارسی (۰-۹)
+        const persianNumbers = /^[\u06F0-\u06F9]+$/;
+        // کلمات خنثی: فقط اعداد انگلیسی، علائم، یا ترکیبی از آنها
+        const neutralPattern = /^[\d\s\-\.\,\!\?\:\;\(\)\[\]\{\}\"\'«»]+$/;
+        
+        // اگر فقط اعداد فارسی است، آن را کلمه واقعی در نظر بگیر
+        if (persianNumbers.test(word)) {
+            return true;
+        }
+        
+        return !neutralPattern.test(word) && word.length > 0;
+    }
+
+    // فیلتر کردن کلمات واقعی
+    const realWords = words.filter(isRealWord);
+    
+    // اگر کلمه واقعی نداریم، LTR برگردان
+    if (realWords.length === 0) return 'ltr';
+
+    // برای متن‌های کوتاه (کمتر از 5 کلمه واقعی)، کل متن را بررسی کن
+    if (realWords.length < 5) {
         let rtlWordsCount = 0;
-        for (const word of words) {
+        for (const word of realWords) {
             if ([...word].some(isRTLChar)) rtlWordsCount++;
         }
         return rtlWordsCount > 0 ? 'rtl' : 'ltr';
     }
 
-    // برای متن‌های متوسط (5-10 کلمه)، 50% اول را بررسی کن
-    if (words.length <= 10) {
-        let checkWordsCount = Math.ceil(words.length * 0.5);
-        const wordsToCheck = words.slice(0, checkWordsCount);
+    // برای متن‌های متوسط (5-10 کلمه واقعی)، 50% اول را بررسی کن
+    if (realWords.length <= 10) {
+        let checkWordsCount = Math.ceil(realWords.length * 0.5);
+        const wordsToCheck = realWords.slice(0, checkWordsCount);
         
         let rtlWordsCount = 0;
         for (const word of wordsToCheck) {
@@ -341,20 +362,20 @@ function analyzeTextDirection(text) {
         
         // اگر مساوی، کل متن را بررسی کن
         let totalRTLWords = 0;
-        for (const word of words) {
+        for (const word of realWords) {
             if ([...word].some(isRTLChar)) totalRTLWords++;
         }
-        return totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+        return totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
     }
 
     // برای متن‌های طولانی، ابتدا کل متن را بررسی کن
     let totalRTLWords = 0;
-    for (const word of words) {
+    for (const word of realWords) {
         if ([...word].some(isRTLChar)) totalRTLWords++;
     }
 
-    const firstWord = words[0];
-    const lastWord = words[words.length - 1];
+    const firstWord = realWords[0];
+    const lastWord = realWords[realWords.length - 1];
     const firstWordIsRTL = [...firstWord].some(isRTLChar);
     const lastWordIsRTL = [...lastWord].some(isRTLChar);
     
@@ -365,13 +386,13 @@ function analyzeTextDirection(text) {
     if (!firstWordIsRTL && !lastWordIsRTL) return 'ltr';
 
     // اگر ابتدا و انتها متفاوت هستند، بررسی کن که آیا تفاوت زیاد است
-    const difference = Math.abs(totalRTLWords - (words.length - totalRTLWords));
-    const rtlPercentage = (totalRTLWords / words.length) * 100;
+    const difference = Math.abs(totalRTLWords - (realWords.length - totalRTLWords));
+    const rtlPercentage = (totalRTLWords / realWords.length) * 100;
     
     
     // اگر اکثریت قوی وجود دارد (بیش از 70%)، اولویت با اکثریت
     if (rtlPercentage >= 70 || rtlPercentage <= 30) {
-        const result = totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+        const result = totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
         
         
         return result;
@@ -386,7 +407,7 @@ function analyzeTextDirection(text) {
     }
 
     // اگر تفاوت زیاد است، بر اساس اکثریت تصمیم بگیر
-    const result = totalRTLWords > words.length / 2 ? 'rtl' : 'ltr';
+    const result = totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
     
     
     return result;

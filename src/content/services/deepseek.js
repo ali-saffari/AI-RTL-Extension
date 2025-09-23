@@ -1,61 +1,82 @@
 // deepseek.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
+import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
 
 export function setDeepSeek() {
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
-        let fo2 = `._0fcaa63._7941d9f`
-
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxDuckduckgo">
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                ${textSaffari}
-
-${BtnDonate()}
-
-
-
-            </div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
-        }
+        let fo2 = `._871cbca`
+        
+        // Add copyright using utility function
+        addCopyright($(fo2), 'AsBoxDuckduckgo');
     }
 
-    // Add RTL functionality
-    $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).val() || $(this).text();
+    // Process textarea elements for text direction detection
+    $('textarea').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            const text = $(this).val();
             if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                $(this).addClass('FontSet');
+                $(this).addClass('AsOk');
             }
+            
+            // Add event listener for real-time text direction detection
+            $(this).on('input keyup', function() {
+                const currentText = $(this).val();
+                if (currentText && currentText.trim()) {
+                    const direction = detectTextDirection(currentText);
+                    $(this).attr('dir', direction);
+                } else {
+                    $(this).removeAttr('dir');
+                }
+            });
         }
-    })
+    });
 
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+
+
+    // Process ds-message elements (messages in chat)
+    $('.ds-message').each(function (each) {
+        if ($(this).find('.ds-markdown').length > 0) {
+            // If ds-markdown exists inside, use advanced function for complex messages
+            processTextElementsAdvanced($(this), 'FontSet', 'AsOk', true);
+        } else {
+            // Otherwise, style the div inside ds-message for simple messages
+            $(this).find('div').each(function() {
+                if (!$(this).hasClass("AsOk")) {
+                    const text = $(this).text();
+                    if (text && text.trim()) {
+                        const direction = detectTextDirection(text);
+                        $(this).attr('dir', direction);
+                        $(this).addClass('FontSet');
+                        $(this).addClass('AsOk');
+                    }
+                }
+            });
+        }
+    });
+
+    // Process _546d736 elements for text direction detection (history items)
+    $('._546d736').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
             const text = $(this).text();
             if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                $(this).addClass('FontSet');
+                $(this).addClass('AsOk');
+                
+                // If RTL (Persian), add AsOkRList class for special styling
+                if (direction === 'rtl') {
+                    $(this).addClass('AsOkRList');
+                } 
             }
         }
-    })
+    });
+
+ 
 }
 
 // Main activation function for DeepSeek
@@ -65,20 +86,7 @@ export function activateDeepSeek() {
 
     // SetInterval and Observer
     let interval = setInterval(() => {
-        $("#root").each(function (each) {
-            if (each === 0) {
-                console.log("setInterval");
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        setDeepSeek();
-                    });
-                });
-                const targetNode = document.querySelector('#root');
-                const config = {childList: true, subtree: true};
-                observer.observe(targetNode, config);
-                clearInterval(interval);
-            }
-        });
-    }, 1000);
+        setDeepSeek();
+    }, 500);
 }
 
