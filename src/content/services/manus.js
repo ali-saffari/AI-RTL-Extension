@@ -38,10 +38,9 @@ export function setManus() {
 
     // Process manus-markdown elements with processTextElementsAdvanced
     $('.manus-markdown').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
+  
             processTextElementsAdvanced($(this), 'FontSet', 'AsOkText', true);
-        }
+        
     });
 
     // Process other common text elements

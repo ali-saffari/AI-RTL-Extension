@@ -68,6 +68,8 @@ export function setAiStudio() {
 function processMsTextChunks() {
     $("ms-text-chunk").each(function (each) {
         // پردازش پیشرفته تمام عناصر متنی
+        
+     
         processTextElementsAdvanced($(this), 'FontSet', 'AsOk', false); // Enable tracking for AI Studio
     });
 }

@@ -23,6 +23,7 @@ interface Service {
     name: string;
     icon: string;
     url: string;
+    helpText?: string;
 }
 
 interface CheckedState {
@@ -51,6 +52,8 @@ export default function ServiceList() {
     });
 
     const [grokModalOpen, setGrokModalOpen] = useState(false);
+    const [helpModalOpen, setHelpModalOpen] = useState(false);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
 
     const services: Service[] = [
         { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
@@ -60,7 +63,7 @@ export default function ServiceList() {
         { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
         { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
         { key: 'thebAi', name: 'TheB AI', icon: '/images/theb-ai-icon.png', url: 'https://beta.theb.ai' },
-        { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/' },
+        { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
         { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
         { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
         { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
@@ -69,9 +72,10 @@ export default function ServiceList() {
         { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
         { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
         { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
-        { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
+        { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/', helpText: 'سیستم جدید بهینه سازی متن روی این سایت فعال نیست و از نسخه قبلی استفاده میشه.' },
         { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
     ];
+
 
     useEffect(() => {
         chrome.storage.sync.get(
@@ -89,6 +93,7 @@ export default function ServiceList() {
         e.stopPropagation();
         setGrokModalOpen(true);
     };
+
 
     return (
         <>
@@ -147,6 +152,37 @@ export default function ServiceList() {
                                             />
                                         </ListItemIcon>
                                         <ListItemText primary={service.name} />
+                                        
+                                        {service.helpText && (
+                                            <IconButton 
+                                                size="small" 
+                                                sx={{ 
+                                                    ml: 1,
+                                                    color: 'text.primary',
+                                                    opacity: 0.8,
+                                                    '&:hover': {
+                                                        opacity: 1,
+                                                        color: 'primary.main'
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setSelectedService(service);
+                                                    setHelpModalOpen(true);
+                                                }}
+                                            >
+                                                <svg 
+                                                    width="20" 
+                                                    height="20" 
+                                                    viewBox="0 0 24 24" 
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                                </svg>
+                                            </IconButton>
+                                        )}
+                                        
                                         <Switch
                                             edge="end"
                                             onChange={handleChange(service.key)}
@@ -189,6 +225,37 @@ export default function ServiceList() {
                 <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
                     <Button 
                         onClick={() => setGrokModalOpen(false)}
+                        variant="contained"
+                        color="primary"
+                    >
+                        متوجه شدم
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Generic Help Modal */}
+            <Dialog 
+                open={helpModalOpen} 
+                onClose={() => setHelpModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        padding: '8px'
+                    }
+                }}
+            >
+                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                    درباره {selectedService?.name}
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                    <Typography variant="body1" paragraph sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}>
+                        {selectedService?.helpText}
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                    <Button 
+                        onClick={() => setHelpModalOpen(false)}
                         variant="contained"
                         color="primary"
                     >

@@ -50,6 +50,16 @@ export function activateGemini() {
         });
 
 
+        
+
+        $('.ql-editor').each(function (each) {
+            // console.log("gds-label-l", this)
+            if (!$(this).hasClass("FontSet")) {
+                $(this).addClass('FontSet');
+            }
+        });
+
+
     $('.ql-editor p').each(function (each) {
         const text = $(this).text();
         if (text !== oldText) {
