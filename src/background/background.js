@@ -1,7 +1,6 @@
 const chatGpt = true;
 const claude = true;
 const copilot = true;
-const freegpt = true;
 const thebAi = true;
 const duckduckgo = true;
 const perplexity = true;
@@ -25,7 +24,7 @@ const blackbox = true;
 
 
 // chrome.runtime.onInstalled.addListener(() => {
-//     chrome.storage.sync.set({ chatGpt , claude ,  copilot ,  freegpt , thebAi , duckduckgo});
+//     chrome.storage.sync.set({ chatGpt , claude ,  copilot ,  thebAi , duckduckgo});
 //     console.log('Default chatGpt', chatGpt);
 // });
 //
@@ -37,7 +36,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         // در نصب اولیه، مقادیر پیش‌فرض را تنظیم می‌کنیم
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
-            freegpt, thebAi, duckduckgo, perplexity,
+            thebAi, duckduckgo, perplexity,
             aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox
         });
         console.log('Default values set on installation');

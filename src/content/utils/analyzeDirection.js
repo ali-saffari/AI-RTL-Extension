@@ -426,7 +426,6 @@ function detectTextDirection(text) {
 
 /**
  * Simple RTL detection wrapper
- * Used in: freegpt.js
  * @param {string} text - Text to analyze
  * @returns {boolean} - True if text is RTL
  */

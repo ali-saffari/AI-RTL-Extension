@@ -2,7 +2,6 @@
 import { activateChatGptRTL as activateChatGpt } from './services/chatgpt.js';
 import { activateClaude } from './services/claude.js';
 import { activateCopilot } from './services/copilot.js';
-import { activateFreegpt } from './services/freegpt.js';
 import { activateBlackbox } from './services/blackbox.js';
 import { activateKimi } from './services/kimi.js';
 import { activateManus } from './services/manus.js';
@@ -51,10 +50,6 @@ const serviceConfig = {
     copilot: {
         urls: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
         activate: activateCopilot
-    },
-    freegpt: {
-        urls: ["freegpt.one", "freegpt.cc"],
-        activate: activateFreegpt
     },
     thebAi: {
         urls: ["beta.theb.ai", "chatbot.theb.ai"],

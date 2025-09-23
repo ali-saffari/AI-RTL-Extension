@@ -252,7 +252,6 @@ function detectTextDirection(text) {
 }
 
 
-function setItems_freegpt() {
 
 
     if (chrome.runtime?.id) {
@@ -1358,7 +1357,7 @@ $(document).ready(function () {
 
 
     // console.log("site", site)
-    //     ['chatGpt' , 'claude' ,  'copilot' ,  'freegpt']
+    //     ['chatGpt' , 'claude' ,  'copilot']
 
 
     chrome.storage.sync.onChanged.addListener((changes) => {
@@ -1366,7 +1365,6 @@ $(document).ready(function () {
             chatGpt: "chatgpt.com",
             claude: "claude.ai",
             copilot: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
-            freegpt: ["freegpt.one", "freegpt.cc"],
             thebAi: ["beta.theb.ai", "chatbot.theb.ai"],
             duckduckgo: "duckduckgo.com",
             perplexity: ["www.perplexity.ai", "perplexity.ai"],
@@ -2525,40 +2523,6 @@ ${BtnDonate()}
 
     });
 
-    chrome.storage.sync.get(["freegpt"]).then((result) => {
-
-
-        if (result.freegpt) {
-            if (site === "freegpt.one" || site === "freegpt.cc") {
-                setItems_freegpt()
-                // addAliSaffari()
-            }
-
-
-            setInterval(() => {
-
-                if (site === "freegpt.one" || site === "freegpt.cc") {
-                    setItems_freegpt()
-                    // addAliSaffari()
-                }
-
-
-                // if (site === "chatgpt.com" ) {
-                //     setItems_ChatGpt()
-                //
-                //
-                //
-                //
-                //     // addAliSaffari()
-                // }
-                //
-
-
-            }, 1000)
-
-        }
-
-    });
 
 
     chrome.storage.sync.get(["thebAi"]).then((result) => {
