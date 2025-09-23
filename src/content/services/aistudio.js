@@ -70,7 +70,11 @@ function processMsTextChunks() {
         // پردازش پیشرفته تمام عناصر متنی
         
      
-        processTextElementsAdvanced($(this), 'FontSet', 'AsOk', false); // Enable tracking for AI Studio
+        processTextElementsAdvanced($(this), {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: false
+        }); // Enable tracking for AI Studio
     });
 }
 

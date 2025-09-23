@@ -14,7 +14,11 @@ export function setGemini() {
 
     $('.markdown-main-panel').each(function (each) {
 
-        processTextElementsAdvanced($(this), 'FontSet', 'AsOk', true);
+        processTextElementsAdvanced($(this), {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true
+        });
     });
 
 

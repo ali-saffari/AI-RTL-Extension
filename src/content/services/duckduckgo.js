@@ -56,7 +56,13 @@ export function setDuckduckgo() {
             'overflow-y': 'auto'
         });
         
-        processTextElementsAdvanced($(this), 'FontSet', 'AsOk', true);
+        $(this).addClass('activateDuckduckgo')
+
+        processTextElementsAdvanced($(this), {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true
+        });
     });
 }
 

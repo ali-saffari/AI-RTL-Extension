@@ -41,7 +41,11 @@ export function setDeepSeek() {
     $('.ds-message').each(function (each) {
         if ($(this).find('.ds-markdown').length > 0) {
             // If ds-markdown exists inside, use advanced function for complex messages
-            processTextElementsAdvanced($(this), 'FontSet', 'AsOk', true);
+            processTextElementsAdvanced($(this), {
+                fontClass: 'FontSet',
+                processedClass: 'AsOk',
+                isContainer: true
+            });
         } else {
             // Otherwise, style the div inside ds-message for simple messages
             $(this).find('div').each(function() {
@@ -59,7 +63,7 @@ export function setDeepSeek() {
     });
 
     // Process _546d736 elements for text direction detection (history items)
-    $('._546d736').each(function (each) {
+    $('._546d736 , .afa34042').each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             const text = $(this).text();
             if (text && text.trim()) {

@@ -39,7 +39,11 @@ export function setManus() {
     // Process manus-markdown elements with processTextElementsAdvanced
     $('.manus-markdown').each(function (each) {
   
-            processTextElementsAdvanced($(this), 'FontSet', 'AsOkText', true);
+            processTextElementsAdvanced($(this), {
+                fontClass: 'FontSet',
+                processedClass: 'AsOkText',
+                isContainer: true
+            });
         
     });
 

@@ -24,7 +24,12 @@ export function setItems_copilotBing() {
     $('[data-content="ai-message"] .break-words').each(function (each) {
         // if (!$(this).hasClass("AsOk")) {
     
-            processTextElementsAdvanced($(this), 'CopilotFontSet', 'AsOk', true , ['span']);
+            processTextElementsAdvanced($(this), {
+                fontClass: 'CopilotFontSet',
+                processedClass: 'AsOk',
+                isContainer: true,
+                skipTags: ['span']
+            });
         // }
     });
 

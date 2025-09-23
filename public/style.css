@@ -467,6 +467,10 @@ copilot
     color: #888888;
 }
 
+.activateDuckduckgo ol[dir="rtl"] , .activateDuckduckgo ul[dir="rtl"] {
+    padding: 0 30px 0 0 !important;
+}
+
 
 /*----*/
 

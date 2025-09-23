@@ -481,12 +481,32 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
  * @param {string} processedClass - Class to mark processed elements (optional)
  * @param {boolean} isContainer - Whether this is a container element (optional)
  */
-function processTextElementsAdvanced(container, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false, skipTags = []) {
+function processTextElementsAdvanced(container, options = {}) {
+    let {
+        fontClass = 'FontSet',
+        processedClass = 'AsOk',
+        isContainer = false,
+        skipTags = [],
+        containerDir: initialContainerDir = false
+    } = options;
+    
+    let containerDir = initialContainerDir;
     console.log(`processTextElementsAdvanced called, isContainer: ${isContainer}`);
 
     // If this is a container, process tables first
     if (isContainer) {
         processTablesInContainer(container, fontClass, processedClass);
+        
+        var $tempElement = $(container).clone();
+        $tempElement.find('a').remove();
+        $tempElement.find('div.rounded-xl').remove();
+        $tempElement.find('pre, code').remove();
+        
+        const cloneText = $tempElement.text().trim();
+        containerDir = detectTextDirection(cloneText);
+
+
+
     }
 
     // Combine FORMATTING_TAGS with skipTags
@@ -508,6 +528,17 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
         
         // Get element tag name
         const tagName = this.tagName.toLowerCase();
+        
+        // اگر containerDir داریم و المان تگ عنوان هست، از containerDir استفاده کن
+        if (containerDir && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+            $element.attr('dir', containerDir);
+            if (fontClass) {
+                $element.addClass(fontClass);
+            }
+            $element.addClass(processedClass);
+            $element.attr('data-debug-mode', 'header-using-container-dir');
+            return;
+        }
         
         // // Skip ms-code-block elements completely (for AI Studio code sections)
         // if (tagName === 'ms-code-block') {
@@ -583,7 +614,6 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
             console.log("processTextElementsAdvanced: table element skipped", tagName, $element);
             $element.attr('data-debug-mode', 'table-element-skipped');
             // Mark all children as processed without processing them
-            $element.find('*').addClass(processedClass);
             return;
         }
         
@@ -722,7 +752,13 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                         
                     } else {
                         // برای سایر المان‌ها، پردازش بازگشتی انجام بده
-                        processTextElementsAdvanced($element, fontClass, processedClass, false);
+                        processTextElementsAdvanced($element, {
+                            fontClass,
+                            processedClass,
+                            isContainer: false,
+                            skipTags,
+                            containerDir
+                        });
 
                         // برای خود المان هم تصمیم بگیر
                         const elementText = $element.text();

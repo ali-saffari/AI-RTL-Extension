@@ -40,7 +40,11 @@ export function setMistral() {
     $('.markdown-container-style').each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
-            processTextElementsAdvanced($(this), 'FontSet', 'AsOkText', true);
+            processTextElementsAdvanced($(this), {
+                fontClass: 'FontSet',
+                processedClass: 'AsOkText',
+                isContainer: true
+            });
         }
     });
 
