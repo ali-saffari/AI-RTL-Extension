@@ -484,9 +484,6 @@ ${BtnDonate()}
 
     });
 
-}
-
-
 // function addAliSaffari() {
 //
 // }

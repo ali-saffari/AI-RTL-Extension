@@ -9,6 +9,13 @@ import {
     Avatar,
     Divider,
     ListItemButton,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Typography,
 } from '@mui/material';
 
 interface Service {
@@ -43,6 +50,8 @@ export default function ServiceList() {
         blackbox: true,
     });
 
+    const [grokModalOpen, setGrokModalOpen] = useState(false);
+
     const services: Service[] = [
         { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
         { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
@@ -76,42 +85,117 @@ export default function ServiceList() {
         setChecked(prev => ({ ...prev, [key]: checked }));
     };
 
+    const handleGrokClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        setGrokModalOpen(true);
+    };
+
     return (
-        <List
-            sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
-            subheader={
-                <ListSubheader style={{ direction: 'rtl', textAlign: 'center', lineHeight: '11px' }}>
-                    سایت هایی که پشتیبانی میشود
-                </ListSubheader>
-            }
-        >
-            {services.map((service, index) => (
-                <React.Fragment key={service.key}>
-                    <a href={service.url} target="_blank" rel="noopener noreferrer">
-                        <ListItem disablePadding>
-                            <ListItemButton>
-                                <ListItemIcon sx={{ minWidth: 40 }}>
-                                    <Avatar 
-                                        sx={{ width: 30, height: 30 }} 
-                                        alt={service.name} 
-                                        src={chrome.runtime.getURL(service.icon)}
-                                    />
-                                </ListItemIcon>
-                                <ListItemText primary={service.name} />
-                                <Switch
-                                    edge="end"
-                                    onChange={handleChange(service.key)}
-                                    checked={checked?.[service.key] || false}
-                                    inputProps={{
-                                        'aria-labelledby': `switch-list-label-${service.key}`,
-                                    }}
-                                />
-                            </ListItemButton>
-                        </ListItem>
-                    </a>
-                    {index < services.length - 1 && <Divider />}
-                </React.Fragment>
-            ))}
-        </List>
+        <>
+            <List
+                sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                subheader={
+                    <ListSubheader style={{ direction: 'rtl', textAlign: 'center', lineHeight: '11px' }}>
+                        سایت هایی که پشتیبانی میشود
+                    </ListSubheader>
+                }
+            >
+                {services.map((service, index) => (
+                    <React.Fragment key={service.key}>
+                        {service.key === 'grok' ? (
+                            <a href={service.url} target="_blank" rel="noopener noreferrer">
+                                <ListItem disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon sx={{ minWidth: 40 }}>
+                                            <Avatar 
+                                                sx={{ width: 30, height: 30 }} 
+                                                alt={service.name} 
+                                                src={chrome.runtime.getURL(service.icon)}
+                                            />
+                                        </ListItemIcon>
+                                        <ListItemText primary={service.name} />
+                                        <IconButton 
+                                            size="medium" 
+                                            sx={{ ml: 'auto' }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleGrokClick(e);
+                                            }}
+                                        >
+                                            <svg 
+                                                width="24" 
+                                                height="24" 
+                                                viewBox="0 0 24 24" 
+                                                fill="currentColor"
+                                            >
+                                                <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                            </svg>
+                                        </IconButton>
+                                    </ListItemButton>
+                                </ListItem>
+                            </a>
+                        ) : (
+                            <a href={service.url} target="_blank" rel="noopener noreferrer">
+                                <ListItem disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon sx={{ minWidth: 40 }}>
+                                            <Avatar 
+                                                sx={{ width: 30, height: 30 }} 
+                                                alt={service.name} 
+                                                src={chrome.runtime.getURL(service.icon)}
+                                            />
+                                        </ListItemIcon>
+                                        <ListItemText primary={service.name} />
+                                        <Switch
+                                            edge="end"
+                                            onChange={handleChange(service.key)}
+                                            checked={checked?.[service.key] || false}
+                                            inputProps={{
+                                                'aria-labelledby': `switch-list-label-${service.key}`,
+                                            }}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            </a>
+                        )}
+                        {index < services.length - 1 && <Divider />}
+                    </React.Fragment>
+                ))}
+            </List>
+
+            {/* Grok Modal */}
+            <Dialog 
+                open={grokModalOpen} 
+                onClose={() => setGrokModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        padding: '8px'
+                    }
+                }}
+            >
+                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                    درباره Grok
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                    <Typography variant="body1" paragraph sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}>
+                        سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، افزونه RTL روی این سایت فعال نمی‌باشد. همچنین این سایت دارای قابلیت RTL داخلی است.
+                    </Typography>
+                  
+              
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                    <Button 
+                        onClick={() => setGrokModalOpen(false)}
+                        variant="contained"
+                        color="primary"
+                    >
+                        متوجه شدم
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }

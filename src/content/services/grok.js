@@ -5,59 +5,11 @@ import { detectTextDirection } from '../utils/analyzeDirection.js';
 
 export function setGrok() {
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
-        let fo2 = `.flex.flex-col.sticky.bottom-0`
-
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`<div class="AsRtl FontSet AsBox AsBoxgrok AsBoxGemini">
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                ${textSaffari}
-                
-                    ${BtnDonate()}
-
-
-
-            </div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
-        }
+    
     }
 
-    // Add RTL functionality
-    $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).val() || $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-        }
-    })
-
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-        }
-    })
+   
 }
-
 
 
 // Main activation function for Grok
