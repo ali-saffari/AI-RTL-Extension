@@ -254,6 +254,8 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     const $element = $(this);
                     const hasChildren = $element.children().length > 0;
                     
+
+
                     if (hasChildren) {
                         // Check if element contains any formatting tags
                         const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
@@ -576,30 +578,46 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                 setTextDirectionAndFont(this, text, fontClass);
             }
         }
-        // For all other elements, check if they have children
+        // For all other elements, check if they have children (excluding formatting tags)
         else {
-            const hasChildren = $element.children().length > 0;
+            // Count children excluding formatting tags
+            const nonFormattingChildren = $element.children().filter(function() {
+                return !FORMATTING_TAGS.includes(this.tagName.toLowerCase());
+            });
+            const hasChildren = nonFormattingChildren.length > 0;
             
             if (hasChildren) {
-                // Check if element contains any formatting tags
-                const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
+                // حالت 1: المان فرزند غیرفرمت‌بندی دارد
+                // بررسی اینکه آیا همه فرزندان فرمت‌بندی هستند یا نه
+                const allChildren = $element.children();
+                const formattingChildren = allChildren.filter(function() {
+                    return FORMATTING_TAGS.includes(this.tagName.toLowerCase());
+                });
                 
-                
-                if (hasFormattingTags) {
-                    // If contains formatting tags, process directly without examining children
+                if (formattingChildren.length === allChildren.length) {
+                    // حالت 2: همه فرزندان FORMATTING_TAGS هستند
+                    $element.attr('data-debug-mode', 'all-formatting-tags');
+                    const text = $element.text();
+                    if (text && text.trim()) {
+                        setTextDirectionAndFont(this, text, fontClass);
+                    }
+                } else if (formattingChildren.length > 0) {
+                    // حالت 3: فقط بعضی از فرزندان FORMATTING_TAGS هستند
+                    $element.attr('data-debug-mode', 'mixed-children');
                     const text = $element.text();
                     if (text && text.trim()) {
                         setTextDirectionAndFont(this, text, fontClass);
                     }
                 } else {
-                    // If has other types of children, process them recursively
+                    // حالت 4: هیچ فرزندی FORMATTING_TAGS نیست
+                    $element.attr('data-debug-mode', 'no-formatting-children');
+                    // ابتدا فرزندان رو پردازش کن
                     processTextElementsAdvanced($element, fontClass, processedClass, false);
                     
-                    // Smart direction decision based on children and element type
+                    // حالا جهت والد رو بر اساس فرزندان تعیین کن
                     const children = $element.find('*[dir]');
                     let rtlCount = 0;
                     let ltrCount = 0;
-                    let textContent = '';
                     
                     children.each(function() {
                         const dir = $(this).attr('dir');
@@ -610,7 +628,7 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                         }
                     });
                     
-                    // For li elements, also consider direct text content
+                    // برای المان‌های li، متن مستقیم رو هم در نظر بگیر
                     if (tagName === 'li') {
                         const directText = $element.clone().children().remove().end().text().trim();
                         if (directText) {
@@ -623,29 +641,45 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                         }
                     }
                     
-                    // Decide parent direction based on children majority and element type
+                    // تصمیم‌گیری جهت والد
                     let parentDirection;
+                    let debugReason;
                     if (rtlCount > ltrCount) {
                         parentDirection = 'rtl';
+                        debugReason = `rtl-majority-${rtlCount}-${ltrCount}`;
                     } else if (ltrCount > rtlCount) {
                         parentDirection = 'ltr';
+                        debugReason = `ltr-majority-${ltrCount}-${rtlCount}`;
                     } else {
-                        // If equal counts, check element's own text content
+                        // اگر تعداد مساوی باشه یا هیچ فرزندی نداشته باشه، بر اساس متن خود المان تصمیم بگیر
                         const elementText = $element.text().trim();
                         if (elementText) {
                             parentDirection = detectTextDirection(elementText);
+                            debugReason = `element-text-${parentDirection}`;
                         } else {
-                            parentDirection = 'ltr'; // Default fallback
+                            parentDirection = 'ltr'; // پیش‌فرض
+                            debugReason = 'default-ltr';
                         }
                     }
-                    $element.attr('dir', parentDirection);
+                    
+                    // جهت رو ست کن
+                    if (tagName === 'li') {
+                        // اگر المان خودش li هست، جهت رو روی والدش ست کن
+                        $element.parent().attr('dir', parentDirection);
+                        $element.parent().attr('data-debug-reason', debugReason);
+                    } else {
+                        // اگر المان li نیست، جهت رو روی خودش ست کن
+                        $element.attr('dir', parentDirection);
+                        $element.attr('data-debug-reason', debugReason);
+                    }
                     
                     if (fontClass) {
                         $element.addClass(fontClass);
                     }
                 }
             } else {
-                // If no children, decide based on own text content
+                // حالت 5: المان فرزند ندارد
+                $element.attr('data-debug-mode', 'no-children');
                 const text = $element.text();
                 if (text && text.trim()) {
                     setTextDirectionAndFont(this, text, fontClass);
