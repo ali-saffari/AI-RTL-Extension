@@ -48,7 +48,7 @@ export function setKimi() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSet');
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
         }
     });
 
@@ -58,7 +58,7 @@ export function setKimi() {
             $(this).addClass('AsOk');
             const text = $(this).text();
             if (text && text.trim()) {
-                setTextDirectionAndFont(this, text, 'FontSet');
+                setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
             }
         }
     });

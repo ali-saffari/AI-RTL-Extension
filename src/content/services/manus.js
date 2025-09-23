@@ -14,14 +14,15 @@ export function setManus() {
     $("body textarea").each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
+            $(this).parent().addClass('AsOk');
             const text = $(this).val() || $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSet');
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
             
             // Add event listener for real-time direction detection
             $(this).on('keyup paste input', function() {
                 const currentText = $(this).val() || $(this).text();
                 requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, currentText, 'FontSet');
+                    setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
                 });
             });
         }
@@ -32,7 +33,7 @@ export function setManus() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSet');
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
         }
     });
 
@@ -53,7 +54,7 @@ export function setManus() {
             $(this).addClass('AsOk');
             const text = $(this).text();
             if (text && text.trim()) {
-                setTextDirectionAndFont(this, text, 'FontSet');
+                setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
             }
         }
     });

@@ -29,7 +29,7 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text);
+            setTextDirectionAndFont(this, { fontClass: 'FontSet' });
         }
     })
 
@@ -73,7 +73,7 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSetImportantGPT');
+            setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text });
             $(this).addClass('flex-row-reverse');
         }
     })
@@ -82,7 +82,7 @@ export function initializeChatGptElements() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSetImportantGPT');
+            setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text });
             
             // Add event listener for direction detection (removed 'input' to avoid React conflicts)
             $(this).on('keyup paste', function() {
@@ -91,7 +91,7 @@ export function initializeChatGptElements() {
                 
                 // Use requestAnimationFrame to avoid React conflicts
                 requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, currentText, 'FontSetImportantGPT');
+                    setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text: currentText });
                 });
             });
         }

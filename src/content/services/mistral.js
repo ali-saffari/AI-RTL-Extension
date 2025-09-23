@@ -15,37 +15,40 @@ export function setMistral() {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).val() || $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSet');
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
             
             // Add event listener for real-time direction detection
             $(this).on('keyup paste input', function() {
                 const currentText = $(this).val() || $(this).text();
                 requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, currentText, 'FontSet');
+                    setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
                 });
             });
         }
     });
 
     // Process paragraph elements with advanced text processing
-    $("body p").each(function (each) {
+    $(" .select-text").each(function (each) {
         if (!$(this).hasClass("AsOk")) {
             $(this).addClass('AsOk');
             const text = $(this).text();
-            setTextDirectionAndFont(this, text, 'FontSet');
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
         }
     });
 
+    
+
+
+
     // Process markdown-container-style elements with processTextElementsAdvanced
     $('.markdown-container-style').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
+    
             processTextElementsAdvanced($(this), {
                 fontClass: 'FontSet',
                 processedClass: 'AsOkText',
                 isContainer: true
             });
-        }
+        
     });
 
     // Process other common text elements
@@ -54,7 +57,7 @@ export function setMistral() {
     //         $(this).addClass('AsOk');
     //         const text = $(this).text();
     //         if (text && text.trim()) {
-    //             setTextDirectionAndFont(this, text, 'FontSet');
+    //             setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
     //         }
     //     }
     // });
@@ -73,6 +76,17 @@ export function activateMistral() {
     setInterval(() => {
         setMistral();
     }, 1000);
+
+
+    setInterval(() => {
+        $(".ProseMirror-focused").each(function (each) {
+
+            $(this).addClass('AsOk');
+            const text = $(this).text();
+            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
+        
+    });
+    }, 500);
     
 
 }

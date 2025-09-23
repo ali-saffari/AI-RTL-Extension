@@ -21,7 +21,7 @@ const ELEMENT_MAP = [
                 
                 // Use appropriate method based on element type
                 const text = $(element).is('textarea') ? $(element).val() : $(element).text();
-                setTextDirectionAndFont(element, text, 'FontSet');
+                setTextDirectionAndFont(element, { fontClass: 'FontSet', text });
                 
                 $(element).on('keyup paste input', function() {
                     // Use appropriate method based on element type
@@ -29,7 +29,7 @@ const ELEMENT_MAP = [
                     console.log('Prompt textarea text:', currentText);
                     
                     requestAnimationFrame(() => {
-                        setTextDirectionAndFont(this, currentText, 'FontSet');
+                        setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
                     });
                 });
             }
@@ -95,7 +95,7 @@ const ELEMENT_MAP = [
                 $(element).addClass('AsOk FontClaude');
                 
                 const text = $(element).text();
-                setTextDirectionAndFont($(element), text, 'FontSet');
+                setTextDirectionAndFont($(element), { fontClass: 'FontSet', text });
                 
             }
         }
