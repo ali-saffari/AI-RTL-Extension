@@ -20,7 +20,8 @@ const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark
 function setTextDirectionAndFont(element, options = {}) {
     const {
         fontClass = 'FontSet',
-        text: providedText = null
+        text: providedText = null,
+        setTextAlign = false
     } = options;
     
     // اگر متن پاس شده، از اون استفاده کن، وگرنه textWithoutLinks محاسبه کن
@@ -47,6 +48,15 @@ function setTextDirectionAndFont(element, options = {}) {
     $(element).attr("dir", direction);
     if (fontClass) {
         $(element).addClass(fontClass);
+    }
+    
+    // Set text alignment if setTextAlign is enabled
+    if (setTextAlign) {
+        if (direction === 'rtl') {
+            $(element).css('text-align', 'right');
+        } else {
+            $(element).css('text-align', 'left');
+        }
     }
 }
 
@@ -121,7 +131,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
             // Single part, process normally
             const mainText = $element.text();
             if (mainText && mainText.trim()) {
-                setTextDirectionAndFont(element, { fontClass });
+                setTextDirectionAndFont(element, { fontClass, setTextAlign });
                 $element.data('rtl-processed', true);
             }
         }
@@ -129,7 +139,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
         // No <br> tags, process normally
         const mainText = $element.text();
         if (mainText && mainText.trim()) {
-            setTextDirectionAndFont(element, { fontClass, text: mainText });
+            setTextDirectionAndFont(element, { fontClass, text: mainText, setTextAlign });
             $element.data('rtl-processed', true);
         }
     }
@@ -180,7 +190,7 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                     } else {
                         // If not code or has language-text class, use normal direction detection
                         $(this).find('*').removeAttr('dir');
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                     }
                 }
                 // Special handling for list elements - recursively process their children
@@ -195,11 +205,11 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                         if (hasFormattingTags) {
                             // If contains formatting tags, process directly without examining children
                             const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                         } else {
                             // If has children but no strong tags, process them recursively
                             const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                             
                             // Recursively process children of list elements
                             const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
@@ -208,12 +218,12 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                     } else {
                         // If no children, decide based on own content
                         const text = textExtractor(this);
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                     }
                 } 
                 else {
                     const text = textExtractor(this);
-                    setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                 }
             }
         });
@@ -257,9 +267,9 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     if (isCodeContent) {
                         // If content is detected as code, always force LTR
                         $(this).attr("dir", "ltr");
-                        if (fontClass) {
-                            $(this).addClass(fontClass);
-                        }
+                        // if (fontClass) {
+                        //     $(this).addClass(fontClass);
+                        // }
                         $(this).addClass('AsSetLtr');
                         $(this).addClass('FontSetCode');
                         
@@ -267,7 +277,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     } else {
                         // If not code or has language-text class, use normal direction detection
                         $(this).find('*').removeAttr('dir');
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                         console.log("processTextElements (Normal)", this, "Normal direction detection for non-code element");
                     }
                 }
@@ -285,7 +295,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                         if (hasFormattingTags) {
                             // If contains formatting tags, process directly without examining children
                             const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                             console.log("processTextElements (With formatting tags)", this, "Processed directly");
                         } else {
                             // If has children but no strong tags, process them recursively
@@ -327,14 +337,14 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     } else {
                         // If no children, decide based on own content
                         const text = textExtractor(this);
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                         console.log("processTextElements (List/Div without children)", this, "Based on own content");
                     }
                 } 
                 else {
                     const text = textExtractor(this);
                     console.log("processTextElements", this , text)
-                    setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                 }
             }
         });
@@ -514,7 +524,8 @@ function processTextElementsAdvanced(container, options = {}) {
         processedClass = 'AsOk',
         isContainer = false,
         skipTags = [],
-        containerDir: initialContainerDir = false
+        containerDir: initialContainerDir = false,
+        setTextAlign = false
     } = options;
     
     let containerDir = initialContainerDir;
@@ -532,9 +543,11 @@ function processTextElementsAdvanced(container, options = {}) {
         const cloneText = $tempElement.text().trim();
         containerDir = detectTextDirection(cloneText);
 
-        // برای همه المان‌هایی که allSkipTags هستن فونت ست کن
-        const allSkipTags = [...FORMATTING_TAGS, ...skipTags];
-        container.find(allSkipTags.join(',')).each(function() {
+        // برای همه المان‌هایی که allSkipTags هستن فونت ست کن (به جز تگ‌های کد)
+        const allTagsSetFont = [...FORMATTING_TAGS, ...skipTags].filter(tag => 
+            !['code', 'pre'].includes(tag)
+        );
+        container.find(allTagsSetFont.join(',')).each(function() {
             const $element = $(this);
             if (!$element.hasClass(fontClass)) {
                 $element.addClass(fontClass);
@@ -570,6 +583,15 @@ function processTextElementsAdvanced(container, options = {}) {
             }
             $element.addClass(processedClass);
             $element.attr('data-debug-mode', 'header-using-container-dir');
+            
+            // Set text alignment for headers if setTextAlign is enabled
+            if (setTextAlign) {
+                if (containerDir === 'rtl') {
+                    $element.css('text-align', 'right');
+                } else {
+                    $element.css('text-align', 'left');
+                }
+            }
             return;
         }
         
@@ -636,9 +658,9 @@ function processTextElementsAdvanced(container, options = {}) {
             $element.attr('data-debug-mode', 'div-md-code-block-ltr');
             // Force LTR for code blocks
             $element.attr("dir", "ltr");
-            if (fontClass) {
-                $element.addClass(fontClass);
-            }
+            // if (fontClass) {
+            //     $element.addClass(fontClass);
+            // }
             $element.addClass('AsSetLtr');
             $element.addClass('FontSetCode');
             // Mark all children as processed without processing them
@@ -663,16 +685,16 @@ function processTextElementsAdvanced(container, options = {}) {
                 $element.attr('data-debug-mode', 'code-element-ltr');
                 // If content is detected as code, always force LTR
                 $element.attr("dir", "ltr");
-                if (fontClass) {
-                    $element.addClass(fontClass);
-                }
+                // if (fontClass) {
+                //     $element.addClass(fontClass);
+                // }
                 $element.addClass('AsSetLtr');
                 $element.addClass('FontSetCode');
             } else {
                 $element.attr('data-debug-mode', 'code-element-normal');
                 // If not code or has language-text class, use normal direction detection
                 $element.find('*').removeAttr('dir');
-                                    setTextDirectionAndFont(this, { fontClass });
+                                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
             }
         }
         // For all other elements, check if they have children (excluding formatting tags)
@@ -696,14 +718,14 @@ function processTextElementsAdvanced(container, options = {}) {
                     $element.attr('data-debug-mode', 'all-formatting-tags');
                     const text = $element.text();
                     if (text && text.trim()) {
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                     }
                 } else if (formattingChildren.length > 0) {
                     // حالت 3: فقط بعضی از فرزندان allSkipTags هستند
                     $element.attr('data-debug-mode', 'mixed-children');
                     const text = $element.text();
                     if (text && text.trim()) {
-                        setTextDirectionAndFont(this, { fontClass });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                     }
                 } else {
                     // حالت 4: هیچ فرزندی allSkipTags نیست
@@ -728,7 +750,7 @@ function processTextElementsAdvanced(container, options = {}) {
                                 // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
                                 const text = $li.text();
                                 if (text && text.trim()) {
-                                    setTextDirectionAndFont(this, { fontClass });
+                                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
                                 }
                             }
                         });
@@ -776,12 +798,30 @@ function processTextElementsAdvanced(container, options = {}) {
                             $(this).attr('data-dir', listDirection);
                            
                             $(this).attr('dir', listDirection);
+                            
+                            // Set text alignment for list items if setTextAlign is enabled
+                            if (setTextAlign) {
+                                if (listDirection === 'rtl') {
+                                    $(this).css('text-align', 'right');
+                                } else {
+                                    $(this).css('text-align', 'left');
+                                }
+                            }
                            
                         });
                         
                         $element.attr('dir', listDirection);
                         $element.attr('data-debug-reason', debugReason);
                         $element.attr('data-debug-processed', `${processedCount}-${unprocessedCount}`);
+                        
+                        // Set text alignment for the list itself if setTextAlign is enabled
+                        if (setTextAlign) {
+                            if (listDirection === 'rtl') {
+                                $element.css('text-align', 'right');
+                            } else {
+                                $element.css('text-align', 'left');
+                            }
+                        }
                         
                     } else {
                         // برای سایر المان‌ها، پردازش بازگشتی انجام بده
@@ -796,7 +836,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         // برای خود المان هم تصمیم بگیر
                         const elementText = $element.text();
                         if (elementText && elementText.trim()) {
-                            setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                         }
 
                         $element.attr('data-debug-mode', 'no-formatting-children');
@@ -814,7 +854,7 @@ function processTextElementsAdvanced(container, options = {}) {
                 
                 const text = $element.text();
                 if (text && text.trim()) {
-                    setTextDirectionAndFont(this, { fontClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
                 }
             }
         }
