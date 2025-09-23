@@ -623,6 +623,11 @@ textarea#search-input-textarea {
     color: #888888;
 }
 
+
+
+pending-request {
+    font-family: iranyekan, sans-serif !important;
+}
 /*grok*/
 .AsBoxgrok {
     margin-top: 1px;

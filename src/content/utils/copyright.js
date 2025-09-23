@@ -33,6 +33,7 @@ ${BtnDonate()}
         $('body').each(function (each) {
             if (!$(this).hasClass("AsDonateOk")) {
                 $(this).append(modalDonate());
+                $(this).addClass("AsDonateOk");
             }
         });
         modalDonateFun();
