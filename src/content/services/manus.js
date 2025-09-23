@@ -1,66 +1,76 @@
 // manus.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { addCopyright } from '../utils/copyright.js';
+import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, getArticleTextElements } from '../utils/textDirectionUtils.js';
 
-export function setManusl() {
+export function setManus() {
+    // Add copyright using utility function
     if (chrome.runtime?.id) {
-        const alisaffari = chrome.runtime.getURL(imagePath)
-
         let fo2 = `.flex.flex-col.sticky.bottom-0`
-
-        if (!$(fo2).hasClass("AsOk")) {
-            $(fo2).addClass("AsOk")
-            $(fo2).append(`<div class="AsRtl FontSet AsBox AsMistral">
-
-                <a href="${saffariLink}" target="_blank">
-
-              <img src="${alisaffari}" alt="ali saffari"></a>
-
-
-
-                ${textSaffari}
-                
-                    ${BtnDonate()}
-
-
-
-            </div>`)
-
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate())
-                }
-            })
-            modalDonateFun()
-        }
+        addCopyright($(fo2), 'AsMistral', '');
     }
 
-    // Add RTL functionality
+    // Process textarea elements with improved text direction detection
     $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
             const text = $(this).val() || $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
+            setTextDirectionAndFont(this, text, 'FontSet');
+            
+            // Add event listener for real-time direction detection
+            $(this).on('keyup paste input', function() {
+                const currentText = $(this).val() || $(this).text();
+                requestAnimationFrame(() => {
+                    setTextDirectionAndFont(this, currentText, 'FontSet');
+                });
+            });
         }
-    })
+    });
 
+    // Process paragraph elements with advanced text processing
     $("body p").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            const text = $(this).text();
+            setTextDirectionAndFont(this, text, 'FontSet');
+        }
+    });
+
+    // Process manus-markdown elements with processTextElementsAdvanced
+    $('.manus-markdown').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            processTextElementsAdvanced($(this), 'FontSet', 'AsOkText', true);
+        }
+    });
+
+    // Process other common text elements
+    $("body span, body h1, body h2, body h3, body h4, body h5, body h6, .truncate ").each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
             const text = $(this).text();
             if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
+                setTextDirectionAndFont(this, text, 'FontSet');
             }
         }
-    })
+    });
+
+
 }
 
 
 
 // Main activation function for Manus
 export function activateManus() {
-    setManusl();
+    console.log("activateManus");
+    
+    // Initial setup
+    setManus();
+    
+    // SetInterval for continuous processing
+    setInterval(() => {
+        setManus();
+    }, 1000);
+    
+    
 }

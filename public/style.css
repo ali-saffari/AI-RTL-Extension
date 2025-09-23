@@ -731,6 +731,11 @@ pending-request {
     margin-bottom: -8px;
     margin-top: 10px;
 }
+
+
+.overflow-y-auto.pl-4.pr-2.AsOk {
+    padding-right: 1rem;
+}
 /*-----Kimi -------*/
 
 .AsKimi {
@@ -741,6 +746,10 @@ pending-request {
 }
 
 
+
+.AsKimi a {
+    vertical-align: middle;
+}
 
 
 
