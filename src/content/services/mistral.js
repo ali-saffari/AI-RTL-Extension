@@ -6,7 +6,7 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, getArticleTextEle
 export function setMistral() {
     // Add copyright using utility function
     if (chrome.runtime?.id) {
-        let fo2 = `form.mb-0.rounded-xl.large-box-shadow.delay-150.w-full`
+        let fo2 = `.relative.start-0.end-0.bottom-0.flex.w-full.flex-col.items-center`
         addCopyright($(fo2), 'AsMistral', '');
     }
 

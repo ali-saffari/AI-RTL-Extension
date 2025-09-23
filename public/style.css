@@ -732,8 +732,9 @@ pending-request {
 
 .AsMistral {
     color: rgb(136, 136, 136);
-    margin-bottom: -8px;
-    margin-top: 10px;
+    transform: scale(0.8);
+    margin-top: -7px;
+    margin-bottom: 6px;
 }
 
 
