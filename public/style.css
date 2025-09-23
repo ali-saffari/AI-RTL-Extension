@@ -733,9 +733,7 @@ pending-request {
 }
 
 
-.overflow-y-auto.pl-4.pr-2.AsOk {
-    padding-right: 1rem;
-}
+
 /*-----Kimi -------*/
 
 .AsKimi {
@@ -753,8 +751,11 @@ pending-request {
 
 
 
+/* -----manus----- */
 
-
+.overflow-y-auto.pl-4.pr-2.AsOk {
+    padding-right: 1rem;
+}
 
 
 
