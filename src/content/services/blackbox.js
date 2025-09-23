@@ -35,30 +35,65 @@ export function setBlackBox() {
 
 
 
-    $('.prose').each(function (each) {
+    $('.prose ').each(function (each) {
 
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            $(this).addClass('FontSet');
-            
-            // Use textDirectionUtils for comprehensive text analysis
+
             processTextElements(
                 $(this), 
                 getArticleTextElements(), 
                 (element) => element.textContent,
                 'FontSetImportantGPT',
-                'AsOkText'
+                'AsOkText',
+                true
             );
             
-            // // Also analyze the main text-message content
-            // const mainText = $(this).text();
-            // if (mainText && mainText.trim()) {
-            //     setTextDirectionAndFont(this, mainText, 'FontSetImportantGPT');
-            //     console.log('Main text-message processed:', mainText);
-            // }
+     
+    })
+
+    // Process cmdk-group-items elements
+    $('[cmdk-group-items]').each(function (each) {
+        if (!$(this).hasClass("AsOk")) {
+            $(this).addClass('AsOk');
+            $(this).addClass('FontSet');
+            
+            const text = $(this).text();
+            if (text && text.trim()) {
+                const direction = detectTextDirection(text);
+                $(this).attr('dir', direction);
+                console.log('cmdk-group-items processed:', text, direction);
+            }
         }
     })
 
+    
+
+    $('.markdown-table ').each(function (each) {
+
+
+        if (!$(this).prev('.table-scroll-help').length) {
+            $(this).before(`
+                <div class="table-scroll-help bg-blue-50 dark:bg-blue-900/20 border-2 rounded-lg px-3 py-2 my-2 text-xs text-gray-700 dark:text-gray-300 text-center font-iran-yekan" style="border-color: #3b82f6;">
+                     💡 نکته: اگر جدول کامل نمایش داده نمی‌شه، با اسکرول افقی می‌تونی کل جدول رو ببینی
+                </div>
+            `);
+        }
+        
+        // Add blue scroll styling to parent
+        $(this).parent().addClass('custom-scrollbar');
+
+        processTextElements(
+            $(this).parent(), 
+            getArticleTextElements(), 
+            (element) => element.textContent,
+            'FontSetImportantGPT',
+            'AsOkText',
+            true
+        );
+        
+ 
+})
+
+    
 
     // $("body p").each(function (each) {
     //     if (!$(this).hasClass("AsRtl")) {
@@ -79,5 +114,5 @@ export function activateBlackbox() {
     setBlackBox();
     let interval = setInterval(() => {
         setBlackBox();
-    }, 1000);
+    }, 500);
 }

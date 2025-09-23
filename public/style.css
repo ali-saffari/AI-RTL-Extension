@@ -199,7 +199,7 @@ textarea.AsRtl {
 
 code.AsSetLtr , pre.AsSetLtr {
     text-align: left;
-    direction: rtl;
+    direction: ltr;
 }
 
 .language-plaintext.FontSet {
@@ -759,5 +759,28 @@ textarea#search-input-textarea {
 
 .AsBoxB a {
     vertical-align: -webkit-baseline-middle;
+}
+
+/* Custom Blue Scrollbar Styles */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #3b82f6 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
 }
 

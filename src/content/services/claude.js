@@ -53,7 +53,7 @@ const ELEMENT_MAP = [
         //پاسخ های کلاود
         target: '.standard-markdown , .progressive-markdown , .whitespace-normal',
         function: (element) => {
-            // if (!$(element).hasClass("AsOk")) {
+           
                 $(element).addClass('AsOk FontSet FontClaude');
                 
                 processTextElements(
@@ -62,8 +62,9 @@ const ELEMENT_MAP = [
                     (element) => element.textContent,
                     'FontSet FontClaude',
                     'AsOkText',
+                    true
                 );
-            // }
+            
         }
     },
     {
@@ -80,6 +81,7 @@ const ELEMENT_MAP = [
                     (element) => element.textContent,
                     'FontSet FontClaude',
                     'AsOkText',
+                    true
                 );
             // }
         }

@@ -34,20 +34,19 @@ export function initializeChatGptElements() {
     })
 
     $('.text-message .markdown').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            $(this).addClass('FontSetImportantGPT');
+
             
             processTextElementsChatGPT(
                 $(this), 
                 getArticleTextElements(), 
                 (element) => element.textContent,
                 'FontSetImportantGPT',
-                'AsOkText'
+                'AsOkText',
+                true
             );
             
         
-        }
+        
     })
 
     $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {

@@ -6,6 +6,9 @@
 // Import analysis functions from analyzeDirection.js
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode } from './analyzeDirection.js';
 
+// Common formatting tags array - defined once for consistency
+const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'ms-cmark-node'];
+
 
 /**
  * Universal function to set text direction and font for any element
@@ -117,8 +120,13 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
  * @param {Function} textExtractor - Function to extract text from element
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
+ * @param {boolean} isContainer - Whether this is a container element (optional)
  */
-function processTextElementsChatGPT(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+function processTextElementsChatGPT(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false) {
+    // Process tables first if this is a container
+    if (isContainer) {
+        processTablesInContainer(container, fontClass, processedClass);
+    }
 
     // Then process other elements as before
     selectors.forEach(selector => {
@@ -160,8 +168,7 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                     
                     if (hasChildren) {
                         // Check if element contains any formatting tags
-                        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span'];
-                        const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
+                        const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
                         
                         if (hasFormattingTags) {
                             // If contains formatting tags, process directly without examining children
@@ -174,7 +181,7 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
                             
                             // Recursively process children of list elements
                             const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
-                            processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass);
+                            processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass, false);
                         }
                     } else {
                         // If no children, decide based on own content
@@ -198,8 +205,14 @@ function processTextElementsChatGPT(container, selectors, textExtractor, fontCla
  * @param {Function} textExtractor - Function to extract text from element
  * @param {string} fontClass - Font class to apply (optional)
  * @param {string} processedClass - Class to mark processed elements (optional)
+ * @param {boolean} isContainer - Whether this is a container element (optional)
  */
-function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk') {
+function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false) {
+    // Process tables first if this is a container
+    if (isContainer) {
+        console.log("processTextElements isContainer", isContainer)
+        processTablesInContainer(container, fontClass, processedClass);
+    }
 
     // Then process other elements as before
     selectors.forEach(selector => {
@@ -243,8 +256,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                     
                     if (hasChildren) {
                         // Check if element contains any formatting tags
-                        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span'];
-                        const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
+                        const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
                         
                         if (hasFormattingTags) {
                             // If contains formatting tags, process directly without examining children
@@ -253,7 +265,7 @@ function processTextElements(container, selectors, textExtractor, fontClass = 'F
                             console.log("processTextElements (With formatting tags)", this, "Processed directly");
                         } else {
                             // If has children but no strong tags, process them recursively
-                            processTextElements($element, selectors, textExtractor, fontClass, processedClass);
+                            processTextElements($element, selectors, textExtractor, fontClass, processedClass, false);
                             
                             // Then count RTL vs LTR children to decide parent direction
                             const children = $element.find('*[dir]');
@@ -494,8 +506,7 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
         }
         
         // Skip formatting tags completely
-        const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time' , 'ms-cmark-node'];
-        if (formattingTags.includes(tagName)) {
+        if (FORMATTING_TAGS.includes(tagName)) {
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
@@ -541,8 +552,7 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
             
             if (hasChildren) {
                 // Check if element contains any formatting tags
-                const formattingTags = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
-                const hasFormattingTags = formattingTags.some(tag => $element.find(tag).length > 0);
+                const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
                 
                 
                 if (hasFormattingTags) {
@@ -553,7 +563,7 @@ function processTextElementsAdvanced(container, fontClass = 'FontSet', processed
                     }
                 } else {
                     // If has other types of children, process them recursively
-                    processTextElementsAdvanced($element, fontClass, processedClass);
+                    processTextElementsAdvanced($element, fontClass, processedClass, false);
                     
                     // Smart direction decision based on children and element type
                     const children = $element.find('*[dir]');
