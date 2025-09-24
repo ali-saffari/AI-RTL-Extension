@@ -10,7 +10,6 @@ import { activateGrok } from './services/grok.js';
 import { activateGemini } from './services/gemini.js';
 import { activateMonica } from './services/monica.js';
 import { activatePoe } from './services/poe.js';
-import { activateTheb } from './services/thebai.js';
 import { activatePerplexity } from './services/perplexity.js';
 import { activateDuckduckgo } from './services/duckduckgo.js';
 import { activateAistudio } from './services/aistudio.js';
@@ -50,10 +49,6 @@ const serviceConfig = {
     copilot: {
         urls: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
         activate: activateCopilot
-    },
-    thebAi: {
-        urls: ["beta.theb.ai", "chatbot.theb.ai"],
-        activate: activateTheb
     },
     perplexity: {
         urls: ["perplexity.ai", "www.perplexity.ai"],

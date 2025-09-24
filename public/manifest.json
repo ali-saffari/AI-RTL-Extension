@@ -19,8 +19,7 @@
     "content_scripts": [ {
         "css": [ "css/fontiran-iranyekan.css", "style.css" ],
         "js": ["jquery-3.6.4.min.js", "js/content.js" ],
-        "matches": [  "https://chatbot.theb.ai/*" ,
-            "https://beta.theb.ai/*" ,"https://chat.openai.com/*" ,
+        "matches": [ "https://chat.openai.com/*" ,
             "https://chatgpt.com/*" ,
             "https://copilot.microsoft.com/*" ,
             "https://bing.com/*", "https://www.bing.com/*" ,
@@ -35,8 +34,7 @@
     "web_accessible_resources": [
         {
             "resources": ["images/*" , "fonts/*"],
-            "matches": [  "https://chatbot.theb.ai/*" ,
-                "https://beta.theb.ai/*" ,"https://chat.openai.com/*" ,
+            "matches": [ "https://chat.openai.com/*" ,
                 "https://chatgpt.com/*" ,
                 "https://copilot.microsoft.com/*" ,
                 "https://bing.com/*", "https://www.bing.com/*" ,
