@@ -1,14 +1,107 @@
 
 .App {
     font-family: iranyekan, sans-serif;
-    padding-bottom: 13px;
+    padding: 0;
+    min-height: 100vh;
 }
 
 .container {
     font-family: iranyekan, sans-serif;
-    width: 300px;
-    max-height: 490px;
+    width: 400px;
+    max-height: 600px;
     overflow-y: auto;
+}
+
+/* اسکرول برای RTL - سمت راست */
+.container {
+    direction: ltr;
+    scrollbar-width: thin;
+    scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+.container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+    background: rgba(0, 233, 255, 0.1);
+    border-radius: 4px;
+    margin: 2px;
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00e9ff 0%, #0099cc 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 233, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4dd4ff 0%, #00e9ff 100%);
+    border-color: rgba(0, 233, 255, 0.6);
+    transform: scaleX(1.2);
+}
+
+.container::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #0099cc 0%, #00e9ff 100%);
+}
+
+/* اسکرول برای تمام عناصر - RTL */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 233, 255, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #00e9ff 0%, #0099cc 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 233, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #4dd4ff 0%, #00e9ff 100%);
+    border-color: rgba(0, 233, 255, 0.5);
+    box-shadow: 0 0 8px rgba(0, 233, 255, 0.3);
+}
+
+::-webkit-scrollbar-corner {
+    background: rgba(0, 233, 255, 0.05);
+}
+
+/* اطمینان از RTL برای محتوا */
+.App {
+    direction: rtl;
+}
+
+/* اسکرول برای لیست سایت‌ها - LTR */
+.listSite {
+    direction: ltr;
+}
+
+.listSite::-webkit-scrollbar {
+    width: 6px;
+}
+
+.listSite::-webkit-scrollbar-track {
+    background: rgba(0, 233, 255, 0.05);
+    border-radius: 3px;
+}
+
+.listSite::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00e9ff 0%, #0099cc 100%);
+    border-radius: 3px;
+    border: 1px solid rgba(0, 233, 255, 0.2);
+}
+
+.listSite::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4dd4ff 0%, #00e9ff 100%);
+    border-color: rgba(0, 233, 255, 0.5);
 }
 
 .appinfo-note p {
@@ -20,34 +113,96 @@
 a {
     text-decoration: none;
     color: white;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: #00e9ff;
+    text-shadow: 0 0 8px rgba(0, 233, 255, 0.5);
 }
 
 .MuiListItemText-primary {
     font-size: 14px;
     font-weight: 500;
+    color: #ffffff;
 }
 
 .appinfo {
     direction: rtl;
     text-align: center;
-    padding: 1px 10px;
+    padding: 20px 15px;
+    margin: 8px;
 }
 
-.appinfo-name {
-    font-size: 16px;
-    font-weight: 400;
-    border-bottom: 1px solid #8d8d8d;
-    padding-bottom: 5px;
-    padding-top: 8px;
-}
 
 .appinfo img {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
+    transition: transform 0.3s ease;
+}
+
+.appinfo img:hover {
+    transform: scale(1.1);
 }
 
 .appinfo-link a {
     display: inline-block;
-    padding: 1px 5px;
+    padding: 8px 16px;
     color: #00e9ff;
+    border: 1px solid rgba(0, 233, 255, 0.3);
+    border-radius: 20px;
+    margin: 5px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.appinfo-link a:hover {
+    border-color: #00e9ff;
+    transform: translateY(-2px);
+}
+
+/* استایل‌های اضافی برای بهبود ظاهر */
+.MuiList-root {
+    margin: 8px;
+}
+
+.MuiListItem-root {
+    margin: 2px 0;
+    transition: all 0.3s ease;
+}
+
+.MuiListItem-root:hover {
+    transform: translateX(-2px);
+}
+
+.MuiSwitch-root .MuiSwitch-switchBase.Mui-checked {
+    color: #00e9ff !important;
+}
+
+.MuiSwitch-root .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+    background-color: #00e9ff !important;
+}
+
+.MuiAvatar-root {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.MuiAvatar-root:hover {
+    transform: scale(1.1);
+}
+
+.MuiDialog-paper {
+    border-radius: 12px !important;
+}
+
+.MuiButton-root {
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    transition: all 0.3s ease !important;
+}
+
+.MuiButton-root:hover {
+    transform: translateY(-2px) !important;
 }

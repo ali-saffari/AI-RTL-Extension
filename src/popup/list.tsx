@@ -30,6 +30,29 @@ interface CheckedState {
     [key: string]: boolean;
 }
 
+const services: Service[] = [
+    { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
+    { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
+    { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
+    { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
+    { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
+    { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
+    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
+    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
+    { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
+    { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
+    { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },
+    { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/' },
+    { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
+    { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
+    { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
+    { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/', helpText: 'سیستم جدید بهینه سازی متن روی این سایت فعال نیست و از نسخه قبلی استفاده میشه.' },
+    { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
+];
+
+
+export { services };
+
 export default function ServiceList() {
     const [checked, setChecked] = useState<CheckedState>({
         chatGpt: true,
@@ -54,25 +77,6 @@ export default function ServiceList() {
     const [helpModalOpen, setHelpModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-    const services: Service[] = [
-        { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
-        { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
-        { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
-        { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
-        { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
-        { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
-        { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
-        { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
-        { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
-        { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
-        { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },
-        { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/' },
-        { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
-        { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
-        { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
-        { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/', helpText: 'سیستم جدید بهینه سازی متن روی این سایت فعال نیست و از نسخه قبلی استفاده میشه.' },
-        { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
-    ];
 
 
     useEffect(() => {
@@ -98,8 +102,8 @@ export default function ServiceList() {
             <List
                 sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
                 subheader={
-                    <ListSubheader style={{ direction: 'rtl', textAlign: 'center', lineHeight: '11px' }}>
-                        سایت هایی که پشتیبانی میشود
+                    <ListSubheader component="div" id="nested-list-subheader" sx={{ textAlign: 'center', direction: 'rtl' }}>
+                        {Object.values(checked).filter(Boolean).length} سایت فعال
                     </ListSubheader>
                 }
             >
