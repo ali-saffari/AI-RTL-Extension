@@ -1,7 +1,7 @@
 // blackbox.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElements, getArticleTextElements } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, getArticleTextElements } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
 export function setBlackBox() {
@@ -38,14 +38,11 @@ export function setBlackBox() {
     $('.prose ').each(function (each) {
 
 
-            processTextElements(
-                $(this), 
-                getArticleTextElements(), 
-                (element) => element.textContent,
-                'FontSetImportantGPT',
-                'AsOkText',
-                true
-            );
+            processTextElementsAdvanced($(this), {
+                fontClass: 'FontSetImportantGPT',
+                processedClass: 'AsOkText',
+                isContainer: true
+            });
             
      
     })
@@ -81,14 +78,11 @@ export function setBlackBox() {
         // Add blue scroll styling to parent
         $(this).parent().addClass('custom-scrollbar');
 
-        processTextElements(
-            $(this).parent(), 
-            getArticleTextElements(), 
-            (element) => element.textContent,
-            'FontSetImportantGPT',
-            'AsOkText',
-            true
-        );
+        processTextElementsAdvanced($(this).parent(), {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
         
  
 })

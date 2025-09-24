@@ -1,7 +1,7 @@
 // kimi.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElements, setTextDirectionAndFont, getArticleTextElements } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, getArticleTextElements } from '../utils/textDirectionUtils.js';
 
 // Kimi service functions
 export function setKimi() {
@@ -11,19 +11,10 @@ export function setKimi() {
         addCopyright($(fo2), 'AsKimi', 'margin-bottom: 10px');
     }
 
-    // Process markdown-container elements with processTextElements
+    // Process markdown-container elements with processTextElementsAdvanced
     $('.markdown-container').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            processTextElements(
-                $(this), 
-                getArticleTextElements(), 
-                (element) => element.textContent,
-                'FontSet',
-                'AsOkText',
-                true
-            );
-        }
+
+        setTextDirectionAndFont(this, { fontClass: 'FontSet' });
     });
 
     // // Process textarea elements with improved text direction detection
