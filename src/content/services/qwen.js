@@ -22,33 +22,25 @@ export function setQwenlm() {
 
 
     $(".chat-assistant , .user-message , #chat-input").each(function (each) {
-        const $element = $(this);
-        const text = $element.text().trim();
-        
-        if (text) {
-            const direction = detectTextDirection(text);
-            $element.attr("dir", direction);
-        } else {
-            $element.attr("dir", "auto");
-        }
-
-        if (!$element.hasClass("FontSet")) {
-            $element.addClass('FontSet');
+        if (!$(this).hasClass("AsRtl")) {
+            $(this).addClass('AsRtl');
+            const text = $(this).text() || $(this).val();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
+            $(this).addClass('FontSet');
         }
     });
 
 
     $(".chat-item-drag").each(function (each) {
-        const $element = $(this);
-        const text = $element.text().trim();
-        
-        if (text) {
-            const direction = detectTextDirection(text);
-            $element.attr("dir", direction);
-        }
-
-        if (!$element.hasClass("FontSet")) {
-            $element.addClass('FontSet');
+        if (!$(this).hasClass("AsRtl")) {
+            $(this).addClass('AsRtl');
+            const text = $(this).text() || $(this).val();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
+            $(this).addClass('FontSet');
         }
     });
     
@@ -67,17 +59,13 @@ export function setQwenlm() {
 
 
     $(".font-primary ,.scrollbar-hidden").each(function (each) {
-        const $element = $(this);
-        const text = $element.text().trim();
-        
-        if (text) {
-            const direction = detectTextDirection(text);
-            $element.attr("dir", direction);
-        }
-
-        if (!$element.hasClass("FontSet")) {
-            $element.addClass('FontSet');
-            $element.addClass('FontSetImportant');
+        if (!$(this).hasClass("AsRtl")) {
+            $(this).addClass('AsRtl');
+            const text = $(this).text() || $(this).val();
+            if (text && text.trim()) {
+                $(this).attr("dir", detectTextDirection(text));
+            }
+            $(this).addClass('FontSet');
         }
     });
 
