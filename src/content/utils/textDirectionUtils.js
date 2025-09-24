@@ -7,7 +7,7 @@
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode } from './analyzeDirection.js';
 
 // Common formatting tags array - defined once for consistency
-const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a'];
+const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
 
 /**
@@ -100,7 +100,7 @@ function setTextDirectionAndFont(element, options = {}) {
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} fontClass - Font class to apply (optional)
  */
-function processParagraphWithBreaks(element, fontClass = 'FontSet') {
+function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign) {
     const $element = $(element);
     
     // Check if already processed using data attribute
@@ -180,242 +180,8 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet') {
     }
 }
 
-/**
- * Universal function to process text elements in a container
- * @param {jQuery} container - Container to search in
- * @param {Array} selectors - Array of CSS selectors
- * @param {Function} textExtractor - Function to extract text from element
- * @param {string} fontClass - Font class to apply (optional)
- * @param {string} processedClass - Class to mark processed elements (optional)
- * @param {boolean} isContainer - Whether this is a container element (optional)
- */
-function processTextElementsChatGPT(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false) {
-    // Process tables first if this is a container
-    if (isContainer) {
-        processTablesInContainer(container, fontClass, processedClass);
-    }
-
-    // Then process other elements as before
-    selectors.forEach(selector => {
-        container.children(selector).each(function (each) {
-            if (!$(this).hasClass(processedClass)) {
-                $(this).addClass(processedClass);
-                
-                // Special handling for paragraph elements with <br> tags
-                if (selector === 'p') {
-                    processParagraphWithBreaks(this, fontClass);
-                } 
-                // Special handling for code elements - use code detection algorithm
-                else if (['pre', 'code'].includes(selector)) {
-                    const text = textExtractor(this);
-                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
-                    const isCodeContent = !hasLanguageTextClass && isCode(text);
-                    
-                    
-                    if (isCodeContent) {
-                        // If content is detected as code, always force LTR
-                        // Remove all dir attributes from child elements
-                        // $(this).find('*').removeAttr('dir');
-                        
-                        $(this).attr("dir", "ltr");
-                        if (fontClass) {
-                            $(this).addClass(fontClass);
-                        }
-                        $(this).addClass('AsSetLtr');
-                    } else {
-                        // If not code or has language-text class, use normal direction detection
-                        $(this).find('*').removeAttr('dir');
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                    }
-                }
-                // Special handling for list elements - recursively process their children
-                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'blockquote'].includes(selector)) {
-                    const $element = $(this);
-                    const hasChildren = $element.children().length > 0;
-                    
-                    if (hasChildren) {
-                        // Check if element contains any formatting tags
-                        const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
-                        
-                        if (hasFormattingTags) {
-                            // If contains formatting tags, process directly without examining children
-                            const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                        } else {
-                            // If has children but no strong tags, process them recursively
-                            const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                            
-                            // Recursively process children of list elements
-                            const childSelectors = ['p', 'span', 'div', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time'];
-                            processTextElementsChatGPT($(this), selectors, textExtractor, fontClass, processedClass, false);
-                        }
-                    } else {
-                        // If no children, decide based on own content
-                        const text = textExtractor(this);
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                    }
-                } 
-                else {
-                    const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                }
-            }
-        });
-    });
-}
-
-/**
- * Claude-specific function to process text elements with smart direction detection
- * @param {jQuery} container - Container to search in
- * @param {Array} selectors - Array of CSS selectors
- * @param {Function} textExtractor - Function to extract text from element
- * @param {string} fontClass - Font class to apply (optional)
- * @param {string} processedClass - Class to mark processed elements (optional)
- * @param {boolean} isContainer - Whether this is a container element (optional)
- */
-function processTextElements(container, selectors, textExtractor, fontClass = 'FontSet', processedClass = 'AsOk', isContainer = false) {
-    // Process tables first if this is a container
-    if (isContainer) {
-        console.log("processTextElements isContainer", isContainer)
-        processTablesInContainer(container, fontClass, processedClass);
-    }
-
-    // Then process other elements as before
-    selectors.forEach(selector => {
-        container.children(selector).each(function (each) {
-            if (!$(this).hasClass(processedClass)) {
-                $(this).addClass(processedClass);
-                
-                // Special handling for paragraph elements with <br> tags
-                if (selector === 'p') {
-                    processParagraphWithBreaks(this, fontClass);
-                } 
-                // Special handling for code elements - use code detection algorithm
-                else if ([ 'pre', 'code'].includes(selector)) {
-                    const text = textExtractor(this);
-                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
-                    const isCodeContent = !hasLanguageTextClass && isCode(text);
-                    
-                    console.log("processTextElements (Code)", text, isCodeContent, "hasLanguageTextClass:", hasLanguageTextClass);
-                    
-                    if (isCodeContent) {
-                        // If content is detected as code, always force LTR
-                        $(this).attr("dir", "ltr");
-                        // if (fontClass) {
-                        //     $(this).addClass(fontClass);
-                        // }
-                        $(this).addClass('AsSetLtr');
-                        $(this).addClass('FontSetCode');
-                        
-                        console.log("processTextElements (LTR Code)", this, "Forced LTR for detected code element");
-                    } else {
-                        // If not code or has language-text class, use normal direction detection
-                        $(this).find('*').removeAttr('dir');
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                        console.log("processTextElements (Normal)", this, "Normal direction detection for non-code element");
-                    }
-                }
-                // Special handling for list elements - check if has children first
-                else if (['li', 'ul', 'ol', 'dl', 'dt', 'dd' , 'div' , 'p'].includes(selector)) {
-                    const $element = $(this);
-                    const hasChildren = $element.children().length > 0;
-                    
 
 
-                    if (hasChildren) {
-                        // Check if element contains any formatting tags
-                        const hasFormattingTags = FORMATTING_TAGS.some(tag => $element.find(tag).length > 0);
-                        
-                        if (hasFormattingTags) {
-                            // If contains formatting tags, process directly without examining children
-                            const text = textExtractor(this);
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                            console.log("processTextElements (With formatting tags)", this, "Processed directly");
-                        } else {
-                            // If has children but no strong tags, process them recursively
-                            processTextElements($element, selectors, textExtractor, fontClass, processedClass, false);
-                            
-                            // Then count RTL vs LTR children to decide parent direction
-                            const children = $element.find('*[dir]');
-                            let rtlCount = 0;
-                            let ltrCount = 0;
-                            
-                            children.each(function() {
-                                const dir = $(this).attr('dir');
-                                if (dir === 'rtl') {
-                                    rtlCount++;
-                                } else if (dir === 'ltr') {
-                                    ltrCount++;
-                                }
-                            });
-                            
-                            // Decide parent direction based on children majority
-                            const parentDirection = rtlCount > ltrCount ? 'rtl' : 'ltr';
-                            $element.attr('dir', parentDirection);
-                            
-                            if (fontClass) {
-                                $element.addClass(fontClass);
-                            }
-                            
-                            // Check if children are li elements
-                            const hasLiChildren = $element.children('li').length > 0;
-                            
-                            if (hasLiChildren) {
-                                // If children are li elements, set the final direction to the li elements
-                                $element.children('li').attr('dir', parentDirection);
-                                console.log("processTextElements (Parent with LI children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, LI children direction: ${parentDirection}`);
-                            } else {
-                                console.log("processTextElements (List/Div with children)", this, `RTL: ${rtlCount}, LTR: ${ltrCount}, Parent: ${parentDirection}`);
-                            }
-                        }
-                    } else {
-                        // If no children, decide based on own content
-                        const text = textExtractor(this);
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                        console.log("processTextElements (List/Div without children)", this, "Based on own content");
-                    }
-                } 
-                else {
-                    const text = textExtractor(this);
-                    console.log("processTextElements", this , text)
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                }
-            }
-        });
-    });
-}
-
-/**
- * Get common text elements for articles
- * @returns {Array} Array of CSS selectors for article text elements
- */
-function getArticleTextElements() {
-    return [
-        // عناصر اصلی متن
-        'p', 'span', 'div',
-        // عناوین
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        // فرمت‌بندی متن
-        'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'span',
-        // نقل‌قول و کد
-        'blockquote', 'pre', 'code',
-        // لیست‌ها
-        'li', 'ul', 'ol', 'dl', 'dt', 'dd',
-        // جداول - بهبود یافته برای پوشش کامل
-        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
-        // ساختار مقاله
-        'article', 'section', 'aside', 'header', 'footer',
-        // عناصر متنی خاص
-        'cite', 'q', 'abbr', 'dfn', 'sub', 'sup', 'del', 'ins',
-        // تصاویر و رسانه
-        'figcaption', 'figure',
-        // لینک‌ها
-        'a',
-        // عناصر اضافی برای جدول‌ها
-        '[role="table"]', '[role="row"]', '[role="cell"]', '[role="columnheader"]', '[role="rowheader"]'
-    ];
-}
 
 /**
  * Process tables in container with unified direction decision
@@ -636,16 +402,18 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
         
-        // // Skip ms-code-block elements completely (for AI Studio code sections)
-        // if (tagName === 'ms-code-block') {
-        //     console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
-        //     $element.attr('data-debug-mode', 'ms-code-block-skipped');
-        //     // Mark all children as processed without processing them
-        //     $element.find('*').addClass(processedClass);
-        //     return;
-        // }
+        // Skip ms-code-block elements completely (for AI Studio code sections)
+        if (tagName === 'ms-code-block') {
+            console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
+            $element.attr('data-debug-mode', 'ms-code-block-skipped');
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
         
         // Skip formatting tags completely
+
+   
         if (allSkipTags.includes(tagName)) {
             $element.attr('data-debug-mode', 'formatting-tag-skipped');
             // Mark all children as processed without processing them
@@ -653,19 +421,52 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
         
-        // Skip elements with table roles (they are handled by processTablesInContainer)
+        // Skip table elements and elements with table roles (they are handled by processTablesInContainer)
         const tableRoles = ['table', 'row', 'cell', 'columnheader', 'rowheader'];
         const elementRole = $element.attr('role');
-        if (elementRole && tableRoles.includes(elementRole)) {
-            $element.attr('data-debug-mode', 'table-role-skipped');
-       
+        
+        // Check if it's a table HTML tag
+        if (['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'].includes(tagName)) {
+            $element.attr('data-debug-mode', 'table-element-skipped');
             return;
         }
         
-        // Skip li elements that are inside ol or ul (they are handled separately)
+        // Check if it has table role attribute
+        if (elementRole && tableRoles.includes(elementRole)) {
+            $element.attr('data-debug-mode', 'table-role-skipped');
+            return;
+        }
+        
+        // Handle li elements that are inside ol or ul
         if (tagName === 'li' && ($element.parent().is('ol') || $element.parent().is('ul'))) {
-            $element.attr('data-debug-mode', 'li-inside-list-skipped');
-            // Don't mark as processed, just skip processing
+            // Check if li contains pre or code elements
+            const hasPreOrCode = $element.find('pre, code').length > 0;
+            
+            if (hasPreOrCode) {
+                // If li contains pre or code, process with code logic
+                const text = $element.text();
+                const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
+                const isCodeContent = !hasLanguageTextClass && isCode(text);
+                
+                $element.addClass(processedClass);
+
+                if (isCodeContent) {
+                    $element.attr('data-debug-mode', 'li-code-element-ltr');
+                    // If content is detected as code, always force LTR
+                    $element.attr("dir", "ltr");
+                    $element.addClass('AsSetLtr');
+                    $element.addClass('FontSetCode');
+                } else {
+                    $element.attr('data-debug-mode', 'li-code-element-normal');
+                    // If not code or has language-text class, use normal direction detection
+                    $element.find('*').removeAttr('dir');
+                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                }
+            } else {
+                // If li doesn't contain pre or code, skip processing
+                $element.attr('data-debug-mode', 'li-inside-list-skipped');
+                // Don't mark as processed, just skip processing
+            }
             return;
         }
         
@@ -677,6 +478,16 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
         
+
+        if (tagName === 'button') {
+            $element.attr('data-debug-mode', 'div-rounded-xl-skipped');
+            // Mark all children as processed without processing them
+            $element.find('*').addClass(processedClass);
+            return;
+        }
+        
+
+
         // Special handling for div elements with ds-scroll-area class
         if (tagName === 'div' && $element.hasClass('ds-scroll-area')) {
             $element.attr('data-debug-mode', 'div-ds-scroll-area-processed');
@@ -739,11 +550,30 @@ function processTextElementsAdvanced(container, options = {}) {
                 // If not code or has language-text class, use normal direction detection
                 $element.find('*').removeAttr('dir');
                 $element.addClass(processedClass);
-                                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                 setTextDirectionAndFont(this, { fontClass, setTextAlign });
             }
+
+            return;
+        }
+
+        
+        // Special handling for paragraph elements with <br> tags
+         if (tagName === 'p') {
+            // Check if p only contains br elements
+            const children = $element.children();
+            const onlyBrElements = children.length > 0 && children.filter(function() {
+                return this.tagName.toLowerCase() === 'br';
+            }).length === children.length;
+            
+            if (onlyBrElements) {
+                $element.addClass(processedClass);
+                processParagraphWithBreaks(this, fontClass, setTextAlign);
+
+                return;
+            } 
         }
         // For all other elements, check if they have children (excluding formatting tags)
-        else {
+       
             // Count children excluding formatting tags
             const nonFormattingChildren = $element.children().filter(function() {
                 return !allSkipTags.includes(this.tagName.toLowerCase());
@@ -795,10 +625,41 @@ function processTextElementsAdvanced(container, options = {}) {
                             } else {
                                 unprocessedCount++;
                                 // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
-                                const text = $li.text();
-                                if (text && text.trim()) {
+                     
                                     setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                                }
+                                
+
+
+                                $li.find('pre, code').each(function() {
+
+                                    const text = $(this).text();
+                                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
+                                    const isCodeContent = !hasLanguageTextClass && isCode(text);
+                                    
+                                    $(this).addClass(processedClass);
+                        
+                                    if (isCodeContent) {
+                                        $(this).attr('data-debug-mode', 'code-element-ltr');
+                                        // If content is detected as code, always force LTR
+                                        $(this).attr("dir", "ltr");
+                                        // if (fontClass) {
+                                        //     $element.addClass(fontClass);
+                                        // }
+                                        $(this).addClass('AsSetLtr');
+                                        $(this).addClass('FontSetCode');
+                                        $(this).addClass(processedClass);
+                                    } else {
+                                        $(this).attr('data-debug-mode', 'code-element-normal');
+                                        // If not code or has language-text class, use normal direction detection
+                                        $(this).find('*').removeAttr('dir');
+                                        $(this).addClass(processedClass);
+                                                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                                    }
+
+                                })
+
+                          
+
                             }
                         });
                         
@@ -905,7 +766,7 @@ function processTextElementsAdvanced(container, options = {}) {
                  setTextDirectionAndFont($element, { fontClass, setTextAlign });
                 
             }
-        }
+        
     });
 }
 
@@ -930,10 +791,7 @@ export {
         setTextDirectionAndFontOneTime,
         setTextDirectionAndFont,
         processParagraphWithBreaks,
-        processTextElementsChatGPT,
-        processTextElements,
         processTextElementsAdvanced,
-        getArticleTextElements,
         getAttributeTextElements
     };
 

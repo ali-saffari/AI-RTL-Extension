@@ -1,7 +1,7 @@
 // kimi.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, getArticleTextElements } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
 
 // Kimi service functions
 export function setKimi() {

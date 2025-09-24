@@ -5,7 +5,6 @@ import {
 import { 
     processTextElementsAdvanced,
     processTablesInContainer,
-    getArticleTextElements,
     getAttributeTextElements
 } from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';

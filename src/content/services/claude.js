@@ -1,7 +1,7 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, getArticleTextElements, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
 
 // Element Processing Map - آرایه ای از آبجکت ها شامل target و function
 const ELEMENT_MAP = [

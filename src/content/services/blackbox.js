@@ -1,7 +1,7 @@
 // blackbox.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, getArticleTextElements } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
 export function setBlackBox() {

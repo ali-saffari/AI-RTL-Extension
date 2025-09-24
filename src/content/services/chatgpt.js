@@ -1,7 +1,7 @@
 // ChatGPT service functions
 import { isRTL, detectTextDirection } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsChatGPT, getArticleTextElements, setTextDirectionAndFont, processParagraphWithBreaks } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphWithBreaks } from '../utils/textDirectionUtils.js';
 
 export function initializeChatGptElements() {
     // Check if React is still hydrating
@@ -36,14 +36,11 @@ export function initializeChatGptElements() {
     $('.text-message .markdown').each(function (each) {
 
             
-            processTextElementsChatGPT(
-                $(this), 
-                getArticleTextElements(), 
-                (element) => element.textContent,
-                'FontSetImportantGPT',
-                'AsOkText',
-                true
-            );
+            processTextElementsAdvanced($(this), {
+                fontClass: 'FontSetImportantGPT',
+                processedClass: 'AsOkText',
+                isContainer: true,
+            });
             
         
         

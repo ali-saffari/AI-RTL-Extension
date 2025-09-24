@@ -321,6 +321,13 @@ code.AsSetLtr , pre.AsSetLtr {
 }
 
 
+.FontSetImportantGPT [dir=rtl] code.hljs,.FontSetImportantGPT  [dir=rtl] code[class*=language-], .FontSetImportantGPT  [dir=rtl] pre[class*=language-] {
+    text-align: left !important;
+}
+
+
+
+
 /*----------------claud----------------*/
 
 
