@@ -33,12 +33,7 @@ const Settings: React.FC<SettingsProps> = ({
                 }}>
                     تنظیمات افزونه
                 </Typography>
-                <Typography variant="body2" sx={{ 
-                    color: 'text.secondary',
-                    fontSize: '0.85rem'
-                }}>
-                    شخصی‌سازی عملکرد افزونه
-                </Typography>
+         
             </Box>
             
             <Box sx={{ 
@@ -66,7 +61,7 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'text.secondary',
                             fontSize: '0.8rem'
                         }}>
-                            نحوه تشخیص متن‌های راست به چپ
+                            نحوه تشخیص راست به چپ
                         </Typography>
                     </Box>
                     

@@ -286,14 +286,15 @@ function App() {
                         <Typography 
                             variant="body1" 
                             sx={{ 
-                                mb: 2, 
+                                mb: 2.2, 
+                                mt: 2.5,
                                 textAlign: 'center', 
                                 direction: 'rtl', 
                                 fontFamily: 'iranyekan',
                                 fontWeight: 600
                             }}
                         >
-                              هوش مصنوعی های که پشتیبانی میشود
+                              هوش مصنوعی‌هایی که پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
                                 <ServiceList />
@@ -415,6 +416,44 @@ function App() {
                     <div className="appinfo-link">
                         <a href="https://zarinp.al/719522" target="_blank" rel="noopener noreferrer">
                             حمایت مالی (دونیت)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {/* فوتر ساده */}
+            <div className="sticky-footer">
+                <div className="sticky-footer-content">
+                    <div className="footer-links">
+                        <a 
+                            href="https://alisaffari.ir/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="footer-link"
+                        >
+                            ارتباط با من
+                        </a>
+                        
+                        <span className="footer-separator">|</span>
+                        
+                        <a 
+                            href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="footer-link"
+                        >
+                            امتیازدهی در Chrome Store
+                        </a>
+                        
+                        <span className="footer-separator">|</span>
+                        
+                        <a 
+                            href="https://zarinp.al/719522" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="footer-link"
+                        >
+                            حمایت مالی
                         </a>
                     </div>
                 </div>
