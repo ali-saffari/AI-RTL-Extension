@@ -69,6 +69,8 @@ function setTextDirectionAndFont(element, options = {}) {
         $tempElement.find('a').remove();
         $tempElement.find('div.rounded-xl').remove();
         $tempElement.find('pre, code').remove();
+        $tempElement.find('button').remove();
+        $tempElement.find('[data-copy="false"]').remove();
         textToUse = $tempElement.text().trim();
     }
     
@@ -77,8 +79,8 @@ function setTextDirectionAndFont(element, options = {}) {
     const direction = detectTextDirection(textToUse);
 
 
-        // $(element).attr('data-text', text
-        
+        $(element).attr('data-text', textToUse)
+        $(element).attr('data-direction', direction)
 
     $(element).attr("dir", direction);
     if (fontClass) {
@@ -127,7 +129,6 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
         }
         
 
-        console.log("processParagraphWithBreaks", $element, parts);
 
         // If we have multiple parts with different directions, we need to restructure
         if (parts.length > 1) {
@@ -809,6 +810,47 @@ function getAttributeTextElements() {
     ];
 }
 
+/**
+ * Process text elements based on RTL algorithm
+ * @param {jQuery|HTMLElement} element - Element to process
+ * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
+ * @param {Object} options - Additional options (optional)
+ */
+function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
+    const $element = $(element);
+    
+    // Default options for each algorithm
+    const defaultOptions = {
+        advanced_section: {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true
+        },
+        advanced_full: {
+            fontClass: 'FontSet'
+        },
+        first_word: {
+            fontClass: 'FontSet'
+        }
+    };
+    
+    if (rtlAlgorithm === 'advanced_section') {
+        const mergedOptions = { ...defaultOptions.advanced_section, ...options };
+        processTextElementsAdvanced($element, mergedOptions);
+        
+    } else if (rtlAlgorithm === 'advanced_full') {
+        const mergedOptions = { ...defaultOptions.advanced_full, ...options };
+        setTextDirectionAndFont(element, mergedOptions);
+
+    } else if (rtlAlgorithm === 'first_word') {
+        $element.attr("dir", "auto");
+        
+        const fontClass = options.fontClass || defaultOptions.first_word.fontClass;
+        if (!$element.hasClass(fontClass)) {
+            $element.addClass(fontClass);
+        }
+    }
+}
 
 export {
         analyzeTextDirection,
@@ -819,6 +861,7 @@ export {
         setTextDirectionAndFont,
         processParagraphWithBreaks,
         processTextElementsAdvanced,
-        getAttributeTextElements
+        getAttributeTextElements,
+        processTextElementsByRtlAlgorithm
     };
 

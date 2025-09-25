@@ -1,10 +1,10 @@
 // copilot.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced , setTextDirectionAndFont, processTextElementsByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 // Copilot/Bing service functions
-export function setItems_copilotBing() {
+export function setItems_copilotBing(rtlAlgorithm) {
     let fo = `.relative.max-h-full.w-expanded-composer.max-w-chat`
     console.log("setItems_copilotBing")
 
@@ -22,15 +22,23 @@ export function setItems_copilotBing() {
 
     // Process all text elements using processTextElementsAdvanced
     $('[data-content="ai-message"] .break-words').each(function (each) {
-        // if (!$(this).hasClass("AsOk")) {
+     
+
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'CopilotFontSet',
+            processedClass: 'AsOk',
+            isContainer: true,
+            // skipTags: ['span']
+        });
+
+
+
+
+
+
     
-            processTextElementsAdvanced($(this), {
-                fontClass: 'CopilotFontSet',
-                processedClass: 'AsOk',
-                isContainer: true,
-                // skipTags: ['span']
-            });
-        // }
+           
+        
     });
 
     $('[data-content="user-message"] .break-words').each(function (each) {
@@ -97,10 +105,10 @@ export function setItems_copilotBing() {
 // Main activation function for Copilot
 export function activateCopilot(rtlAlgorithm = 'advanced_section') {
     console.log("activateCopilot with RTL algorithm:", rtlAlgorithm);
-    setItems_copilotBing();
+    setItems_copilotBing(rtlAlgorithm);
 
     setInterval(() => {
-        setItems_copilotBing();
+        setItems_copilotBing(rtlAlgorithm);
     }, 1000);
 }
 

@@ -314,6 +314,8 @@ function analyzeTextDirection(text) {
             if (words.length <= 3) {
                 return 'ltr';
             }
+            // برای متن‌های طولانی‌تر، بررسی اکثریت کلمات
+            // این قسمت در ادامه الگوریتم بررسی می‌شود
         }
     }
 
