@@ -1,7 +1,7 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 // Element Processing Map - آرایه ای از آبجکت ها شامل target و function
 const ELEMENT_MAP = [
@@ -15,21 +15,22 @@ const ELEMENT_MAP = [
     },
     {
         target: '.ProseMirror , textarea',
-        function: (element) => {
+        function: (element, rtlAlgorithm) => {
             if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontClaude');
                 
-                // Use appropriate method based on element type
-                const text = $(element).is('textarea') ? $(element).val() : $(element).text();
-                setTextDirectionAndFont(element, { fontClass: 'FontSet', text });
+                setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, {
+                    fontClass: 'FontSet',
+                    processedClass: 'AsOk'
+                });
                 
                 $(element).on('keyup paste input', function() {
-                    // Use appropriate method based on element type
-                    const currentText = $(this).is('textarea') ? $(this).val() : $(this).text();
-                    console.log('Prompt textarea text:', currentText);
+     
                     
                     requestAnimationFrame(() => {
-                        setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
+                        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                            fontClass: 'FontSet'
+                        });
                     });
                 });
             }
@@ -37,9 +38,7 @@ const ELEMENT_MAP = [
     },
     {
         target: '.mb-1.mt-1',
-        function: (element) => {
-
-
+        function: (element, rtlAlgorithm) => {
             const text = $(element).find('.break-words').text();
             
             if (isRTL(text) && !$(element).hasClass("AsRtlClaudeUser")) {
@@ -49,52 +48,42 @@ const ELEMENT_MAP = [
         }
     },
     {
-
         //پاسخ های کلاود
-        target: '.standard-markdown , .progressive-markdown , .whitespace-normal',
-        function: (element) => {
-           
-                $(element).addClass('AsOk FontSet FontClaude');
-                
-
-                
-                processTextElementsAdvanced($(element), {
-                    fontClass: 'FontSet FontClaude',
-                    processedClass: 'AsOkText',
-                    isContainer: true,
-           
-                });
+        target: '.standard-markdown , .progressive-markdown , .font-claude-response',
+        function: (element, rtlAlgorithm) => {
+            $(element).addClass('AsOk FontSet FontClaude');
             
+            processTextElementsByRtlAlgorithm(element, rtlAlgorithm, {
+                fontClass: 'FontSet FontClaude',
+                processedClass: 'AsOkText',
+                isContainer: true
+            });
         }
     },
     {
-
         //بخشی که سمت راست باز میشود
         target: '#standard-markdown-artifact , #markdown-artifact',
-        function: (element) => {
-            // if (!$(element).hasClass("AsOk")) {
-                $(element).addClass('AsOk FontSet FontClaude');
-                
-                processTextElementsAdvanced($(element), {
-                    fontClass: 'FontSet FontClaude',
-                    processedClass: 'AsOkText',
-                    isContainer: true,
-                });
-            // }
+        function: (element, rtlAlgorithm) => {
+            $(element).addClass('AsOk FontSet FontClaude');
+            
+            processTextElementsByRtlAlgorithm(element, rtlAlgorithm, {
+                fontClass: 'FontSet FontClaude',
+                processedClass: 'AsOkText',
+                isContainer: true
+            });
         }
     },
     {
-
         //بخش مقاله وسط متن ها
         target: '.artifact-block-cell .leading-tight',
-        function: (element) => {
-            if (!$(element).hasClass("AsOk")) {
-                $(element).addClass('AsOk FontClaude');
+        function: (element, rtlAlgorithm) => {
+  
                 
-                const text = $(element).text();
-                setTextDirectionAndFont($(element), { fontClass: 'FontSet', text });
-                
-            }
+                setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, {
+                    fontClass: 'FontSet',
+                    processedClass: 'AsOk'
+                });
+            
         }
     }
 ];
@@ -103,16 +92,16 @@ const ELEMENT_MAP = [
 
 
 // Claude service functions
-export function setItems_Claude() {
+export function setItems_Claude(rtlAlgorithm = 'advanced_section') {
     let interval = setInterval(() => {
-        set()
+        set(rtlAlgorithm)
     }, 500)
-    set()
-    function set() {
+    set(rtlAlgorithm)
+    function set(rtlAlgorithm) {
         // Process all elements using the mapping array
         ELEMENT_MAP.forEach(({ target, function: processFunction }) => {
             $(target).each(function() {
-                processFunction(this);
+                processFunction(this, rtlAlgorithm);
             });
         });
     }
@@ -121,7 +110,33 @@ export function setItems_Claude() {
 // Main activation function for Claude
 export function activateClaude(rtlAlgorithm = 'advanced_section') {
     console.log("activateClaude with RTL algorithm:", rtlAlgorithm);
-    setItems_Claude();
+    
+    // Initial setup
+    setItems_Claude(rtlAlgorithm);
+
+    // SetInterval for periodic updates
+    setInterval(() => {
+        setItems_Claude(rtlAlgorithm);
+    }, 1000);
+
+    // MutationObserver for content changes with debouncing
+    let timeoutId;
+    const observer = new MutationObserver((mutations) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            console.log("Claude content changed");
+            setItems_Claude(rtlAlgorithm);
+        }, 200);
+    });
+
+    const targetNode = document.querySelector('main') || document.body;
+    const config = {attributes: true, childList: true, subtree: true};
+    
+    if (targetNode) {
+        observer.observe(targetNode, config);
+    } else {
+        console.log('targetNode not found - observer not started');
+    }
 }
 
 
