@@ -435,11 +435,137 @@ function isRTL(text) {
     return analyzeTextDirection(text) === "rtl";
 }
 
+/**
+ * Analyze text direction for first_word algorithm
+ * This function uses a simplified approach focusing on the first significant word
+ * @param {string} text - Text to analyze
+ * @returns {string} - Detected direction ('rtl' or 'ltr')
+ */
+function analyzeTextDirectionFirstWord(text) {
+    if (!text || !text.trim()) return 'ltr';
+    
+    // Clean the text
+    const cleanText = text.trim();
+    
+    // Split into words and find the first significant word
+    const words = cleanText.split(/\s+/);
+    let firstSignificantWord = '';
+    
+    // Find the first word that contains letters (not just numbers/symbols)
+    for (const word of words) {
+        if (word && /[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(word)) {
+            firstSignificantWord = word;
+            break;
+        }
+    }
+    
+    // If no significant word found, use the first word
+    if (!firstSignificantWord && words.length > 0) {
+        firstSignificantWord = words[0];
+    }
+    
+    // If still no word, return ltr
+    if (!firstSignificantWord) return 'ltr';
+    
+    // Analyze the first significant word
+    const firstChar = firstSignificantWord.charAt(0);
+    
+    // Check if first character is RTL
+    if (isRTLCharacter(firstChar)) {
+        return 'rtl';
+    }
+    
+    // Check if first character is LTR
+    if (isLTRCharacter(firstChar)) {
+        return 'ltr';
+    }
+    
+    // If first character is neutral, check the whole first word
+    return analyzeFirstWordDirection(firstSignificantWord);
+}
+
+/**
+ * Check if a character is RTL
+ * @param {string} char - Character to check
+ * @returns {boolean} - True if character is RTL
+ */
+function isRTLCharacter(char) {
+    const code = char.charCodeAt(0);
+    
+    // Arabic
+    if (code >= 0x0600 && code <= 0x06FF) return true;
+    // Arabic Supplement
+    if (code >= 0x0750 && code <= 0x077F) return true;
+    // Arabic Extended-A
+    if (code >= 0x08A0 && code <= 0x08FF) return true;
+    // Arabic Presentation Forms-A
+    if (code >= 0xFB50 && code <= 0xFDFF) return true;
+    // Arabic Presentation Forms-B
+    if (code >= 0xFE70 && code <= 0xFEFF) return true;
+    // Hebrew
+    if (code >= 0x0590 && code <= 0x05FF) return true;
+    // Hebrew Supplement
+    if (code >= 0xFB1D && code <= 0xFB4F) return true;
+    
+    return false;
+}
+
+/**
+ * Check if a character is LTR
+ * @param {string} char - Character to check
+ * @returns {boolean} - True if character is LTR
+ */
+function isLTRCharacter(char) {
+    const code = char.charCodeAt(0);
+    
+    // Basic Latin
+    if (code >= 0x0041 && code <= 0x005A) return true; // A-Z
+    if (code >= 0x0061 && code <= 0x007A) return true; // a-z
+    // Latin-1 Supplement
+    if (code >= 0x00C0 && code <= 0x00FF) return true;
+    // Latin Extended-A
+    if (code >= 0x0100 && code <= 0x017F) return true;
+    // Latin Extended-B
+    if (code >= 0x0180 && code <= 0x024F) return true;
+    
+    return false;
+}
+
+/**
+ * Analyze the direction of the first word
+ * @param {string} word - Word to analyze
+ * @returns {string} - Detected direction ('rtl' or 'ltr')
+ */
+function analyzeFirstWordDirection(word) {
+    if (!word) return 'ltr';
+    
+    let rtlCount = 0;
+    let ltrCount = 0;
+    
+    for (const char of word) {
+        if (isRTLCharacter(char)) {
+            rtlCount++;
+        } else if (isLTRCharacter(char)) {
+            ltrCount++;
+        }
+    }
+    
+    // If more RTL characters, return RTL
+    if (rtlCount > ltrCount) return 'rtl';
+    
+    // If more LTR characters, return LTR
+    if (ltrCount > rtlCount) return 'ltr';
+    
+    // If equal or no significant characters, default to LTR
+    return 'ltr';
+}
+
 // Export functions for CommonJS
 module.exports = {
     analyzeTextDirection,
     detectTextDirection,
     isRTL,
-    isCode
+    isCode,
+    analyzeTextDirectionFirstWord
 };
 

@@ -74,7 +74,7 @@ function setTextDirectionAndFont(element, options = {}) {
         textToUse = $tempElement.text().trim();
     }
     
-    if (!textToUse || !textToUse.trim()) return;
+    if (!textToUse || !textToUse.trim()) return null;
     
     const direction = detectTextDirection(textToUse);
 
@@ -95,6 +95,8 @@ function setTextDirectionAndFont(element, options = {}) {
             $(element).css('text-align', 'left');
         }
     }
+    
+    return direction;
 }
 
 /**
@@ -852,6 +854,71 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
     }
 }
 
+/**
+ * Set text direction and font based on RTL algorithm
+ * @param {jQuery|HTMLElement} element - Element to process
+ * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
+ * @param {Object} options - Additional options (optional)
+ * @param {string} options.rtlClass - Class to add when direction is RTL (optional, defaults to null)
+ */
+function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
+    const $element = $(element);
+    
+    // Default options for each algorithm
+    const defaultOptions = {
+        fontClass: 'FontSet',
+
+    };
+    
+    const processedClass = options.processedClass || false;
+    const rtlClass = options.rtlClass || false;
+
+    if (rtlAlgorithm === 'advanced_section' || rtlAlgorithm === 'advanced_full') {
+        // Check processedClass only if it's not false
+        if (!processedClass || !$element.hasClass(processedClass)) {
+            const mergedOptions = { ...defaultOptions, ...options };
+            const direction = setTextDirectionAndFont(element, mergedOptions);
+            
+            // Add processedClass only if it's not false
+            if (processedClass) {
+                $element.addClass(processedClass);
+            }
+            
+            // Add RTL-specific class if direction is RTL
+            if (rtlClass && direction === 'rtl') {
+                $element.addClass(rtlClass);
+            }
+        }
+
+    } else if (rtlAlgorithm === 'first_word') {
+        // Check processedClass only if it's not false
+        if (!processedClass || !$element.hasClass(processedClass)) {
+            $element.attr("dir", "auto");
+            const fontClass = options.fontClass || defaultOptions.fontClass;
+            $element.addClass(fontClass);
+            
+            // Add processedClass only if it's not false
+            if (processedClass) {
+                $element.addClass(processedClass);
+            }
+            
+            // Add RTL-specific class if direction is RTL
+            if (rtlClass) {
+                const text = $element.text();
+                if (text && text.trim()) {
+                    const direction = analyzeTextDirectionFirstWord(text);
+                    if (direction === 'rtl') {
+                        $element.addClass(rtlClass);
+                    }
+                }
+            }
+        }
+
+        
+
+    }
+}
+
 export {
         analyzeTextDirection,
         detectTextDirection,
@@ -862,6 +929,7 @@ export {
         processParagraphWithBreaks,
         processTextElementsAdvanced,
         getAttributeTextElements,
-        processTextElementsByRtlAlgorithm
+        processTextElementsByRtlAlgorithm,
+        setTextDirectionAndFontByRtlAlgorithm
     };
 
