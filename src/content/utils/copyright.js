@@ -12,30 +12,35 @@ export function addCopyright($targetElement, customClass = '', customStyle = '')
     if (!$targetElement.hasClass("AsOk")) {
         $targetElement.addClass("AsOk");
         
-        const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
-        
-        $targetElement.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
+        // Check if AsBox class already exists on the site
+        if ($('.AsBox').length === 0) {
+            const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
+            
+            $targetElement.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
 
-                <a href="${saffariLink}" target="_blank">
+                    <a href="${saffariLink}" target="_blank">
 
-              <img src="${alisaffari}" alt="ali saffari"></a>
+                  <img src="${alisaffari}" alt="ali saffari"></a>
 
 
 
-                ${textSaffari}
+                    ${textSaffari}
 
 ${BtnDonate()}
 
 
 
-            </div>`);
+                </div>`);
 
-        $('body').each(function (each) {
-            if (!$(this).hasClass("AsDonateOk")) {
-                $(this).append(modalDonate());
-                $(this).addClass("AsDonateOk");
             }
-        });
-        modalDonateFun();
+            
+            $('body').each(function (each) {
+                if (!$(this).hasClass("AsDonateOk")) {
+                    $(this).append(modalDonate());
+                    $(this).addClass("AsDonateOk");
+                }
+            });
+            modalDonateFun();
+      
     }
 }
