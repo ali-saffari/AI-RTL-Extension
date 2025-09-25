@@ -123,6 +123,49 @@ function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('auto');
 
+    // سیستم اسکرول تب‌ها - ساده و کارآمد
+    const TAB_HEADER_HEIGHT = 80; // افزایش ارتفاع برای اطمینان
+    
+    // اسکرول دستی - فعال کردن تب بر اساس موقعیت اسکرول
+    React.useEffect(() => {
+        let scrollTimeout: number;
+        
+        const handleScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // محاسبه موقعیت هر بخش
+                const sitesSection = document.getElementById('sites-section');
+                const settingsSection = document.getElementById('settings-section');
+                const reportSection = document.getElementById('report-section');
+                
+                if (sitesSection && settingsSection && reportSection) {
+                    const sitesTop = sitesSection.offsetTop;
+                    const settingsTop = settingsSection.offsetTop;
+                    const reportTop = reportSection.offsetTop;
+                    
+                    // تعیین تب فعال بر اساس موقعیت اسکرول
+                    if (scrollTop < settingsTop - 60) {
+                        if (tabValue !== 0) setTabValue(0);
+                    } else if (scrollTop < reportTop - 60) {
+                        if (tabValue !== 1) setTabValue(1);
+                    } else {
+                        if (tabValue !== 2) setTabValue(2);
+                    }
+                }
+            }, 100);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            clearTimeout(scrollTimeout);
+        };
+    }, [tabValue]);
+
+    // کلیک روی تب - اسکرول به بخش مربوطه
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
         
@@ -130,71 +173,68 @@ function App() {
         setTimeout(() => {
             console.log('Tab changed to:', newValue);
             
-            const container = document.querySelector('.container');
-            console.log('Container element:', container);
-            
             if (newValue === 0) {
                 const element = document.getElementById('sites-section');
                 console.log('Sites section element:', element);
-                if (element && container) {
+                if (element) {
                     const headerOffset = 60;
                     const elementPosition = element.getBoundingClientRect().top;
-                    const containerScrollTop = container.scrollTop;
-                    const offsetPosition = elementPosition + containerScrollTop - headerOffset;
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
                     
                     console.log('Element position:', elementPosition);
-                    console.log('Container scroll top:', containerScrollTop);
+                    console.log('Current scroll top:', currentScrollTop);
                     console.log('Offset position:', offsetPosition);
                     
-                    container.scrollTo({
+                    window.scrollTo({
                         top: offsetPosition,
                         behavior: "smooth"
                     });
                     console.log('Scrolled to sites section');
                 } else {
-                    console.log('Sites section or container not found!');
+                    console.log('Sites section not found!');
                 }
             } else if (newValue === 1) {
                 const element = document.getElementById('settings-section');
                 console.log('Settings section element:', element);
-                if (element && container) {
+                if (element) {
                     const headerOffset = 60;
                     const elementPosition = element.getBoundingClientRect().top;
-                    const containerScrollTop = container.scrollTop;
-                    const offsetPosition = elementPosition + containerScrollTop - headerOffset;
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
                     
                     console.log('Element position:', elementPosition);
-                    console.log('Container scroll top:', containerScrollTop);
+                    console.log('Current scroll top:', currentScrollTop);
                     console.log('Offset position:', offsetPosition);
                     
-                    container.scrollTo({
+                    window.scrollTo({
                         top: offsetPosition,
                         behavior: "smooth"
                     });
                     console.log('Scrolled to settings section');
                 } else {
-                    console.log('Settings section or container not found!');
+                    console.log('Settings section not found!');
                 }
             } else if (newValue === 2) {
                 const element = document.getElementById('report-section');
                 console.log('Report section element:', element);
-                if (element && container) {
+                if (element) {
                     const headerOffset = 60;
                     const elementPosition = element.getBoundingClientRect().top;
-                    const containerScrollTop = container.scrollTop;
-                    const offsetPosition = elementPosition + containerScrollTop - headerOffset;
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
                     
                     console.log('Element position:', elementPosition);
-                    console.log('Container scroll top:', containerScrollTop);
+                    console.log('Current scroll top:', currentScrollTop);
                     console.log('Offset position:', offsetPosition);
                     
-                    container.scrollTo({
+                    window.scrollTo({
                         top: offsetPosition,
                         behavior: "smooth"
                     });
                     console.log('Scrolled to report section');
                 } else {
-                    console.log('Report section or container not found!');
+                    console.log('Report section not found!');
                 }
             }
         }, 100);
