@@ -432,7 +432,7 @@ function App() {
                                         این افزونه با عشق و انرژی شخصی ساخته شده و همچنان رایگان در اختیار شما قرار دارد. حمایت شما، چه با ثبت نظر و امتیاز و چه با معرفی افزونه به دوستان و دیگران، انگیزه‌ی ادامه‌ی مسیر و توسعه‌ی قابلیت‌های جدید را برای من فراهم می‌کند. اگر مایل بودید می‌توانید با یک دونیت کوچک نیز از پروژه حمایت کنید.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                        <a href="https://zarinp.al/719522" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                        <a href="https://donito.me/chatgpt_rtl" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: '#00e9ff', 
                                                 '&:hover': { textDecoration: 'underline' }, 
@@ -479,7 +479,7 @@ function App() {
                         <span className="footer-separator">|</span>
                         
                         <a 
-                            href="https://zarinp.al/719522" 
+                            href="https://donito.me/chatgpt_rtl" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"

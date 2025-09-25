@@ -110,11 +110,28 @@ const Settings: React.FC<SettingsProps> = ({
                                                 fontSize: '0.7rem',
                                                 fontWeight: 600
                                             }}>
-                                                پیش‌فرض
+                                                جدید
                                             </Box>
+                                    
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 0.5 }}>
                                             هر جمله و پاراگراف به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن با بیشترین دقت ممکن تعیین می‌شود. (مناسب متون چندزبانه یا ترکیبی)
+
+                                            <Box component="span" sx={{ 
+                                                px: 1, 
+                                                py: 0.1, 
+                                                mr: 1,
+                                                bgcolor: 'rgb(1, 91, 237)',
+                                                // border: '1px solid rgba(0, 233, 255, 0.3)',
+                                                color: 'text.secondary', 
+                                                borderRadius: 1, 
+                                                fontSize: '0.7rem',
+                                                fontWeight: 600
+                                            }}>
+                                                پیش‌فرض
+                                            </Box>
+
+
                                         </Typography>
                                     </Box>
                                 }
@@ -147,6 +164,18 @@ const Settings: React.FC<SettingsProps> = ({
                                             <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
                                                 تحلیل پیشرفته یکپارچه
                                             </Typography>
+                                            <Box component="span" sx={{ 
+                                                px: 1, 
+                                                py: 0.3, 
+                                                bgcolor: 'rgb(33, 46, 65)',
+                                                border: '1px solid rgba(0, 233, 255, 0.3)',
+                                                color: '#00e9ff', 
+                                                borderRadius: 1, 
+                                                fontSize: '0.7rem',
+                                                fontWeight: 600
+                                            }}>
+                                                جدید
+                                            </Box>
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
                                             کل متن به‌عنوان یک ساختار واحد توسط الگوریتم بهینه‌سازی پردازش شده و جهت مناسب به‌صورت هوشمند انتخاب می‌شود. (ترکیب متعادل دقت و کارایی)

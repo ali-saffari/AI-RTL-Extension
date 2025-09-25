@@ -39,7 +39,7 @@ export function modalDonate() {
     
     
     <p>حمایت مالی شما به ما کمک می‌کنه تا امکانات جدید اضافه کنیم، مشکلات رو سریع‌تر برطرف کنیم و تجربه کاربری بهتری بسازیم. هر مبلغی که دوست داری، واقعاً تاثیرگذار و دلگرم‌کننده است!</p>
-    <a href="https://zarinp.al/719522" target="_blank" 
+    <a href="https://donito.me/chatgpt_rtl" target="_blank" 
       style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
 ">
       حمایت مالی
