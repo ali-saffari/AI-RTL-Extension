@@ -884,8 +884,7 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
     
     // Default options for each algorithm
     const defaultOptions = {
-        fontClass: 'FontSet',
-
+        fontClass: 'FontSet'
     };
     
     const processedClass = options.processedClass || false;
@@ -920,8 +919,8 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
                 $element.addClass(processedClass);
             }
             
-            // Add RTL-specific class if direction is RTL
-            if (rtlClass) {
+            // Get text content once for both textAlign and rtlClass operations
+            if (options.setTextAlign || rtlClass) {
                 let text = $element.text();
                 if (!text || !text.trim()) {
                     text = $element.val();
@@ -929,9 +928,21 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
                         text = text.trim();
                     }
                 }
+                
                 if (text && text.trim()) {
                     const direction = analyzeTextDirectionFirstWord(text);
-                    if (direction === 'rtl') {
+                    
+                    // Set text alignment if setTextAlign is enabled
+                    if (options.setTextAlign) {
+                        if (direction === 'rtl') {
+                            $element.css('text-align', 'right');
+                        } else {
+                            $element.css('text-align', 'left');
+                        }
+                    }
+                    
+                    // Add RTL-specific class if direction is RTL
+                    if (rtlClass && direction === 'rtl') {
                         $element.addClass(rtlClass);
                     }
                 }
