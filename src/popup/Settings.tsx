@@ -83,14 +83,14 @@ const Settings: React.FC<SettingsProps> = ({
                             >
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'auto' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'auto' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'advanced_section' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
+                            border: selectedValue === 'advanced_section' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
                             mb: 2,
                             py: 2,
                             px: 1
                         }}>
                             <FormControlLabel 
-                                value="auto" 
+                                value="advanced_section" 
                                 control={<Radio sx={{ color: 'primary.main' }} />} 
                                 label={
                                     <Box  sx={{ 
@@ -110,7 +110,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                 fontSize: '0.7rem',
                                                 fontWeight: 600
                                             }}>
-                                                جدید
+                                                پیش‌فرض
                                             </Box>
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 0.5 }}>
@@ -130,14 +130,14 @@ const Settings: React.FC<SettingsProps> = ({
                         </Paper>
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'unicode' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'unicode' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'advanced_full' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
+                            border: selectedValue === 'advanced_full' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
                             mb: 2,
                             py: 2,
                             px: 1
                         }}>
                             <FormControlLabel 
-                                value="unicode" 
+                                value="advanced_full" 
                                 control={<Radio sx={{ color: 'primary.main' }} />} 
                                 label={
                                     <Box  sx={{ 
@@ -147,18 +147,6 @@ const Settings: React.FC<SettingsProps> = ({
                                             <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
                                                 تحلیل پیشرفته یکپارچه
                                             </Typography>
-                                            <Box component="span" sx={{ 
-                                                px: 1, 
-                                                py: 0.3, 
-                                                bgcolor: 'rgb(33, 46, 65)',
-                                                border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                color: '#00e9ff', 
-                                                borderRadius: 1, 
-                                                fontSize: '0.7rem',
-                                                fontWeight: 600
-                                            }}>
-                                                جدید
-                                            </Box>
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
                                             کل متن به‌عنوان یک ساختار واحد توسط الگوریتم بهینه‌سازی پردازش شده و جهت مناسب به‌صورت هوشمند انتخاب می‌شود. (ترکیب متعادل دقت و کارایی)
@@ -177,14 +165,14 @@ const Settings: React.FC<SettingsProps> = ({
                         </Paper>
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'manual' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'manual' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'first_word' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
+                            border: selectedValue === 'first_word' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
                             mb: 2,
                             py: 2,
                             px: 1
                         }}>
                             <FormControlLabel 
-                                value="manual" 
+                                value="first_word" 
                                 control={<Radio sx={{ color: 'primary.main' }} />} 
                                 label={
                                     <Box  sx={{ 

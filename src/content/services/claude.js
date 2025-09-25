@@ -119,8 +119,8 @@ export function setItems_Claude() {
 }
 
 // Main activation function for Claude
-export function activateClaude() {
-    console.log("activateClaude");
+export function activateClaude(rtlAlgorithm = 'advanced_section') {
+    console.log("activateClaude with RTL algorithm:", rtlAlgorithm);
     setItems_Claude();
 }
 

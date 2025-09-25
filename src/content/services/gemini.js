@@ -34,7 +34,8 @@ export function setGemini() {
 
 
 // Main activation function for Gemini
-export function activateGemini() {
+export function activateGemini(rtlAlgorithm = 'advanced_section') {
+    console.log("activateGemini with RTL algorithm:", rtlAlgorithm);
     // Initial setup
     setGemini();
     console.log("setGemini")

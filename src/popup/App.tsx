@@ -122,7 +122,22 @@ const darkTheme = createTheme({
 
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
-    const [rtlAlgorithm, setRtlAlgorithm] = React.useState('auto');
+    const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_section');
+
+    // Load RTL algorithm setting from storage on component mount
+    React.useEffect(() => {
+        chrome.storage.sync.get(['rtlAlgorithm'], (result) => {
+            if (result.rtlAlgorithm) {
+                setRtlAlgorithm(result.rtlAlgorithm);
+            }
+        });
+    }, []);
+
+    // Save RTL algorithm setting to storage when changed
+    const handleRtlAlgorithmChange = (value: string) => {
+        setRtlAlgorithm(value);
+        chrome.storage.sync.set({ rtlAlgorithm: value });
+    };
 
     // سیستم اسکرول تب‌ها - ساده و کارآمد
     const TAB_HEADER_HEIGHT = 80; // افزایش ارتفاع برای اطمینان
@@ -331,7 +346,7 @@ function App() {
                         <div id="settings-section">
                             <Settings
                                 rtlAlgorithm={rtlAlgorithm}
-                                onRtlAlgorithmChange={setRtlAlgorithm}
+                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
                             />
                         </div>
                         

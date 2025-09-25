@@ -36,7 +36,8 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
             duckduckgo, perplexity,
-            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox
+            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox,
+            rtlAlgorithm: 'advanced_section'
         });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
@@ -93,7 +94,10 @@ chrome.runtime.onInstalled.addListener((details) => {
                 updates.blackbox = true;
             }
 
-
+            // اگر rtlAlgorithm وجود نداشت، اضافه کنیم
+            if (!storedData.hasOwnProperty('rtlAlgorithm')) {
+                updates.rtlAlgorithm = 'advanced_section';
+            }
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم
             if (Object.keys(updates).length > 0) {

@@ -22,6 +22,13 @@ let site = window.location.hostname;
 
 // Listen for storage changes
 chrome.storage.sync.onChanged.addListener((changes) => {
+    // Check for RTL algorithm changes
+    if (changes.rtlAlgorithm) {
+        location.reload();
+        return;
+    }
+    
+    // Check for service enable/disable changes
     Object.keys(serviceConfig).forEach(serviceKey => {
         if (changes[serviceKey]) {
             const config = serviceConfig[serviceKey];
@@ -116,7 +123,10 @@ function isCurrentSite(urls) {
 // Initialize all services
 async function initializeAllServices() {
     const serviceKeys = Object.keys(serviceConfig);
-    const results = await chrome.storage.sync.get(serviceKeys);
+    const results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithm']);
+    
+    // Get RTL algorithm setting
+    const rtlAlgorithm = results.rtlAlgorithm || 'advanced_section';
     
     serviceKeys.forEach(serviceKey => {
         const config = serviceConfig[serviceKey];
@@ -124,8 +134,8 @@ async function initializeAllServices() {
         const isCurrent = isCurrentSite(config.urls);
         
         if (isEnabled && isCurrent) {
-            // Run activation function
-            config.activate();
+            // Run activation function with RTL algorithm setting
+            config.activate(rtlAlgorithm);
         }
     });
 }
