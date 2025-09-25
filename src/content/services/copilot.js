@@ -1,7 +1,7 @@
 // copilot.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced , setTextDirectionAndFont, processTextElementsByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced , setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 // Copilot/Bing service functions
 export function setItems_copilotBing(rtlAlgorithm) {
@@ -13,8 +13,6 @@ export function setItems_copilotBing(rtlAlgorithm) {
         const targetElement = $(fo);
         // targetElement.addClass("red")
 
-
-
         if (targetElement.length > 0) {
             addCopyright(targetElement, 'AsBox_copilotBing', 'margin-top: 5px; padding: 0px;');
         }
@@ -22,81 +20,49 @@ export function setItems_copilotBing(rtlAlgorithm) {
 
     // Process all text elements using processTextElementsAdvanced
     $('[data-content="ai-message"] .break-words').each(function (each) {
-     
-
+    
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk',
             isContainer: true,
             // skipTags: ['span']
         });
-
-
-
-
-
-
-    
            
-        
     });
 
     $('[data-content="user-message"] .break-words').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            const text = $(this).text();
-            if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                $(this).addClass('CopilotFontSet');
-                $(this).addClass('AsOk');
-            }
-        }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'CopilotFontSet',
+            processedClass: 'AsOk'
+        });
     });
 
-    // Process listbox options for text direction detection
-    $('[role="listbox"] [role="option"]').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
+        // Process listbox options for text direction detection
+        $('[role="listbox"] [role="option"]').each(function (each) {
             const text = $(this).text();
             if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                $(this).addClass('CopilotFontSet');
-                $(this).addClass('AsOk');
-                
-                // Add RTL specific class if direction is RTL
-                if (direction === 'rtl') {
-                    $(this).addClass('listboxRtlCopilot');
-                }
+                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    fontClass: 'CopilotFontSet',
+                    processedClass: 'AsOk',
+                    rtlClass: 'listboxRtlCopilot'
+                });
             }
-        }
-    });
-
-    
-
+        });
 
 
     // Process textarea elements for text direction detection
     $('textarea').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            const text = $(this).val();
-            if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                $(this).addClass('CopilotFontSet');
-                $(this).addClass('AsOk');
-            }
-            
-            // Add event listener for real-time text direction detection
-            $(this).on('input keyup', function() {
-                const currentText = $(this).val();
-                if (currentText && currentText.trim()) {
-                    const direction = detectTextDirection(currentText);
-                    $(this).attr('dir', direction);
-                } else {
-                    $(this).removeAttr('dir');
-                }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'CopilotFontSet',
+            processedClass: 'AsOk'
+        });
+        
+        // Add event listener for real-time text direction detection
+        $(this).on('input keyup', function() {
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'CopilotFontSet',
             });
-        }
+        });
     });
 }
 
