@@ -243,7 +243,7 @@ function App() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
-            <div className="App" dir="rtl">
+            <div className="App" dir="rtl" style={{ paddingBottom: '60px' }}>
                 <Paper elevation={2} sx={{ p: 2, m: 2, mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar
