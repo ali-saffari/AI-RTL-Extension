@@ -28,7 +28,7 @@ export function setItems_copilotBing() {
                 fontClass: 'CopilotFontSet',
                 processedClass: 'AsOk',
                 isContainer: true,
-                skipTags: ['span']
+                // skipTags: ['span']
             });
         // }
     });

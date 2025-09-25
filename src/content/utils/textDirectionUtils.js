@@ -108,13 +108,27 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
         return;
     }
     
-    // Process each line separated by <br> tags
+    // Process each line separated by <br> tags or line break characters
     const htmlContent = $element.html();
     
-    if (htmlContent && htmlContent.includes('<br')) {
-        // Split by <br> tags and process each part (including br tags with attributes)
-        const parts = htmlContent.split(/<br[^>]*>/i);
+    // Check for <br> tags or line break characters
+    const hasLineBreaks = htmlContent && (
+        htmlContent.includes('<br') || 
+        /[\n\r]/.test(htmlContent)
+    );
+    
+    if (hasLineBreaks) {
+        // Split by <br> tags and line break characters, then process each part
+        let parts = htmlContent.split(/<br[^>]*>/i);
         
+        // If no <br> tags but has other line break characters, split by them
+        if (parts.length === 1) {
+            parts = htmlContent.split(/[\n\r]/);
+        }
+        
+
+        console.log("processParagraphWithBreaks", $element, parts);
+
         // If we have multiple parts with different directions, we need to restructure
         if (parts.length > 1) {
             const directions = [];
@@ -557,15 +571,28 @@ function processTextElementsAdvanced(container, options = {}) {
         }
 
         
-        // Special handling for paragraph elements with <br> tags
-         if (tagName === 'p') {
-            // Check if p only contains br elements
+        // Special handling for paragraph or span elements with line breaks
+         if (tagName === 'p' || tagName === 'span' ) {
+            // Check if element only contains line break elements or whitespace
             const children = $element.children();
+            const textContent = $element.text().trim();
+            const htmlContent = $element.html();
+            
+            // Check if element only contains br elements
             const onlyBrElements = children.length > 0 && children.filter(function() {
-                return this.tagName.toLowerCase() === 'br';
+                const tag = this.tagName.toLowerCase();
+                return tag === 'br';
             }).length === children.length;
             
-            if (onlyBrElements) {
+            // Check if element contains only whitespace characters (including \n, \r, spaces, tabs)
+            const onlyWhitespace = textContent === '' || /^[\s\n\r\t]+$/.test(textContent);
+            
+            // Check if element contains line break characters
+            const containsLineBreaks = /[\n\r]/.test(htmlContent);
+            
+
+  
+            if (onlyBrElements || onlyWhitespace || containsLineBreaks) {
                 $element.addClass(processedClass);
                 processParagraphWithBreaks(this, fontClass, setTextAlign);
 
