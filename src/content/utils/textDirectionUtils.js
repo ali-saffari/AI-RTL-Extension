@@ -4,7 +4,7 @@
  */
 
 // Import analysis functions from analyzeDirection.js
-import { analyzeTextDirection, detectTextDirection, isRTL, isCode } from './analyzeDirection.js';
+import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
 
 // Common formatting tags array - defined once for consistency
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
@@ -72,6 +72,14 @@ function setTextDirectionAndFont(element, options = {}) {
         $tempElement.find('button').remove();
         $tempElement.find('[data-copy="false"]').remove();
         textToUse = $tempElement.text().trim();
+        
+        // اگر text() خالی بود، val() رو چک کن (برای input/textarea)
+        if (!textToUse || !textToUse.trim()) {
+            textToUse = $(element).val();
+            if (textToUse) {
+                textToUse = textToUse.trim();
+            }
+        }
     }
     
     if (!textToUse || !textToUse.trim()) return null;
@@ -654,11 +662,23 @@ function processTextElementsAdvanced(container, options = {}) {
                                 processedCount++;
                             } else {
                                 unprocessedCount++;
-                                // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
-                     
-                                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
                                 
-
+                                // بررسی اولین چیلد - اگر strong بود، از محتوای strong استفاده کن
+                                const firstChild = $li.children().first();
+                                let textForDirection = null;
+                                
+                                if (firstChild.length && firstChild.is('strong')) {
+                                    textForDirection = firstChild.text().trim();
+                                    $li.attr('data-debug-mode', 'li-first-child-strong');
+                                }
+                                setTextDirectionAndFont(this, { 
+                                    fontClass, 
+                                    setTextAlign,
+                                    text: textForDirection 
+                                });
+                                
+                                // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
+                            
 
                                 $li.find('pre, code').each(function() {
 
@@ -683,12 +703,10 @@ function processTextElementsAdvanced(container, options = {}) {
                                         // If not code or has language-text class, use normal direction detection
                                         $(this).find('*').removeAttr('dir');
                                         $(this).addClass(processedClass);
-                                                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
                                     }
 
                                 })
-
-                          
 
                             }
                         });
@@ -904,7 +922,13 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
             
             // Add RTL-specific class if direction is RTL
             if (rtlClass) {
-                const text = $element.text();
+                let text = $element.text();
+                if (!text || !text.trim()) {
+                    text = $element.val();
+                    if (text) {
+                        text = text.trim();
+                    }
+                }
                 if (text && text.trim()) {
                     const direction = analyzeTextDirectionFirstWord(text);
                     if (direction === 'rtl') {
