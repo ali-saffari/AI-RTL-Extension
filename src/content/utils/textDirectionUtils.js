@@ -870,19 +870,21 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         // Get stored text length from attribute
         const storedLengthAttr = $element.attr('data-text-length');
-        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : 0;
+        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
         
+
+    
         // Calculate the difference in text length
-        const lengthDifference = Math.abs(currentTextLength - storedLength);
+        const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
         
-        // Only process if text length changed by more than 10 characters
-        if (lengthDifference > 10) {
+        // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
+        if (lengthDifference > 3 || storedLength === null) {
             console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
             processTablesInContainer($element,  mergedOptions.fontClass, mergedOptions.processedClass);
 
-
+            $element.attr('data-algorithm-rtl', 'advanced_section');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
         }
@@ -903,13 +905,13 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         // Get stored text length from attribute
         const storedLengthAttr = $element.attr('data-text-length');
-        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : 0;
+        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
         
         // Calculate the difference in text length
-        const lengthDifference = Math.abs(currentTextLength - storedLength);
+        const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
         
-        // Only process if text length changed by more than 10 characters
-        if (lengthDifference > 10) {
+        // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
+        if (lengthDifference > 3 || storedLength === null) {
             console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, mergedOptions);
             // Store the new text length
@@ -1017,7 +1019,6 @@ export {
         setTextDirectionAndFont,
         processParagraphWithBreaks,
         processTextElementsAdvanced,
-        processTablesInContainer,
         getAttributeTextElements,
         processTextElementsByRtlAlgorithm,
         setTextDirectionAndFontByRtlAlgorithm
