@@ -1,9 +1,9 @@
 // ChatGPT service functions
-import { isRTL, detectTextDirection } from '../utils/analyzeDirection.js';
+import { isRTL, detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphWithBreaks } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphWithBreaks, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function initializeChatGptElements() {
+export function initializeChatGptElements(rtlAlgorithm = 'advanced_section') {
     // Check if React is still hydrating
     if (document.querySelector('[data-reactroot]') && !document.querySelector('[data-reactroot]').__reactInternalInstance) {
         console.log('React is still hydrating, skipping...');
@@ -26,24 +26,18 @@ export function initializeChatGptElements() {
     }
 
     $('.hljs-comment').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet' });
-        }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     })
 
     $('.text-message .markdown').each(function (each) {
-
-            
-            processTextElementsAdvanced($(this), {
-                fontClass: 'FontSetImportantGPT',
-                processedClass: 'AsOkText',
-                isContainer: true,
-            });
-            
-        
-        
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
     })
 
     $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
@@ -67,31 +61,31 @@ export function initializeChatGptElements() {
     })
 
     $(presentation + '#prosemirror-editor-container').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text });
-            $(this).addClass('flex-row-reverse');
-        }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOk',
+            rtlClass: 'flex-row-reverse'
+        });
     })
 
     $("#prompt-textarea").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text });
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOk'
+        });
+        
+        // Add event listener for real-time text direction detection
+        $(this).on('keyup paste', function() {
+            const currentText = $(this).text();
+            console.log('Prompt textarea text:', currentText);
             
-            // Add event listener for direction detection (removed 'input' to avoid React conflicts)
-            $(this).on('keyup paste', function() {
-                const currentText = $(this).text();
-                console.log('Prompt textarea text:', currentText);
-                
-                // Use requestAnimationFrame to avoid React conflicts
-                requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, { fontClass: 'FontSetImportantGPT', text: currentText });
+            // Use requestAnimationFrame to avoid React conflicts
+            requestAnimationFrame(() => {
+                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    fontClass: 'FontSet',
                 });
             });
-        }
+        });
     })
 }
 
@@ -129,13 +123,13 @@ export function activateChatGptRTL(rtlAlgorithm = 'advanced_section') {
     console.log('ChatGPT RTL activated with algorithm:', rtlAlgorithm);
     // Wait for React to fully load before initializing
     setTimeout(() => {
-        initializeChatGptElements();
+        initializeChatGptElements(rtlAlgorithm);
         initializeChatGptHistory();
     }, 1000);
 
     // SetInterval for periodic updates
     setInterval(() => {
-        initializeChatGptElements();
+        initializeChatGptElements(rtlAlgorithm);
         initializeChatGptHistory();
     }, 1000);
 
@@ -145,7 +139,7 @@ export function activateChatGptRTL(rtlAlgorithm = 'advanced_section') {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             console.log("تغیر");
-            initializeChatGptElements();
+            initializeChatGptElements(rtlAlgorithm);
         }, 200);
     });
 
