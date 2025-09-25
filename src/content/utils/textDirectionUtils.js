@@ -856,11 +856,65 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
-        processTextElementsAdvanced($element, mergedOptions);
+        
+        // Get current text content for length comparison
+        const $tempElement = $(element).clone();
+        $tempElement.find('a').remove();
+        $tempElement.find('div.rounded-xl').remove();
+        $tempElement.find('pre, code').remove();
+        $tempElement.find('button').remove();
+        $tempElement.find('[data-copy="false"]').remove();
+        const currentText = $tempElement.text().trim();
+        
+        const currentTextLength = currentText.length;
+        
+        // Get stored text length from attribute
+        const storedLengthAttr = $element.attr('data-text-length');
+        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : 0;
+        
+        // Calculate the difference in text length
+        const lengthDifference = Math.abs(currentTextLength - storedLength);
+        
+        // Only process if text length changed by more than 10 characters
+        if (lengthDifference > 10) {
+            console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
+            processTextElementsAdvanced($element, mergedOptions);
+
+            processTablesInContainer($element,  mergedOptions.fontClass, mergedOptions.processedClass);
+
+
+            // Store the new text length
+            $element.attr('data-text-length', currentTextLength.toString());
+        }
         
     } else if (rtlAlgorithm === 'advanced_full') {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
-        setTextDirectionAndFont(element, mergedOptions);
+        
+        // Get current text content for length comparison
+        const $tempElement = $(element).clone();
+        $tempElement.find('a').remove();
+        $tempElement.find('div.rounded-xl').remove();
+        $tempElement.find('pre, code').remove();
+        $tempElement.find('button').remove();
+        $tempElement.find('[data-copy="false"]').remove();
+        const currentText = $tempElement.text().trim();
+        
+        const currentTextLength = currentText.length;
+        
+        // Get stored text length from attribute
+        const storedLengthAttr = $element.attr('data-text-length');
+        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : 0;
+        
+        // Calculate the difference in text length
+        const lengthDifference = Math.abs(currentTextLength - storedLength);
+        
+        // Only process if text length changed by more than 10 characters
+        if (lengthDifference > 10) {
+            console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
+            setTextDirectionAndFont(element, mergedOptions);
+            // Store the new text length
+            $element.attr('data-text-length', currentTextLength.toString());
+        }
 
     } else if (rtlAlgorithm === 'first_word') {
         $element.attr("dir", "auto");
@@ -963,6 +1017,7 @@ export {
         setTextDirectionAndFont,
         processParagraphWithBreaks,
         processTextElementsAdvanced,
+        processTablesInContainer,
         getAttributeTextElements,
         processTextElementsByRtlAlgorithm,
         setTextDirectionAndFontByRtlAlgorithm

@@ -133,41 +133,7 @@ export function activateChatGptRTL(rtlAlgorithm = 'advanced_section') {
         initializeChatGptHistory();
     }, 1000);
 
-    // MutationObserver for content changes with debouncing
-    let timeoutId;
-    const observer = new MutationObserver((mutations) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            console.log("تغیر");
-            initializeChatGptElements(rtlAlgorithm);
-        }, 200);
-    });
 
-    const observerB = new MutationObserver((mutations) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            console.log("تغیر B");
-            initializeChatGptHistory();
-        }, 300);
-    });
-
-    const targetNode = document.querySelector('main.relative.h-full.w-full');
-    const config = {attributes: true, childList: true, subtree: true};
-    
-    if (targetNode) {
-        observer.observe(targetNode, config);
-    } else {
-        console.log('targetNode not found - observer not started');
-    }
-
-    const targetNodeB = document.querySelector('.bg-token-sidebar-surface-primary');
-    const configB = {attributes: true, childList: true, subtree: true};
-    
-    if (targetNodeB) {
-        observerB.observe(targetNodeB, configB);
-    } else {
-        console.log('targetNodeB not found - observerB not started');
-    }
 }
 
 
