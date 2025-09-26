@@ -1,62 +1,53 @@
 // manus.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setManus() {
-    // Add copyright using utility function
+export function setManus(rtlAlgorithm = 'advanced_section') {
     if (chrome.runtime?.id) {
         let fo2 = `.flex.flex-col.sticky.bottom-0`
         addCopyright($(fo2), 'AsMistral', '');
     }
 
-    // Process textarea elements with improved text direction detection
+    // Process textarea elements with RTL algorithm
     $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            $(this).parent().addClass('AsOk');
-            const text = $(this).val() || $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-            
-            // Add event listener for real-time direction detection
-            $(this).on('keyup paste input', function() {
-                const currentText = $(this).val() || $(this).text();
-                requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
-                });
-            });
-        }
-    });
-
-    // Process paragraph elements with advanced text processing
-    $("body p").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-        }
-    });
-
-    // Process manus-markdown elements with processTextElementsAdvanced
-    $('.manus-markdown').each(function (each) {
-  
-            processTextElementsAdvanced($(this), {
-                fontClass: 'FontSet',
-                processedClass: 'AsOkText',
-                isContainer: true
-            });
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
         
+        // Add event listener for real-time direction detection
+        $(this).on('keyup paste input', function() {
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet'
+            });
+        });
     });
 
-    // Process other common text elements
-    $("body span, body h1, body h2, body h3, body h4, body h5, body h6, .truncate ").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-            }
-        }
+
+
+    // Process manus-markdown elements using RTL algorithm
+    $('.manus-markdown').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
+    // Process other common text elements with RTL algorithm
+    $("body p و body span, body h1, body h2, body h3, body h4, body h5, body h6, .truncate").each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+    });
+
+    $("span.text-start.font-serif  , .u-break-words").each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     });
 
 
@@ -64,17 +55,18 @@ export function setManus() {
 
 
 
+
+
+
 // Main activation function for Manus
-export function activateManus() {
-    console.log("activateManus");
+export function activateManus(rtlAlgorithm = 'advanced_section') {
+    console.log('Manus RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
-    setManus();
+    setManus(rtlAlgorithm);
     
     // SetInterval for continuous processing
-    setInterval(() => {
-        setManus();
-    }, 1000);
-    
-    
+    let interval = setInterval(() => {
+        setManus(rtlAlgorithm);
+    }, 500);
 }
