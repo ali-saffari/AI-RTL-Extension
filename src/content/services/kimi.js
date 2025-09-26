@@ -1,72 +1,52 @@
 // kimi.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-// Kimi service functions
-export function setKimi() {
-    // Add copyright using utility function
+export function setKimi(rtlAlgorithm = 'advanced_section') {
     if (chrome.runtime?.id) {
         let fo2 = `.chat-action`
         addCopyright($(fo2), 'AsKimi', 'margin-bottom: 10px');
     }
 
-    // Process markdown-container elements with processTextElementsAdvanced
+    // Process markdown-container elements using RTL algorithm
     $('.markdown-container').each(function (each) {
-
-        setTextDirectionAndFont(this, { fontClass: 'FontSet' });
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true
+        });
     });
 
-    // // Process textarea elements with improved text direction detection
-    // $("body textarea").each(function (each) {
-    //     if (!$(this).hasClass("AsOk")) {
-    //         $(this).addClass('AsOk');
-    //         const text = $(this).val() || $(this).text();
-    //         setTextDirectionAndFont(this, text, 'FontSet');
-            
-    //         // Add event listener for real-time direction detection
-    //         $(this).on('keyup paste input', function() {
-    //             const currentText = $(this).val() || $(this).text();
-    //             requestAnimationFrame(() => {
-    //                 setTextDirectionAndFont(this, currentText, 'FontSet');
-    //             });
-    //         });
-    //     }
-    // });
-
-    // Process paragraph elements with advanced text processing
+    // Process paragraph elements with RTL algorithm
     $(".user-content , .user-name").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-        }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     });
 
-    // // Process other common text elements
-    $(" body span, body h1, body h2, body h3, body h4, body h5, body h6 , .chat-input-editor").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            if (text && text.trim()) {
-                setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-            }
-        }
+    // Process other common text elements with RTL algorithm
+    $("body span, body h1, body h2, body h3, body h4, body h5, body h6, .chat-input-editor").each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     });
 }
 
 
 
 // Main activation function for Kimi
-export function activateKimi() {
-    console.log("activateKimi");
+export function activateKimi(rtlAlgorithm = 'advanced_section') {
+    console.log('Kimi RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
-    setKimi();
+    setKimi(rtlAlgorithm);
     
     // SetInterval for continuous processing
-    setInterval(() => {
-        setKimi();
+    let interval = setInterval(() => {
+        setKimi(rtlAlgorithm);
     }, 1000);
     
     // MutationObserver for dynamic content updates
@@ -75,7 +55,7 @@ export function activateKimi() {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             console.log("Kimi content changed - reprocessing");
-            setKimi();
+            setKimi(rtlAlgorithm);
         }, 200);
     });
     
