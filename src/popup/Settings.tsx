@@ -81,11 +81,19 @@ const Settings: React.FC<SettingsProps> = ({
     
     return (
         <Box sx={{ p: 0 }}>
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ 
+            <Box sx={{ 
+                textAlign: 'center', 
+                mt: 2, 
+                p: 2, 
+                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                borderRadius: 0, 
+                mb: 3,
+                borderTop: '1px solid #00e9ff',
+                borderBottom: '1px solid #00e9ff'
+            }}>
+                <Typography variant="body1" sx={{ 
                     fontWeight: 600, 
                     color: 'white',
-                    mb: 1
                 }}>
                     تنظیمات افزونه
                 </Typography>

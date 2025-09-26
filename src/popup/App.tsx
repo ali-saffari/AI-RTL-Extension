@@ -74,6 +74,30 @@ const darkTheme = createTheme({
         },
     },
     components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                '@global': {
+                    '@keyframes gradientShift': {
+                        '0%, 100%': {
+                            backgroundPosition: '0% 50%',
+                        },
+                        '50%': {
+                            backgroundPosition: '100% 50%',
+                        },
+                    },
+                    '@keyframes pulse': {
+                        '0%, 100%': {
+                            transform: 'scale(1)',
+                            opacity: 0.8,
+                        },
+                        '50%': {
+                            transform: 'scale(1.2)',
+                            opacity: 1,
+                        },
+                    },
+                },
+            },
+        },
         MuiChip: {
             styleOverrides: {
                 root: {
@@ -333,7 +357,7 @@ function App() {
                         </Tabs>
                     </AppBar>
                     
-                    <Box sx={{ p: 2 }}>
+                
                         <div id="sites-section" style={{ marginBottom: '40px' }}>
                         <Typography 
                             variant="body1" 
@@ -349,21 +373,37 @@ function App() {
                               هوش مصنوعی‌هایی که پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
+                            <Box sx={{ p: 2 }}>
                                 <ServiceList />
+                                </Box>
                             </div>
                         </div>
                         
                         <div id="settings-section">
+                   
+
                             <Settings
                                 rtlAlgorithm={rtlAlgorithm}
                                 onRtlAlgorithmChange={handleRtlAlgorithmChange}
                                 supportHide={supportHide}
                                 onSupportChange={handleSupportChange}
                             />
+                            
+                      
                         </div>
+
                         
                         <div id="report-section">
-                            <Box sx={{ textAlign: 'center', mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2, mb: 3 }}>
+                               <Box sx={{ 
+                                textAlign: 'center', 
+                                mt: 2, 
+                                p: 2, 
+                                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                                borderRadius: 0, 
+                                mb: 3,
+                                borderTop: '1px solid #00e9ff',
+                                borderBottom: '1px solid #00e9ff'
+                            }}>
                                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                     گزارش مشکل و پشتیبانی
                                 </Typography>
@@ -413,7 +453,16 @@ function App() {
                         </div>
                         
                         <div id="notes-section">
-                            <Box sx={{ textAlign: 'center', mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2, mb: 3 }}>
+                            <Box sx={{ 
+                                textAlign: 'center', 
+                                mt: 2, 
+                                p: 2, 
+                                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                                borderRadius: 0, 
+                                mb: 3,
+                                borderTop: '1px solid #00e9ff',
+                                borderBottom: '1px solid #00e9ff'
+                            }}>
                                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                     درباره افزونه
                                 </Typography>
@@ -428,7 +477,7 @@ function App() {
                                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.8, textAlign: 'justify' }}>
                                         هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
                                     </Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                                         <a href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: '#00e9ff', 
@@ -459,7 +508,7 @@ function App() {
                                 
                             </Box>
                         </div>
-                    </Box>
+                   
                 </Paper>
 
             </div>
