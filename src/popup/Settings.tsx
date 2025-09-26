@@ -271,7 +271,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                نمایش متن حمایت
+                                پنهان کردن متن حمایت
                             </Typography>
                      
                         </Box>

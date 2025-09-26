@@ -29,6 +29,12 @@ chrome.storage.sync.onChanged.addListener((changes) => {
         return;
     }
     
+    // Check for supportHide changes
+    if (changes.supportHide) {
+        location.reload();
+        return;
+    }
+    
     // Check for service enable/disable changes
     Object.keys(serviceConfig).forEach(serviceKey => {
         if (changes[serviceKey]) {

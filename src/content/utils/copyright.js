@@ -8,7 +8,16 @@ import { modalDonateFun, modalDonate, BtnDonate } from './modal.js';
  * @param {string} customClass - Custom CSS class for the copyright box
  * @param {string} customStyle - Custom inline styles for the copyright box
  */
-export function addCopyright($targetElement, customClass = '', customStyle = '') {
+export async function addCopyright($targetElement, customClass = '', customStyle = '') {
+    // Check supportHide setting - only show copyright if it's disabled or doesn't exist
+    const result = await chrome.storage.sync.get(['supportHide']);
+    const supportHide = result.supportHide;
+    
+    // If supportHide is enabled, don't show copyright
+    if (supportHide === true) {
+        return;
+    }
+    
     if (!$targetElement.hasClass("AsOk")) {
         $targetElement.addClass("AsOk");
         
