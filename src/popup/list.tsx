@@ -16,6 +16,7 @@ import {
     DialogActions,
     Button,
     Typography,
+    useTheme,
 } from '@mui/material';
 
 interface Service {
@@ -54,6 +55,8 @@ const services: Service[] = [
 export { services };
 
 export default function ServiceList() {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
         chatGpt: true,
         claude: true,
@@ -96,13 +99,24 @@ export default function ServiceList() {
         setGrokModalOpen(true);
     };
 
-
+    // default: '#1a1a2e',
+    // paper: '#2f2f41',
     return (
         <>
             <List
-                sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                sx={{ width: '100%', maxWidth: 360, backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
                 subheader={
-                    <ListSubheader component="div" id="nested-list-subheader" sx={{ textAlign: 'center', direction: 'rtl' }}>
+                    <ListSubheader 
+                        component="div" 
+                        id="nested-list-subheader" 
+                        sx={{ 
+                            textAlign: 'center', 
+                            direction: 'rtl',
+                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                            color: isDarkMode ? '#ffffff' : '#000000',
+                            borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`
+                        }}
+                    >
                         {Object.values(checked).filter(Boolean).length} سایت فعال
                     </ListSubheader>
                 }
@@ -120,7 +134,14 @@ export default function ServiceList() {
                                                 src={chrome.runtime.getURL(service.icon)}
                                             />
                                         </ListItemIcon>
-                                        <ListItemText primary={service.name} />
+                                        <ListItemText 
+                                            primary={service.name} 
+                                            sx={{ 
+                                                '& .MuiListItemText-primary': {
+                                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                                }
+                                            }}
+                                        />
                                         <IconButton 
                                             size="medium" 
                                             sx={{ ml: 'auto' }}
@@ -153,7 +174,14 @@ export default function ServiceList() {
                                                 src={chrome.runtime.getURL(service.icon)}
                                             />
                                         </ListItemIcon>
-                                        <ListItemText primary={service.name} />
+                                        <ListItemText 
+                                            primary={service.name} 
+                                            sx={{ 
+                                                '& .MuiListItemText-primary': {
+                                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                                }
+                                            }}
+                                        />
                                         
                                         {service.helpText && (
                                             <IconButton 
@@ -189,15 +217,24 @@ export default function ServiceList() {
                                             edge="end"
                                             onChange={handleChange(service.key)}
                                             checked={checked?.[service.key] || false}
+                                            data-list-switch="true"
                                             inputProps={{
                                                 'aria-labelledby': `switch-list-label-${service.key}`,
+                                            }}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
                                             }}
                                         />
                                     </ListItemButton>
                                 </ListItem>
                             </a>
                         )}
-                        {index < services.length - 1 && <Divider />}
+                        {index < services.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
                 ))}
             </List>

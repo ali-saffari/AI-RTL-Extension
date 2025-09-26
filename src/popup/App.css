@@ -174,13 +174,6 @@ a:hover {
     transform: translateX(-2px);
 }
 
-.MuiSwitch-root .MuiSwitch-switchBase.Mui-checked {
-    color: #00e9ff !important;
-}
-
-.MuiSwitch-root .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
-    background-color: #00e9ff !important;
-}
 
 .MuiAvatar-root {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -219,6 +212,13 @@ a:hover {
     direction: rtl;
     font-family: iranyekan, sans-serif;
     z-index: 1000;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* فوتر برای تم روشن */
+body[data-theme="light"] .sticky-footer {
+    background: #ffffff;
+    border-top: 1px solid rgba(37, 99, 235, 0.3);
 }
 
 .sticky-footer-content {
@@ -256,11 +256,26 @@ a:hover {
     text-shadow: 0 0 8px rgba(0, 233, 255, 0.5);
 }
 
+/* لینک‌های فوتر برای تم روشن */
+body[data-theme="light"] .footer-link {
+    color: #1e40af;
+}
+
+body[data-theme="light"] .footer-link:hover {
+    color: #3b82f6;
+    text-shadow: 0 0 8px rgba(30, 64, 175, 0.5);
+}
+
 .footer-separator {
     color: #666;
     font-size: 12px;
     font-weight: 300;
     margin: 0 4px;
+}
+
+/* جداکننده فوتر برای تم روشن */
+body[data-theme="light"] .footer-separator {
+    color: #94a3b8;
 }
 
 /* اسکرول برای محتوا */
@@ -269,4 +284,30 @@ body {
 }
 
 /* استایل‌های هدر - حالا در sx prop تعریف شده */
+
+/* استایل‌های عمومی برای هر دو تم */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* استایل‌های تم تاریک */
+body[data-theme="dark"] {
+    background-color: #1a1a2e;
+    color: #ffffff;
+}
+
+/* استایل‌های تم روشن */
+body[data-theme="light"] {
+    background-color: #f8fafc;
+    color: #333333;
+}
+
+/* استایل‌های دکمه تم */
+.theme-toggle-button {
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-button:hover {
+    transform: scale(1.1);
+}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useTheme } from '@mui/material';
 
 interface ChangeItem {
     id: string;
@@ -163,20 +163,27 @@ const changesData: VersionChanges[] = [
 ];
 
 const ChangesList: React.FC = () => {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+    
     return (
         <Accordion 
             sx={{ 
-                border: '1px solid rgba(0, 233, 255, 0.3)',
+                border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(30, 64, 175, 0.5)',
+                backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                 borderRadius: 2,
                 '&:before': { display: 'none' },
                 '&.Mui-expanded': {
                     margin: 0,      
-                    border: '1px solid rgba(0, 233, 255, 0.5)'
+                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(30, 64, 175, 0.5)'
                 }
             }}
         >
             <AccordionSummary
-                expandIcon={<Typography sx={{ color: '#00e9ff', fontSize: '0.8rem' }}>▼</Typography>}
+                expandIcon={<Typography sx={{ 
+                    color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                    fontSize: '0.8rem' 
+                }}>▼</Typography>}
                 sx={{
                     '& .MuiAccordionSummary-content': {
                         margin: '8px 0'
@@ -184,7 +191,7 @@ const ChangesList: React.FC = () => {
                 }}
             >
                 <Typography variant="body2" sx={{ 
-                    color: '#00e9ff',
+                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
@@ -197,18 +204,29 @@ const ChangesList: React.FC = () => {
                 <Box sx={{ maxHeight: '200px', overflowY: 'auto', pr: 1 }}>
                     {changesData.map((versionData, index) => (
                         <Box key={versionData.version} sx={{ mb: 2 }}>
-                            <Typography variant="body2" sx={{ color: '#00e9ff', fontWeight: 600, mb: 1 }}>
+                            <Typography variant="body2" sx={{ 
+                                color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                                fontWeight: 600, 
+                                mb: 1 
+                            }}>
                                 ⬆️ {versionData.version}
                             </Typography>
                             <Box sx={{ pl: 2 }}>
                                 {versionData.changes.map((change) => (
-                                    <Typography key={change.id} variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', mb: 0.5 }}>
+                                    <Typography key={change.id} variant="body2" sx={{ 
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)', 
+                                        mb: 0.5 
+                                    }}>
                                         ✅ {change.text}
                                     </Typography>
                                 ))}
                             </Box>
                             {index < changesData.length - 1 && (
-                                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', textAlign: 'center', my: 1 }}>
+                                <Typography variant="body2" sx={{ 
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)', 
+                                    textAlign: 'center', 
+                                    my: 1 
+                                }}>
                                     -------
                                 </Typography>
                             )}

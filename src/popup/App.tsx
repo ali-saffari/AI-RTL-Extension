@@ -10,8 +10,11 @@ import {
     Container,
     Tabs,
     Tab,
-    AppBar
+    AppBar,
+    IconButton,
+    Tooltip
 } from '@mui/material';
+// Using Material-UI built-in icons instead of icons-material package
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import Settings from './Settings';
@@ -34,8 +37,139 @@ const darkTheme = createTheme({
         },
         background: {
             default: '#1a1a2e',
-            paper: '#1a1a2e',
+            paper: '#2f2f41',
         },
+    },
+    typography: {
+        fontFamily: ['"iranyekan"', 'Tahoma', 'Arial'].join(','),
+        fontSize: 12,
+        h1: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 700,
+        },
+        h2: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 600,
+        },
+        h3: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 600,
+        },
+        h4: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 500,
+        },
+        h5: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 500,
+        },
+        h6: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 500,
+        },
+        body1: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 400,
+        },
+        body2: {
+            fontFamily: '"iranyekan"',
+            fontWeight: 400,
+        },
+    },
+    components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                '@global': {
+                    '@keyframes gradientShift': {
+                        '0%, 100%': {
+                            backgroundPosition: '0% 50%',
+                        },
+                        '50%': {
+                            backgroundPosition: '100% 50%',
+                        },
+                    },
+                    '@keyframes pulse': {
+                        '0%, 100%': {
+                            transform: 'scale(1)',
+                            opacity: 0.8,
+                        },
+                        '50%': {
+                            transform: 'scale(1.2)',
+                            opacity: 1,
+                        },
+                    },
+                },
+            },
+        },
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    fontFamily: '"iranyekan"',
+                    fontWeight: 500,
+                },
+            },
+        },
+        MuiTypography: {
+            styleOverrides: {
+                root: {
+                    fontFamily: '"iranyekan"',
+                },
+            },
+        },
+        MuiTabs: {
+            styleOverrides: {
+                root: {
+                    direction: 'rtl',
+                },
+            },
+        },
+        MuiTab: {
+            styleOverrides: {
+                root: {
+                    fontFamily: '"iranyekan"',
+                },
+            },
+        },
+        MuiList: {
+            styleOverrides: {
+                root: {
+                    direction: 'ltr',
+                },
+            },
+        },
+        MuiListItem: {
+            styleOverrides: {
+                root: {
+                    direction: 'ltr',
+                },
+            },
+        },
+    },
+});
+
+const lightTheme = createTheme({
+    direction: 'rtl',
+    palette: {
+        mode: 'light',
+        primary: {
+            main: '#1c39bb',
+            light: '#3b82f6',
+            dark: '#1e3a8a',
+        },
+        secondary: {
+            main: '#059669',
+            light: '#10b981',
+            dark: '#047857',
+        },
+        background: {
+            default: '#ffffff',
+            paper: '#e0f2fe',
+        },
+        text: {
+            primary: '#1e293b',
+            secondary: '#64748b',
+        },
+        divider: '#e2e8f0',
     },
     typography: {
         fontFamily: ['"iranyekan"', 'Tahoma', 'Arial'].join(','),
@@ -148,15 +282,19 @@ function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_section');
     const [supportHide, setSupportHide] = React.useState(false);
+    const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load settings from storage on component mount
     React.useEffect(() => {
-        chrome.storage.sync.get(['rtlAlgorithm', 'supportHide'], (result) => {
+        chrome.storage.sync.get(['rtlAlgorithm', 'supportHide', 'isDarkMode'], (result) => {
             if (result.rtlAlgorithm) {
                 setRtlAlgorithm(result.rtlAlgorithm);
             }
             if (result.supportHide !== undefined) {
                 setSupportHide(result.supportHide);
+            }
+            if (result.isDarkMode !== undefined) {
+                setIsDarkMode(result.isDarkMode);
             }
         });
     }, []);
@@ -171,6 +309,13 @@ function App() {
     const handleSupportChange = (enabled: boolean) => {
         setSupportHide(enabled);
         chrome.storage.sync.set({ supportHide: enabled });
+    };
+
+    // Toggle theme and save to storage
+    const handleThemeToggle = () => {
+        const newTheme = !isDarkMode;
+        setIsDarkMode(newTheme);
+        chrome.storage.sync.set({ isDarkMode: newTheme });
     };
 
     // سیستم اسکرول تب‌ها - ساده و کارآمد
@@ -315,19 +460,29 @@ function App() {
         }, 100);
     };
 
+    const currentTheme = isDarkMode ? darkTheme : lightTheme;
+
+    // Update body data-theme attribute for CSS
+    React.useEffect(() => {
+        document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
+
     return (
-        <ThemeProvider theme={darkTheme}>
+        <ThemeProvider theme={currentTheme}>
             <CssBaseline />
-            <div className="App" dir="rtl" style={{ paddingBottom: '60px' }}>
+            <div className="App" dir="rtl" >
                 <Paper 
-                    elevation={2} 
+                    elevation={0} 
                     sx={{ 
-                        p: 2, 
-                        mb: 3, 
+                        p: 2,
                         borderRadius: 0,
-                        background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)',
-                        borderBottom: '1px solid rgba(0, 234, 255, 0.47)',
-                        backdropFilter: 'blur(10px)',
+                        background: isDarkMode 
+                            ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)'
+                            : '#0067A5',
+                        borderBottom: isDarkMode 
+                            ? '1px solid rgba(0, 234, 255, 0.47)'
+                            : '1px solid rgb(0, 234, 255)',
+               
                     
                     }} 
                     dir="ltr"
@@ -365,23 +520,44 @@ function App() {
                                 sx={{ 
                                     fontSize: '0.65rem',
                                     height: 20,
-                                    backgroundColor: 'rgba(0, 233, 255, 0.1)',
-                                    color: '#00e9ff',
-                                    border: '1px solid rgba(0, 233, 255, 0.3)',
+                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
+                                    color: isDarkMode ? '#00e9ff' : '#ffffff',
+                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
                                     fontWeight: 500
                                 }} 
                             />
                         </Box>
+                        
+                        <Tooltip title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}>
+                            <IconButton 
+                                onClick={handleThemeToggle}
+                                sx={{ 
+                                    color: isDarkMode ? '#000000' : '#ffffff',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                    '&:hover': {
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                }}
+                            >
+                                {isDarkMode ? '☀️' : '🌙'}
+                            </IconButton>
+                        </Tooltip>
                     </Box>
                 </Paper>
 
-                <Box sx={{ textAlign: 'center', mb: 3, px: 2 }}>
+
+
+                <Box sx={{ textAlign: 'center', py: 3, px: 2 ,    background: isDarkMode 
+                            ? 'transparent'
+                            : '#b3d1e4' }}>
                     <Typography 
                         variant="body2" 
                         sx={{ 
                             fontSize: '0.8rem',
-                            color: 'rgba(255, 255, 255, 0.8)',
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 1)',
                             lineHeight: 1.4,
+                         
                             fontWeight: 400
                         }}
                     >
@@ -389,12 +565,40 @@ function App() {
                     </Typography>
                 </Box>
 
-                <Paper>
-                    <AppBar position="sticky">
+                <Paper elevation={0} sx={{ 
+                    backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
+                    // border: isDarkMode ? 'none' : '1px solid #e2e8f0',
+                    borderRadius: isDarkMode ? 0 : 1
+                }}>
+                    <AppBar 
+                        position="sticky"
+                        sx={{
+                            backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
+                            color: isDarkMode ? '#ffffff' : '#ffffff',
+                            // borderBottom: isDarkMode ? '1px solid rgba(0, 233, 255, 0.2)' : '1px solid #e2e8f0'
+                        }}
+                    >
                         <Tabs
                             value={tabValue}
                             onChange={handleTabChange}
-                            sx={{ direction: 'rtl' }}
+                            sx={{ 
+                                direction: 'rtl',
+                                boxShadow: 'none',
+                                '& .MuiTab-root': {
+                                    color:  isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.9)',
+                                    fontWeight: 500,
+                                    fontSize: '0.8rem',
+                                    boxShadow: 'none'
+                                },
+                                '& .MuiTab-root.Mui-selected': {
+                                    color: '#ffffff',
+                                    fontWeight: 600,
+                                    boxShadow: 'none'
+                                },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#ffffff'
+                                }
+                            }}
                         >
                             <Tab label="سایت‌ها" />
                             <Tab label="تنظیمات" />
@@ -403,8 +607,8 @@ function App() {
                         </Tabs>
                     </AppBar>
                     
-                
-                        <div id="sites-section" style={{ marginBottom: '40px' }}>
+               
+                        <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
                         <Typography 
                             variant="body1" 
                             sx={{ 
@@ -413,7 +617,8 @@ function App() {
                                 textAlign: 'center', 
                                 direction: 'rtl', 
                                 fontFamily: 'iranyekan',
-                                fontWeight: 600
+                                fontWeight: 600,
+                                color: isDarkMode ? '#ffffff' : '#1e293b'
                             }}
                         >
                               هوش مصنوعی‌هایی که پشتیبانی میشود
@@ -433,6 +638,7 @@ function App() {
                                 onRtlAlgorithmChange={handleRtlAlgorithmChange}
                                 supportHide={supportHide}
                                 onSupportChange={handleSupportChange}
+                                isDarkMode={isDarkMode}
                             />
                             
                       
@@ -444,26 +650,41 @@ function App() {
                                 textAlign: 'center', 
                                 mt: 2, 
                                 p: 2, 
-                                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                                background: isDarkMode 
+                                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
                                 borderRadius: 0, 
                                 mb: 3,
-                                borderTop: '1px solid #00e9ff',
-                                borderBottom: '1px solid #00e9ff'
+                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
+                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
                             }}>
-                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                <Typography variant="body1" sx={{ 
+                                    fontWeight: 600,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b'
+                                }}>
                                     گزارش مشکل و پشتیبانی
                                 </Typography>
                             </Box>
                             
                             <Box sx={{ mb: 3 }}>
                                 <Box sx={{ p: 3 }}>
-                                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#00e9ff', textAlign: 'center' }}>
+                                    <Typography variant="h6" sx={{ 
+                                        mb: 2, 
+                                        fontWeight: 600, 
+                                        color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                        textAlign: 'center' 
+                                    }}>
                                         📢 نکته مهم درباره عملکرد افزونه
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.8, textAlign: 'justify', fontWeight: 500 }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
+                                        lineHeight: 1.8, 
+                                        textAlign: 'justify', 
+                                        fontWeight: 500 
+                                    }}>
                                         دنیای هوش مصنوعی به‌سرعت در حال پیشرفت است و وب‌سایت‌های مرتبط نیز به‌طور مداوم به‌روزرسانی می‌شوند؛ از تغییر در ساختار HTML و کدهای CSS و JavaScript گرفته تا بهبودهای امنیتی، عملکردی و اضافه‌شدن قابلیت‌های جدید. به همین دلیل ممکن است عملکرد افزونه در برخی موارد دچار اختلال موقت شود.
                                         <br /><br />
-                                        <strong style={{ color: '#00e9ff' }}>راه‌حل چیست؟</strong>
+                                        <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>راه‌حل چیست؟</strong>
                                         <br />
                                         اگر افزونه روی سایتی کار نمی‌کند، این کاملاً طبیعی است! 
                                         اگر با مشکلی مواجه شدید، لطفاً از طریق لینک‌های زیر گزارش دهید تا سریع‌تر حل شود.
@@ -471,21 +692,35 @@ function App() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
                                             <a href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne/support" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                <Typography variant="body2" sx={{ color: '#00e9ff', '&:hover': { textDecoration: 'underline' }, fontWeight: 600 }}>
+                                                <Typography variant="body2" sx={{ 
+                                                    color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                                    '&:hover': { textDecoration: 'underline' }, 
+                                                    fontWeight: 600 
+                                                }}>
                                                     📝 ارسال گزارش
                                                 </Typography>
                                             </a>
-                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                                            <Typography variant="body2" sx={{ 
+                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 41, 59, 0.7)', 
+                                                fontSize: '0.8rem' 
+                                            }}>
                                                 - برای گزارش مشکل یا پیشنهاد
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
                                             <a href="https://alisaffari.ir/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                <Typography variant="body2" sx={{ color: '#00e9ff', '&:hover': { textDecoration: 'underline' }, fontWeight: 600 }}>
+                                                <Typography variant="body2" sx={{ 
+                                                    color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                                    '&:hover': { textDecoration: 'underline' }, 
+                                                    fontWeight: 600 
+                                                }}>
                                                     💬 تماس مستقیم
                                                 </Typography>
                                             </a>
-                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                                            <Typography variant="body2" sx={{ 
+                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 41, 59, 0.7)', 
+                                                fontSize: '0.8rem' 
+                                            }}>
                                                 - برای تماس شخصی با توسعه‌دهنده
                                             </Typography>
                                         </Box>
@@ -503,30 +738,43 @@ function App() {
                                 textAlign: 'center', 
                                 mt: 2, 
                                 p: 2, 
-                                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                                background: isDarkMode 
+                                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
                                 borderRadius: 0, 
                                 mb: 3,
-                                borderTop: '1px solid #00e9ff',
-                                borderBottom: '1px solid #00e9ff'
+                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
+                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
                             }}>
-                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                <Typography variant="body1" sx={{ 
+                                    fontWeight: 600,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b'
+                                }}>
                                     درباره افزونه
                                 </Typography>
                             </Box>
                             
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <Box sx={{ p: 3 }}>
-                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.8, textAlign: 'justify' }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
+                                        lineHeight: 1.8, 
+                                        textAlign: 'justify' 
+                                    }}>
                                         این افزونه‌ی ChatGPT RTL (Persian/Farsi) بیش از ۲ سال است که در کنار شماست و امروز با افتخار میزبان بیش از ۱۷ هزار کاربر فعال است.
 در ابتدا صرفاً برای ChatGPT اصلی طراحی شد، اما به لطف استقبال گسترده و درخواست‌های مکرر کاربران، به‌مرور برای سایر وب‌سایت‌های هوش مصنوعی نیز توسعه پیدا کرده است.
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.8, textAlign: 'justify' }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
+                                        lineHeight: 1.8, 
+                                        textAlign: 'justify' 
+                                    }}>
                                         هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                                         <a href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
-                                                color: '#00e9ff', 
+                                                color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
                                                 textAlign: 'center'
@@ -535,13 +783,17 @@ function App() {
                                             </Typography>
                                         </a>
                                     </Box>
-                                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.8, textAlign: 'justify' }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
+                                        lineHeight: 1.8, 
+                                        textAlign: 'justify' 
+                                    }}>
                                         این افزونه با عشق و انرژی شخصی ساخته شده و همچنان رایگان در اختیار شما قرار دارد. حمایت شما، چه با ثبت نظر و امتیاز و چه با معرفی افزونه به دوستان و دیگران، انگیزه‌ی ادامه‌ی مسیر و توسعه‌ی قابلیت‌های جدید را برای من فراهم می‌کند. اگر مایل بودید می‌توانید با یک دونیت کوچک نیز از پروژه حمایت کنید.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                                         <a href="https://donito.me/chatgpt_rtl" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
-                                                color: '#00e9ff', 
+                                                color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
                                                 textAlign: 'center'

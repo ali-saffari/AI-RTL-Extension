@@ -12,7 +12,8 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    IconButton
+    IconButton,
+    useTheme
 } from '@mui/material';
 
 interface SettingsProps {
@@ -20,14 +21,17 @@ interface SettingsProps {
     onRtlAlgorithmChange: (value: string) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
+    isDarkMode: boolean;
 }
 
 const Settings: React.FC<SettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
     supportHide,
-    onSupportChange
+    onSupportChange,
+    isDarkMode
 }) => {
+    const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
@@ -85,15 +89,17 @@ const Settings: React.FC<SettingsProps> = ({
                 textAlign: 'center', 
                 mt: 2, 
                 p: 2, 
-                background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)',
+                background: theme.palette.mode === 'dark' 
+                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.05) 100%)',
                 borderRadius: 0, 
                 mb: 3,
-                borderTop: '1px solid #00e9ff',
-                borderBottom: '1px solid #00e9ff'
+                borderTop: `1px solid ${theme.palette.primary.main}`,
+                borderBottom: `1px solid ${theme.palette.primary.main}`
             }}>
                 <Typography variant="body1" sx={{ 
                     fontWeight: 600, 
-                    color: 'white',
+                    color: theme.palette.text.primary,
                 }}>
                     تنظیمات افزونه
                 </Typography>
@@ -108,10 +114,10 @@ const Settings: React.FC<SettingsProps> = ({
             }}>
                 {/* الگوریتم تشخیص RTL */}
                 <Paper elevation={0} sx={{ 
+                    m: 2, 
                     p: 2, 
                     borderRadius: 1,
-             
-                    background: '#1a1a2e'
+                    background: isDarkMode ? '#2f2f41' : '#ffffff'
                 }}>
                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                         <Typography variant="h6" sx={{ 
@@ -147,8 +153,14 @@ const Settings: React.FC<SettingsProps> = ({
                             >
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'advanced_section' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'advanced_section' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'advanced_section' 
+                                ? theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.1)' 
+                                    : 'rgba(30, 64, 175, 0.2)'
+                                : theme.palette.background.paper,
+                            border: selectedValue === 'advanced_section' 
+                                ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                : 'none',
                             mb: 2,
                             py: 2,
                             px: 1,
@@ -163,16 +175,22 @@ const Settings: React.FC<SettingsProps> = ({
                                     }} >
                                         <Box sx={{  mb: 0.5 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                                <Typography variant="body1" sx={{ 
+                                                    fontWeight: 500, 
+                                                    fontSize: '0.95rem',
+                                                    color: theme.palette.text.primary
+                                                }}>
                                                     تحلیل پیشرفته بخش‌ها
                                                 </Typography>
                                                 <IconButton 
                                                     onClick={() => handleInfoClick('advanced_section')}
                                                     size="small"
                                                     sx={{ 
-                                                        color: 'white',
+                                                        color: theme.palette.text.primary,
                                                         '&:hover': {
-                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                            backgroundColor: theme.palette.mode === 'dark' 
+                                                                ? 'rgba(255, 255, 255, 0.1)' 
+                                                                : 'rgba(0, 0, 0, 0.1)'
                                                         }
                                                     }}
                                                 >
@@ -199,21 +217,26 @@ const Settings: React.FC<SettingsProps> = ({
                                                 <Box component="span" sx={{ 
                                                     px: 1, 
                                                     py: 0.3, 
-                                                    bgcolor: 'rgb(33, 46, 65)',
-                                                    border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                    color: '#00e9ff', 
+                                                    bgcolor: theme.palette.mode === 'dark' 
+                                                        ? 'rgb(33, 46, 65)' 
+                                                        : 'rgba(30, 64, 175, 0.1)',
+                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                    color: theme.palette.primary.main, 
                                                     borderRadius: 1, 
                                                     fontSize: '0.7rem',
                                                     fontWeight: 600
                                                 }}>
+                                                    
                                                     جدید
                                                 </Box>
                                                 {selectedValue !== 'advanced_section' && (
                                                     <Box component="span" sx={{ 
                                                         px: 0.5, 
                                                         py: 0.05, 
-                                                        bgcolor: 'rgb(1, 91, 237)',
-                                                        color: 'text.secondary', 
+                                                        bgcolor: theme.palette.mode === 'dark' 
+                                                            ? 'rgb(1, 91, 237)' 
+                                                            : 'rgba(30, 64, 175, 0.2)',
+                                                        color: theme.palette.text.secondary, 
                                                         borderRadius: 0.5, 
                                                         fontSize: '0.6rem',
                                                         fontWeight: 600
@@ -237,8 +260,14 @@ const Settings: React.FC<SettingsProps> = ({
                         </Paper>
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'advanced_full' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'advanced_full' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'advanced_full' 
+                                ? theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.1)' 
+                                    : 'rgba(30, 64, 175, 0.2)'
+                                : theme.palette.background.paper,
+                            border: selectedValue === 'advanced_full' 
+                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                : 'none',
                             mb: 2,
                             py: 2,
                             px: 1,
@@ -253,16 +282,22 @@ const Settings: React.FC<SettingsProps> = ({
                                     }} >
                                         <Box sx={{ mb: 0.5 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                                <Typography variant="body1" sx={{ 
+                                                    fontWeight: 500, 
+                                                    fontSize: '0.95rem',
+                                                    color: theme.palette.text.primary
+                                                }}>
                                                     تحلیل پیشرفته یکپارچه
                                                 </Typography>
                                                 <IconButton 
                                                     onClick={() => handleInfoClick('advanced_full')}
                                                     size="small"
                                                     sx={{ 
-                                                        color: 'white',
+                                                        color: theme.palette.text.primary,
                                                         '&:hover': {
-                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                            backgroundColor: theme.palette.mode === 'dark' 
+                                                                ? 'rgba(255, 255, 255, 0.1)' 
+                                                                : 'rgba(0, 0, 0, 0.1)'
                                                         }
                                                     }}
                                                 >
@@ -289,9 +324,11 @@ const Settings: React.FC<SettingsProps> = ({
                                                 <Box component="span" sx={{ 
                                                     px: 1, 
                                                     py: 0.3, 
-                                                    bgcolor: 'rgb(33, 46, 65)',
-                                                    border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                    color: '#00e9ff', 
+                                                    bgcolor: theme.palette.mode === 'dark' 
+                                                        ? 'rgb(33, 46, 65)' 
+                                                        : 'rgba(30, 64, 175, 0.1)',
+                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                    color: theme.palette.primary.main, 
                                                     borderRadius: 1, 
                                                     fontSize: '0.7rem',
                                                     fontWeight: 600
@@ -314,8 +351,14 @@ const Settings: React.FC<SettingsProps> = ({
                         </Paper>
                         <Paper elevation={1} sx={{ 
                             borderRadius: 3,
-                            bgcolor: selectedValue === 'first_word' ? 'rgba(0, 233, 255, 0.1)' : '#1a1a2e',
-                            border: selectedValue === 'first_word' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
+                            bgcolor: selectedValue === 'first_word' 
+                                ? theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.1)' 
+                                    : 'rgba(30, 64, 175, 0.2)'
+                                : theme.palette.background.paper,
+                            border: selectedValue === 'first_word' 
+                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                : 'none',
                             mb: 2,
                             py: 2,
                             px: 1
@@ -328,16 +371,22 @@ const Settings: React.FC<SettingsProps> = ({
                                         px: 1
                                     }} >
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                                            <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 500, 
+                                                fontSize: '0.95rem',
+                                                color: theme.palette.text.primary
+                                            }}>
                                                 تشخیص مبتنی بر واژه آغازین
                                             </Typography>
                                             <IconButton 
                                                 onClick={() => handleInfoClick('first_word')}
                                                 size="small"
                                                 sx={{ 
-                                                    color: 'white',
+                                                    color: theme.palette.text.primary,
                                                     '&:hover': {
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                        backgroundColor: theme.palette.mode === 'dark' 
+                                                            ? 'rgba(255, 255, 255, 0.1)' 
+                                                            : 'rgba(0, 0, 0, 0.1)'
                                                     }
                                                 }}
                                             >
@@ -368,10 +417,10 @@ const Settings: React.FC<SettingsProps> = ({
 
                 {/* تنظیمات متن حمایت */}
                 <Paper elevation={0} sx={{ 
+                    m: 2, 
                     p: 2, 
                     borderRadius: 1,
-                    background: '#1a1a2e',
-                    mt: 2
+                    background: isDarkMode ? '#2f2f41' : '#ffffff'
                 }}>
                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                         <Typography variant="h6" sx={{ 
@@ -395,8 +444,8 @@ const Settings: React.FC<SettingsProps> = ({
                         justifyContent: 'space-between',
                         p: 2,
                         borderRadius: 2,
-                        bgcolor:  '#1a1a2e',
-                        border:  '1px solid rgba(255, 255, 255, 0.1)'
+                        bgcolor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
                     }}>
                         <Box sx={{ flex: 1 }}>
                             <Typography variant="body1" sx={{ 
@@ -411,12 +460,13 @@ const Settings: React.FC<SettingsProps> = ({
                         <Switch
                             checked={supportHide}
                             onChange={(e) => onSupportChange(e.target.checked)}
+                            data-settings-switch="true"
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: '#00e9ff',
+                                    color: '#1c39bb',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: '#00e9ff',
+                                    backgroundColor: '#1c39bb',
                                 },
                             }}
                         />
@@ -433,8 +483,8 @@ const Settings: React.FC<SettingsProps> = ({
                 fullWidth
                 sx={{
                     '& .MuiDialog-paper': {
-                        backgroundColor: '#1a1a2e',
-                        color: 'white',
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
                         borderRadius: 2,
                         direction: 'rtl'
                     }
@@ -442,10 +492,10 @@ const Settings: React.FC<SettingsProps> = ({
             >
                 <DialogTitle sx={{ 
                     textAlign: 'center', 
-                    color: '#00e9ff',
+                    color: theme.palette.primary.main,
                     fontWeight: 600,
                     fontSize: '1rem',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
                     py: 1.5,
                     mb: 2
                 }}>
@@ -455,7 +505,7 @@ const Settings: React.FC<SettingsProps> = ({
                     {selectedAlgorithm && (
                         <>
                             <Typography variant="body1" sx={{ 
-                                color: 'text.primary', 
+                                color: theme.palette.text.primary, 
                                 mb: 3,
                                 lineHeight: 1.6,
                                 fontSize: '0.95rem'
@@ -465,7 +515,7 @@ const Settings: React.FC<SettingsProps> = ({
                             
                             <Box sx={{ mb: 2 }}>
                                 <Typography variant="h6" sx={{ 
-                                    color: '#00e9ff', 
+                                    color: theme.palette.primary.main, 
                                     mb: 2,
                                     fontSize: '1rem',
                                     fontWeight: 600
@@ -492,18 +542,20 @@ const Settings: React.FC<SettingsProps> = ({
                 <DialogActions sx={{ 
                     justifyContent: 'center', 
                     pt: 2,
-                    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
                 }}>
                     <Button 
                         onClick={handleCloseModal}
                         variant="contained"
                         sx={{
-                            backgroundColor: '#00e9ff',
-                            color: '#1a1a2e',
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.mode === 'dark' ? '#1a1a2e' : '#ffffff',
                             fontWeight: 600,
                             px: 4,
                             '&:hover': {
-                                backgroundColor: 'rgba(0, 233, 255, 0.8)'
+                                backgroundColor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.8)' 
+                                    : 'rgba(30, 64, 175, 0.8)'
                             }
                         }}
                     >
