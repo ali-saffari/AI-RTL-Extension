@@ -36,9 +36,7 @@ export function activateGemini(rtlAlgorithm = 'advanced_section') {
     console.log("activateGemini with RTL algorithm:", rtlAlgorithm);
     // Initial setup
     setGemini(rtlAlgorithm);
-    console.log("setGemini")
-
-
+  
 
 
     let oldText = '';
@@ -64,18 +62,11 @@ export function activateGemini(rtlAlgorithm = 'advanced_section') {
 
 
     $('.ql-editor p').each(function (each) {
-        const text = $(this).text();
-        if (text !== oldText) {
-            oldText = text;
-
-            if (text && text.trim()) {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     processedClass: false,
                     setTextAlign: true
                 });
-            }
-        }
     });
     }, 100);
 
