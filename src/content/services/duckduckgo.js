@@ -1,9 +1,9 @@
 // duckduckgo.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setDuckduckgo() {
+export function setDuckduckgo(rtlAlgorithm = 'advanced_section') {
     if (chrome.runtime?.id) {
         let fo2 = `.eRjZTOsvr6gqJe3E2Yc6`
         
@@ -13,39 +13,25 @@ export function setDuckduckgo() {
 
     // Process textarea elements for text direction detection
     $('textarea').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            const text = $(this).val();
-            if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                $(this).addClass('FontSet');
-                $(this).addClass('AsOk');
-            }
-            
-            // Add event listener for real-time text direction detection
-            $(this).on('input keyup', function() {
-                const currentText = $(this).val();
-                if (currentText && currentText.trim()) {
-                    const direction = detectTextDirection(currentText);
-                    $(this).attr('dir', direction);
-                } else {
-                    $(this).removeAttr('dir');
-                }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+        
+        // Add event listener for real-time text direction detection
+        $(this).on('input keyup', function() {
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet'
             });
-        }
+        });
     });
 
     // Process p elements for text direction detection
     $(".PMQFURe7WSKqXJk9e3Jn , .decaGrVqUoziItl4Iarp ").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            const text = $(this).text();
-            if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                $(this).addClass('FontSet');
-                $(this).addClass('AsOk');
-            }
-        }
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     });
 
     // Process ucB71mHYvyHsWKjYfYKI elements using advanced function
@@ -58,7 +44,7 @@ export function setDuckduckgo() {
         
         $(this).addClass('activateDuckduckgo')
 
-        processTextElementsAdvanced($(this), {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true
@@ -67,13 +53,14 @@ export function setDuckduckgo() {
 }
 
 // Main activation function for DuckDuckGo
-export function activateDuckduckgo() {
+export function activateDuckduckgo(rtlAlgorithm = 'advanced_section') {
+    console.log('DuckDuckGo RTL activated with algorithm:', rtlAlgorithm);
     // Initial setup
-    setDuckduckgo();
+    setDuckduckgo(rtlAlgorithm);
 
-    // SetInterval for continuous processing
-    setInterval(() => {
-        setDuckduckgo();
-    }, 1000);
+    // SetInterval and Observer
+    let interval = setInterval(() => {
+        setDuckduckgo(rtlAlgorithm);
+    }, 500);
 }
 
