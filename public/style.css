@@ -494,6 +494,12 @@ copilot
     direction: ltr !important;
 }
 
+.FontSetImportant .font-display {
+    font-family: iranyekan, sans-serif !important;
+}
+
+
+
 
 .AsBoxPerplexity {
     grid-column: span 8 / span 8;

@@ -46,7 +46,7 @@ const services: Service[] = [
     { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
     { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
     { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
-    { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/', helpText: 'سیستم جدید بهینه سازی متن روی این سایت فعال نیست و از نسخه قبلی استفاده میشه.' },
+    { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
     { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
 ];
 
