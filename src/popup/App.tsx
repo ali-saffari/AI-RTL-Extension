@@ -22,6 +22,7 @@ import ServiceList, { services } from './list';
 import Settings from './Settings';
 import ChangesList from './ChangesList';
 import './App.css';
+import manifest from '../../public/manifest.json';
 
 const darkTheme = createTheme({
     direction: 'rtl',
@@ -517,7 +518,7 @@ function App() {
                             </Typography>
                             
                             <Chip 
-                                label="نسخه 2.90.10" 
+                                label={`نسخه ${manifest.version}`} 
                                 size="small" 
                                 sx={{ 
                                     fontSize: '0.65rem',

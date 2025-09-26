@@ -1,14 +1,18 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+
 module.exports = {
     entry: {
         popup: './src/popup/index.tsx',
         content: './src/content/index.ts',
         background: './src/background/index.ts',
     },
-    mode: 'development',
-    devtool: 'source-map',
+    mode: isProduction ? 'production' : 'development',
+    devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
+    watch: isWatch,
     module: {
         rules: [
             {
@@ -39,6 +43,10 @@ module.exports = {
                 test: /\.css$/i,
                 exclude: /node_modules/,
                 use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.json$/,
+                type: 'json',
             },
         ],
     },
