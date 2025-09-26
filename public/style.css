@@ -499,7 +499,9 @@ copilot
 }
 
 
-
+.AsRtl .font-display {
+    font-family: iranyekan, sans-serif !important;
+}
 
 .AsBoxPerplexity {
     grid-column: span 8 / span 8;
