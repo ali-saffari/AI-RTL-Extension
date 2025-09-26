@@ -188,7 +188,8 @@ a:hover {
 }
 
 .MuiAvatar-root:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 233, 255, 0.3);
 }
 
 .MuiDialog-paper {
@@ -266,3 +267,6 @@ a:hover {
 body {
     padding-bottom: 50px;
 }
+
+/* استایل‌های هدر - حالا در sx prop تعریف شده */
+

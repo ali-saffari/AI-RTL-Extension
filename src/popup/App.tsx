@@ -319,26 +319,72 @@ function App() {
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
             <div className="App" dir="rtl" style={{ paddingBottom: '60px' }}>
-                <Paper elevation={2} sx={{ p: 2, m: 2, mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Paper 
+                    elevation={2} 
+                    sx={{ 
+                        p: 2, 
+                        mb: 3, 
+                        borderRadius: 0,
+                        background: 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)',
+                        borderBottom: '1px solid rgba(0, 234, 255, 0.47)',
+                        backdropFilter: 'blur(10px)',
+                    
+                    }} 
+                    dir="ltr"
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 60 }}>
                         <Avatar
                             src="/images/myLogo.png"
                             alt="RTL Extension Logo"
-                            sx={{ width: 50, height: 50, borderRadius: 1 }}
+                            sx={{ 
+                                width: 48, 
+                                height: 48, 
+                                borderRadius: 1.5,
+                                boxShadow: '0 2px 8px rgba(0, 233, 255, 0.2)'
+                            }}
                         />
                         
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" component="h1" sx={{ mb: 0.5, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography 
+                                variant="h6" 
+                                component="h1" 
+                                sx={{ 
+                                    mb: 0.5, 
+                                    fontWeight: 600, 
+                                    fontSize: '0.95rem',
+                                    lineHeight: 1.2,
+                                    color: '#ffffff'
+                                }}
+                            >
                                 ChatGPT RTL (Persian/Farsi)
                             </Typography>
                             
-                            <Chip label="نسخه 2.90.10" size="small" sx={{ fontSize: '0.6rem' }} />
+                            <Chip 
+                                label="نسخه 2.90.10" 
+                                size="small" 
+                                sx={{ 
+                                    fontSize: '0.65rem',
+                                    height: 20,
+                                    backgroundColor: 'rgba(0, 233, 255, 0.1)',
+                                    color: '#00e9ff',
+                                    border: '1px solid rgba(0, 233, 255, 0.3)',
+                                    fontWeight: 500
+                                }} 
+                            />
                         </Box>
                     </Box>
                 </Paper>
 
-                <Box sx={{ textAlign: 'center', mb: 2, px: 2 }}>
-                    <Typography variant="body2">
+                <Box sx={{ textAlign: 'center', mb: 3, px: 2 }}>
+                    <Typography 
+                        variant="body2" 
+                        sx={{ 
+                            fontSize: '0.8rem',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            lineHeight: 1.4,
+                            fontWeight: 400
+                        }}
+                    >
                         این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد.
                     </Typography>
                 </Box>
