@@ -1,10 +1,10 @@
 // poe.js service functions
 
-import { detectTextDirection } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setPoeCom() {
+export function setPoeCom(rtlAlgorithm = 'advanced_section') {
 
     if (chrome.runtime?.id) {
         let fo2 = `[class*="ChatPageMainFooter_footerInner"]`
@@ -12,20 +12,18 @@ export function setPoeCom() {
     }
 
 
-    $("[class*='GrowingTextArea_textArea'], [class*='ResendRemixFollowupButton_right'], [class*='ChatHistoryListItem_seenTitle']").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
-            const text = $(this).text() || $(this).val();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-            $(this).addClass('FontSet');
-        }
+    // Process text area and button elements with RTL algorithm
+    $('[class*="GrowingTextArea_textArea"], [class*="ResendRemixFollowupButton_right"], [class*="ChatHistoryListItem_seenTitle"]').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsRtl'
+        });
     });
 
     
-    $("[class*='Markdown_markdownContainer']").each(function (each) {
-        processTextElementsAdvanced($(this), {
+    // Process markdown container elements using RTL algorithm
+    $('[class*="Markdown_markdownContainer"]').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,
@@ -37,13 +35,14 @@ export function setPoeCom() {
 
 
 // Main activation function for Poe
-export function activatePoe() {
-    setPoeCom();
-
-    setInterval(() => {
-        setPoeCom();
-    }, 1000);
-
- 
-
+export function activatePoe(rtlAlgorithm = 'advanced_section') {
+    console.log('Poe RTL activated with algorithm:', rtlAlgorithm);
+    
+    // Initial setup
+    setPoeCom(rtlAlgorithm);
+    
+    // SetInterval for continuous processing
+    let interval = setInterval(() => {
+        setPoeCom(rtlAlgorithm);
+    }, 500);
 }
