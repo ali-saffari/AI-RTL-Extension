@@ -6,7 +6,13 @@ import {
     RadioGroup,
     FormControlLabel,
     Radio,
-    Switch
+    Switch,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    IconButton
 } from '@mui/material';
 
 interface SettingsProps {
@@ -23,10 +29,55 @@ const Settings: React.FC<SettingsProps> = ({
     onSupportChange
 }) => {
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
+    const [modalOpen, setModalOpen] = React.useState(false);
+    const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
     
     React.useEffect(() => {
         setSelectedValue(rtlAlgorithm);
     }, [rtlAlgorithm]);
+
+    const algorithmDescriptions = {
+        'advanced_section': {
+            title: 'تحلیل پیشرفته بخش‌ها',
+            description: 'هر بخش، جمله، پاراگراف و... به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن تعیین می‌شود. این روش برای متون چندزبانه یا ترکیبی بسیار مناسب است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.',
+            features: [
+                'تحلیل جداگانه هر بخش',
+                'مناسب برای متون چندزبانه',
+                'دقت بالا در تشخیص',
+                'پیش‌فرض سیستم'
+            ]
+        },
+        'advanced_full': {
+            title: 'تحلیل پیشرفته یکپارچه',
+            description: 'کل متن پاسخ به‌عنوان یک ساختار واحد توسط الگوریتم پیشرفته پردازش شده و جهت مناسب انتخاب می‌شود. این روش ترکیب متعادلی از دقت و کارایی ارائه می‌دهد.',
+            features: [
+                'پردازش یکپارچه متن',
+                'ترکیب دقت و کارایی',
+                'مناسب برای متون طولانی',
+                'الگوریتم جدید'
+            ]
+        },
+        'first_word': {
+            title: 'تشخیص مبتنی بر واژه آغازین',
+            description: 'جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. این روش برای سیستم‌هایی با توان پردازشی محدود مناسب است و در صورت هنگ و قفل شدن سایت توصیه می‌شود.',
+            features: [
+                'سرعت بالا',
+                'مصرف کم منابع',
+                'مناسب سیستم‌های ضعیف',
+                'راه‌حل مشکل هنگ'
+            ]
+        }
+    };
+
+    const handleInfoClick = (algorithm: string) => {
+        setSelectedAlgorithm(algorithm);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedAlgorithm('');
+    };
     
     return (
         <Box sx={{ p: 0 }}>
@@ -92,7 +143,8 @@ const Settings: React.FC<SettingsProps> = ({
                             border: selectedValue === 'advanced_section' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
                             mb: 2,
                             py: 2,
-                            px: 1
+                            px: 1,
+                            position: 'relative'
                         }}>
                             <FormControlLabel 
                                 value="advanced_section" 
@@ -101,43 +153,68 @@ const Settings: React.FC<SettingsProps> = ({
                                     <Box  sx={{ 
                                         px: 1
                                     }} >
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, mb: 0.5 }}>
-                                            <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
-                                                تحلیل پیشرفته بخش‌ها
-                                            </Typography>
-                                            <Box component="span" sx={{ 
-                                                px: 1, 
-                                                py: 0.3, 
-                                                bgcolor: 'rgb(33, 46, 65)',
-                                                border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                color: '#00e9ff', 
-                                                borderRadius: 1, 
-                                                fontSize: '0.7rem',
-                                                fontWeight: 600
-                                            }}>
-                                                جدید
+                                        <Box sx={{  mb: 0.5 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                                    تحلیل پیشرفته بخش‌ها
+                                                </Typography>
+                                                <IconButton 
+                                                    onClick={() => handleInfoClick('advanced_section')}
+                                                    size="small"
+                                                    sx={{ 
+                                                        color: 'white',
+                                                        '&:hover': {
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <svg 
+                                                        width="20" 
+                                                        height="20" 
+                                                        viewBox="0 0 24 24" 
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                                    </svg>
+                                                </IconButton>
                                             </Box>
-                                    
+                                            <Box sx={{ 
+                                                position: 'absolute', 
+                                                top: '50%', 
+                                                left: 8,
+                                                transform: 'translateY(-50%)',
+                                                display: 'flex', 
+                                                flexDirection: 'column', 
+                                                alignItems: 'flex-end', 
+                                                gap: 0.5 
+                                            }}>
+                                                <Box component="span" sx={{ 
+                                                    px: 1, 
+                                                    py: 0.3, 
+                                                    bgcolor: 'rgb(33, 46, 65)',
+                                                    border: '1px solid rgba(0, 233, 255, 0.3)',
+                                                    color: '#00e9ff', 
+                                                    borderRadius: 1, 
+                                                    fontSize: '0.7rem',
+                                                    fontWeight: 600
+                                                }}>
+                                                    جدید
+                                                </Box>
+                                                {selectedValue !== 'advanced_section' && (
+                                                    <Box component="span" sx={{ 
+                                                        px: 0.5, 
+                                                        py: 0.05, 
+                                                        bgcolor: 'rgb(1, 91, 237)',
+                                                        color: 'text.secondary', 
+                                                        borderRadius: 0.5, 
+                                                        fontSize: '0.6rem',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        پیش‌فرض
+                                                    </Box>
+                                                )}
+                                            </Box>
                                         </Box>
-                                        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 0.5 }}>
-                                            هر بخش، جمله، پاراگراف و... به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن تعیین می‌شود. (مناسب متون چندزبانه یا ترکیبی)
-
-                                            <Box component="span" sx={{ 
-                                                px: 1, 
-                                                py: 0.1, 
-                                                mr: 1,
-                                                bgcolor: 'rgb(1, 91, 237)',
-                                                // border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                color: 'text.secondary', 
-                                                borderRadius: 1, 
-                                                fontSize: '0.7rem',
-                                                fontWeight: 600
-                                            }}>
-                                                پیش‌فرض
-                                            </Box>
-
-
-                                        </Typography>
                                     </Box>
                                 }
                                 sx={{ 
@@ -156,7 +233,8 @@ const Settings: React.FC<SettingsProps> = ({
                             border: selectedValue === 'advanced_full' ? '1px solid rgba(0, 233, 255, 0.3)' : 'none',
                             mb: 2,
                             py: 2,
-                            px: 1
+                            px: 1,
+                            position: 'relative'
                         }}>
                             <FormControlLabel 
                                 value="advanced_full" 
@@ -165,26 +243,55 @@ const Settings: React.FC<SettingsProps> = ({
                                     <Box  sx={{ 
                                         px: 1
                                     }} >
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, mb: 0.5 }}>
-                                            <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
-                                                تحلیل پیشرفته یکپارچه
-                                            </Typography>
-                                            <Box component="span" sx={{ 
-                                                px: 1, 
-                                                py: 0.3, 
-                                                bgcolor: 'rgb(33, 46, 65)',
-                                                border: '1px solid rgba(0, 233, 255, 0.3)',
-                                                color: '#00e9ff', 
-                                                borderRadius: 1, 
-                                                fontSize: '0.7rem',
-                                                fontWeight: 600
+                                        <Box sx={{ mb: 0.5 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                                    تحلیل پیشرفته یکپارچه
+                                                </Typography>
+                                                <IconButton 
+                                                    onClick={() => handleInfoClick('advanced_full')}
+                                                    size="small"
+                                                    sx={{ 
+                                                        color: 'white',
+                                                        '&:hover': {
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <svg 
+                                                        width="20" 
+                                                        height="20" 
+                                                        viewBox="0 0 24 24" 
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                                    </svg>
+                                                </IconButton>
+                                            </Box>
+                                            <Box sx={{ 
+                                                position: 'absolute', 
+                                                top: '50%', 
+                                                left: 8,
+                                                transform: 'translateY(-50%)',
+                                                display: 'flex', 
+                                                flexDirection: 'column', 
+                                                alignItems: 'flex-start', 
+                                                gap: 0.5 
                                             }}>
-                                                جدید
+                                                <Box component="span" sx={{ 
+                                                    px: 1, 
+                                                    py: 0.3, 
+                                                    bgcolor: 'rgb(33, 46, 65)',
+                                                    border: '1px solid rgba(0, 233, 255, 0.3)',
+                                                    color: '#00e9ff', 
+                                                    borderRadius: 1, 
+                                                    fontSize: '0.7rem',
+                                                    fontWeight: 600
+                                                }}>
+                                                    جدید
+                                                </Box>
                                             </Box>
                                         </Box>
-                                        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
-                                            کل متن پاسخ به‌عنوان یک ساختار واحد توسط الگوریتم پیشرفته پردازش شده و جهت مناسب انتخاب می‌شود. (ترکیب متعادل دقت و کارایی)
-                                        </Typography>
                                     </Box>
                                 }
                                 sx={{ 
@@ -212,12 +319,30 @@ const Settings: React.FC<SettingsProps> = ({
                                     <Box  sx={{ 
                                         px: 1
                                     }} >
-                                        <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem', mb: 1 }}>
-                                            تشخیص مبتنی بر واژه آغازین
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
-                                            جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. (مناسب سیستم‌هایی با توان پردازشی محدود — در صورت هنگ و قفل شدن سایت، توصیه می‌شود )
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                            <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '0.95rem' }}>
+                                                تشخیص مبتنی بر واژه آغازین
+                                            </Typography>
+                                            <IconButton 
+                                                onClick={() => handleInfoClick('first_word')}
+                                                size="small"
+                                                sx={{ 
+                                                    color: 'white',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                                    }
+                                                }}
+                                            >
+                                                <svg 
+                                                    width="20" 
+                                                    height="20" 
+                                                    viewBox="0 0 24 24" 
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+                                                </svg>
+                                            </IconButton>
+                                        </Box>
                                     </Box>
                                 }
                                 sx={{ 
@@ -291,6 +416,93 @@ const Settings: React.FC<SettingsProps> = ({
                 </Paper>
                 
             </Box>
+
+            {/* Modal for Algorithm Descriptions */}
+            <Dialog 
+                open={modalOpen} 
+                onClose={handleCloseModal}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        backgroundColor: '#1a1a2e',
+                        color: 'white',
+                        borderRadius: 2,
+                        direction: 'rtl'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    textAlign: 'center', 
+                    color: '#00e9ff',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    py: 1.5,
+                    mb: 2
+                }}>
+                    {selectedAlgorithm && algorithmDescriptions[selectedAlgorithm as keyof typeof algorithmDescriptions]?.title}
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    {selectedAlgorithm && (
+                        <>
+                            <Typography variant="body1" sx={{ 
+                                color: 'text.primary', 
+                                mb: 3,
+                                lineHeight: 1.6,
+                                fontSize: '0.95rem'
+                            }}>
+                                {algorithmDescriptions[selectedAlgorithm as keyof typeof algorithmDescriptions]?.description}
+                            </Typography>
+                            
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="h6" sx={{ 
+                                    color: '#00e9ff', 
+                                    mb: 2,
+                                    fontSize: '1rem',
+                                    fontWeight: 600
+                                }}>
+                                    ویژگی‌ها:
+                                </Typography>
+                                <Box component="ul" sx={{ 
+                                    pl: 2, 
+                                    m: 0,
+                                    '& li': {
+                                        color: 'text.secondary',
+                                        mb: 1,
+                                        fontSize: '0.9rem'
+                                    }
+                                }}>
+                                    {algorithmDescriptions[selectedAlgorithm as keyof typeof algorithmDescriptions]?.features.map((feature, index) => (
+                                        <li key={index}>{feature}</li>
+                                    ))}
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ 
+                    justifyContent: 'center', 
+                    pt: 2,
+                    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                    <Button 
+                        onClick={handleCloseModal}
+                        variant="contained"
+                        sx={{
+                            backgroundColor: '#00e9ff',
+                            color: '#1a1a2e',
+                            fontWeight: 600,
+                            px: 4,
+                            '&:hover': {
+                                backgroundColor: 'rgba(0, 233, 255, 0.8)'
+                            }
+                        }}
+                    >
+                        بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
