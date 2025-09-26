@@ -914,6 +914,13 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         if (lengthDifference > 3 || storedLength === null) {
             console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, mergedOptions);
+            
+            // Process tables in container for advanced_full algorithm (only if isContainer is true)
+            if (mergedOptions.isContainer) {
+                processTablesInContainer($element, mergedOptions.fontClass, mergedOptions.processedClass);
+            }
+            
+            $element.attr('data-algorithm-rtl', 'advanced_full');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
         }
@@ -925,6 +932,37 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         if (!$element.hasClass(fontClass)) {
             $element.addClass(fontClass);
         }
+        
+        // Process tables in container for first_word algorithm (only if isContainer is true)
+        if (options.isContainer) {
+            // Get current text content for length comparison (only for table processing)
+            const $tempElement = $(element).clone();
+            $tempElement.find('a').remove();
+            $tempElement.find('div.rounded-xl').remove();
+            $tempElement.find('pre, code').remove();
+            $tempElement.find('button').remove();
+            $tempElement.find('[data-copy="false"]').remove();
+            const currentText = $tempElement.text().trim();
+            
+            const currentTextLength = currentText.length;
+            
+            // Get stored text length from attribute
+            const storedLengthAttr = $element.attr('data-text-length');
+            const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
+            
+            // Calculate the difference in text length
+            const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
+            
+            // Only process tables if text length changed by more than 3 characters or if it's the first time (no attribute)
+            if (lengthDifference > 3 || storedLength === null) {
+                console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
+                processTablesInContainer($element, fontClass, options.processedClass);
+                // Store the new text length
+                $element.attr('data-text-length', currentTextLength.toString());
+            }
+        }
+        
+        $element.attr('data-algorithm-rtl', 'first_word');
     }
 }
 
