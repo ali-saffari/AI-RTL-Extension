@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useTheme } from '@mui/material';
+import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useTheme, SvgIcon } from '@mui/material';
+import { mdiFormatListBulleted, mdiArrowUp, mdiCheck } from '@mdi/js';
 
 interface ChangeItem {
     id: string;
@@ -197,7 +198,13 @@ const ChangesList: React.FC = () => {
                     alignItems: 'center',
                     gap: 1
                 }}>
-                    📝 لیست تغییرات افزونه
+                    <SvgIcon sx={{ 
+                        fontSize: '1.2rem',
+                        color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                    }}>
+                        <path d={mdiFormatListBulleted} />
+                    </SvgIcon>
+                    لیست تغییرات افزونه
                 </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0 }}>
@@ -207,17 +214,35 @@ const ChangesList: React.FC = () => {
                             <Typography variant="body2" sx={{ 
                                 color: isDarkMode ? '#00e9ff' : '#1c39bb', 
                                 fontWeight: 600, 
-                                mb: 1 
+                                mb: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5
                             }}>
-                                ⬆️ {versionData.version}
+                                <SvgIcon sx={{ 
+                                    fontSize: '1rem',
+                                    color: isDarkMode ? '#4CAF50' : '#2E7D32'
+                                }}>
+                                    <path d={mdiArrowUp} />
+                                </SvgIcon>
+                                {versionData.version}
                             </Typography>
                             <Box sx={{ pl: 2 }}>
                                 {versionData.changes.map((change) => (
                                     <Typography key={change.id} variant="body2" sx={{ 
                                         color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)', 
-                                        mb: 0.5 
+                                        mb: 0.5,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.5
                                     }}>
-                                        ✅ {change.text}
+                                        <SvgIcon sx={{ 
+                                            fontSize: '0.9rem',
+                                            color: isDarkMode ? '#4CAF50' : '#2E7D32'
+                                        }}>
+                                            <path d={mdiCheck} />
+                                        </SvgIcon>
+                                        {change.text}
                                     </Typography>
                                 ))}
                             </Box>

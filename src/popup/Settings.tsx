@@ -13,8 +13,10 @@ import {
     DialogActions,
     Button,
     IconButton,
-    useTheme
+    useTheme,
+    SvgIcon
 } from '@mui/material';
+import { mdiInformationOutline } from '@mdi/js';
 
 interface SettingsProps {
     rtlAlgorithm: string;
@@ -194,20 +196,18 @@ const Settings: React.FC<SettingsProps> = ({
                                                         }
                                                     }}
                                                 >
-                                                    <svg 
-                                                        width="20" 
-                                                        height="20" 
-                                                        viewBox="0 0 24 24" 
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-                                                    </svg>
+                                                    <SvgIcon sx={{ 
+                                                        fontSize: '1.25rem',
+                                                        color: isDarkMode ? '#ffffff' : '#000000'
+                                                    }}>
+                                                        <path d={mdiInformationOutline} />
+                                                    </SvgIcon>
                                                 </IconButton>
                                             </Box>
                                             <Box sx={{ 
                                                 position: 'absolute', 
                                                 top: '50%', 
-                                                left: 8,
+                                                left: 15,
                                                 transform: 'translateY(-50%)',
                                                 display: 'flex', 
                                                 flexDirection: 'column', 
@@ -301,20 +301,18 @@ const Settings: React.FC<SettingsProps> = ({
                                                         }
                                                     }}
                                                 >
-                                                    <svg 
-                                                        width="20" 
-                                                        height="20" 
-                                                        viewBox="0 0 24 24" 
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-                                                    </svg>
+                                                    <SvgIcon sx={{ 
+                                                        fontSize: '1.25rem',
+                                                        color: isDarkMode ? '#ffffff' : '#000000'
+                                                    }}>
+                                                        <path d={mdiInformationOutline} />
+                                                    </SvgIcon>
                                                 </IconButton>
                                             </Box>
                                             <Box sx={{ 
                                                 position: 'absolute', 
                                                 top: '50%', 
-                                                left: 8,
+                                                left: 15,
                                                 transform: 'translateY(-50%)',
                                                 display: 'flex', 
                                                 flexDirection: 'column', 
@@ -390,14 +388,12 @@ const Settings: React.FC<SettingsProps> = ({
                                                     }
                                                 }}
                                             >
-                                                <svg 
-                                                    width="20" 
-                                                    height="20" 
-                                                    viewBox="0 0 24 24" 
-                                                    fill="currentColor"
-                                                >
-                                                    <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-                                                </svg>
+                                                <SvgIcon sx={{ 
+                                                    fontSize: '1.25rem',
+                                                    color: theme.palette.text.primary
+                                                }}>
+                                                    <path d={mdiInformationOutline} />
+                                                </SvgIcon>
                                             </IconButton>
                                         </Box>
                                     </Box>
@@ -463,10 +459,10 @@ const Settings: React.FC<SettingsProps> = ({
                             data-settings-switch="true"
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: '#1c39bb',
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 },
                             }}
                         />

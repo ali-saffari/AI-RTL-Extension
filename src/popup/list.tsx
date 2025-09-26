@@ -17,7 +17,9 @@ import {
     Button,
     Typography,
     useTheme,
+    SvgIcon,
 } from '@mui/material';
+import { mdiInformationOutline } from '@mdi/js';
 
 interface Service {
     key: string;
@@ -151,14 +153,12 @@ export default function ServiceList() {
                                                 handleGrokClick(e);
                                             }}
                                         >
-                                            <svg 
-                                                width="24" 
-                                                height="24" 
-                                                viewBox="0 0 24 24" 
-                                                fill="currentColor"
-                                            >
-                                                <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-                                            </svg>
+                                            <SvgIcon sx={{ 
+                                                fontSize: '1.5rem',
+                                                color: isDarkMode ? '#ffffff' : '#000000'
+                                            }}>
+                                                <path d={mdiInformationOutline} />
+                                            </SvgIcon>
                                         </IconButton>
                                     </ListItemButton>
                                 </ListItem>
@@ -202,14 +202,12 @@ export default function ServiceList() {
                                                     setHelpModalOpen(true);
                                                 }}
                                             >
-                                                <svg 
-                                                    width="20" 
-                                                    height="20" 
-                                                    viewBox="0 0 24 24" 
-                                                    fill="currentColor"
-                                                >
-                                                    <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-                                                </svg>
+                                                <SvgIcon sx={{ 
+                                                    fontSize: '1.25rem',
+                                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                                }}>
+                                                    <path d={mdiInformationOutline} />
+                                                </SvgIcon>
                                             </IconButton>
                                         )}
                                         

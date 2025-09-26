@@ -12,8 +12,10 @@ import {
     Tab,
     AppBar,
     IconButton,
-    Tooltip
+    Tooltip,
+    SvgIcon
 } from '@mui/material';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiFileDocumentEdit, mdiMessageText, mdiStar, mdiHeart } from '@mdi/js';
 // Using Material-UI built-in icons instead of icons-material package
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
@@ -532,15 +534,22 @@ function App() {
                             <IconButton 
                                 onClick={handleThemeToggle}
                                 sx={{ 
-                                    color: isDarkMode ? '#000000' : '#ffffff',
+                                    color: isDarkMode ? '#FFD700' : '#FF8F00',
                                     fontSize: '1.2rem',
                                     fontWeight: 'bold',
                                     '&:hover': {
-                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)'
-                                    }
+                                        backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 143, 0, 0.1)',
+                                        transform: 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.3s ease'
                                 }}
                             >
-                                {isDarkMode ? '☀️' : '🌙'}
+                                <SvgIcon sx={{ 
+                                    fontSize: '1.2rem',
+                                    color: isDarkMode ? '#FFD700' : '#FF8F00'
+                                }}>
+                                    <path d={isDarkMode ? mdiWeatherSunny : mdiWeatherNight} />
+                                </SvgIcon>
                             </IconButton>
                         </Tooltip>
                     </Box>
@@ -672,9 +681,19 @@ function App() {
                                         mb: 2, 
                                         fontWeight: 600, 
                                         color: isDarkMode ? '#00e9ff' : '#1e40af', 
-                                        textAlign: 'center' 
+                                        textAlign: 'center',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 1
                                     }}>
-                                        📢 نکته مهم درباره عملکرد افزونه
+                                        <SvgIcon sx={{ 
+                                            fontSize: '1.5rem',
+                                            color: isDarkMode ? '#FF9800' : '#F57C00'
+                                        }}>
+                                            <path d={mdiBullhorn} />
+                                        </SvgIcon>
+                                        نکته مهم درباره عملکرد افزونه
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
                                         color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
@@ -695,9 +714,18 @@ function App() {
                                                 <Typography variant="body2" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                     '&:hover': { textDecoration: 'underline' }, 
-                                                    fontWeight: 600 
+                                                    fontWeight: 600,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 0.5
                                                 }}>
-                                                    📝 ارسال گزارش
+                                                    <SvgIcon sx={{ 
+                                                        fontSize: '1rem',
+                                                        color: isDarkMode ? '#2196F3' : '#1565C0'
+                                                    }}>
+                                                        <path d={mdiFileDocumentEdit} />
+                                                    </SvgIcon>
+                                                    ارسال گزارش
                                                 </Typography>
                                             </a>
                                             <Typography variant="body2" sx={{ 
@@ -712,9 +740,18 @@ function App() {
                                                 <Typography variant="body2" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                     '&:hover': { textDecoration: 'underline' }, 
-                                                    fontWeight: 600 
+                                                    fontWeight: 600,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 0.5
                                                 }}>
-                                                    💬 تماس مستقیم
+                                                    <SvgIcon sx={{ 
+                                                        fontSize: '1rem',
+                                                        color: isDarkMode ? '#4CAF50' : '#2E7D32'
+                                                    }}>
+                                                        <path d={mdiMessageText} />
+                                                    </SvgIcon>
+                                                    تماس مستقیم
                                                 </Typography>
                                             </a>
                                             <Typography variant="body2" sx={{ 
@@ -733,7 +770,7 @@ function App() {
                             </Box>
                         </div>
                         
-                        <div id="notes-section">
+                        <div id="notes-section" style={{ paddingBottom: '85px' }}>
                             <Box sx={{ 
                                 textAlign: 'center', 
                                 mt: 2, 
@@ -777,9 +814,19 @@ function App() {
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
-                                                textAlign: 'center'
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 0.5
                                             }}>
-                                                🌟 صفحه افزونه در Chrome Store
+                                                <SvgIcon sx={{ 
+                                                    fontSize: '1rem',
+                                                    color: isDarkMode ? '#FFD700' : '#FF8F00'
+                                                }}>
+                                                    <path d={mdiStar} />
+                                                </SvgIcon>
+                                                صفحه افزونه در Chrome Store
                                             </Typography>
                                         </a>
                                     </Box>
@@ -796,9 +843,19 @@ function App() {
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
-                                                textAlign: 'center'
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 0.5
                                             }}>
-                                                💝 حمایت مالی (دونیت)
+                                                <SvgIcon sx={{ 
+                                                    fontSize: '1rem',
+                                                    color: isDarkMode ? '#E91E63' : '#C2185B'
+                                                }}>
+                                                    <path d={mdiHeart} />
+                                                </SvgIcon>
+                                                حمایت مالی (دونیت)
                                             </Typography>
                                         </a>
                                     </Box>
