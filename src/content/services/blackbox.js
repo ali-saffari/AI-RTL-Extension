@@ -1,72 +1,52 @@
 // blackbox.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
-export function setBlackBox() {
+export function setBlackBox(rtlAlgorithm = 'advanced_section') {
     // Add copyright using utility function
     const $targetElement = $('.relative.min-w-40 > .px-4');
     if ($targetElement.length > 0) {
         addCopyright($targetElement, 'AsKimi AsBoxB', 'margin-bottom: 0px; ');
     }
 
+    // Process textarea elements using RTL algorithm
     $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('FontSet');
-            $(this).addClass('AsOk');
-            const text = $(this).val() || $(this).text();
-            if (text && text.trim()) {
-                $(this).attr("dir", detectTextDirection(text));
-            }
-
-            $(this).on('input keyup paste', function() {
-                const text = $(this).val();
-                if (text && text.trim()) {
-                    $(this).attr("dir", detectTextDirection(text));
-                }
-            })
-
-
-        }
-    })
-
-    // Add event listeners for real-time text direction detection on textareas
-
-
-
-    $('.prose ').each(function (each) {
-
-
-            processTextElementsAdvanced($(this), {
-                fontClass: 'FontSetImportantGPT',
-                processedClass: 'AsOkText',
-                isContainer: true
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+        
+        // Add event listener for real-time text direction detection
+        $(this).on('input keyup paste', function() {
+            requestAnimationFrame(() => {
+                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    fontClass: 'FontSet'
+                });
             });
-            
-     
-    })
+        });
+    });
 
-    // Process cmdk-group-items elements
+    // Process prose elements using RTL algorithm
+    $('.prose').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
+    // Process cmdk-group-items elements using RTL algorithm
     $('[cmdk-group-items]').each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            $(this).addClass('FontSet');
-            
-            const text = $(this).text();
-            if (text && text.trim()) {
-                const direction = detectTextDirection(text);
-                $(this).attr('dir', direction);
-                console.log('cmdk-group-items processed:', text, direction);
-            }
-        }
-    })
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+    });
 
-    
-
-    $('.markdown-table ').each(function (each) {
-
-
+    // Process markdown tables
+    $('.markdown-table').each(function (each) {
         if (!$(this).prev('.table-scroll-help').length) {
             $(this).before(`
                 <div class="table-scroll-help bg-blue-50 dark:bg-blue-900/20 border-2 rounded-lg px-3 py-2 my-2 text-xs text-gray-700 dark:text-gray-300 text-center font-iran-yekan" style="border-color: #3b82f6;">
@@ -78,35 +58,25 @@ export function setBlackBox() {
         // Add blue scroll styling to parent
         $(this).parent().addClass('custom-scrollbar');
 
-        processTextElementsAdvanced($(this).parent(), {
+        processTextElementsByRtlAlgorithm($(this).parent()[0], rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
             isContainer: true
         });
-        
- 
-})
-
-    
-
-    // $("body p").each(function (each) {
-    //     if (!$(this).hasClass("AsRtl")) {
-    //         $(this).addClass('AsRtl');
-    //         const text = $(this).text();
-    //         if (text && text.trim()) {
-    //             $(this).attr("dir", detectTextDirection(text));
-    //         }
-    //     }
-    // })
+    });
 }
 
 
 
 // Main activation function for Blackbox
-export function activateBlackbox() {
-    console.log("activateBlackbox");
-    setBlackBox();
-    let interval = setInterval(() => {
-        setBlackBox();
-    }, 500);
+export function activateBlackbox(rtlAlgorithm = 'advanced_section') {
+    console.log("activateBlackbox with RTL algorithm:", rtlAlgorithm);
+    
+    // Initial setup
+    setBlackBox(rtlAlgorithm);
+    
+    // SetInterval for periodic updates
+    setInterval(() => {
+        setBlackBox(rtlAlgorithm);
+    }, 1000);
 }
