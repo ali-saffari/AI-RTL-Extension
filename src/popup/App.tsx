@@ -123,12 +123,16 @@ const darkTheme = createTheme({
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_section');
+    const [supportHide, setSupportHide] = React.useState(false);
 
-    // Load RTL algorithm setting from storage on component mount
+    // Load settings from storage on component mount
     React.useEffect(() => {
-        chrome.storage.sync.get(['rtlAlgorithm'], (result) => {
+        chrome.storage.sync.get(['rtlAlgorithm', 'supportHide'], (result) => {
             if (result.rtlAlgorithm) {
                 setRtlAlgorithm(result.rtlAlgorithm);
+            }
+            if (result.supportHide !== undefined) {
+                setSupportHide(result.supportHide);
             }
         });
     }, []);
@@ -137,6 +141,12 @@ function App() {
     const handleRtlAlgorithmChange = (value: string) => {
         setRtlAlgorithm(value);
         chrome.storage.sync.set({ rtlAlgorithm: value });
+    };
+
+    // Save support setting to storage when changed
+    const handleSupportChange = (enabled: boolean) => {
+        setSupportHide(enabled);
+        chrome.storage.sync.set({ supportHide: enabled });
     };
 
     // سیستم اسکرول تب‌ها - ساده و کارآمد
@@ -347,6 +357,8 @@ function App() {
                             <Settings
                                 rtlAlgorithm={rtlAlgorithm}
                                 onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                                supportHide={supportHide}
+                                onSupportChange={handleSupportChange}
                             />
                         </div>
                         

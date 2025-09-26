@@ -5,17 +5,22 @@ import {
     Typography,
     RadioGroup,
     FormControlLabel,
-    Radio
+    Radio,
+    Switch
 } from '@mui/material';
 
 interface SettingsProps {
     rtlAlgorithm: string;
     onRtlAlgorithmChange: (value: string) => void;
+    supportHide: boolean;
+    onSupportChange: (enabled: boolean) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({
     rtlAlgorithm,
-    onRtlAlgorithmChange
+    onRtlAlgorithmChange,
+    supportHide,
+    onSupportChange
 }) => {
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     
@@ -115,7 +120,7 @@ const Settings: React.FC<SettingsProps> = ({
                                     
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 0.5 }}>
-                                            هر جمله و پاراگراف به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن با بیشترین دقت ممکن تعیین می‌شود. (مناسب متون چندزبانه یا ترکیبی)
+                                            هر بخش، جمله، پاراگراف و... به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن تعیین می‌شود. (مناسب متون چندزبانه یا ترکیبی)
 
                                             <Box component="span" sx={{ 
                                                 px: 1, 
@@ -178,7 +183,7 @@ const Settings: React.FC<SettingsProps> = ({
                                             </Box>
                                         </Box>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
-                                            کل متن به‌عنوان یک ساختار واحد توسط الگوریتم بهینه‌سازی پردازش شده و جهت مناسب به‌صورت هوشمند انتخاب می‌شود. (ترکیب متعادل دقت و کارایی)
+                                            کل متن پاسخ به‌عنوان یک ساختار واحد توسط الگوریتم پیشرفته پردازش شده و جهت مناسب انتخاب می‌شود. (ترکیب متعادل دقت و کارایی)
                                         </Typography>
                                     </Box>
                                 }
@@ -211,7 +216,7 @@ const Settings: React.FC<SettingsProps> = ({
                                             تشخیص مبتنی بر واژه آغازین
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', fontWeight: 400 }}>
-                                            جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. (مناسب سیستم‌هایی با توان پردازشی محدود — در صورت هنگ و قفل شدن سایت، توصیه می‌شود از این حالت استفاده کنید)
+                                            جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. (مناسب سیستم‌هایی با توان پردازشی محدود — در صورت هنگ و قفل شدن سایت، توصیه می‌شود )
                                         </Typography>
                                     </Box>
                                 }
@@ -226,6 +231,63 @@ const Settings: React.FC<SettingsProps> = ({
                             />
                         </Paper>
                     </RadioGroup>
+                </Paper>
+
+                {/* تنظیمات متن حمایت */}
+                <Paper elevation={0} sx={{ 
+                    p: 2, 
+                    borderRadius: 1,
+                    background: '#1a1a2e',
+                    mt: 2
+                }}>
+                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ 
+                            fontWeight: 600, 
+                            color: 'primary.main',
+                            mb: 0.5
+                        }}>
+                            تنظیمات متن حمایت
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.8rem'
+                        }}>
+                            نمایش یا عدم نمایش متن حمایت در فوتر
+                        </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor:  '#1a1a2e',
+                        border:  '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body1" sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.95rem',
+                                color: 'text.primary'
+                            }}>
+                                نمایش متن حمایت
+                            </Typography>
+                     
+                        </Box>
+                        <Switch
+                            checked={supportHide}
+                            onChange={(e) => onSupportChange(e.target.checked)}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: '#00e9ff',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#00e9ff',
+                                },
+                            }}
+                        />
+                    </Box>
                 </Paper>
                 
             </Box>
