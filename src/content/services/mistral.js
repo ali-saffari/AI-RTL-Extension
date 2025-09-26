@@ -1,92 +1,74 @@
 // mistral.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, isRTL } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setMistral() {
+export function setMistral(rtlAlgorithm = 'advanced_section') {
     // Add copyright using utility function
     if (chrome.runtime?.id) {
         let fo2 = `.relative.start-0.end-0.bottom-0.flex.w-full.flex-col.items-center`
         addCopyright($(fo2), 'AsMistral', '');
     }
 
-    // Process textarea elements with improved text direction detection
-    $("body textarea").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).val() || $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-            
-            // Add event listener for real-time direction detection
-            $(this).on('keyup paste input', function() {
-                const currentText = $(this).val() || $(this).text();
-                requestAnimationFrame(() => {
-                    setTextDirectionAndFont(this, { fontClass: 'FontSet', text: currentText });
-                });
-            });
-        }
-    });
-
-    // Process paragraph elements with advanced text processing
-    $(" .select-text").each(function (each) {
-        if (!$(this).hasClass("AsOk")) {
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-        }
-    });
-
-    
-
-
-
-    // Process markdown-container-style elements with processTextElementsAdvanced
-    $('.markdown-container-style').each(function (each) {
-    
-            processTextElementsAdvanced($(this), {
-                fontClass: 'FontSet',
-                processedClass: 'AsOkText',
-                isContainer: true
-            });
+    // Process textarea elements with RTL algorithm
+    $('body textarea').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
         
+        // Add event listener for real-time direction detection
+        $(this).on('keyup paste input', function() {
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet'
+            });
+        });
     });
 
-    // Process other common text elements
-    // $(" body span, body h1, body h2, body h3, body h4, body h5, body h6").each(function (each) {
-    //     if (!$(this).hasClass("AsOk")) {
-    //         $(this).addClass('AsOk');
-    //         const text = $(this).text();
-    //         if (text && text.trim()) {
-    //             setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-    //         }
-    //     }
-    // });
+    // Process paragraph elements with RTL algorithm
+    $('.select-text').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+    });
+
+    
+
+
+
+    // Process markdown-container-style elements using RTL algorithm
+    $('.markdown-container-style').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
 }
 
 
 
 // Main activation function for Mistral
-export function activateMistral() {
-    console.log("activateMistral");
+export function activateMistral(rtlAlgorithm = 'advanced_section') {
+    console.log('Mistral RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
-    setMistral();
+    setMistral(rtlAlgorithm);
     
     // SetInterval for continuous processing
-    setInterval(() => {
-        setMistral();
-    }, 1000);
+    let interval = setInterval(() => {
+        setMistral(rtlAlgorithm);
+    }, 500);
 
-
+    // Additional processing for ProseMirror elements
     setInterval(() => {
         $(".ProseMirror-focused").each(function (each) {
-
-            $(this).addClass('AsOk');
-            const text = $(this).text();
-            setTextDirectionAndFont(this, { fontClass: 'FontSet', text });
-        
-    });
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet',
+                processedClass: 'AsOk'
+            });
+        });
     }, 500);
-    
-
 }
