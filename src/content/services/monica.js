@@ -13,7 +13,8 @@ export function setMonica(rtlAlgorithm = 'advanced_section') {
     $('body textarea').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsRtl'
+            processedClass: 'Asok',
+            rtlClass: 'AsRtl',
         });
         
         // Add event listener for real-time direction detection
@@ -30,7 +31,8 @@ export function setMonica(rtlAlgorithm = 'advanced_section') {
     $('body p, [class*="name-wrapper-"]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsRtl',
+            processedClass: 'Asok',
+            rtlClass: 'AsRtl',
             setTextAlign: true
         });
     });
