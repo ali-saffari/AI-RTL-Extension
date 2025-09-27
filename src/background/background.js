@@ -17,6 +17,7 @@ const kimi = true;
 const blackbox = true;
 const notebooklm = true;
 const zai = true;
+const lmarena = true;
 
 
 
@@ -38,7 +39,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot,
             duckduckgo, perplexity,
-            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai,
+            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena,
             rtlAlgorithm: 'advanced_section'
         });
         console.log('Default values set on installation');
@@ -100,6 +101,9 @@ chrome.runtime.onInstalled.addListener((details) => {
             }
             if (!storedData.hasOwnProperty('zai')) {
                 updates.zai = true;
+            }
+            if (!storedData.hasOwnProperty('lmarena')) {
+                updates.lmarena = true;
             }
 
             // اگر rtlAlgorithm وجود نداشت، اضافه کنیم

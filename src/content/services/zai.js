@@ -3,21 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-// Helper function to detect text direction based on algorithm
-function detectDirectionByAlgorithm(text, rtlAlgorithm) {
-    if (!text || !text.trim()) return 'ltr';
-    
-    let direction;
-    if (rtlAlgorithm === 'advanced_section' || rtlAlgorithm === 'advanced_full') {
-        direction = detectTextDirection(text);
-    } else if (rtlAlgorithm === 'first_word') {
-        direction = analyzeTextDirectionFirstWord(text);
-    } else {
-        direction = detectTextDirection(text); // fallback
-    }
-    
-    return direction;
-}
+
 
 export function setZai(rtlAlgorithm = 'advanced_section') {
     if (chrome.runtime?.id) {

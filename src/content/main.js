@@ -19,6 +19,7 @@ import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
 import { activateNotebooklm } from './services/notebooklm.js';
 import { activateZai } from './services/zai.js';
+import { activateLmarena } from './services/lmarena.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -129,6 +130,10 @@ const serviceConfig = {
     zai: {
         urls: ["chat.z.ai"],
         activate: activateZai
+    },
+    lmarena: {
+        urls: ["lmarena.ai"],
+        activate: activateLmarena
     }
 };
 

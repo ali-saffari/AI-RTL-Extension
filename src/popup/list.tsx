@@ -44,6 +44,7 @@ const services: Service[] = [
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa', new: true },
     { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/', new: true },
+    { key: 'lmarena', name: 'LM Arena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/', new: true },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
@@ -84,6 +85,7 @@ export default function ServiceList() {
         blackbox: true,
         notebooklm: true,
         zai: true,
+        lmarena: true,
     });
 
     const [grokModalOpen, setGrokModalOpen] = useState(false);

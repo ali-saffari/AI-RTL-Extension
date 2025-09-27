@@ -52,7 +52,8 @@
                 "https://www.kimi.com/*",
                 "https://www.blackbox.ai/*",
                 "https://notebooklm.google.com/*",
-                "https://chat.z.ai/*"
+                "https://chat.z.ai/*",
+                "https://lmarena.ai/*"
             ]
         }
     ],
@@ -86,7 +87,8 @@
                 "https://www.kimi.com/*",
                 "https://www.blackbox.ai/*",
                 "https://notebooklm.google.com/*",
-                "https://chat.z.ai/*"
+                "https://chat.z.ai/*",
+                "https://lmarena.ai/*"
             ]
         }
     ],
