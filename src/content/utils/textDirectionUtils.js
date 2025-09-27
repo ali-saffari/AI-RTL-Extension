@@ -82,29 +82,31 @@ function setTextDirectionAndFont(element, options = {}) {
         }
     }
     
-    if (!textToUse || !textToUse.trim()) return null;
+    if (!textToUse || !textToUse.trim()) return 'auto';
     
     const direction = detectTextDirection(textToUse);
-
+    
+    // If detectTextDirection returns empty or null, use 'auto'
+    const finalDirection = direction || 'auto';
 
         $(element).attr('data-text', textToUse)
-        $(element).attr('data-direction', direction)
+        $(element).attr('data-direction', finalDirection)
 
-    $(element).attr("dir", direction);
+    $(element).attr("dir", finalDirection);
     if (fontClass) {
         $(element).addClass(fontClass);
     }
     
     // Set text alignment if setTextAlign is enabled
     if (setTextAlign) {
-        if (direction === 'rtl') {
+        if (finalDirection === 'rtl') {
             $(element).css('text-align', 'right');
         } else {
             $(element).css('text-align', 'left');
         }
     }
     
-    return direction;
+    return finalDirection;
 }
 
 /**
@@ -262,10 +264,16 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             // Set text alignment for all cells based on table direction
             if (tableDirection === 'rtl') {
                 $table.find('th, td').css('text-align', 'right');
+                $table.find('.text-left').removeClass('text-left');
+                $table.removeClass('text-left');
             } else {
                 $table.find('th, td').css('text-align', 'left');
             }
             
+            
+
+
+
             // Apply font class to all table elements
             if (fontClass) {
                 $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(fontClass);
@@ -320,6 +328,11 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             // Set text alignment for all cells based on table direction
             if (tableDirection === 'rtl') {
                 $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'right');
+
+
+                $table.find('.text-left').removeClass('text-left');
+                $table.removeClass('text-left');
+
             } else {
                 $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'left');
             }
@@ -555,11 +568,12 @@ function processTextElementsAdvanced(container, options = {}) {
             }
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
+            $element.addClass(processedClass);
             return;
         }
         
         // Special handling for div elements with md-code-block class (code content)
-        if (tagName === 'div' && $element.hasClass('md-code-block')) {
+        if (tagName === 'div' &&  ($element.hasClass('md-code-block') || $element.hasClass('cm-editor'))) {
             $element.attr('data-debug-mode', 'div-md-code-block-ltr');
             // Force LTR for code blocks
             $element.attr("dir", "ltr");
@@ -568,10 +582,15 @@ function processTextElementsAdvanced(container, options = {}) {
             // }
             $element.addClass('AsSetLtr');
             $element.addClass('FontSetCode');
+            $element.addClass(processedClass);
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
         }
+
+    
+
+
         
         // Skip table elements - they are processed by processTablesInContainer
         if (['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'].includes(tagName)) {

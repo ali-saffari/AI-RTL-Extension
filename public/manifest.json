@@ -51,7 +51,8 @@
                 "https://manus.im/*",
                 "https://www.kimi.com/*",
                 "https://www.blackbox.ai/*",
-                "https://notebooklm.google.com/*"
+                "https://notebooklm.google.com/*",
+                "https://chat.z.ai/*"
             ]
         }
     ],
@@ -84,7 +85,8 @@
                 "https://manus.im/*",
                 "https://www.kimi.com/*",
                 "https://www.blackbox.ai/*",
-                "https://notebooklm.google.com/*"
+                "https://notebooklm.google.com/*",
+                "https://chat.z.ai/*"
             ]
         }
     ],

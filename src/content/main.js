@@ -18,6 +18,7 @@ import { activateDeepSeek } from './services/deepseek.js';
 import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
 import { activateNotebooklm } from './services/notebooklm.js';
+import { activateZai } from './services/zai.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -124,6 +125,10 @@ const serviceConfig = {
     notebooklm: {
         urls: ["notebooklm.google.com"],
         activate: activateNotebooklm
+    },
+    zai: {
+        urls: ["chat.z.ai"],
+        activate: activateZai
     }
 };
 
