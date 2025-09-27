@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const WebpackObfuscator = require('webpack-obfuscator');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
@@ -7,12 +8,13 @@ const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
 module.exports = {
     entry: {
         popup: './src/popup/index.tsx',
-        content: './src/content/index.ts',
         background: './src/background/index.ts',
+        content: './src/content/index.ts'
     },
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
     watch: isWatch,
+    stats: isProduction ? 'errors-only' : 'normal',
     module: {
         rules: [
             {
@@ -34,6 +36,9 @@ module.exports = {
                         loader: 'babel-loader',
                         options: {
                             presets: ['@babel/preset-env'],
+                            plugins: isProduction ? [
+                                'transform-remove-console'
+                            ] : [],
                         },
                     },
                 ],
@@ -56,6 +61,7 @@ module.exports = {
                 { from: 'public', to: '..' },
             ],
         }),
+
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
