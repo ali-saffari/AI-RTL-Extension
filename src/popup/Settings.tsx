@@ -424,13 +424,13 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'primary.main',
                             mb: 0.5
                         }}>
-                            تنظیمات متن حمایت
+                            تنظیمات نمایش متن حمایت
                         </Typography>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
                             fontSize: '0.8rem'
                         }}>
-                            نمایش یا عدم نمایش متن حمایت در فوتر
+                            .این متن نشان‌دهنده فعال بودن افزونه روی سایت است. اگر نمایش آن باعث اذیت شدن شما می‌شود، می‌توانید آن را غیرفعال کنید
                         </Typography>
                     </Box>
                     
@@ -449,7 +449,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                پنهان کردن متن حمایت
+                                مخفی کردن متن نشان‌دهنده فعال بودن افزونه
                             </Typography>
                      
                         </Box>
