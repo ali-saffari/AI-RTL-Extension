@@ -9,6 +9,19 @@ import { modalDonateFun, modalDonate, BtnDonate } from './modal.js';
  * @param {string} customStyle - Custom inline styles for the copyright box
  */
 export async function addCopyright($targetElement, customClass = '', customStyle = '') {
+    // Convert string selector to jQuery object if needed
+    let $element;
+    if (typeof $targetElement === 'string') {
+        $element = $($targetElement);
+    } else {
+        $element = $targetElement;
+    }
+    
+    // Check if targetElement exists and has elements
+    if (!$element || $element.length === 0) {
+        return;
+    }
+    
     // Check supportHide setting - only show copyright if it's disabled or doesn't exist
     const result = await chrome.storage.sync.get(['supportHide']);
     const supportHide = result.supportHide;
@@ -18,14 +31,14 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         return;
     }
     
-    if (!$targetElement.hasClass("AsOk")) {
-        $targetElement.addClass("AsOk");
+    if (!$element.hasClass("AsOk")) {
+        $element.addClass("AsOk");
         
         // Check if AsBox class already exists on the site
         if ($('.AsBox').length === 0) {
             const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
             
-            $targetElement.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
+            $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
 
                     <a href="${saffariLink}" target="_blank">
 
