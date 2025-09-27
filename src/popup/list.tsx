@@ -44,9 +44,9 @@ const services: Service[] = [
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa', new: true },
     { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/', new: true },
-    { key: 'lmarena', name: 'LM Arena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/', new: true },
+    { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/', new: true },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
-    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
+    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
     { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
     { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
@@ -56,7 +56,7 @@ const services: Service[] = [
     { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
     { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
     { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
-    { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' }
+    { key: 'blackbox', name: 'Black Box', icon: '/images/blackbox.png', url: 'https://www.blackbox.ai/' }
     
 ];
 
@@ -95,14 +95,23 @@ export default function ServiceList() {
 
 
     useEffect(() => {
-        chrome.storage.sync.get(
-            services.map(service => service.key),
-            (data) => setChecked(data)
-        );
+        try {
+            chrome.storage.sync.get(
+                services.map(service => service.key),
+                (data) => setChecked(data)
+            );
+        } catch (error) {
+            // Extension context invalidated or other error - use default values
+            console.log('Chrome storage access failed, using default service states:', error);
+        }
     }, []);
 
     const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-        chrome.storage.sync.set({ [key]: checked });
+        try {
+            chrome.storage.sync.set({ [key]: checked });
+        } catch (error) {
+            console.log('Failed to save service setting:', error);
+        }
         setChecked(prev => ({ ...prev, [key]: checked }));
     };
 

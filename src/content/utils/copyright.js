@@ -23,8 +23,15 @@ export async function addCopyright($targetElement, customClass = '', customStyle
     }
     
     // Check supportHide setting - only show copyright if it's disabled or doesn't exist
-    const result = await chrome.storage.sync.get(['supportHide']);
-    const supportHide = result.supportHide;
+    let supportHide = false;
+    try {
+        const result = await chrome.storage.sync.get(['supportHide']);
+        supportHide = result.supportHide;
+    } catch (error) {
+        // Extension context invalidated or other error - use default value
+        console.log('Chrome storage access failed, using default supportHide value:', error);
+        supportHide = false;
+    }
     
     // If supportHide is enabled, don't show copyright
     if (supportHide === true) {

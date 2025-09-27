@@ -145,10 +145,17 @@ function isCurrentSite(urls) {
 // Initialize all services
 async function initializeAllServices() {
     const serviceKeys = Object.keys(serviceConfig);
-    const results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithm']);
+    let results = {};
+    let rtlAlgorithm = 'advanced_section';
     
-    // Get RTL algorithm setting
-    const rtlAlgorithm = results.rtlAlgorithm || 'advanced_section';
+    try {
+        results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithm']);
+        rtlAlgorithm = results.rtlAlgorithm || 'advanced_section';
+    } catch (error) {
+        // Extension context invalidated or other error - use default values
+        console.log('Chrome storage access failed, using default values:', error);
+        rtlAlgorithm = 'advanced_section';
+    }
     
     serviceKeys.forEach(serviceKey => {
         const config = serviceConfig[serviceKey];

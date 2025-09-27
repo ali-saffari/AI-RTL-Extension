@@ -45,7 +45,8 @@ chrome.runtime.onInstalled.addListener((details) => {
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
         // در صورت به‌روزرسانی، بررسی می‌کنیم که مقادیر duckduckgo و perplexity وجود دارند یا خیر
-        chrome.storage.sync.get((storedData) => {
+        try {
+            chrome.storage.sync.get((storedData) => {
             const updates = {};
 
             // اگر duckduckgo وجود نداشت، اضافه کنیم
@@ -120,5 +121,8 @@ chrome.runtime.onInstalled.addListener((details) => {
                 console.log('All values already exist:', storedData);
             }
         });
+        } catch (error) {
+            console.log('Chrome storage access failed during update:', error);
+        }
     }
 });

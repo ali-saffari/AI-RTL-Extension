@@ -289,36 +289,53 @@ function App() {
 
     // Load settings from storage on component mount
     React.useEffect(() => {
-        chrome.storage.sync.get(['rtlAlgorithm', 'supportHide', 'isDarkMode'], (result) => {
-            if (result.rtlAlgorithm) {
-                setRtlAlgorithm(result.rtlAlgorithm);
-            }
-            if (result.supportHide !== undefined) {
-                setSupportHide(result.supportHide);
-            }
-            if (result.isDarkMode !== undefined) {
-                setIsDarkMode(result.isDarkMode);
-            }
-        });
+        try {
+            chrome.storage.sync.get(['rtlAlgorithm', 'supportHide', 'isDarkMode'], (result) => {
+                if (result.rtlAlgorithm) {
+                    setRtlAlgorithm(result.rtlAlgorithm);
+                }
+                if (result.supportHide !== undefined) {
+                    setSupportHide(result.supportHide);
+                }
+                if (result.isDarkMode !== undefined) {
+                    setIsDarkMode(result.isDarkMode);
+                }
+            });
+        } catch (error) {
+            // Extension context invalidated or other error - use default values
+            console.log('Chrome storage access failed, using default values:', error);
+        }
     }, []);
 
     // Save RTL algorithm setting to storage when changed
     const handleRtlAlgorithmChange = (value: string) => {
         setRtlAlgorithm(value);
-        chrome.storage.sync.set({ rtlAlgorithm: value });
+        try {
+            chrome.storage.sync.set({ rtlAlgorithm: value });
+        } catch (error) {
+            console.log('Failed to save RTL algorithm setting:', error);
+        }
     };
 
     // Save support setting to storage when changed
     const handleSupportChange = (enabled: boolean) => {
         setSupportHide(enabled);
-        chrome.storage.sync.set({ supportHide: enabled });
+        try {
+            chrome.storage.sync.set({ supportHide: enabled });
+        } catch (error) {
+            console.log('Failed to save support setting:', error);
+        }
     };
 
     // Toggle theme and save to storage
     const handleThemeToggle = () => {
         const newTheme = !isDarkMode;
         setIsDarkMode(newTheme);
-        chrome.storage.sync.set({ isDarkMode: newTheme });
+        try {
+            chrome.storage.sync.set({ isDarkMode: newTheme });
+        } catch (error) {
+            console.log('Failed to save theme setting:', error);
+        }
     };
 
     // سیستم اسکرول تب‌ها - ساده و کارآمد
