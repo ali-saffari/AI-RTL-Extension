@@ -274,7 +274,7 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             // Mark all table elements as processed
             $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(processedClass);
             
-            console.log(`Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
+            // console.log(`Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
         }
     });
     
@@ -293,7 +293,7 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             return;
         }
         
-        console.log("processTablesInContainer", $table)
+        // console.log("processTablesInContainer", $table)
 
 
         // If no unprocessed items, continue processing
@@ -332,7 +332,7 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             // Mark all table elements as processed
             $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').addClass(processedClass);
             
-            console.log(`ARIA Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
+            // console.log(`ARIA Table processed with direction: ${tableDirection}, Text: ${allTableText.substring(0, 100)}...`);
         }
     });
 }
@@ -351,28 +351,20 @@ function processTextElementsAdvanced(container, options = {}) {
         isContainer = false,
         skipTags = [],
         removeSkipTags = [],
-        containerDir: initialContainerDir = false,
         setTextAlign = false
     } = options;
-    
-    let containerDir = initialContainerDir;
     // console.log(`processTextElementsAdvanced  ` , container[0] , {
     //     setTextAlign,
     //     isContainer
     // });
 
+
+   let mainContainer = false;
     // If this is a container, process tables first
     if (isContainer) {
         processTablesInContainer(container, fontClass, processedClass);
-        
-        var $tempElement = $(container).clone();
-        $tempElement.find('a').remove();
-        $tempElement.find('div.rounded-xl').remove();
-        $tempElement.find('pre, code').remove();
-        
-        const cloneText = $tempElement.text().trim();
-        containerDir = detectTextDirection(cloneText);
 
+        mainContainer = container
         // برای همه المان‌هایی که allSkipTags هستن فونت ست کن (به جز تگ‌های کد)
         const allTagsSetFont = [...FORMATTING_TAGS, ...skipTags].filter(tag => 
             !['code', 'pre'].includes(tag)
@@ -407,29 +399,65 @@ function processTextElementsAdvanced(container, options = {}) {
         // Get element tag name
         const tagName = this.tagName.toLowerCase();
         
-        // اگر containerDir داریم و المان تگ عنوان هست، از containerDir استفاده کن
-        if (containerDir && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
-            $element.attr('dir', containerDir);
-            if (fontClass) {
-                $element.addClass(fontClass);
-            }
+        // Process header elements normally
+        if ( ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+            // If not processed, process normally
             $element.addClass(processedClass);
-            $element.attr('data-debug-mode', 'header-using-container-dir');
             
-            // Set text alignment for headers if setTextAlign is enabled
-            if (setTextAlign) {
-                if (containerDir === 'rtl') {
-                    $element.css('text-align', 'right');
+            let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
+
+            $(this).attr('data-org-dir', dir);
+
+            // If this is a main container, check all similar header tags and set direction based on majority
+            if (mainContainer) {
+                const allHeaders = mainContainer.find(tagName);
+                let rtlCount = 0;
+                let ltrCount = 0;
+                
+                // Count directions of all headers
+                allHeaders.each(function() {
+                    const headerDir = $(this).attr('data-org-dir');
+                    if (headerDir === 'rtl') {
+                        rtlCount++;
+                    } else if (headerDir === 'ltr') {
+                        ltrCount++;
+                    }
+                });
+                
+                // Determine majority direction
+                let majorityDir;
+                if (rtlCount > ltrCount) {
+                    majorityDir = 'rtl';
+                } else if (ltrCount > rtlCount) {
+                    majorityDir = 'ltr';
                 } else {
-                    $element.css('text-align', 'left');
+                    // If equal counts, use current element's direction
+                    majorityDir = dir;
                 }
+                
+                // Apply majority direction to all headers
+
+                
+                mainContainer.find(tagName).each(function() {
+                    $(this).attr('dir', majorityDir);
+        
+                    if (majorityDir === 'rtl') {
+                        $(this).css('text-align', 'right');
+                    } else {
+                        $(this).css('text-align', 'left');
+                    }
+                });
+                
+                console.log(`Header direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
             }
+
+            $element.attr('data-debug-mode', 'header-processed');
             return;
         }
         
         // Skip ms-code-block elements completely (for AI Studio code sections)
         if (tagName === 'ms-code-block') {
-            console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
+            // console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
             $element.attr('data-debug-mode', 'ms-code-block-skipped');
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
@@ -787,8 +815,7 @@ function processTextElementsAdvanced(container, options = {}) {
                             isContainer: false,
                             skipTags,
                             removeSkipTags,
-                            setTextAlign,
-                            containerDir
+                            setTextAlign
                         });
 
                         // برای خود المان هم تصمیم بگیر
@@ -808,7 +835,7 @@ function processTextElementsAdvanced(container, options = {}) {
                     $element.attr('data-debug-mode', 'no-children-skipped-list-parent');
                     return;
                 }
-                console.log("setTextDirectionAndFont no-children", $element , setTextAlign);
+                // console.log("setTextDirectionAndFont no-children", $element , setTextAlign);
                 
              $element.addClass(processedClass);
                  setTextDirectionAndFont($element, { fontClass, setTextAlign });
@@ -879,7 +906,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
         if (lengthDifference > 3 || storedLength === null) {
-            console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
+            // console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
             processTablesInContainer($element,  mergedOptions.fontClass, mergedOptions.processedClass);
@@ -912,7 +939,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
         if (lengthDifference > 3 || storedLength === null) {
-            console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
+            // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, mergedOptions);
             
             // Process tables in container for advanced_full algorithm (only if isContainer is true)
@@ -955,7 +982,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             
             // Only process tables if text length changed by more than 3 characters or if it's the first time (no attribute)
             if (lengthDifference > 3 || storedLength === null) {
-                console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
+                // console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
                 processTablesInContainer($element, fontClass, options.processedClass);
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
