@@ -790,6 +790,7 @@ pending-request {
 .AsBoxB {
     margin: auto;
     color: #888888;
+    transform: scale(0.8);
 
 }
 

@@ -17,6 +17,7 @@ import { activateAistudio } from './services/aistudio.js';
 import { activateDeepSeek } from './services/deepseek.js';
 import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
+import { activateNotebooklm } from './services/notebooklm.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -119,6 +120,10 @@ const serviceConfig = {
     blackbox: {
         urls: ["www.blackbox.ai"],
         activate: activateBlackbox
+    },
+    notebooklm: {
+        urls: ["notebooklm.google.com"],
+        activate: activateNotebooklm
     }
 };
 

@@ -18,6 +18,8 @@ import {
     Typography,
     useTheme,
     SvgIcon,
+    Chip,
+    Box,
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 
@@ -27,6 +29,7 @@ interface Service {
     icon: string;
     url: string;
     helpText?: string;
+    new?: boolean;
 }
 
 interface CheckedState {
@@ -39,6 +42,7 @@ const services: Service[] = [
     { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
     { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
+    { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa', new: true },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/google-ai-studio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
@@ -50,7 +54,8 @@ const services: Service[] = [
     { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
     { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
     { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
-    { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' },
+    { key: 'blackbox', name: 'Black Box', icon: '/images/BlackBox.png', url: 'https://www.blackbox.ai/' }
+    
 ];
 
 
@@ -76,6 +81,7 @@ export default function ServiceList() {
         manus: true,
         kimi: true,
         blackbox: true,
+        notebooklm: true,
     });
 
     const [grokModalOpen, setGrokModalOpen] = useState(false);
@@ -175,12 +181,32 @@ export default function ServiceList() {
                                             />
                                         </ListItemIcon>
                                         <ListItemText 
-                                            primary={service.name} 
-                                            sx={{ 
-                                                '& .MuiListItemText-primary': {
-                                                    color: isDarkMode ? '#ffffff' : '#000000'
-                                                }
-                                            }}
+                                            primary={
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Typography sx={{ 
+                                                        color: isDarkMode ? '#ffffff' : '#000000',
+                                                        fontWeight: 500
+                                                    }}>
+                                                        {service.name}
+                                                    </Typography>
+                                                    {service.new && (
+                                                        <Box component="span" sx={{ 
+                                                            px: 1, 
+                                                            py: 0.3, 
+                                                            bgcolor: isDarkMode 
+                                                                ? 'rgb(33, 46, 65)' 
+                                                                : 'rgba(30, 64, 175, 0.1)',
+                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                            color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                                                            borderRadius: 1, 
+                                                            fontSize: '0.7rem',
+                                                            fontWeight: 600
+                                                        }}>
+                                                            جدید
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            }
                                         />
                                         
                                         {service.helpText && (
