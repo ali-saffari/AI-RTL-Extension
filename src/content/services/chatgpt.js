@@ -24,13 +24,15 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                         );
                         
                         markdownElements.each(function() {
-                            if (!$(this).hasClass('AsOkText')) {
+                         
+                            setTimeout(() => {
                                 processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
                                     fontClass: 'FontSetImportantGPT',
                                     processedClass: 'AsOkText',
                                     isContainer: true
                                 });
-                            }
+                            }, 100);
+                        
                         });
                     }
                 });
@@ -74,13 +76,13 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_section') {
         });
     })
 
-    $('.text-message .markdown').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
-            processedClass: 'AsOkText',
-            isContainer: true
-        });
-    })
+    // $('.text-message .markdown').each(function (each) {
+    //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+    //         fontClass: 'FontSetImportantGPT',
+    //         processedClass: 'AsOkText',
+    //         isContainer: true
+    //     });
+    // })
 
     $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
         if (!$(this).parent().hasClass("AsOk")) {

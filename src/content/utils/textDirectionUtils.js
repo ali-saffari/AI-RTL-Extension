@@ -98,7 +98,7 @@ function setTextDirectionAndFont(element, options = {}) {
     }
     
     // Set text alignment if setTextAlign is enabled
-    if (setTextAlign) {
+    if (setTextAlign && finalDirection !== 'auto') {
         if (finalDirection === 'rtl') {
             $(element).css('text-align', 'right');
         } else {
@@ -416,10 +416,34 @@ function processTextElementsAdvanced(container, options = {}) {
         if ( ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
             // If not processed, process normally
             $element.addClass(processedClass);
-            
-            let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
 
-            $(this).attr('data-org-dir', dir);
+            const textToUse = $element.text();
+
+            const direction = detectTextDirection(textToUse);
+
+    
+
+             $element.attr("dir", direction);
+            if (fontClass) {
+                $element.addClass(fontClass);
+            }
+            
+            // Set text alignment if setTextAlign is enabled
+            if (setTextAlign) {
+                if (direction === 'rtl') {
+                    $element.css('text-align', 'right');
+                } else {
+                    $element.css('text-align', 'left');
+                }
+            }
+
+
+
+        
+        
+            // let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
+
+            $(this).attr('data-org-dir', direction);
 
             // If this is a main container, check all similar header tags and set direction based on majority
             if (mainContainer) {
@@ -427,6 +451,9 @@ function processTextElementsAdvanced(container, options = {}) {
                 let rtlCount = 0;
                 let ltrCount = 0;
                 
+                
+
+
                 // Count directions of all headers
                 allHeaders.each(function() {
                     const headerDir = $(this).attr('data-org-dir');
@@ -439,14 +466,11 @@ function processTextElementsAdvanced(container, options = {}) {
                 
                 // Determine majority direction
                 let majorityDir;
-                if (rtlCount > ltrCount) {
+                if (rtlCount >= ltrCount) {
                     majorityDir = 'rtl';
                 } else if (ltrCount > rtlCount) {
                     majorityDir = 'ltr';
-                } else {
-                    // If equal counts, use current element's direction
-                    majorityDir = dir;
-                }
+                } 
                 
                 // Apply majority direction to all headers
 
@@ -454,14 +478,14 @@ function processTextElementsAdvanced(container, options = {}) {
                 mainContainer.find(tagName).each(function() {
                     $(this).attr('dir', majorityDir);
         
-                    if (majorityDir === 'rtl') {
-                        $(this).css('text-align', 'right');
-                    } else {
-                        $(this).css('text-align', 'left');
-                    }
+                    // if (majorityDir === 'rtl') {
+                    //     $(this).css('text-align', 'right');
+                    // } else {
+                    //     $(this).css('text-align', 'left');
+                    // }
                 });
                 
-                console.log(`Header direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
+                console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
             }
 
             $element.attr('data-debug-mode', 'header-processed');
