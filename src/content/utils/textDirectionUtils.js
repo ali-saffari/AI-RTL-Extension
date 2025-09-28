@@ -588,8 +588,20 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-    
-
+        // Skip elements with classes starting with katex- (KaTeX math elements)
+        const hasKatexClass = $element.attr('class') && 
+            $element.attr('class').split(' ').some(className => 
+                className.trim().startsWith('katex-')
+            );
+        
+        if (hasKatexClass) {
+            $element.attr('data-debug-mode', 'katex-element-skipped');
+            // Mark all children as processed without processing them
+            $element.attr("dir", "ltr");
+            $element.find('*').addClass(processedClass);
+            $element.addClass(processedClass);
+            return;
+        }
 
         
         // Skip table elements - they are processed by processTablesInContainer
