@@ -62,7 +62,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_section') {
             }
     
     });
-    $('.panel-header-content .mat-title-small ,.footer , .selected-num ').each(function (each) {
+    $('.panel-header-content .mat-title-small ,.footer , .selected-num ,.notebook-title ,..dropzone__description ').each(function (each) {
 
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
