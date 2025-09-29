@@ -6,6 +6,16 @@
 // Import analysis functions from analyzeDirection.js
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
 
+// Debug flag - set to false for release builds
+const DEBUG_MODE = false;
+
+// Helper function to set debug attributes only in debug mode
+function setDebugAttr($element, attrName, value) {
+    if (DEBUG_MODE) {
+        $element.attr(attrName, value);
+    }
+}
+
 // Common formatting tags array - defined once for consistency
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
@@ -221,7 +231,7 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
     container.find('table').each(function() {
         const $table = $(this);
 
-        $table.attr('data-debug-mode-2', 'table-element');
+        setDebugAttr($table, 'data-debug-mode-2', 'table-element');
 
 
         
@@ -502,14 +512,14 @@ function processTextElementsAdvanced(container, options = {}) {
                 console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
             }
 
-            $element.attr('data-debug-mode', 'header-processed');
+            setDebugAttr($element, 'data-debug-mode', 'header-processed');
             return;
         }
         
         // Skip ms-code-block elements completely (for AI Studio code sections)
         if (tagName === 'ms-code-block') {
             // console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
-            $element.attr('data-debug-mode', 'ms-code-block-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'ms-code-block-skipped');
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
@@ -519,7 +529,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
    
         if (allSkipTags.includes(tagName)) {
-            $element.attr('data-debug-mode', 'formatting-tag-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'formatting-tag-skipped');
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
@@ -531,13 +541,13 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Check if it's a table HTML tag
         if (['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col'].includes(tagName)) {
-            $element.attr('data-debug-mode', 'table-element-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'table-element-skipped');
             return;
         }
         
         // Check if it has table role attribute
         if (elementRole && tableRoles.includes(elementRole)) {
-            $element.attr('data-debug-mode', 'table-role-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'table-role-skipped');
             return;
         }
         
@@ -555,20 +565,20 @@ function processTextElementsAdvanced(container, options = {}) {
                 $element.addClass(processedClass);
 
                 if (isCodeContent) {
-                    $element.attr('data-debug-mode', 'li-code-element-ltr');
+                    setDebugAttr($element, 'data-debug-mode', 'li-code-element-ltr');
                     // If content is detected as code, always force LTR
                     $element.attr("dir", "ltr");
                     $element.addClass('AsSetLtr');
                     $element.addClass('FontSetCode');
                 } else {
-                    $element.attr('data-debug-mode', 'li-code-element-normal');
+                    setDebugAttr($element, 'data-debug-mode', 'li-code-element-normal');
                     // If not code or has language-text class, use normal direction detection
                     $element.find('*').removeAttr('dir');
                     setTextDirectionAndFont(this, { fontClass, setTextAlign });
                 }
             } else {
                 // If li doesn't contain pre or code, skip processing
-                $element.attr('data-debug-mode', 'li-inside-list-skipped');
+                setDebugAttr($element, 'data-debug-mode', 'li-inside-list-skipped');
                 // Don't mark as processed, just skip processing
             }
             return;
@@ -576,7 +586,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Skip div elements with rounded-xl class (for Copilot code sections)
         if (tagName === 'div' && $element.hasClass('rounded-xl')) {
-            $element.attr('data-debug-mode', 'div-rounded-xl-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'div-rounded-xl-skipped');
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
@@ -584,7 +594,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
 
         if (tagName === 'button') {
-            $element.attr('data-debug-mode', 'div-rounded-xl-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'div-rounded-xl-skipped');
             // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
@@ -594,7 +604,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
         // Special handling for div elements with ds-scroll-area class
         if (tagName === 'div' && $element.hasClass('ds-scroll-area')) {
-            $element.attr('data-debug-mode', 'div-ds-scroll-area-processed');
+            setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-processed');
             const text = $element.text();
             if (text && text.trim()) {
                 const direction = detectTextDirection(text);
@@ -612,7 +622,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for div elements with md-code-block class (code content)
         if (tagName === 'div' &&  ($element.hasClass('md-code-block') || $element.hasClass('cm-editor'))) {
-            $element.attr('data-debug-mode', 'div-md-code-block-ltr');
+            setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-ltr');
             // Force LTR for code blocks
             $element.attr("dir", "ltr");
             // if (fontClass) {
@@ -633,7 +643,7 @@ function processTextElementsAdvanced(container, options = {}) {
             );
         
         if (hasKatexClass) {
-            $element.attr('data-debug-mode', 'katex-element-skipped');
+            setDebugAttr($element, 'data-debug-mode', 'katex-element-skipped');
             // Mark all children as processed without processing them
             $element.attr("dir", "ltr");
             $element.find('*').addClass(processedClass);
@@ -725,13 +735,13 @@ function processTextElementsAdvanced(container, options = {}) {
                 
                 if (formattingChildren.length === allChildren.length) {
                     // حالت 2: همه فرزندان allSkipTags هستند
-                    $element.attr('data-debug-mode', 'all-formatting-tags');
+                        setDebugAttr($element, 'data-debug-mode', 'all-formatting-tags');
                 
                         setTextDirectionAndFont(this, { fontClass, setTextAlign });
                      $element.addClass(processedClass);
                 } else if (formattingChildren.length > 0) {
                     // حالت 3: فقط بعضی از فرزندان allSkipTags هستند
-                    $element.attr('data-debug-mode', 'mixed-children');
+                    setDebugAttr($element, 'data-debug-mode', 'mixed-children');
                    
                         setTextDirectionAndFont(this, { fontClass, setTextAlign });
                 
@@ -745,8 +755,8 @@ function processTextElementsAdvanced(container, options = {}) {
                     
                     // اگر المان ol یا ul هست، جدا تصمیم بگیر
                     if (tagName === 'ol' || tagName === 'ul') {
-                        $element.attr('data-debug-mode', 'list-processing');
-                        $element.attr('data-as-mode', 'list-processing');
+                        setDebugAttr($element, 'data-debug-mode', 'list-processing');
+                        setDebugAttr($element, 'data-as-mode', 'list-processing');
                         
                         // آیتم‌های داخل لیست رو مستقل بررسی کن
                         const listItems = $element.children('li');
@@ -882,8 +892,8 @@ function processTextElementsAdvanced(container, options = {}) {
                         });
                         
                         $element.attr('dir', listDirection);
-                        $element.attr('data-debug-reason', debugReason);
-                        $element.attr('data-debug-processed', `${processedCount}-${unprocessedCount}`);
+                        setDebugAttr($element, 'data-debug-reason', debugReason);
+                        setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
                         
                         // Set text alignment for the list itself if setTextAlign is enabled
                         if (setTextAlign) {
@@ -910,16 +920,16 @@ function processTextElementsAdvanced(container, options = {}) {
                             setTextDirectionAndFont(this, { fontClass, setTextAlign });
                         
 
-                        $element.attr('data-debug-mode', 'no-formatting-children');
+                        setDebugAttr($element, 'data-debug-mode', 'no-formatting-children');
                     }
                 }
             } else {
                 // حالت 5: المان فرزند ندارد
-                $element.attr('data-debug-mode', 'no-children');
+                setDebugAttr($element, 'data-debug-mode', 'no-children');
                 
                 // اگر المان مادرش در حالت list-processing باشه، پردازش نکن
                 if ($element.parent().attr('data-as-mode') === 'list-processing') {
-                    $element.attr('data-debug-mode', 'no-children-skipped-list-parent');
+                    setDebugAttr($element, 'data-debug-mode', 'no-children-skipped-list-parent');
                     return;
                 }
                 // console.log("setTextDirectionAndFont no-children", $element , setTextAlign);
