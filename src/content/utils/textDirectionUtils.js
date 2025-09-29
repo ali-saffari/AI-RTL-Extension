@@ -747,17 +747,17 @@ function processTextElementsAdvanced(container, options = {}) {
                                 unprocessedCount++;
                                 
                                 // بررسی اولین چیلد - اگر strong بود، از محتوای strong استفاده کن
-                                const firstChild = $li.children().first();
-                                let textForDirection = null;
+                                // const firstChild = $li.children().first();
+                                // let textForDirection = null;
                                 
-                                if (firstChild.length && firstChild.is('strong')) {
-                                    textForDirection = firstChild.text().trim();
-                                    $li.attr('data-debug-mode', 'li-first-child-strong');
-                                }
+                                // if (firstChild.length && firstChild.is('strong')) {
+                                //     textForDirection = firstChild.text().trim();
+                                //     $li.attr('data-debug-mode', 'li-first-child-strong');
+                                // }
                                 setTextDirectionAndFont(this, { 
                                     fontClass, 
                                     setTextAlign,
-                                    text: textForDirection 
+                                    // text: textForDirection 
                                 });
                                 
                                 // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن

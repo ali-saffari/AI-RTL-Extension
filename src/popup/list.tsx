@@ -45,7 +45,7 @@ const services: Service[] = [
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa', new: true },
     { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/', new: true },
     { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/', new: true },
-    { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/' },
+    { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
     { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
@@ -88,7 +88,6 @@ export default function ServiceList() {
         lmarena: true,
     });
 
-    const [grokModalOpen, setGrokModalOpen] = useState(false);
     const [helpModalOpen, setHelpModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -115,10 +114,6 @@ export default function ServiceList() {
         setChecked(prev => ({ ...prev, [key]: checked }));
     };
 
-    const handleGrokClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
-        setGrokModalOpen(true);
-    };
 
     // default: '#1a1a2e',
     // paper: '#2f2f41',
@@ -144,45 +139,6 @@ export default function ServiceList() {
             >
                 {services.map((service, index) => (
                     <React.Fragment key={service.key}>
-                        {service.key === 'grok' ? (
-                            <a href={service.url} target="_blank" rel="noopener noreferrer">
-                                <ListItem disablePadding>
-                                    <ListItemButton>
-                                        <ListItemIcon sx={{ minWidth: 40 }}>
-                                            <Avatar 
-                                                sx={{ width: 30, height: 30 }} 
-                                                alt={service.name} 
-                                                src={chrome.runtime.getURL(service.icon)}
-                                            />
-                                        </ListItemIcon>
-                                        <ListItemText 
-                                            primary={service.name} 
-                                            sx={{ 
-                                                '& .MuiListItemText-primary': {
-                                                    color: isDarkMode ? '#ffffff' : '#000000'
-                                                }
-                                            }}
-                                        />
-                                        <IconButton 
-                                            size="medium" 
-                                            sx={{ ml: 'auto' }}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleGrokClick(e);
-                                            }}
-                                        >
-                                            <SvgIcon sx={{ 
-                                                fontSize: '1.5rem',
-                                                color: isDarkMode ? '#ffffff' : '#000000'
-                                            }}>
-                                                <path d={mdiInformationOutline} />
-                                            </SvgIcon>
-                                        </IconButton>
-                                    </ListItemButton>
-                                </ListItem>
-                            </a>
-                        ) : (
                             <a href={service.url} target="_blank" rel="noopener noreferrer">
                                 <ListItem disablePadding>
                                     <ListItemButton>
@@ -270,44 +226,11 @@ export default function ServiceList() {
                                     </ListItemButton>
                                 </ListItem>
                             </a>
-                        )}
                         {index < services.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
                 ))}
             </List>
 
-            {/* Grok Modal */}
-            <Dialog 
-                open={grokModalOpen} 
-                onClose={() => setGrokModalOpen(false)}
-                maxWidth="sm"
-                fullWidth
-                sx={{
-                    '& .MuiDialog-paper': {
-                        padding: '8px'
-                    }
-                }}
-            >
-                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
-                    درباره Grok
-                </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
-                    <Typography variant="body1" paragraph sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}>
-                        سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، افزونه RTL روی این سایت فعال نمی‌باشد. همچنین این سایت دارای قابلیت RTL داخلی است.
-                    </Typography>
-                  
-              
-                </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
-                    <Button 
-                        onClick={() => setGrokModalOpen(false)}
-                        variant="contained"
-                        color="primary"
-                    >
-                        متوجه شدم
-                    </Button>
-                </DialogActions>
-            </Dialog>
 
             {/* Generic Help Modal */}
             <Dialog 
@@ -325,9 +248,12 @@ export default function ServiceList() {
                     درباره {selectedService?.name}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
-                    <Typography variant="body1" paragraph sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}>
-                        {selectedService?.helpText}
-                    </Typography>
+                    <Typography 
+                        variant="body1" 
+                        paragraph 
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}
+                        dangerouslySetInnerHTML={{ __html: selectedService?.helpText || '' }}
+                    />
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
                     <Button 
