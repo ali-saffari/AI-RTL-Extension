@@ -449,7 +449,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                مخفی کردن متن نشان‌دهنده فعال بودن افزونه
+                                مخفی کردن متن حمایت
                             </Typography>
                      
                         </Box>

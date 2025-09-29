@@ -15,7 +15,8 @@ export function setGrok(rtlAlgorithm = 'advanced_section') {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'noFont',
             processedClass: 'AsOk',
-            isContainer: true
+            isContainer: true,
+            removeDirAuto: true
         });
     });
 

@@ -364,9 +364,10 @@ function processTextElementsAdvanced(container, options = {}) {
         isContainer = false,
         skipTags = [],
         removeSkipTags = [],
-        setTextAlign = false
+        setTextAlign = false,
+        removeDirAuto = false
     } = options;
-    // console.log(`processTextElementsAdvanced  ` , container[0] , {
+    // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
     //     isContainer
     // });
@@ -388,7 +389,20 @@ function processTextElementsAdvanced(container, options = {}) {
                 $element.addClass(fontClass);
             }
         });
+
+
+   
     }
+
+
+    if (removeDirAuto) {
+        container.find('*[dir="auto"]').each(function() {
+            if (!$(this).hasClass("removeedDirAuto")) {
+                $(this).removeAttr('dir').addClass("removeedDirAuto");
+            }
+        });
+    }
+
 
     // Combine FORMATTING_TAGS with skipTags, then remove specified tags
     const allSkipTags = [...FORMATTING_TAGS, ...skipTags].filter(tag => 
@@ -800,7 +814,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         let ltrCount = 0;
                         
                         processedItems.each(function() {
-                            const dir = $(this).attr('dir');
+                            const dir = $(this).attr('data-direction');
                             if (dir === 'rtl') {
                                 rtlCount++;
                             } else if (dir === 'ltr') {
@@ -817,14 +831,32 @@ function processTextElementsAdvanced(container, options = {}) {
                             listDirection = 'ltr';
                             debugReason = `list-ltr-majority-${ltrCount}-${rtlCount}`;
                         } else {
-                            // اگر تعداد مساوی باشه، بر اساس متن کل لیست تصمیم بگیر
-                            const listText = $element.text().trim();
-                            if (listText) {
-                                listDirection = detectTextDirection(listText);
-                                debugReason = `list-text-${listDirection}`;
+                            // اگر تعداد مساوی باشه، به المنت قبل نگاه کن
+                            const prevElementDir = $element.prev().attr('dir');
+                            if (prevElementDir && (prevElementDir === 'rtl' || prevElementDir === 'ltr')) {
+                                listDirection = prevElementDir;
+                                debugReason = `list-prev-dir-${prevElementDir}`;
                             } else {
-                                listDirection = 'ltr';
-                                debugReason = 'list-default-ltr';
+                                // اگر المنت قبلی وجود نداشت، تعداد کلمات فارسی و انگلیسی رو بشمار
+                                const listText = $element.text().trim();
+                                if (listText) {
+                                    const persianWords = (listText.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g) || []).length;
+                                    const englishWords = (listText.match(/[a-zA-Z]+/g) || []).length;
+                                    
+                                    if (persianWords > englishWords) {
+                                        listDirection = 'rtl';
+                                        debugReason = `list-persian-words-${persianWords}-${englishWords}`;
+                                    } else if (englishWords > persianWords) {
+                                        listDirection = 'ltr';
+                                        debugReason = `list-english-words-${englishWords}-${persianWords}`;
+                                    } else {
+                                        listDirection = 'ltr';
+                                        debugReason = 'list-words-equal-default-ltr';
+                                    }
+                                } else {
+                                    listDirection = 'ltr';
+                                    debugReason = 'list-default-ltr';
+                                }
                             }
                         }
                         
@@ -834,7 +866,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
                             $(this).attr('data-org-dir',  $(this).attr('dir'));
 
-                            $(this).attr('data-dir', listDirection);
+                            // $(this).attr('data-dir', listDirection);
                            
                             $(this).attr('dir', listDirection);
                             
