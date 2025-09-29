@@ -27,7 +27,11 @@ export function setAiStudio() {
 
     $("ms-text-chunk").each(function (each) {
         // پردازش پیشرفته تمام عناصر متنی
-        processTablesInContainer($(this), 'FontSet', 'AsOk'); // Enable tracking for AI Studio
+        processTablesInContainer($(this), {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            siteConfig: 'aistudio'
+        }); // Enable tracking for AI Studio
     });
 
     $("ms-text-chunk").each(function (each) {

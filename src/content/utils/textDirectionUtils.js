@@ -99,7 +99,7 @@ function setTextDirectionAndFont(element, options = {}) {
     // If detectTextDirection returns empty or null, use 'auto'
     const finalDirection = direction || 'auto';
 
-        $(element).attr('data-text', textToUse)
+        // $(element).attr('data-text', textToUse)
         $(element).attr('data-direction', finalDirection)
 
     $(element).attr("dir", finalDirection);
@@ -223,10 +223,17 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
 /**
  * Process tables in container with unified direction decision
  * @param {jQuery} container - Container to search in
- * @param {string} fontClass - Font class to apply (optional)
- * @param {string} processedClass - Class to mark processed elements (optional)
+ * @param {Object} options - Options object
+ * @param {string} options.fontClass - Font class to apply (optional, default: 'FontSet')
+ * @param {string} options.processedClass - Class to mark processed elements (optional, default: 'AsOk')
+ * @param {string} options.siteConfig - Site configuration for specific optimizations (optional)
  */
-export function processTablesInContainer(container, fontClass = 'FontSet', processedClass = 'AsOk') {
+export function processTablesInContainer(container, options = {}) {
+    const {
+        fontClass = 'FontSet',
+        processedClass = 'AsOk',
+        siteConfig = null
+    } = options;
     // Find all table elements in the container
     container.find('table').each(function() {
         const $table = $(this);
@@ -270,6 +277,40 @@ export function processTablesInContainer(container, fontClass = 'FontSet', proce
             // Apply direction to table and all its elements
             $table.attr('dir', tableDirection);
             $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').attr('dir', tableDirection);
+            
+            // If tbody is RTL, search for mask-image in parent elements (for Grok)
+            if (tableDirection === 'rtl' && siteConfig === 'grok') {
+                const $tbody = $table.find('tbody');
+                if ($tbody.length > 0) {
+                    // Search for mask-image in parent elements
+                    let $current = $table;
+                    while ($current.length > 0 && $current[0] !== document.body && $current[0] !== container[0]) {
+                        const maskImage = $current.css('mask-image');
+                        if (maskImage && maskImage !== 'none') {
+                            console.log('Checking element for mask-image:', $current[0], 'current mask-image:', maskImage);
+                        
+                 
+                            // Add class to mark that mask-image has been applied
+                            $current.addClass('rtl-mask-applied');
+                            
+                            console.log('Applied mask-image to element:', $current[0]);
+                        }
+                        
+                        // Search for .absolute.top-1.right-1 elements in current parent
+                        const $absoluteElements = $current.find('.absolute.top-1.right-1');
+                        if ($absoluteElements.length > 0) {
+                            console.log('Found .absolute.top-1.right-1 elements:', $absoluteElements.length, 'in parent:', $current[0]);
+                            // Change right-1 to left for RTL optimization
+                            $absoluteElements.each(function() {
+                                $(this).removeClass('right-1').addClass('left-1');
+                                console.log('Changed right-1 to left-1 for element:', this);
+                            });
+                        }
+                        
+                        $current = $current.parent();
+                    }
+                }
+            }
             
             // Set text alignment for all cells based on table direction
             if (tableDirection === 'rtl') {
@@ -386,7 +427,11 @@ function processTextElementsAdvanced(container, options = {}) {
    let mainContainer = false;
     // If this is a container, process tables first
     if (isContainer) {
-        processTablesInContainer(container, fontClass, processedClass);
+        processTablesInContainer(container, {
+            fontClass,
+            processedClass,
+            siteConfig: options.siteConfig
+        });
 
         mainContainer = container
         // برای همه المان‌هایی که allSkipTags هستن فونت ست کن (به جز تگ‌های کد)
@@ -1006,7 +1051,11 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             // console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
-            processTablesInContainer($element,  mergedOptions.fontClass, mergedOptions.processedClass);
+            processTablesInContainer($element, {
+                fontClass: mergedOptions.fontClass,
+                processedClass: mergedOptions.processedClass,
+                siteConfig: mergedOptions.siteConfig
+            });
 
             $element.attr('data-algorithm-rtl', 'advanced_section');
             // Store the new text length
@@ -1041,7 +1090,11 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             
             // Process tables in container for advanced_full algorithm (only if isContainer is true)
             if (mergedOptions.isContainer) {
-                processTablesInContainer($element, mergedOptions.fontClass, mergedOptions.processedClass);
+                processTablesInContainer($element, {
+                    fontClass: mergedOptions.fontClass,
+                    processedClass: mergedOptions.processedClass,
+                    siteConfig: mergedOptions.siteConfig
+                });
             }
             
             $element.attr('data-algorithm-rtl', 'advanced_full');
@@ -1080,7 +1133,11 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             // Only process tables if text length changed by more than 3 characters or if it's the first time (no attribute)
             if (lengthDifference > 3 || storedLength === null) {
                 // console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
-                processTablesInContainer($element, fontClass, options.processedClass);
+                processTablesInContainer($element, {
+                    fontClass,
+                    processedClass: options.processedClass,
+                    siteConfig: options.siteConfig
+                });
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
             }
