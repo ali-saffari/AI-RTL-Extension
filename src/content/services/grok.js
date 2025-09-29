@@ -25,25 +25,8 @@ export function setGrok(rtlAlgorithm = 'advanced_section') {
         $(this).css('mask-image', 'none');
     });
 
-    // // Find and log elements with contenteditable="true"
-    // $('[contenteditable="true"]').each(function() {
-    //     console.log('Found contenteditable element:', this);
-    // });
 
 
-
-
-
-
-    $('.ProseMirror').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'noFont',
-            processedClass: false,
-            setTextAlign: true
-        });
-});
-
-     
 
 
 
@@ -61,25 +44,7 @@ export function activateGrok(rtlAlgorithm = 'advanced_section') {
         setGrok(rtlAlgorithm);
     }, 1000);
 
-    // Event listeners for contenteditable elements
-    $(document).on('input keyup', '[contenteditable="true"]', function() {
-        console.log('Content changed in contenteditable element (event):', this);
-        
-        // Find the reference element with specific classes
-        const referenceElement = $('.flex.grow.gap-1\\.5.max-w-full.pointer-events-none.invisible');
-        if (referenceElement.length > 0) {
-            const referenceWidth = referenceElement.width() + 20;
-            console.log('Reference element width:', referenceWidth);
-            
-            // Set width only for parent2 div
-            const $parent2 = $(this).parent().parent();
-            
-            if ($parent2.length > 0) {
-                $parent2.css('width', referenceWidth + 'px');
-                console.log('Set parent2 div width to:', referenceWidth + 'px');
-            }
-        }
-    });
+ 
 
     // Additional event listener for input event (real-time typing)
     $(document).on('input', '[contenteditable="true"]', function() {
@@ -94,6 +59,61 @@ export function activateGrok(rtlAlgorithm = 'advanced_section') {
             if ($parent2.length > 0) {
                 $parent2.css('width', referenceWidth + 'px');
             }
+
+            $('.ProseMirror').each(function (each) {
+                const $element = $(this);
+                
+                // Check if dirAuto is enabled and direction cannot be detected
+                let text = $element.text().trim();
+                let placeholder = null;
+                
+                // If no text, check data-placeholder attribute
+                if (!text) {
+                    placeholder = $element.attr('data-placeholder');
+                    if (placeholder) {
+                        placeholder = placeholder.trim();
+                        console.log('ProseMirror: Found data-placeholder:', placeholder);
+                    } else {
+                        // Check p elements inside for data-placeholder
+                        const $pElements = $element.find('p');
+                        for (let i = 0; i < $pElements.length; i++) {
+                            const pPlaceholder = $($pElements[i]).attr('data-placeholder');
+                            if (pPlaceholder) {
+                                placeholder = pPlaceholder.trim();
+                                console.log('ProseMirror: Found p data-placeholder:', placeholder);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (!text && !placeholder) {
+                    // If no text and no placeholder, remove dir and text-align attributes
+                    $element.removeAttr('dir');
+                    $element.css('text-align', '');
+                    console.log('ProseMirror: No text or placeholder found, removed dir and text-align');
+                } else if (placeholder && !text) {
+                    // If only placeholder exists, decide based on first word
+                    const firstWord = placeholder.split(/\s+/)[0];
+                    const direction = analyzeTextDirectionFirstWord(firstWord);
+                    $element.attr('dir', direction);
+                    console.log('ProseMirror: Set dir based on placeholder first word:', firstWord, '->', direction);
+                } else if (text) {
+                    // If text exists, use setTextDirectionAndFontByRtlAlgorithm
+                    setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                        fontClass: 'noFont',
+                        processedClass: false,
+                        setTextAlign: true,
+                        dirAuto: true
+                    });
+                }
+
+ 
+
+                console.log('ProseMirror processed 2');
+        });
+
+        console.log('ProseMirror processed');
         }
     });
 
