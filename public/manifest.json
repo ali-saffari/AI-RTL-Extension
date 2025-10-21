@@ -32,6 +32,7 @@
                 "https://chat.openai.com/*",
                 "https://chatgpt.com/*",
                 "https://copilot.microsoft.com/*",
+                "https://github.com/*",
                 "https://bing.com/*",
                 "https://www.bing.com/*",
                 "https://claude.ai/*",
@@ -53,7 +54,8 @@
                 "https://www.blackbox.ai/*",
                 "https://notebooklm.google.com/*",
                 "https://chat.z.ai/*",
-                "https://lmarena.ai/*"
+                "https://lmarena.ai/*",
+                "https://openrouter.ai/*"
             ]
         }
     ],
@@ -67,6 +69,7 @@
                 "https://chat.openai.com/*",
                 "https://chatgpt.com/*",
                 "https://copilot.microsoft.com/*",
+                "https://github.com/*",
                 "https://bing.com/*",
                 "https://www.bing.com/*",
                 "https://claude.ai/*",
@@ -88,7 +91,8 @@
                 "https://www.blackbox.ai/*",
                 "https://notebooklm.google.com/*",
                 "https://chat.z.ai/*",
-                "https://lmarena.ai/*"
+                "https://lmarena.ai/*",
+                "https://openrouter.ai/*"
             ]
         }
     ],

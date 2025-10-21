@@ -3,6 +3,7 @@
 import { activateChatGptRTL as activateChatGpt } from './services/chatgpt.js';
 import { activateClaude } from './services/claude.js';
 import { activateCopilot } from './services/copilot.js';
+import { activateGitHubCopilot } from './services/github-copilot.js';
 import { activateBlackbox } from './services/blackbox.js';
 import { activateKimi } from './services/kimi.js';
 import { activateManus } from './services/manus.js';
@@ -20,6 +21,7 @@ import { activateQwen } from './services/qwen.js';
 import { activateNotebooklm } from './services/notebooklm.js';
 import { activateZai } from './services/zai.js';
 import { activateLmarena } from './services/lmarena.js';
+import { activateOpenRouter } from './services/openrouter.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -66,6 +68,10 @@ const serviceConfig = {
     copilot: {
         urls: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
         activate: activateCopilot
+    },
+    githubCopilot: {
+        urls: ["github.com"],
+        activate: activateGitHubCopilot
     },
     perplexity: {
         urls: ["perplexity.ai", "www.perplexity.ai"],
@@ -134,12 +140,24 @@ const serviceConfig = {
     lmarena: {
         urls: ["lmarena.ai"],
         activate: activateLmarena
+    },
+    openrouter: {
+        urls: ["openrouter.ai"],
+        activate: activateOpenRouter
     }
 };
 
 // Check if current site matches service URLs
 function isCurrentSite(urls) {
-    return Array.isArray(urls) ? urls.includes(site) : urls === site;
+    if (Array.isArray(urls)) {
+        return urls.some(url => {
+            if (url === "github.com") {
+                return site === "github.com" && window.location.pathname.startsWith('/copilot');
+            }
+            return url === site;
+        });
+    }
+    return urls === site;
 }
 
 // Initialize all services

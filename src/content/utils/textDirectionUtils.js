@@ -7,7 +7,7 @@
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
 
 // Debug flag - set to false for release builds
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 
 // Helper function to set debug attributes only in debug mode
 function setDebugAttr($element, attrName, value) {
@@ -235,12 +235,20 @@ export function processTablesInContainer(container, options = {}) {
         siteConfig = null
     } = options;
     // Find all table elements in the container
+
+ 
+
     container.find('table').each(function() {
         const $table = $(this);
 
+
+
+
+        console.log('siteConfig', siteConfig);
+        setDebugAttr($table, 'data-debug-mode-site', siteConfig);
         setDebugAttr($table, 'data-debug-mode-2', 'table-element');
 
-
+        // $table.addClass('red');
         
         // Check if all table items are already processed
         const allTableItems = $table.find('th, td, caption, tr');
@@ -277,6 +285,14 @@ export function processTablesInContainer(container, options = {}) {
             // Apply direction to table and all its elements
             $table.attr('dir', tableDirection);
             $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').attr('dir', tableDirection);
+            
+            // If site is ChatGPT and table is RTL, add AsJustRtl class and set direction manually
+            if (siteConfig === 'chatgpt' && tableDirection === 'rtl') {
+                $table[0].style.setProperty('direction', 'rtl', 'important');
+                $table.find('th, td, caption').each(function() {
+                    this.style.setProperty('direction', 'rtl', 'important');
+                });
+            }
             
             // If tbody is RTL, search for mask-image in parent elements (for Grok)
             if (tableDirection === 'rtl' && siteConfig === 'grok') {
@@ -376,6 +392,15 @@ export function processTablesInContainer(container, options = {}) {
             $table.attr('dir', tableDirection);
             $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').attr('dir', tableDirection);
             
+            // If site is ChatGPT and table is RTL, add AsJustRtl class and set direction manually
+            if (siteConfig === 'chatgpt' && tableDirection === 'rtl') {
+                $table.addClass('AsJustRtl');
+                $table[0].style.setProperty('direction', 'rtl', 'important');
+                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').each(function() {
+                    this.style.setProperty('direction', 'rtl', 'important');
+                });
+            }
+            
             // Set text alignment for all cells based on table direction
             if (tableDirection === 'rtl') {
                 $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'right');
@@ -427,11 +452,11 @@ function processTextElementsAdvanced(container, options = {}) {
    let mainContainer = false;
     // If this is a container, process tables first
     if (isContainer) {
-        processTablesInContainer(container, {
-            fontClass,
-            processedClass,
-            siteConfig: options.siteConfig
-        });
+        // processTablesInContainer(container, {
+        //     fontClass,
+        //     processedClass,
+        //     siteConfig: options.siteConfig
+        // });
 
         mainContainer = container
         // برای همه المان‌هایی که allSkipTags هستن فونت ست کن (به جز تگ‌های کد)
@@ -1023,11 +1048,15 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         }
     };
     
-    if (rtlAlgorithm === 'advanced_section') {
-        const mergedOptions = { ...defaultOptions.advanced_section, ...options };
-        
+    /**
+     * Helper function to check if processing should be triggered based on text length and processed elements count
+     * @param {jQuery} $element - jQuery element to check
+     * @param {string} processedClass - Class name to count processed elements
+     * @returns {Object} - Object containing shouldProcess boolean and currentTextLength number
+     */
+    function shouldProcessElement($element, processedClass) {
         // Get current text content for length comparison
-        const $tempElement = $(element).clone();
+        const $tempElement = $element.clone();
         $tempElement.find('a').remove();
         $tempElement.find('div.rounded-xl').remove();
         $tempElement.find('pre, code').remove();
@@ -1041,13 +1070,27 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         const storedLengthAttr = $element.attr('data-text-length');
         const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
         
-
-    
         // Calculate the difference in text length
         const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
         
-        // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
-        if (lengthDifference > 3 || storedLength === null) {
+        // Count elements with processedClass in this section
+        const processedElementsCount = $element.find(`.${processedClass}`).length;
+        
+        // Only process if text length changed by more than 3 characters, if it's the first time (no attribute), or if fewer than 2 elements are processed
+        const shouldProcess = lengthDifference > 3 || storedLength === null || processedElementsCount < 2;
+        
+        return {
+            shouldProcess,
+            currentTextLength
+        };
+    }
+    
+    if (rtlAlgorithm === 'advanced_section') {
+        const mergedOptions = { ...defaultOptions.advanced_section, ...options };
+        
+        const { shouldProcess, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass);
+        
+        if (shouldProcess) {
             // console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
@@ -1065,26 +1108,9 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
     } else if (rtlAlgorithm === 'advanced_full') {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
         
-        // Get current text content for length comparison
-        const $tempElement = $(element).clone();
-        $tempElement.find('a').remove();
-        $tempElement.find('div.rounded-xl').remove();
-        $tempElement.find('pre, code').remove();
-        $tempElement.find('button').remove();
-        $tempElement.find('[data-copy="false"]').remove();
-        const currentText = $tempElement.text().trim();
+        const { shouldProcess, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass);
         
-        const currentTextLength = currentText.length;
-        
-        // Get stored text length from attribute
-        const storedLengthAttr = $element.attr('data-text-length');
-        const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
-        
-        // Calculate the difference in text length
-        const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
-        
-        // Only process if text length changed by more than 3 characters or if it's the first time (no attribute)
-        if (lengthDifference > 3 || storedLength === null) {
+        if (shouldProcess) {
             // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, mergedOptions);
             
@@ -1112,26 +1138,9 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         // Process tables in container for first_word algorithm (only if isContainer is true)
         if (options.isContainer) {
-            // Get current text content for length comparison (only for table processing)
-            const $tempElement = $(element).clone();
-            $tempElement.find('a').remove();
-            $tempElement.find('div.rounded-xl').remove();
-            $tempElement.find('pre, code').remove();
-            $tempElement.find('button').remove();
-            $tempElement.find('[data-copy="false"]').remove();
-            const currentText = $tempElement.text().trim();
+            const { shouldProcess, currentTextLength } = shouldProcessElement($element, options.processedClass);
             
-            const currentTextLength = currentText.length;
-            
-            // Get stored text length from attribute
-            const storedLengthAttr = $element.attr('data-text-length');
-            const storedLength = storedLengthAttr ? parseInt(storedLengthAttr, 10) : null;
-            
-            // Calculate the difference in text length
-            const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
-            
-            // Only process tables if text length changed by more than 3 characters or if it's the first time (no attribute)
-            if (lengthDifference > 3 || storedLength === null) {
+            if (shouldProcess) {
                 // console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
                 processTablesInContainer($element, {
                     fontClass,

@@ -381,6 +381,7 @@ code.AsSetLtr , pre.AsSetLtr {
 
 
 
+
 [dir=ltr] .prose :where(table):not(:where([class~=not-prose] *)) {
     text-align: right !important;
     direction: ltr !important;
@@ -822,8 +823,16 @@ pending-request {
 }
 
 /* ----------notebooklm----- */
-
+/* 
 .FontSet .ng-star-inserted {
     font-family: iranyekan, sans-serif !important;
-}
+} */
 
+/* --------OpenRouter------------- */
+
+.FontOpenRouter ol.pl-8[dir="rtl"] {
+
+    padding-left: initial;
+    padding-right: 2rem;
+}
+   

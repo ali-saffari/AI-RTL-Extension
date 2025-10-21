@@ -1,6 +1,7 @@
 const chatGpt = true;
 const claude = true;
 const copilot = true;
+const githubCopilot = true;
 const duckduckgo = true;
 const perplexity = true;
 const aiStudio = true;
@@ -18,6 +19,7 @@ const blackbox = true;
 const notebooklm = true;
 const zai = true;
 const lmarena = true;
+const openrouter = true;
 
 
 
@@ -37,9 +39,9 @@ chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') {
         // در نصب اولیه، مقادیر پیش‌فرض را تنظیم می‌کنیم
         chrome.storage.sync.set({
-            chatGpt, claude, copilot,
+            chatGpt, claude, copilot, githubCopilot,
             duckduckgo, perplexity,
-            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena,
+            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena, openrouter,
             rtlAlgorithm: 'advanced_section'
         });
         console.log('Default values set on installation');
@@ -105,6 +107,12 @@ chrome.runtime.onInstalled.addListener((details) => {
             }
             if (!storedData.hasOwnProperty('lmarena')) {
                 updates.lmarena = true;
+            }
+            if (!storedData.hasOwnProperty('openrouter')) {
+                updates.openrouter = true;
+            }
+            if (!storedData.hasOwnProperty('githubCopilot')) {
+                updates.githubCopilot = true;
             }
 
             // اگر rtlAlgorithm وجود نداشت، اضافه کنیم

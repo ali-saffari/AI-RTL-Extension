@@ -724,11 +724,13 @@ function App() {
                                         <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>راه‌حل چیست؟</strong>
                                         <br />
                                         اگر افزونه روی سایتی کار نمی‌کند، این کاملاً طبیعی است! 
-                                        اگر با مشکلی مواجه شدید، لطفاً از طریق لینک‌های زیر گزارش دهید تا سریع‌تر حل شود.
+                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://t.me/mrmaterial" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
+                                        <br /><br />
+                                        همچنین پیشنهادات و ایده‌های شما برای بهبود افزونه بسیار ارزشمند است و از ارسال آن‌ها استقبال می‌کنیم.
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                                            <a href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne/support" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                            <a href="https://t.me/mrmaterial" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                                 <Typography variant="body2" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                     '&:hover': { textDecoration: 'underline' }, 
@@ -737,46 +739,14 @@ function App() {
                                                     alignItems: 'center',
                                                     gap: 0.5
                                                 }}>
-                                                    <SvgIcon sx={{ 
-                                                        fontSize: '1rem',
-                                                        color: isDarkMode ? '#2196F3' : '#1565C0'
-                                                    }}>
-                                                        <path d={mdiFileDocumentEdit} />
-                                                    </SvgIcon>
-                                                    ارسال گزارش
+                                                    تلگرام
                                                 </Typography>
                                             </a>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 41, 59, 0.7)', 
                                                 fontSize: '0.8rem' 
                                             }}>
-                                                - برای گزارش مشکل یا پیشنهاد
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                                            <a href="https://alisaffari.ir/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                <Typography variant="body2" sx={{ 
-                                                    color: isDarkMode ? '#00e9ff' : '#1e40af', 
-                                                    '&:hover': { textDecoration: 'underline' }, 
-                                                    fontWeight: 600,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 0.5
-                                                }}>
-                                                    <SvgIcon sx={{ 
-                                                        fontSize: '1rem',
-                                                        color: isDarkMode ? '#4CAF50' : '#2E7D32'
-                                                    }}>
-                                                        <path d={mdiMessageText} />
-                                                    </SvgIcon>
-                                                    تماس مستقیم
-                                                </Typography>
-                                            </a>
-                                            <Typography variant="body2" sx={{ 
-                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 41, 59, 0.7)', 
-                                                fontSize: '0.8rem' 
-                                            }}>
-                                                - برای تماس شخصی با توسعه‌دهنده
+                                                - برای تماس سریع
                                             </Typography>
                                         </Box>
                                     </Box>

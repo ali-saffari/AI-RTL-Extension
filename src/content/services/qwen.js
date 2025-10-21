@@ -33,7 +33,7 @@ export function setQwenlm(rtlAlgorithm = 'advanced_section') {
     
 
     // Process markdown prose elements
-    $(".markdown-prose").each(function (each) {
+    $(".response-message-body .markdown-prose").each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

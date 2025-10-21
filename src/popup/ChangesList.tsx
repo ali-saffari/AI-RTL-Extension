@@ -14,6 +14,17 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/06/30",
+        changes: [
+            { id: "1", text: "آپدیت NotebookLM" },
+            { id: "2", text: "حل مشکل جدول‌ها در ChatGPT" },
+            { id: "3", text: "افزودن GitHub Copilot" },
+            { id: "4", text: "حل مشکل gemini" },
+            { id: "5", text: "اپدیت Google AI Studio" },
+            { id: "6", text: "افزودن OpenRouter" },
+        ]
+    },
+    {
         version: "1404/06/4",
         changes: [
             { id: "1", text: "اضافه شدن الگوریتم هوشمند و پیشرفته برای تشخیص راست‌چین و چپ‌چین" },

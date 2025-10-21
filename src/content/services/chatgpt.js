@@ -29,7 +29,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                                 processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
                                     fontClass: 'FontSetImportantGPT',
                                     processedClass: 'AsOkText',
-                                    isContainer: true
+                                    isContainer: true,
+                                    siteConfig: 'chatgpt'
                                 });
                             }, 100);
                         
@@ -80,7 +81,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_section') {
     //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
     //         fontClass: 'FontSetImportantGPT',
     //         processedClass: 'AsOkText',
-    //         isContainer: true
+    //         isContainer: true,
+    //         siteConfig: 'chatgpt'
     //     });
     // })
 
