@@ -55,7 +55,8 @@
                 "https://notebooklm.google.com/*",
                 "https://chat.z.ai/*",
                 "https://lmarena.ai/*",
-                "https://openrouter.ai/*"
+                "https://openrouter.ai/*",
+                "https://agent.minimax.io/*"
             ]
         }
     ],
@@ -92,7 +93,8 @@
                 "https://notebooklm.google.com/*",
                 "https://chat.z.ai/*",
                 "https://lmarena.ai/*",
-                "https://openrouter.ai/*"
+                "https://openrouter.ai/*",
+                "https://agent.minimax.io/*"
             ]
         }
     ],

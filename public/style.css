@@ -38,7 +38,9 @@ textarea.FontSetImportant{
 .FontSetImportant {
     font-family: iranyekan, sans-serif !important;
 }
-
+.chat-input-container textarea.FontSetImportant {
+    font-family: iranyekan, sans-serif !important;
+}
 
 /*.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li , .FontSetImportantGPT * {*/
 /*    font-family: iranyekan, sans-serif !important;*/

@@ -22,6 +22,7 @@ import { activateNotebooklm } from './services/notebooklm.js';
 import { activateZai } from './services/zai.js';
 import { activateLmarena } from './services/lmarena.js';
 import { activateOpenRouter } from './services/openrouter.js';
+import { activateMinimax } from './services/minimax.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -144,6 +145,10 @@ const serviceConfig = {
     openrouter: {
         urls: ["openrouter.ai"],
         activate: activateOpenRouter
+    },
+    minimax: {
+        urls: ["agent.minimax.io"],
+        activate: activateMinimax
     }
 };
 

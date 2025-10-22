@@ -20,6 +20,7 @@ const notebooklm = true;
 const zai = true;
 const lmarena = true;
 const openrouter = true;
+const minimax = true;
 
 
 
@@ -41,7 +42,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.storage.sync.set({
             chatGpt, claude, copilot, githubCopilot,
             duckduckgo, perplexity,
-            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena, openrouter,
+            aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena, openrouter, minimax,
             rtlAlgorithm: 'advanced_section'
         });
         console.log('Default values set on installation');
@@ -110,6 +111,9 @@ chrome.runtime.onInstalled.addListener((details) => {
             }
             if (!storedData.hasOwnProperty('openrouter')) {
                 updates.openrouter = true;
+            }
+            if (!storedData.hasOwnProperty('minimax')) {
+                updates.minimax = true;
             }
             if (!storedData.hasOwnProperty('githubCopilot')) {
                 updates.githubCopilot = true;

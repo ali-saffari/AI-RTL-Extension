@@ -40,13 +40,14 @@ const services: Service[] = [
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
     { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
-    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot', new: true },
     { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
-    { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa', new: true },
-    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/', new: true },
-    { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/', new: true },
+    { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa' },
+    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
+    { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/' },
+    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot', new: true },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/', new: true },
+    { key: 'minimax', name: 'Minimax', icon: '/images/minimax.png', url: 'https://agent.minimax.io/', new: true },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
@@ -90,6 +91,7 @@ export default function ServiceList() {
         zai: true,
         lmarena: true,
         openrouter: true,
+        minimax: true,
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);

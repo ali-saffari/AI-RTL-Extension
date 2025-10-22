@@ -18,10 +18,11 @@ const changesData: VersionChanges[] = [
         changes: [
             { id: "1", text: "آپدیت NotebookLM" },
             { id: "2", text: "حل مشکل جدول‌ها در ChatGPT" },
-            { id: "3", text: "افزودن GitHub Copilot" },
-            { id: "4", text: "حل مشکل gemini" },
-            { id: "5", text: "اپدیت Google AI Studio" },
+            { id: "3", text: "حل مشکل gemini" },
+            { id: "4", text: "اپدیت Google AI Studio" },
+            { id: "5", text: "افزودن GitHub Copilot" },
             { id: "6", text: "افزودن OpenRouter" },
+            { id: "7", text: "افزودن Minimax" },
         ]
     },
     {
