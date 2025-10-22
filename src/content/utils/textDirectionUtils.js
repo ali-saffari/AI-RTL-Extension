@@ -7,7 +7,7 @@
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
 
 // Debug flag - set to false for release builds
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 // Helper function to set debug attributes only in debug mode
 function setDebugAttr($element, attrName, value) {
