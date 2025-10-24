@@ -49,8 +49,7 @@ const Settings: React.FC<SettingsProps> = ({
             features: [
                 'تحلیل جداگانه هر بخش',
                 'مناسب برای متون چندزبانه',
-                'دقت بالا در تشخیص',
-                'پیش‌فرض سیستم'
+                'دقت بالا در تشخیص'
             ]
         },
         'advanced_full': {
@@ -60,7 +59,8 @@ const Settings: React.FC<SettingsProps> = ({
                 'پردازش یکپارچه متن',
                 'ترکیب دقت و کارایی',
                 'مناسب برای متون طولانی',
-                'الگوریتم جدید'
+                'الگوریتم جدید',
+                'پیش‌فرض سیستم'
             ]
         },
         'first_word': {
@@ -229,21 +229,6 @@ const Settings: React.FC<SettingsProps> = ({
                                                     
                                                     جدید
                                                 </Box>
-                                                {selectedValue !== 'advanced_section' && (
-                                                    <Box component="span" sx={{ 
-                                                        px: 0.5, 
-                                                        py: 0.05, 
-                                                        bgcolor: theme.palette.mode === 'dark' 
-                                                            ? 'rgb(1, 91, 237)' 
-                                                            : 'rgba(30, 64, 175, 0.2)',
-                                                        color: theme.palette.text.secondary, 
-                                                        borderRadius: 0.5, 
-                                                        fontSize: '0.6rem',
-                                                        fontWeight: 600
-                                                    }}>
-                                                        پیش‌فرض
-                                                    </Box>
-                                                )}
                                             </Box>
                                         </Box>
                                     </Box>
@@ -333,6 +318,21 @@ const Settings: React.FC<SettingsProps> = ({
                                                 }}>
                                                     جدید
                                                 </Box>
+                                                {selectedValue !== 'advanced_full' && (
+                                                    <Box component="span" sx={{ 
+                                                        px: 0.5, 
+                                                        py: 0.05, 
+                                                        bgcolor: theme.palette.mode === 'dark' 
+                                                            ? 'rgb(1, 91, 237)' 
+                                                            : 'rgba(30, 64, 175, 0.2)',
+                                                        color: theme.palette.text.secondary, 
+                                                        borderRadius: 0.5, 
+                                                        fontSize: '0.6rem',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        پیش‌فرض
+                                                    </Box>
+                                                )}
                                             </Box>
                                         </Box>
                                     </Box>

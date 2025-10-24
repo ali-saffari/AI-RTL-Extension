@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setDuckduckgo(rtlAlgorithm = 'advanced_section') {
+export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.eRjZTOsvr6gqJe3E2Yc6`
         
@@ -53,7 +53,7 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for DuckDuckGo
-export function activateDuckduckgo(rtlAlgorithm = 'advanced_section') {
+export function activateDuckduckgo(rtlAlgorithm = 'advanced_full') {
     console.log('DuckDuckGo RTL activated with algorithm:', rtlAlgorithm);
     // Initial setup
     setDuckduckgo(rtlAlgorithm);

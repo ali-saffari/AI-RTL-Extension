@@ -169,15 +169,15 @@ function isCurrentSite(urls) {
 async function initializeAllServices() {
     const serviceKeys = Object.keys(serviceConfig);
     let results = {};
-    let rtlAlgorithm = 'advanced_section';
+    let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithm']);
-        rtlAlgorithm = results.rtlAlgorithm || 'advanced_section';
+        results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithmMode']);
+        rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
     } catch (error) {
         // Extension context invalidated or other error - use default values
         console.log('Chrome storage access failed, using default values:', error);
-        rtlAlgorithm = 'advanced_section';
+        rtlAlgorithm = 'advanced_full';
     }
     
     serviceKeys.forEach(serviceKey => {

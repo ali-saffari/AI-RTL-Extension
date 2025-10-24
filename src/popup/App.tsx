@@ -283,16 +283,16 @@ const lightTheme = createTheme({
 
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
-    const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_section');
+    const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load settings from storage on component mount
     React.useEffect(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithm', 'supportHide', 'isDarkMode'], (result) => {
-                if (result.rtlAlgorithm) {
-                    setRtlAlgorithm(result.rtlAlgorithm);
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode'], (result) => {
+                if (result.rtlAlgorithmMode) {
+                    setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -311,7 +311,7 @@ function App() {
     const handleRtlAlgorithmChange = (value: string) => {
         setRtlAlgorithm(value);
         try {
-            chrome.storage.sync.set({ rtlAlgorithm: value });
+            chrome.storage.sync.set({ rtlAlgorithmMode: value });
         } catch (error) {
             console.log('Failed to save RTL algorithm setting:', error);
         }

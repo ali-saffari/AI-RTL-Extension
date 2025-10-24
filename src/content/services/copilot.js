@@ -69,7 +69,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
 
 
 // Main activation function for Copilot
-export function activateCopilot(rtlAlgorithm = 'advanced_section') {
+export function activateCopilot(rtlAlgorithm = 'advanced_full') {
     console.log("activateCopilot with RTL algorithm:", rtlAlgorithm);
     setItems_copilotBing(rtlAlgorithm);
 

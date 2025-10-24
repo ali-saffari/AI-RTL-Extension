@@ -4,7 +4,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setPoeCom(rtlAlgorithm = 'advanced_section') {
+export function setPoeCom(rtlAlgorithm = 'advanced_full') {
 
     if (chrome.runtime?.id) {
         let fo2 = `[class*="ChatPageMainFooter_footerInner"]`
@@ -35,7 +35,7 @@ export function setPoeCom(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Poe
-export function activatePoe(rtlAlgorithm = 'advanced_section') {
+export function activatePoe(rtlAlgorithm = 'advanced_full') {
     console.log('Poe RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

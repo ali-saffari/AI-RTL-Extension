@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setKimi(rtlAlgorithm = 'advanced_section') {
+export function setKimi(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.chat-action`
         addCopyright($(fo2), 'AsKimi', 'margin-bottom: 10px');
@@ -38,7 +38,7 @@ export function setKimi(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Kimi
-export function activateKimi(rtlAlgorithm = 'advanced_section') {
+export function activateKimi(rtlAlgorithm = 'advanced_full') {
     console.log('Kimi RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setMonica(rtlAlgorithm = 'advanced_section') {
+export function setMonica(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `[class*="input-wrapper-"]`
         addCopyright($(fo2).parent(), 'AsBoxMonica AsBoxB');
@@ -51,7 +51,7 @@ export function setMonica(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Monica
-export function activateMonica(rtlAlgorithm = 'advanced_section') {
+export function activateMonica(rtlAlgorithm = 'advanced_full') {
     console.log('Monica RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

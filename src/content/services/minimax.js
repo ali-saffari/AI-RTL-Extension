@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setMinimax(rtlAlgorithm = 'advanced_section') {
+export function setMinimax(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright notice
         addCopyright($('.relative.hidden .drag-wrapper'), 'AsBoxMinimax AsBoxB', 'margin-top: 5px;margin-bottom: -2px;');
@@ -49,7 +49,7 @@ export function setMinimax(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for Minimax
-export function activateMinimax(rtlAlgorithm = 'advanced_section') {
+export function activateMinimax(rtlAlgorithm = 'advanced_full') {
     console.log("activateMinimax with RTL algorithm:", rtlAlgorithm);
     
     // Initial setup

@@ -19,7 +19,7 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
     return direction;
 }
 
-export function setLmarena(rtlAlgorithm = 'advanced_section') {
+export function setLmarena(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
                 
@@ -88,7 +88,7 @@ export function setLmarena(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for LM Arena
-export function activateLmarena(rtlAlgorithm = 'advanced_section') {
+export function activateLmarena(rtlAlgorithm = 'advanced_full') {
     console.log('LM Arena RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

@@ -43,7 +43,7 @@ chrome.runtime.onInstalled.addListener((details) => {
             chatGpt, claude, copilot, githubCopilot,
             duckduckgo, perplexity,
             aiStudio, deepseek, youCom, qwenlm, poeCom, monica, gemini, grok, mistral, manus, kimi, blackbox, notebooklm, zai, lmarena, openrouter, minimax,
-            rtlAlgorithm: 'advanced_section'
+            rtlAlgorithmMode: 'advanced_full'
         });
         console.log('Default values set on installation');
     } else if (details.reason === 'update') {
@@ -119,9 +119,14 @@ chrome.runtime.onInstalled.addListener((details) => {
                 updates.githubCopilot = true;
             }
 
-            // اگر rtlAlgorithm وجود نداشت، اضافه کنیم
-            if (!storedData.hasOwnProperty('rtlAlgorithm')) {
-                updates.rtlAlgorithm = 'advanced_section';
+            // اگر rtlAlgorithmMode وجود نداشت، اضافه کنیم
+            if (!storedData.hasOwnProperty('rtlAlgorithmMode')) {
+                // اگر rtlAlgorithm قدیمی وجود دارد و first_word است، آن را حفظ کنیم
+                if (storedData.hasOwnProperty('rtlAlgorithm') && storedData.rtlAlgorithm === 'first_word') {
+                    updates.rtlAlgorithmMode = 'first_word';
+                } else {
+                    updates.rtlAlgorithmMode = 'advanced_full';
+                }
             }
 
             // اگر چیزی برای به‌روزرسانی وجود داشت، ذخیره کنیم

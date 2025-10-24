@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setPerplexity(rtlAlgorithm = 'advanced_section') {
+export function setPerplexity(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
     if (chrome.runtime?.id) {
         let fo2 = `.bottom-safeAreaInsetBottom .pointer-events-auto .grow`
@@ -118,7 +118,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Perplexity
-export function activatePerplexity(rtlAlgorithm = 'advanced_section') {
+export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
     console.log('Perplexity RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

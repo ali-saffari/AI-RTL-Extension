@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setGrok(rtlAlgorithm = 'advanced_section') {
+export function setGrok(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright if needed
         let copyrightElement = `.relative.w-full.px-gutter`
@@ -34,7 +34,7 @@ export function setGrok(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Grok
-export function activateGrok(rtlAlgorithm = 'advanced_section') {
+export function activateGrok(rtlAlgorithm = 'advanced_full') {
     
     // Initial setup
     setGrok(rtlAlgorithm);

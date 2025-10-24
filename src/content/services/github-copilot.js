@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setGitHubCopilot(rtlAlgorithm = 'advanced_section') {
+export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `[class*="ConversationView-module__footer"]`
         addCopyright($(fo2), 'AsBoxGitHubCopilot AsBoxB', `margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
@@ -41,7 +41,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for GitHub Copilot
-export function activateGitHubCopilot(rtlAlgorithm = 'advanced_section') {
+export function activateGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     console.log('GitHub Copilot RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

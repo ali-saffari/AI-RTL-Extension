@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setGemini(rtlAlgorithm = 'advanced_section') {
+export function setGemini(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.hallucination-disclaimer`
         
@@ -32,7 +32,7 @@ export function setGemini(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Gemini
-export function activateGemini(rtlAlgorithm = 'advanced_section') {
+export function activateGemini(rtlAlgorithm = 'advanced_full') {
     console.log("activateGemini with RTL algorithm:", rtlAlgorithm);
     // Initial setup
     setGemini(rtlAlgorithm);

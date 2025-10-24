@@ -92,7 +92,7 @@ const ELEMENT_MAP = [
 
 
 // Claude service functions
-export function setItems_Claude(rtlAlgorithm = 'advanced_section') {
+export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     let interval = setInterval(() => {
         set(rtlAlgorithm)
     }, 500)
@@ -108,7 +108,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for Claude
-export function activateClaude(rtlAlgorithm = 'advanced_section') {
+export function activateClaude(rtlAlgorithm = 'advanced_full') {
     console.log("activateClaude with RTL algorithm:", rtlAlgorithm);
     
     // Initial setup

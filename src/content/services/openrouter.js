@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setOpenRouter(rtlAlgorithm = 'advanced_section') {
+export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright notice
         addCopyright($('.sm\\:mb-2.sm\\:mt-0.flex-shrink-0.md\\:px-4'), 'AsBoxOpenRouter AsBoxB', 'margin-top: 5px;margin-bottom: -8px;');
@@ -61,7 +61,7 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for OpenRouter
-export function activateOpenRouter(rtlAlgorithm = 'advanced_section') {
+export function activateOpenRouter(rtlAlgorithm = 'advanced_full') {
     console.log("activateOpenRouter with RTL algorithm:", rtlAlgorithm);
     
     // Initial setup

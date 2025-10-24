@@ -4,7 +4,7 @@ import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../ut
 import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
-export function setBlackBox(rtlAlgorithm = 'advanced_section') {
+export function setBlackBox(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
     const $targetElement = $('.relative.min-w-40 > .px-4');
     if ($targetElement.length > 0) {
@@ -69,7 +69,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Blackbox
-export function activateBlackbox(rtlAlgorithm = 'advanced_section') {
+export function activateBlackbox(rtlAlgorithm = 'advanced_full') {
     console.log("activateBlackbox with RTL algorithm:", rtlAlgorithm);
     
     // Initial setup

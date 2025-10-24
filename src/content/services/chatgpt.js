@@ -6,7 +6,7 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphW
 // Observer for .text-message .markdown elements
 let markdownObserver = null;
 
-export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
+export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_full') {
     // Clean up existing observer
     if (markdownObserver) {
         markdownObserver.disconnect();
@@ -48,7 +48,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     });
 }
 
-export function initializeChatGptElements(rtlAlgorithm = 'advanced_section') {
+export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     // Check if React is still hydrating
     if (document.querySelector('[data-reactroot]') && !document.querySelector('[data-reactroot]').__reactInternalInstance) {
         console.log('React is still hydrating, skipping...');
@@ -164,7 +164,7 @@ export function initializeChatGptHistory() {
 }
 
 // Main activation function for ChatGPT
-export function activateChatGptRTL(rtlAlgorithm = 'advanced_section') {
+export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     // RTL algorithm is now available as parameter
     console.log('ChatGPT RTL activated with algorithm:', rtlAlgorithm);
     

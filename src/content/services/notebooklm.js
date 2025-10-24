@@ -19,7 +19,7 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
     return direction;
 }
 
-export function setNotebooklm(rtlAlgorithm = 'advanced_section') {
+export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         addCopyright($('.omnibar-container').parent() , 'AsBoxB' );
     }
@@ -114,7 +114,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for NotebookLM
-export function activateNotebooklm(rtlAlgorithm = 'advanced_section') {
+export function activateNotebooklm(rtlAlgorithm = 'advanced_full') {
     console.log('NotebookLM RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setDeepSeek(rtlAlgorithm = 'advanced_section') {
+export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `._871cbca`
         
@@ -61,7 +61,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for DeepSeek
-export function activateDeepSeek(rtlAlgorithm = 'advanced_section') {
+export function activateDeepSeek(rtlAlgorithm = 'advanced_full') {
     console.log('DeepSeek RTL activated with algorithm:', rtlAlgorithm);
     // Initial setup
     setDeepSeek(rtlAlgorithm);

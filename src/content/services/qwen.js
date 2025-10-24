@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setQwenlm(rtlAlgorithm = 'advanced_section') {
+export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
               let fo2 = `.chat-message-input-container.in-chat`
@@ -55,7 +55,7 @@ export function setQwenlm(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Qwen
-export function activateQwen(rtlAlgorithm = 'advanced_section') {
+export function activateQwen(rtlAlgorithm = 'advanced_full') {
     console.log('Qwen RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

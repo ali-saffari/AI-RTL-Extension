@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setMistral(rtlAlgorithm = 'advanced_section') {
+export function setMistral(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
     if (chrome.runtime?.id) {
         let fo2 = `.relative.start-0.end-0.bottom-0.flex.w-full.flex-col.items-center`
@@ -51,7 +51,7 @@ export function setMistral(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Mistral
-export function activateMistral(rtlAlgorithm = 'advanced_section') {
+export function activateMistral(rtlAlgorithm = 'advanced_full') {
     console.log('Mistral RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

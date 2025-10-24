@@ -5,7 +5,7 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 
 
 
-export function setZai(rtlAlgorithm = 'advanced_section') {
+export function setZai(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         addCopyright('.footer, .chat-container, .main-container', 'AsBoxB');
     }
@@ -63,7 +63,7 @@ export function setZai(rtlAlgorithm = 'advanced_section') {
 }
 
 // Main activation function for Z.ai
-export function activateZai(rtlAlgorithm = 'advanced_section') {
+export function activateZai(rtlAlgorithm = 'advanced_full') {
     console.log('Z.ai RTL activated with algorithm:', rtlAlgorithm);
     
 

@@ -5,7 +5,7 @@ import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/ana
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, setTextDirectionAndFontOneTime } from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';
 
-export function setYouCom(rtlAlgorithm = 'advanced_section') {
+export function setYouCom(rtlAlgorithm = 'advanced_full') {
    
     if (chrome.runtime?.id) {
         // Add copyright to Youcom interface
@@ -116,7 +116,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Youcom
-export function activateYoucom(rtlAlgorithm = 'advanced_section') {
+export function activateYoucom(rtlAlgorithm = 'advanced_full') {
     console.log('Youcom RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup

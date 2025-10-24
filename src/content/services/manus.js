@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-export function setManus(rtlAlgorithm = 'advanced_section') {
+export function setManus(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.flex.flex-col.sticky.bottom-0`
         addCopyright($(fo2), 'AsMistral', '');
@@ -59,7 +59,7 @@ export function setManus(rtlAlgorithm = 'advanced_section') {
 
 
 // Main activation function for Manus
-export function activateManus(rtlAlgorithm = 'advanced_section') {
+export function activateManus(rtlAlgorithm = 'advanced_full') {
     console.log('Manus RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
