@@ -14,6 +14,12 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/07/03",
+        changes: [
+            { id: "1", text: "تغییر الگوریتم پیش‌فرض از 'تحلیل پیشرفته بخش‌ها' به 'تحلیل پیشرفته یکپارچه'" },
+        ]
+    },
+    {
         version: "1404/06/30",
         changes: [
             { id: "1", text: "آپدیت NotebookLM" },
