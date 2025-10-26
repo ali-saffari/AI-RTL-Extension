@@ -35,6 +35,12 @@ chrome.storage.sync.onChanged.addListener((changes) => {
         return;
     }
     
+    if (changes.rtlAlgorithmMode) {
+        location.reload();
+        return;
+    }
+
+
     // Check for supportHide changes
     if (changes.supportHide) {
         location.reload();
