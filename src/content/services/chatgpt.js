@@ -115,6 +115,13 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     })
 
     $("#prompt-textarea").each(function (each) {
+        // Check if already processed to avoid duplicate event listeners
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOk'
@@ -132,6 +139,9 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
                 });
             });
         });
+        
+        // Mark as processed to prevent duplicate listeners
+     
     })
 }
 

@@ -44,6 +44,12 @@ export function setAiStudio() {
     });
 
     $("ms-text-chunk textarea").each(function (each) {
+        
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+        
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
             $(this).addClass('FontSetImportant2');

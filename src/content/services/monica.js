@@ -11,6 +11,13 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
 
     // Process textarea elements with RTL algorithm
     $('body textarea').each(function (each) {
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',

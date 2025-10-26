@@ -16,6 +16,14 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
             $(this).addClass('FontSet');
         }
 
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOK'

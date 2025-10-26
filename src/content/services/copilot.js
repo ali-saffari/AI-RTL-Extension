@@ -52,6 +52,12 @@ export function setItems_copilotBing(rtlAlgorithm) {
 
     // Process textarea elements for text direction detection
     $('textarea').each(function (each) {
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk'

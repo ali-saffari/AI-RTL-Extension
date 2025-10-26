@@ -16,6 +16,13 @@ const ELEMENT_MAP = [
     {
         target: '.ProseMirror , textarea',
         function: (element, rtlAlgorithm) => {
+            
+            if ($(this).data('rtl-listener-added')) {
+                return;
+            }
+            $(this).data('rtl-listener-added', true);
+
+            
             if (!$(element).hasClass("AsOk")) {
                 $(element).addClass('AsOk FontClaude');
                 

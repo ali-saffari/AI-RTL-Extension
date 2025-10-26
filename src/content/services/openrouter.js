@@ -37,6 +37,12 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
         }
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
 
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',

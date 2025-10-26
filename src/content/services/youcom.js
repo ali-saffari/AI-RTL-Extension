@@ -78,6 +78,15 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process textarea elements
     $('textarea').each(function (each) {
+
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+
+        
         if (!$(this).hasClass("AsOk")) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'CopilotFontSet',

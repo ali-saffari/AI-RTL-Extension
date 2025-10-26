@@ -22,10 +22,19 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
 
     // Process input fields
     $('textarea, input[type="text"], .input-field').each(function() {
+
+        
         if (!$(this).hasClass("FontSetImportant")) {
             $(this).addClass('FontSetImportant');
         }
 
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSetImportant',
             processedClass: 'AsRtl'

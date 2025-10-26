@@ -12,6 +12,14 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
 
     
     $('[class*="ChatInput-module__inputContainer"]').each(function (each) {
+
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+        
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'

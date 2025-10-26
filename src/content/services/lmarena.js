@@ -46,6 +46,14 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
 
     // Process textarea and input elements with RTL algorithm
     $('body textarea, body input[type="text"], body input[type="search"]').each(function (each) {
+
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+
+        
+        
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
         }
