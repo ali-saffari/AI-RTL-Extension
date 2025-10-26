@@ -14,7 +14,7 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
-        version: "1404/07/03",
+        version: "1404/07/04",
         changes: [
             { id: "1", text: "تغییر الگوریتم پیش‌فرض از 'تحلیل پیشرفته بخش‌ها' به 'تحلیل پیشرفته یکپارچه'" },
             { id: "2", text: "رفع مشکل هنگ شدن در هنگام تایپ" },
