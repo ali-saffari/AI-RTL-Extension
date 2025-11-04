@@ -14,11 +14,9 @@ import {
     Button,
     IconButton,
     useTheme,
-    SvgIcon,
-    CircularProgress,
-    Alert
+    SvgIcon
 } from '@mui/material';
-import { mdiInformationOutline, mdiTestTube } from '@mdi/js';
+import { mdiInformationOutline } from '@mdi/js';
 
 interface SettingsProps {
     rtlAlgorithm: string;
@@ -43,8 +41,7 @@ const Settings: React.FC<SettingsProps> = ({
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
-    const [testLoading, setTestLoading] = React.useState(false);
-    const [testResult, setTestResult] = React.useState<{success: boolean, message: string} | null>(null);
+    const [analyticsDisableDialogOpen, setAnalyticsDisableDialogOpen] = React.useState(false);
     
     React.useEffect(() => {
         setSelectedValue(rtlAlgorithm);
@@ -93,134 +90,23 @@ const Settings: React.FC<SettingsProps> = ({
         setSelectedAlgorithm('');
     };
 
-    // تابع برای تشخیص نام و نسخه مرورگر
-    const getBrowserInfo = () => {
-        const userAgent = navigator.userAgent;
-        let browserName = 'Unknown';
-        let browserVersion = 'Unknown';
-        
-        if (userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('OPR') && !userAgent.includes('Brave')) {
-            browserName = 'Chrome';
-            const match = userAgent.match(/Chrome\/(\d+)/);
-            if (match) browserVersion = match[1];
-        } else if (userAgent.includes('Edg')) {
-            browserName = 'Edge';
-            const match = userAgent.match(/Edg\/(\d+)/);
-            if (match) browserVersion = match[1];
-        } else if (userAgent.includes('OPR')) {
-            browserName = 'Opera';
-            const match = userAgent.match(/OPR\/(\d+)/);
-            if (match) browserVersion = match[1];
-        } else if (userAgent.includes('Brave')) {
-            browserName = 'Brave';
-            const match = userAgent.match(/Chrome\/(\d+)/);
-            if (match) browserVersion = match[1];
-        } else if (userAgent.includes('Firefox')) {
-            browserName = 'Firefox';
-            const match = userAgent.match(/Firefox\/(\d+)/);
-            if (match) browserVersion = match[1];
-        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-            browserName = 'Safari';
-            const match = userAgent.match(/Version\/(\d+)/);
-            if (match) browserVersion = match[1];
+    const handleAnalyticsChange = (checked: boolean) => {
+        if (!checked && analyticsEnabled) {
+            // اگر می‌خواهد غیرفعال کند، Dialog را نمایش بده
+            setAnalyticsDisableDialogOpen(true);
+        } else {
+            // اگر می‌خواهد فعال کند، مستقیماً فعال کن
+            onAnalyticsChange(checked);
         }
-        
-        return { name: browserName, version: browserVersion };
     };
 
-    // تابع تست ارسال analytics (ارسال داده‌های واقعی)
-    const handleTestAnalytics = async () => {
-        setTestLoading(true);
-        setTestResult(null);
+    const handleConfirmDisableAnalytics = () => {
+        onAnalyticsChange(false);
+        setAnalyticsDisableDialogOpen(false);
+    };
 
-        try {
-            // دریافت userId از storage
-            const settings = await chrome.storage.sync.get(['userId']);
-            let userId = settings.userId;
-            
-            // اگر userId وجود نداشت، یک userId بساز
-            if (!userId) {
-                const timestamp = Date.now().toString(36);
-                const randomPart = Math.random().toString(36).substring(2, 15);
-                const extensionId = chrome.runtime.id || 'rtl-ext';
-                userId = `${extensionId}-${timestamp}-${randomPart}`;
-                // ذخیره userId
-                await chrome.storage.sync.set({ userId: userId });
-            }
-
-            // دریافت داده‌های واقعی usageStats از storage
-            const result = await chrome.storage.local.get(['usageStats']);
-            const usageStats = result.usageStats || {};
-            
-            // بررسی اینکه آیا داده‌ای برای ارسال وجود دارد
-            const statsKeys = Object.keys(usageStats);
-            if (statsKeys.length === 0) {
-                setTestResult({
-                    success: false,
-                    message: '⚠️ هیچ داده‌ای برای ارسال وجود ندارد. ابتدا از سایت‌های پشتیبانی شده استفاده کنید.'
-                });
-                setTestLoading(false);
-                return;
-            }
-
-            // تبدیل usageStats به فرمت مناسب برای ارسال (همانند background script)
-            const aggregatedData = Object.values(usageStats).map((stat: any) => ({
-                serviceName: stat.serviceName,
-                hostname: stat.hostname,
-                totalDurationMs: stat.totalDurationMs,
-                totalDurationMinutes: Math.round(stat.totalDurationMs / 60000),
-                totalDurationHours: Math.round(stat.totalDurationMs / 3600000 * 100) / 100,
-                sessionCount: stat.sessionCount,
-                lastUsed: stat.lastUsed,
-                firstUsed: stat.firstUsed
-            }));
-
-            // دریافت اطلاعات مرورگر
-            const browserInfo = getBrowserInfo();
-            
-            // ساخت payload با داده‌های واقعی
-            const payload = {
-                userId: userId,
-                timestamp: Date.now(),
-                browser: {
-                    name: browserInfo.name,
-                    version: browserInfo.version
-                },
-                usage: aggregatedData
-            };
-
-            // ارسال درخواست
-            const response = await fetch('https://api.chatgpt-rtl.ir/api/analytics', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const resultData = await response.json();
-
-            if (response.ok && resultData.success) {
-                // پاک کردن داده‌های ارسال شده (همانند background script)
-                await chrome.storage.local.set({ usageStats: {} });
-                setTestResult({
-                    success: true,
-                    message: `✅ ارسال موفق! ${aggregatedData.length} سرویس با موفقیت ارسال شد.`
-                });
-            } else {
-                setTestResult({
-                    success: false,
-                    message: `❌ خطا: ${resultData.error || 'خطای نامشخص'}`
-                });
-            }
-        } catch (error: any) {
-            setTestResult({
-                success: false,
-                message: `❌ خطا: ${error.message || 'خطا در ارسال درخواست'}`
-            });
-        } finally {
-            setTestLoading(false);
-        }
+    const handleCancelDisableAnalytics = () => {
+        setAnalyticsDisableDialogOpen(false);
     };
     
     return (
@@ -620,13 +506,20 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'primary.main',
                             mb: 0.5
                         }}>
-                            تنظیمات Analytics
+                            تحلیل استفاده (Analytics)
                         </Typography>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
                             fontSize: '0.8rem'
                         }}>
-                            برای بهبود افزونه، اطلاعات استفاده از سایت‌های پشتیبانی شده به صورت ناشناس جمع‌آوری می‌شود. شما می‌توانید این قابلیت را غیرفعال کنید.
+                            برای بهبود عملکرد افزونه، داده‌های استفاده به‌صورت کاملاً ناشناس جمع‌آوری می‌شوند.
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.8rem',
+                            mt: 1
+                        }}>
+                            این داده‌ها شامل هیچ‌گونه اطلاعات شخصی یا محتوای حساس نیستند و تنها برای درک بهتر نحوه استفاده کاربران از افزونه و ارتقای تجربه کاربری به کار می‌روند.
                         </Typography>
                     </Box>
                     
@@ -645,19 +538,12 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                ارسال داده‌های استفاده به صورت ناشناس
-                            </Typography>
-                            <Typography variant="body2" sx={{ 
-                                color: 'text.secondary',
-                                fontSize: '0.75rem',
-                                mt: 0.5
-                            }}>
-                                داده‌های جمع‌آوری شده فقط شامل نام سایت و تعداد استفاده است
+                                فعال‌سازی Analytics
                             </Typography>
                         </Box>
                         <Switch
                             checked={analyticsEnabled}
-                            onChange={(e) => onAnalyticsChange(e.target.checked)}
+                            onChange={(e) => handleAnalyticsChange(e.target.checked)}
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
                                     color: isDarkMode ? '#00e9ff' : '#1c39bb',
@@ -669,56 +555,32 @@ const Settings: React.FC<SettingsProps> = ({
                         />
                     </Box>
                     
-                    {/* دکمه تست */}
                     <Box sx={{ 
-                        mt: 2,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1
+                        mt: 2, 
+                        textAlign: 'center'
                     }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleTestAnalytics}
-                            disabled={testLoading || !analyticsEnabled}
-                            startIcon={
-                                testLoading ? (
-                                    <CircularProgress size={16} />
-                                ) : (
-                                    <SvgIcon sx={{ fontSize: '1.1rem' }}>
-                                        <path d={mdiTestTube} />
-                                    </SvgIcon>
-                                )
-                            }
-                            sx={{
-                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                fontWeight: 600,
+                        <Typography 
+                            variant="body2" 
+                            component="a"
+                            href="https://chatgpt-rtl.ir/privacy-policy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                chrome.tabs.create({ url: 'https://chatgpt-rtl.ir/privacy-policy' });
+                            }}
+                            sx={{ 
+                                color: theme.palette.primary.main,
+                                textDecoration: 'none',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
                                 '&:hover': {
-                                    borderColor: isDarkMode ? '#4dd4ff' : '#3b82f6',
-                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
-                                },
-                                '&:disabled': {
-                                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                                    textDecoration: 'underline'
                                 }
                             }}
                         >
-                            {testLoading ? 'در حال ارسال...' : 'تست ارسال Analytics'}
-                        </Button>
-                        
-                        {testResult && (
-                            <Alert 
-                                severity={testResult.success ? 'success' : 'error'}
-                                sx={{
-                                    mt: 1,
-                                    fontSize: '0.85rem',
-                                    direction: 'rtl'
-                                }}
-                                onClose={() => setTestResult(null)}
-                            >
-                                {testResult.message}
-                            </Alert>
-                        )}
+                            برای اطلاعات بیشتر، حریم خصوصی را بخوانید
+                        </Typography>
                     </Box>
                 </Paper>
                 
@@ -809,6 +671,140 @@ const Settings: React.FC<SettingsProps> = ({
                         }}
                     >
                         بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog for Analytics Disable Confirmation */}
+            <Dialog 
+                open={analyticsDisableDialogOpen} 
+                onClose={handleCancelDisableAnalytics}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                        borderRadius: 2,
+                        direction: 'rtl'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    textAlign: 'center', 
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    fontSize: '1.1rem',
+                    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                    py: 2,
+                    mb: 2
+                }}>
+                    مطمئن هستید که Analytics را غیرفعال کنید؟
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Typography variant="body1" sx={{ 
+                        color: theme.palette.text.primary, 
+                        mb: 2,
+                        lineHeight: 1.8,
+                        fontSize: '0.95rem',
+                        textAlign: 'justify'
+                    }}>
+                        با غیرفعال کردن Analytics، شما از کمک به بهبود افزونه و ارائه تجربه بهتر برای همه کاربران صرف‌نظر می‌کنید.
+                    </Typography>
+                    <Box sx={{ 
+                        bgcolor: theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 193, 7, 0.1)' 
+                            : 'rgba(255, 193, 7, 0.1)',
+                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 193, 7, 0.3)' : 'rgba(255, 193, 7, 0.3)'}`,
+                        borderRadius: 2,
+                        p: 2,
+                        mb: 2
+                    }}>
+                        <Typography variant="body2" sx={{ 
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.9rem',
+                            lineHeight: 1.7
+                        }}>
+                            <strong>توجه:</strong> داده‌های Analytics به صورت کاملاً ناشناس و غیرشخصی جمع‌آوری می‌شوند. این روش مورد تایید گوگل است و هیچ اطلاعات حساسی شامل نمی‌شود. با فعال نگه داشتن Analytics، به ما کمک می‌کنید تا افزونه را بهتر و سریع‌تر بهبود دهیم.
+                        </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic',
+                        mb: 2
+                    }}>
+                        در صورت غیرفعال کردن، تمام داده‌های ذخیره شده در مرورگر شما پاک خواهند شد.
+                    </Typography>
+                    <Box sx={{ 
+                        mt: 2,
+                        textAlign: 'center',
+                        pt: 2,
+                        borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                    }}>
+                        <Typography 
+                            variant="body2" 
+                            component="a"
+                            href="https://chatgpt-rtl.ir/privacy-policy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                chrome.tabs.create({ url: 'https://chatgpt-rtl.ir/privacy-policy' });
+                            }}
+                            sx={{ 
+                                color: theme.palette.primary.main,
+                                textDecoration: 'none',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                fontWeight: 500,
+                                '&:hover': {
+                                    textDecoration: 'underline'
+                                }
+                            }}
+                        >
+                            برای دریافت اطلاعات بیشتر، می‌توانید حریم خصوصی را مطالعه کنید. در آنجا دقیق و واضح توضیح داده شده است.
+                        </Typography>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ 
+                    justifyContent: 'space-between', 
+                    pt: 2,
+                    px: 3,
+                    pb: 3,
+                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                    gap: 2
+                }}>
+                    <Button 
+                        onClick={handleCancelDisableAnalytics}
+                        variant="outlined"
+                        sx={{
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                            px: 3,
+                            '&:hover': {
+                                borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }}
+                    >
+                        لغو
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmDisableAnalytics}
+                        variant="contained"
+                        sx={{
+                            backgroundColor: theme.palette.error.main,
+                            color: '#ffffff',
+                            fontWeight: 600,
+                            px: 3,
+                            '&:hover': {
+                                backgroundColor: theme.palette.error.dark
+                            }
+                        }}
+                    >
+                        غیرفعال کردن
                     </Button>
                 </DialogActions>
             </Dialog>
