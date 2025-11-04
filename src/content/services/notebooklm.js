@@ -77,6 +77,29 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
         }
 
     });
+  
+
+     $('[class*="note-header"] , [class*="mindmap"]').each(function (each) {
+
+
+        if (!$(this).hasClass("FontSet")) {
+            $(this).addClass('FontSet');
+        }
+
+    });
+
+  
+
+    $('.node-name').each(function (each) {
+
+
+        if (!$(this).hasClass("FontSetNodeName")) {
+            $(this).addClass('FontSetNodeName FontSet' );
+        }
+
+    });
+
+
 
     
     $('[class*="mat-"]:not([class*="mat-icon"]):not([class*="mat-fab"]):not([class*="mat-mini-fab"]):not([class*="mat-raised-button"]):not([class*="mat-flat-button"]):not([class*="mat-stroked-button"])').each(function (each) {
@@ -97,7 +120,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
 
     
-    $('.message-text-content , .summary-content').each(function (each) {
+    $('.message-text-content , .summary-content , .note-editor , .artifact-content , .elements-container').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

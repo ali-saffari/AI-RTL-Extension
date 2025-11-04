@@ -20,6 +20,7 @@ import {
     SvgIcon,
     Chip,
     Box,
+    Paper,
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 
@@ -39,7 +40,7 @@ interface CheckedState {
 const services: Service[] = [
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
-    { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa' },
+    { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa', helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.' },
     { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa' },
@@ -96,22 +97,39 @@ export default function ServiceList() {
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
-
-
+    
+    // Detect Edge browser
+    const isEdge = navigator.userAgent.indexOf('Edg') > -1;
 
     useEffect(() => {
         try {
             chrome.storage.sync.get(
                 services.map(service => service.key),
-                (data) => setChecked(data)
+                (data) => {
+                    const updatedData = { ...data };
+                    // If Edge, force Copilot to be disabled
+                    if (isEdge) {
+                        updatedData.copilot = false;
+                        chrome.storage.sync.set({ copilot: false });
+                    }
+                    setChecked(updatedData);
+                }
             );
         } catch (error) {
             // Extension context invalidated or other error - use default values
             console.log('Chrome storage access failed, using default service states:', error);
+            // If Edge, ensure Copilot is disabled
+            if (isEdge) {
+                setChecked(prev => ({ ...prev, copilot: false }));
+            }
         }
-    }, []);
+    }, [isEdge]);
 
     const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+        // Prevent enabling Copilot in Edge
+        if (key === 'copilot' && isEdge) {
+            return;
+        }
         try {
             chrome.storage.sync.set({ [key]: checked });
         } catch (error) {
@@ -184,7 +202,7 @@ export default function ServiceList() {
                                             }
                                         />
                                         
-                                        {service.helpText && (
+                                        {service.helpText && !(service.key === 'copilot' && isEdge) && (
                                             <IconButton 
                                                 size="small" 
                                                 sx={{ 
@@ -216,6 +234,7 @@ export default function ServiceList() {
                                             edge="end"
                                             onChange={handleChange(service.key)}
                                             checked={checked?.[service.key] || false}
+                                            disabled={service.key === 'copilot' && isEdge}
                                             data-list-switch="true"
                                             inputProps={{
                                                 'aria-labelledby': `switch-list-label-${service.key}`,
@@ -227,11 +246,40 @@ export default function ServiceList() {
                                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
                                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                                 },
+                                                '& .Mui-disabled': {
+                                                    opacity: 0.5
+                                                }
                                             }}
                                         />
                                     </ListItemButton>
                                 </ListItem>
                             </a>
+                        {service.key === 'copilot' && isEdge && (
+                            <Box sx={{ px: 2, py: 1.5 }}>
+                                <Paper 
+                                    elevation={0}
+                                    sx={{
+                                        backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
+                                        border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
+                                        borderRadius: 1,
+                                        p: 1.5,
+                                        direction: 'rtl',
+                                        textAlign: 'right'
+                                    }}
+                                >
+                                    <Typography 
+                                        sx={{ 
+                                            fontSize: '0.80rem',
+                                            color: isDarkMode ? '#ffcdd2' : '#c62828',
+                                            fontWeight: 400,
+                                            lineHeight: 1.6
+                                        }}
+                                    >
+                                        برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله Copilot) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
+                                    </Typography>
+                                </Paper>
+                            </Box>
+                        )}
                         {index < services.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
                 ))}

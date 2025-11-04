@@ -830,6 +830,10 @@ pending-request {
     font-family: iranyekan, sans-serif !important;
 } */
 
+
+.FontSetNodeName {
+    font-size: 16px !important;
+}
 /* --------OpenRouter------------- */
 
 .FontOpenRouter ol.pl-8[dir="rtl"] {

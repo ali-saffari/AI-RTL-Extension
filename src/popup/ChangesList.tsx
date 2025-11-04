@@ -14,6 +14,20 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/07/10",
+        changes: [
+            { id: "1", text: "افزودن متن راهنما برای Copilot درباره محدودیت مرورگر Edge" },
+            { id: "2", text: "غیرفعال کردن خودکار Copilot در مرورگر Edge" },
+            { id: "3", text: "افزودن باکس هشدار برای Copilot در Edge" },
+        ]
+    },
+    {
+        version: "1404/07/09",
+        changes: [
+            { id: "1", text: "اپدیت NotebookLM" },
+        ]
+    },
+    {
         version: "1404/07/04",
         changes: [
             { id: "1", text: "تغییر الگوریتم پیش‌فرض از 'تحلیل پیشرفته بخش‌ها' به 'تحلیل پیشرفته یکپارچه'" },
