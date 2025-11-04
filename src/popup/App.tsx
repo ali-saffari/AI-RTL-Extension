@@ -285,17 +285,21 @@ function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
+    const [analyticsEnabled, setAnalyticsEnabled] = React.useState(true);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load settings from storage on component mount
     React.useEffect(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode'], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'analyticsEnabled', 'isDarkMode'], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
+                }
+                if (result.analyticsEnabled !== undefined) {
+                    setAnalyticsEnabled(result.analyticsEnabled);
                 }
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
@@ -324,6 +328,16 @@ function App() {
             chrome.storage.sync.set({ supportHide: enabled });
         } catch (error) {
             console.log('Failed to save support setting:', error);
+        }
+    };
+
+    // Save analytics setting to storage when changed
+    const handleAnalyticsChange = (enabled: boolean) => {
+        setAnalyticsEnabled(enabled);
+        try {
+            chrome.storage.sync.set({ analyticsEnabled: enabled });
+        } catch (error) {
+            console.log('Failed to save analytics setting:', error);
         }
     };
 
@@ -665,6 +679,8 @@ function App() {
                                 onRtlAlgorithmChange={handleRtlAlgorithmChange}
                                 supportHide={supportHide}
                                 onSupportChange={handleSupportChange}
+                                analyticsEnabled={analyticsEnabled}
+                                onAnalyticsChange={handleAnalyticsChange}
                                 isDarkMode={isDarkMode}
                             />
                             

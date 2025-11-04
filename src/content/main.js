@@ -26,6 +26,7 @@ import { activateMinimax } from './services/minimax.js';
 
 // Global variables
 let site = window.location.hostname;
+let lastTrackedService = null;
 
 // Listen for storage changes
 chrome.storage.sync.onChanged.addListener((changes) => {
@@ -171,6 +172,230 @@ function isCurrentSite(urls) {
     return urls === site;
 }
 
+// ============================================
+// سیستم مدیریت Session برای Analytics
+// ============================================
+
+class SessionManager {
+    constructor() {
+        this.currentService = null;
+        this.currentHostname = null;
+        this.isActive = false;
+        this.isPaused = false;
+        this.pausedTime = 0;
+        this.lastPauseTime = 0;
+        this.initialized = false;
+        this.analyticsEnabled = true;
+        
+        // Initialize
+        this.init();
+    }
+    
+    async init() {
+        try {
+            // Check analytics setting
+            const settings = await chrome.storage.sync.get(['analyticsEnabled']);
+            this.analyticsEnabled = settings.analyticsEnabled !== false;
+            
+            if (!this.analyticsEnabled) {
+                console.log('[Analytics] ⏸️ Analytics is disabled');
+                return;
+            }
+            
+            // Setup event listeners
+            this.setupEventListeners();
+            this.initialized = true;
+            
+            console.log('[Analytics] ✅ Session manager initialized');
+        } catch (error) {
+            console.error('[Analytics] ❌ Failed to initialize session manager:', error);
+        }
+    }
+    
+    setupEventListeners() {
+        // Visibility change - وقتی تب visible/hidden می‌شود
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.resume();
+            } else if (document.visibilityState === 'hidden') {
+                this.pause();
+            }
+        });
+        
+        // Window focus/blur - وقتی window focus می‌گیرد یا از دست می‌دهد
+        window.addEventListener('focus', () => this.resume());
+        window.addEventListener('blur', () => this.pause());
+        
+        // Page unload - وقتی صفحه unload می‌شود
+        window.addEventListener('beforeunload', () => {
+            this.stop();
+        });
+        
+        // Page show/hide - برای back/forward navigation
+        window.addEventListener('pageshow', () => {
+            if (this.currentService) {
+                this.resume();
+            }
+        });
+        
+        window.addEventListener('pagehide', () => {
+            this.pause();
+        });
+        
+        console.log('[Analytics] 📡 Event listeners setup complete');
+    }
+    
+    async start(serviceKey, hostname) {
+        // اگر analytics غیرفعال است
+        if (!this.analyticsEnabled) {
+            return;
+        }
+        
+        // اگر همان service قبلاً active است، کاری نکن
+        if (this.isActive && this.currentService === serviceKey && this.currentHostname === hostname) {
+            return;
+        }
+        
+        // اگر session دیگری active است، اول آن را stop کن
+        if (this.isActive) {
+            await this.stop();
+        }
+        
+        // شروع session جدید
+        this.currentService = serviceKey;
+        this.currentHostname = hostname;
+        this.isActive = true;
+        this.isPaused = false;
+        this.pausedTime = 0;
+        this.lastPauseTime = 0;
+        
+        try {
+            // ارسال پیام به background script
+            await chrome.runtime.sendMessage({
+                type: 'SESSION_START',
+                serviceName: serviceKey,
+                hostname: hostname
+            });
+            
+            console.log('[Analytics] ▶️ Session started:', {
+                service: serviceKey,
+                hostname: hostname,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('[Analytics] ❌ Failed to start session:', error);
+            // Reset state on error
+            this.isActive = false;
+            this.currentService = null;
+            this.currentHostname = null;
+        }
+    }
+    
+    async pause() {
+        // اگر session active نیست یا قبلاً pause شده، کاری نکن
+        if (!this.isActive || this.isPaused) {
+            return;
+        }
+        
+        this.isPaused = true;
+        this.lastPauseTime = Date.now();
+        
+        try {
+            await chrome.runtime.sendMessage({
+                type: 'SESSION_PAUSE'
+            });
+            
+            console.log('[Analytics] ⏸️ Session paused:', {
+                service: this.currentService,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('[Analytics] ❌ Failed to pause session:', error);
+        }
+    }
+    
+    async resume() {
+        // اگر session active نیست یا pause نشده، کاری نکن
+        if (!this.isActive || !this.isPaused) {
+            return;
+        }
+        
+        // محاسبه زمان pause
+        if (this.lastPauseTime > 0) {
+            this.pausedTime += Date.now() - this.lastPauseTime;
+            this.lastPauseTime = 0;
+        }
+        
+        this.isPaused = false;
+        
+        try {
+            await chrome.runtime.sendMessage({
+                type: 'SESSION_RESUME'
+            });
+            
+            console.log('[Analytics] ▶️ Session resumed:', {
+                service: this.currentService,
+                pausedDuration: this.pausedTime,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('[Analytics] ❌ Failed to resume session:', error);
+        }
+    }
+    
+    async stop() {
+        // اگر session active نیست، کاری نکن
+        if (!this.isActive) {
+            return;
+        }
+        
+        const service = this.currentService;
+        const hostname = this.currentHostname;
+        
+        // Reset state
+        this.isActive = false;
+        this.isPaused = false;
+        this.currentService = null;
+        this.currentHostname = null;
+        this.pausedTime = 0;
+        this.lastPauseTime = 0;
+        
+        try {
+            await chrome.runtime.sendMessage({
+                type: 'SESSION_END'
+            });
+            
+            console.log('[Analytics] ⏹️ Session stopped:', {
+                service: service,
+                hostname: hostname,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('[Analytics] ❌ Failed to stop session:', error);
+        }
+    }
+    
+    async updateService(serviceKey, hostname) {
+        // اگر service تغییر کرده، session را restart کن
+        if (this.currentService !== serviceKey || this.currentHostname !== hostname) {
+            await this.stop();
+            await this.start(serviceKey, hostname);
+        }
+    }
+}
+
+// ایجاد instance از SessionManager
+const sessionManager = new SessionManager();
+
+// Legacy functions for backward compatibility
+async function startUsageSession(serviceKey) {
+    await sessionManager.start(serviceKey, site);
+}
+
+async function endUsageSession() {
+    await sessionManager.stop();
+}
+
 // Initialize all services
 async function initializeAllServices() {
     const serviceKeys = Object.keys(serviceConfig);
@@ -186,24 +411,63 @@ async function initializeAllServices() {
         rtlAlgorithm = 'advanced_full';
     }
     
+    let activeService = null;
+    
     serviceKeys.forEach(serviceKey => {
         const config = serviceConfig[serviceKey];
         const isEnabled = results[serviceKey] !== false;
         const isCurrent = isCurrentSite(config.urls);
         
         if (isEnabled && isCurrent) {
+            activeService = serviceKey;
             // Run activation function with RTL algorithm setting
             config.activate(rtlAlgorithm);
         }
     });
+
+    // Start session if a service is active
+    if (activeService && activeService !== lastTrackedService) {
+        await sessionManager.start(activeService, site);
+        lastTrackedService = activeService;
+    } else if (!activeService && lastTrackedService) {
+        // اگر سرویس قبلی فعال بود ولی الان نیست، session را end کنیم
+        await sessionManager.stop();
+        lastTrackedService = null;
+    }
+    
+    // Return activeService for URL tracking
+    return activeService;
 }
 
 
+// Setup page unload tracking برای پایان دادن به session
+function setupPageUnloadTracking() {
+    let isEndingSession = false;
+    
+    // وقتی صفحه unload می‌شود، session را end کنیم
+    window.addEventListener('beforeunload', () => {
+        if (!isEndingSession) {
+            isEndingSession = true;
+            endUsageSession();
+        }
+    });
+    
+    console.log('[Analytics] 🔍 Page unload tracking enabled');
+}
+
+// Visibility tracking حالا در SessionManager handle می‌شود
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeAllServices);
+    document.addEventListener('DOMContentLoaded', async () => {
+        const activeService = await initializeAllServices();
+        setupPageUnloadTracking();
+    });
 } else {
-    initializeAllServices();
+    (async () => {
+        const activeService = await initializeAllServices();
+        setupPageUnloadTracking();
+    })();
 }
 
 

@@ -6,9 +6,14 @@
     "background": {
         "service_worker": "js/background.js"
     },
-    "author": "alisaffari1377@gmail.com",
+    "author": "alisaffaridev@gmail.com",
+    "homepage_url": "https://chatgpt-rtl.ir",
     "permissions": [
-        "storage"
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://api.chatgpt-rtl.ir/*"
     ],
     "description": "راستچین کردن ابزار های هوش مصنوعی بصورت هوشمند و استفاده از فونت فارسی برای خوانایی بهتر. ChatGPT.DeepSeek,Claude,Copilot,TheBAi,...",
     "manifest_version": 3,

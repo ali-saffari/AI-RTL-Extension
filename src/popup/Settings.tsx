@@ -14,15 +14,19 @@ import {
     Button,
     IconButton,
     useTheme,
-    SvgIcon
+    SvgIcon,
+    CircularProgress,
+    Alert
 } from '@mui/material';
-import { mdiInformationOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiTestTube } from '@mdi/js';
 
 interface SettingsProps {
     rtlAlgorithm: string;
     onRtlAlgorithmChange: (value: string) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
+    analyticsEnabled: boolean;
+    onAnalyticsChange: (enabled: boolean) => void;
     isDarkMode: boolean;
 }
 
@@ -31,12 +35,16 @@ const Settings: React.FC<SettingsProps> = ({
     onRtlAlgorithmChange,
     supportHide,
     onSupportChange,
+    analyticsEnabled,
+    onAnalyticsChange,
     isDarkMode
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
+    const [testLoading, setTestLoading] = React.useState(false);
+    const [testResult, setTestResult] = React.useState<{success: boolean, message: string} | null>(null);
     
     React.useEffect(() => {
         setSelectedValue(rtlAlgorithm);
@@ -83,6 +91,136 @@ const Settings: React.FC<SettingsProps> = ({
     const handleCloseModal = () => {
         setModalOpen(false);
         setSelectedAlgorithm('');
+    };
+
+    // تابع برای تشخیص نام و نسخه مرورگر
+    const getBrowserInfo = () => {
+        const userAgent = navigator.userAgent;
+        let browserName = 'Unknown';
+        let browserVersion = 'Unknown';
+        
+        if (userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('OPR') && !userAgent.includes('Brave')) {
+            browserName = 'Chrome';
+            const match = userAgent.match(/Chrome\/(\d+)/);
+            if (match) browserVersion = match[1];
+        } else if (userAgent.includes('Edg')) {
+            browserName = 'Edge';
+            const match = userAgent.match(/Edg\/(\d+)/);
+            if (match) browserVersion = match[1];
+        } else if (userAgent.includes('OPR')) {
+            browserName = 'Opera';
+            const match = userAgent.match(/OPR\/(\d+)/);
+            if (match) browserVersion = match[1];
+        } else if (userAgent.includes('Brave')) {
+            browserName = 'Brave';
+            const match = userAgent.match(/Chrome\/(\d+)/);
+            if (match) browserVersion = match[1];
+        } else if (userAgent.includes('Firefox')) {
+            browserName = 'Firefox';
+            const match = userAgent.match(/Firefox\/(\d+)/);
+            if (match) browserVersion = match[1];
+        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+            browserName = 'Safari';
+            const match = userAgent.match(/Version\/(\d+)/);
+            if (match) browserVersion = match[1];
+        }
+        
+        return { name: browserName, version: browserVersion };
+    };
+
+    // تابع تست ارسال analytics (ارسال داده‌های واقعی)
+    const handleTestAnalytics = async () => {
+        setTestLoading(true);
+        setTestResult(null);
+
+        try {
+            // دریافت userId از storage
+            const settings = await chrome.storage.sync.get(['userId']);
+            let userId = settings.userId;
+            
+            // اگر userId وجود نداشت، یک userId بساز
+            if (!userId) {
+                const timestamp = Date.now().toString(36);
+                const randomPart = Math.random().toString(36).substring(2, 15);
+                const extensionId = chrome.runtime.id || 'rtl-ext';
+                userId = `${extensionId}-${timestamp}-${randomPart}`;
+                // ذخیره userId
+                await chrome.storage.sync.set({ userId: userId });
+            }
+
+            // دریافت داده‌های واقعی usageStats از storage
+            const result = await chrome.storage.local.get(['usageStats']);
+            const usageStats = result.usageStats || {};
+            
+            // بررسی اینکه آیا داده‌ای برای ارسال وجود دارد
+            const statsKeys = Object.keys(usageStats);
+            if (statsKeys.length === 0) {
+                setTestResult({
+                    success: false,
+                    message: '⚠️ هیچ داده‌ای برای ارسال وجود ندارد. ابتدا از سایت‌های پشتیبانی شده استفاده کنید.'
+                });
+                setTestLoading(false);
+                return;
+            }
+
+            // تبدیل usageStats به فرمت مناسب برای ارسال (همانند background script)
+            const aggregatedData = Object.values(usageStats).map((stat: any) => ({
+                serviceName: stat.serviceName,
+                hostname: stat.hostname,
+                totalDurationMs: stat.totalDurationMs,
+                totalDurationMinutes: Math.round(stat.totalDurationMs / 60000),
+                totalDurationHours: Math.round(stat.totalDurationMs / 3600000 * 100) / 100,
+                sessionCount: stat.sessionCount,
+                lastUsed: stat.lastUsed,
+                firstUsed: stat.firstUsed
+            }));
+
+            // دریافت اطلاعات مرورگر
+            const browserInfo = getBrowserInfo();
+            
+            // ساخت payload با داده‌های واقعی
+            const payload = {
+                userId: userId,
+                timestamp: Date.now(),
+                browser: {
+                    name: browserInfo.name,
+                    version: browserInfo.version
+                },
+                usage: aggregatedData
+            };
+
+            // ارسال درخواست
+            const response = await fetch('https://api.chatgpt-rtl.ir/api/analytics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const resultData = await response.json();
+
+            if (response.ok && resultData.success) {
+                // پاک کردن داده‌های ارسال شده (همانند background script)
+                await chrome.storage.local.set({ usageStats: {} });
+                setTestResult({
+                    success: true,
+                    message: `✅ ارسال موفق! ${aggregatedData.length} سرویس با موفقیت ارسال شد.`
+                });
+            } else {
+                setTestResult({
+                    success: false,
+                    message: `❌ خطا: ${resultData.error || 'خطای نامشخص'}`
+                });
+            }
+        } catch (error: any) {
+            setTestResult({
+                success: false,
+                message: `❌ خطا: ${error.message || 'خطا در ارسال درخواست'}`
+            });
+        } finally {
+            setTestLoading(false);
+        }
     };
     
     return (
@@ -466,6 +604,121 @@ const Settings: React.FC<SettingsProps> = ({
                                 },
                             }}
                         />
+                    </Box>
+                </Paper>
+
+                {/* تنظیمات Analytics */}
+                <Paper elevation={0} sx={{ 
+                    m: 2, 
+                    p: 2, 
+                    borderRadius: 1,
+                    background: isDarkMode ? '#2f2f41' : '#ffffff'
+                }}>
+                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ 
+                            fontWeight: 600, 
+                            color: 'primary.main',
+                            mb: 0.5
+                        }}>
+                            تنظیمات Analytics
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.8rem'
+                        }}>
+                            برای بهبود افزونه، اطلاعات استفاده از سایت‌های پشتیبانی شده به صورت ناشناس جمع‌آوری می‌شود. شما می‌توانید این قابلیت را غیرفعال کنید.
+                        </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                    }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body1" sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.95rem',
+                                color: 'text.primary'
+                            }}>
+                                ارسال داده‌های استفاده به صورت ناشناس
+                            </Typography>
+                            <Typography variant="body2" sx={{ 
+                                color: 'text.secondary',
+                                fontSize: '0.75rem',
+                                mt: 0.5
+                            }}>
+                                داده‌های جمع‌آوری شده فقط شامل نام سایت و تعداد استفاده است
+                            </Typography>
+                        </Box>
+                        <Switch
+                            checked={analyticsEnabled}
+                            onChange={(e) => onAnalyticsChange(e.target.checked)}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                            }}
+                        />
+                    </Box>
+                    
+                    {/* دکمه تست */}
+                    <Box sx={{ 
+                        mt: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1
+                    }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleTestAnalytics}
+                            disabled={testLoading || !analyticsEnabled}
+                            startIcon={
+                                testLoading ? (
+                                    <CircularProgress size={16} />
+                                ) : (
+                                    <SvgIcon sx={{ fontSize: '1.1rem' }}>
+                                        <path d={mdiTestTube} />
+                                    </SvgIcon>
+                                )
+                            }
+                            sx={{
+                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    borderColor: isDarkMode ? '#4dd4ff' : '#3b82f6',
+                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                },
+                                '&:disabled': {
+                                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                                }
+                            }}
+                        >
+                            {testLoading ? 'در حال ارسال...' : 'تست ارسال Analytics'}
+                        </Button>
+                        
+                        {testResult && (
+                            <Alert 
+                                severity={testResult.success ? 'success' : 'error'}
+                                sx={{
+                                    mt: 1,
+                                    fontSize: '0.85rem',
+                                    direction: 'rtl'
+                                }}
+                                onClose={() => setTestResult(null)}
+                            >
+                                {testResult.message}
+                            </Alert>
+                        )}
                     </Box>
                 </Paper>
                 
