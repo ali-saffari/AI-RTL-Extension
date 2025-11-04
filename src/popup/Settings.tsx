@@ -565,10 +565,6 @@ const Settings: React.FC<SettingsProps> = ({
                             href="https://chatgpt-rtl.ir/privacy-policy"
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                chrome.tabs.create({ url: 'https://chatgpt-rtl.ir/privacy-policy' });
-                            }}
                             sx={{ 
                                 color: theme.palette.primary.main,
                                 textDecoration: 'none',
@@ -748,10 +744,6 @@ const Settings: React.FC<SettingsProps> = ({
                             href="https://chatgpt-rtl.ir/privacy-policy"
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                chrome.tabs.create({ url: 'https://chatgpt-rtl.ir/privacy-policy' });
-                            }}
                             sx={{ 
                                 color: theme.palette.primary.main,
                                 textDecoration: 'none',

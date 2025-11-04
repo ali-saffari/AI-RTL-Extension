@@ -14,6 +14,12 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/08/13",
+        changes: [
+            { id: "1", text: "اضافه شدن analytics" },
+        ]
+    },
+    {
         version: "1404/07/10",
         changes: [
             { id: "1", text: "افزودن متن راهنما برای Copilot درباره محدودیت مرورگر Edge" },
