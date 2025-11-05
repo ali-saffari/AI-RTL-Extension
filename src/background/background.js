@@ -26,6 +26,7 @@ const ANALYTICS_CONFIG = {
 // ============================================
 
 const activeSessions = new Map();
+const trackedTabIds = new Set(); // Track all open tabs without needing tabs permission
 let isProcessingAnalytics = false;
 let cleanupTimer = null;
 
@@ -91,6 +92,9 @@ function sanitizeServiceName(serviceName) {
 async function startSession(tabId, serviceName, hostname) {
     if (!tabId || typeof tabId !== 'number' || tabId <= 0) return;
     
+    // Track this tab
+    trackedTabIds.add(tabId);
+    
     if (activeSessions.has(tabId)) {
         await endSession(tabId);
     }
@@ -108,7 +112,7 @@ async function startSession(tabId, serviceName, hostname) {
         tabId
     });
     
-    // console.log('[Analytics] ▶️ Session started', { tabId, service: sanitizedService, hostname: sanitizedHost });
+    console.log('[Analytics] ▶️ Session started', { tabId, service: sanitizedService, hostname: sanitizedHost });
 }
 
 function pauseSession(tabId) {
@@ -118,7 +122,7 @@ function pauseSession(tabId) {
     
     session.isPaused = true;
     session.lastPauseTime = Date.now();
-    // console.log('[Analytics] ⏸️ Session paused', { tabId, service: session.serviceName });
+    console.log('[Analytics] ⏸️ Session paused', { tabId, service: session.serviceName });
 }
 
 function resumeSession(tabId) {
@@ -131,7 +135,7 @@ function resumeSession(tabId) {
         session.lastPauseTime = 0;
     }
     session.isPaused = false;
-    // console.log('[Analytics] ▶️ Session resumed', { tabId, service: session.serviceName, pausedTime: session.totalPausedTime });
+    console.log('[Analytics] ▶️ Session resumed', { tabId, service: session.serviceName, pausedTime: session.totalPausedTime });
 }
 
 async function endSession(tabId) {
@@ -144,16 +148,17 @@ async function endSession(tabId) {
     }
     
     activeSessions.delete(tabId);
+    trackedTabIds.delete(tabId);
     
     const durationMs = Date.now() - session.startTime - session.totalPausedTime;
-    // console.log('[Analytics] ⏹️ Session ended', { 
-    //     tabId, 
-    //     service: session.serviceName, 
-    //     hostname: session.hostname,
-    //     totalTime: durationMs,
-    //     activeTime: durationMs,
-    //     pausedTime: session.totalPausedTime
-    // });
+    console.log('[Analytics] ⏹️ Session ended', { 
+        tabId, 
+        service: session.serviceName, 
+        hostname: session.hostname,
+        totalTime: durationMs,
+        activeTime: durationMs,
+        pausedTime: session.totalPausedTime
+    });
     
     if (durationMs >= ANALYTICS_CONFIG.minSessionDuration) {
         await storeUsageDuration(session.serviceName, session.hostname, durationMs);
@@ -163,27 +168,25 @@ async function endSession(tabId) {
 
 async function cleanupOrphanedSessions() {
     try {
-        const allTabs = await chrome.tabs.query({});
-        const validTabIds = new Set(allTabs.map(tab => tab.id));
-        
         const now = Date.now();
         const sessionsToEnd = [];
         
         activeSessions.forEach((session, tabId) => {
-            if (!validTabIds.has(tabId) || (now - session.startTime) > ANALYTICS_CONFIG.maxSessionAge) {
+            // Check if tab still exists (tracked) or session is too old
+            if (!trackedTabIds.has(tabId) || (now - session.startTime) > ANALYTICS_CONFIG.maxSessionAge) {
                 sessionsToEnd.push(tabId);
             }
         });
         
         if (sessionsToEnd.length > 0) {
-            // console.log('[Analytics] 🧹 Cleaning up orphaned sessions', { count: sessionsToEnd.length });
+            console.log('[Analytics] 🧹 Cleaning up orphaned sessions', { count: sessionsToEnd.length });
         }
         
         for (const tabId of sessionsToEnd) {
             await endSession(tabId);
         }
     } catch (error) {
-        // console.log('[Analytics] ⚠️ Cleanup warning:', error.message);
+        console.log('[Analytics] ⚠️ Cleanup warning:', error.message);
     }
 }
 
@@ -229,9 +232,9 @@ async function storeUsageDuration(serviceName, hostname, durationMs) {
         }
         
         await chrome.storage.local.set({ usageStats });
-        // console.log('[Analytics] 💾 Usage stored', { service: serviceName, hostname, durationMs, key });
+        console.log('[Analytics] 💾 Usage stored', { service: serviceName, hostname, durationMs, key });
     } catch (error) {
-        // console.log('[Analytics] ⚠️ Storage warning:', error.message);
+        console.log('[Analytics] ⚠️ Storage warning:', error.message);
     }
 }
 
@@ -280,11 +283,11 @@ async function sendAnalyticsToAPI(usageStats, userId, retryCount = 0) {
             usage: aggregatedData
         };
 
-        // console.log('[Analytics] 📤 Sending analytics', { 
-        //     userId: userId.substring(0, 20) + '...', 
-        //     itemsCount: aggregatedData.length,
-        //     retryCount 
-        // });
+        console.log('[Analytics] 📤 Sending analytics', { 
+            userId: userId.substring(0, 20) + '...', 
+            itemsCount: aggregatedData.length,
+            retryCount 
+        });
         
         const response = await fetchWithTimeout(
             ANALYTICS_CONFIG.apiEndpoint,
@@ -297,35 +300,35 @@ async function sendAnalyticsToAPI(usageStats, userId, retryCount = 0) {
         );
 
         if (response.ok) {
-            // console.log('[Analytics] ✅ Analytics sent successfully', { itemsCount: aggregatedData.length });
+            console.log('[Analytics] ✅ Analytics sent successfully', { itemsCount: aggregatedData.length });
             return true;
         }
         
         const isRetryableStatus = response.status >= 500 || response.status === 429;
         if (isRetryableStatus && retryCount < ANALYTICS_CONFIG.maxRetries) {
             const delay = ANALYTICS_CONFIG.retryDelay * Math.pow(2, retryCount);
-            // console.log('[Analytics] 🔄 Retrying', { status: response.status, retryCount, delay });
+            console.log('[Analytics] 🔄 Retrying', { status: response.status, retryCount, delay });
             await new Promise(resolve => setTimeout(resolve, delay));
             return await sendAnalyticsToAPI(usageStats, userId, retryCount + 1);
         }
-        // console.log('[Analytics] ⚠️ Send failed', { status: response.status, retryCount });
+        console.log('[Analytics] ⚠️ Send failed', { status: response.status, retryCount });
         return false;
     } catch (error) {
         const isRetryableError = (error.name === 'TypeError' || error.name === 'NetworkError' || error.name === 'AbortError');
         if (isRetryableError && retryCount < ANALYTICS_CONFIG.maxRetries) {
             const delay = ANALYTICS_CONFIG.retryDelay * Math.pow(2, retryCount);
-            // console.log('[Analytics] 🔄 Retrying after error', { error: error.name, retryCount, delay });
+            console.log('[Analytics] 🔄 Retrying after error', { error: error.name, retryCount, delay });
             await new Promise(resolve => setTimeout(resolve, delay));
             return await sendAnalyticsToAPI(usageStats, userId, retryCount + 1);
         }
-        // console.log('[Analytics] ⚠️ Send failed permanently', { error: error.name, retryCount });
+        console.log('[Analytics] ⚠️ Send failed permanently', { error: error.name, retryCount });
         return false;
     }
 }
 
 async function processPendingAnalytics() {
     if (isProcessingAnalytics) {
-        // console.log('[Analytics] ⏳ Already processing, skipping');
+        console.log('[Analytics] ⏳ Already processing, skipping');
         return;
     }
     
@@ -334,7 +337,7 @@ async function processPendingAnalytics() {
     try {
         const settings = await chrome.storage.sync.get(['analyticsEnabled', 'userId']);
         if (settings.analyticsEnabled === false || !settings.userId) {
-            // console.log('[Analytics] ⏸️ Analytics disabled or no userId');
+            console.log('[Analytics] ⏸️ Analytics disabled or no userId');
             return;
         }
 
@@ -343,20 +346,20 @@ async function processPendingAnalytics() {
         const statsCount = Object.keys(usageStats).length;
         
         if (statsCount === 0) {
-            // console.log('[Analytics] 📭 No data to send');
+            console.log('[Analytics] 📭 No data to send');
             return;
         }
 
-        // console.log('[Analytics] 🔄 Processing analytics', { statsCount });
+        console.log('[Analytics] 🔄 Processing analytics', { statsCount });
         const success = await sendAnalyticsToAPI(usageStats, settings.userId);
         if (success) {
             await chrome.storage.local.set({ usageStats: {} });
-            // console.log('[Analytics] ✅ Storage cleared after successful send');
+            console.log('[Analytics] ✅ Storage cleared after successful send');
         } else {
-            // console.log('[Analytics] ⚠️ Data kept in storage for retry');
+            console.log('[Analytics] ⚠️ Data kept in storage for retry');
         }
     } catch (error) {
-        // console.log('[Analytics] ⚠️ Process error:', error.message);
+        console.log('[Analytics] ⚠️ Process error:', error.message);
     } finally {
         isProcessingAnalytics = false;
     }
@@ -399,7 +402,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
             sendResponse({ success: true });
         } catch (error) {
-            // console.log('[Analytics] ⚠️ Message handler error:', error.message, { type: message.type, tabId });
+            console.log('[Analytics] ⚠️ Message handler error:', error.message, { type: message.type, tabId });
             sendResponse({ success: false });
         }
     });
@@ -410,7 +413,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.tabs.onActivated.addListener((activeInfo) => {
     if (!activeInfo?.tabId) return;
     
-    // console.log('[Analytics] 🔀 Tab activated', { tabId: activeInfo.tabId, activeSessions: activeSessions.size });
+    // Track the activated tab
+    trackedTabIds.add(activeInfo.tabId);
+    
+    console.log('[Analytics] 🔀 Tab activated', { tabId: activeInfo.tabId, activeSessions: activeSessions.size });
     activeSessions.forEach((session, tabId) => {
         if (tabId !== activeInfo.tabId) {
             pauseSession(tabId);
@@ -421,11 +427,20 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
-    if (tabId) endSession(tabId);
+    if (tabId) {
+        trackedTabIds.delete(tabId);
+        endSession(tabId);
+    }
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (!tabId || !changeInfo.url || !activeSessions.has(tabId)) return;
+    if (!tabId) return;
+    
+    // Track the tab when it's updated
+    trackedTabIds.add(tabId);
+    
+    // If URL changed and we have an active session, check if we need to end it
+    if (!changeInfo.url || !activeSessions.has(tabId)) return;
     
     try {
         const newUrl = new URL(changeInfo.url);
@@ -447,20 +462,22 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
     }
 });
 
-chrome.storage.sync.onChanged.addListener((changes) => {
+chrome.storage.sync.onChanged.addListener(async (changes) => {
     if (changes.analyticsEnabled?.newValue === false) {
-        // console.log('[Analytics] 🚫 Analytics disabled by user');
+        console.log('[Analytics] 🚫 Analytics disabled by user');
         chrome.storage.local.set({ usageStats: {} });
-        activeSessions.forEach((session, tabId) => {
-            endSession(tabId);
-        });
+        for (const [tabId] of activeSessions) {
+            await endSession(tabId);
+        }
+        trackedTabIds.clear();
     }
 });
 
-chrome.runtime.onSuspend.addListener(() => {
-    activeSessions.forEach((session, tabId) => {
-        endSession(tabId);
-    });
+chrome.runtime.onSuspend.addListener(async () => {
+    for (const [tabId] of activeSessions) {
+        await endSession(tabId);
+    }
+    trackedTabIds.clear();
 });
 
 // ============================================
@@ -468,7 +485,7 @@ chrome.runtime.onSuspend.addListener(() => {
 // ============================================
 
 chrome.runtime.onInstalled.addListener((details) => {
-    // console.log('[Analytics] 🚀 Extension', details.reason);
+    console.log('[Analytics] 🚀 Extension', details.reason);
     
     if (details.reason === 'install') {
         const userId = generateUserId();
@@ -478,7 +495,7 @@ chrome.runtime.onInstalled.addListener((details) => {
             userId,
             analyticsEnabled: true
         });
-        // console.log('[Analytics] ✅ Initialized', { userId: userId.substring(0, 20) + '...' });
+        console.log('[Analytics] ✅ Initialized', { userId: userId.substring(0, 20) + '...' });
     } else if (details.reason === 'update') {
         try {
             chrome.storage.sync.get((storedData) => {
@@ -508,7 +525,7 @@ chrome.runtime.onInstalled.addListener((details) => {
                 }
             });
         } catch (error) {
-            // console.log('[Analytics] ⚠️ Update handler warning:', error.message);
+            console.log('[Analytics] ⚠️ Update handler warning:', error.message);
         }
     }
     
@@ -522,4 +539,4 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 startCleanupTimer();
-// console.log('[Analytics] ✅ Background script initialized');
+console.log('[Analytics] ✅ Background script initialized');

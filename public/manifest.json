@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Claude + 20 AI Chat",
-    "version": "3.0.13",
+    "version": "3.0.152",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "js/background.js"
@@ -9,8 +9,7 @@
     "author": "alisaffaridev@gmail.com",
     "homepage_url": "https://chatgpt-rtl.ir",
     "permissions": [
-        "storage",
-        "tabs"
+        "storage"
     ],
     "host_permissions": [
         "https://api.chatgpt-rtl.ir/*"
