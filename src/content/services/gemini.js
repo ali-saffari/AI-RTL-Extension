@@ -8,11 +8,11 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
         let fo2 = `.hallucination-disclaimer`
         
         // Add copyright using utility function
-        addCopyright($(fo2), 'AsBoxGemini' , 'margin-top: 1px; margin-top: -6px; margin-bottom: 4px;');
+        addCopyright($(fo2), 'AsBoxGemini AsBoxB' , 'margin-top: 1px; margin-top: -6px; margin-bottom: 4px; font-size: 13px;');
     }
 
     // Process markdown panels with RTL algorithm
-    $('.markdown-main-panel').each(function (each) {
+    $('.markdown-main-panel , .ProseMirror , .research-step-description').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -22,7 +22,7 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process Gemini UI elements
-    $('.gds-label-l , .gds-body-l , h1 , .gds-body-m , .gds-body-s , .gds-label-m , .gds-label-s , .gds-label-xs , .gds-label-xxs , .gds-label-m-alt , .gds-body-m-alt , .gds-body-s-alt , .gds-body-xs-alt').each(function (each) {
+    $('.gds-label-l , .gds-body-l , .gds-body-m و .gds-title-m , .research-step-title , .gds-body-m , .mat-button-toggle-label-content , .title-text ,.mdc-button__label ,.gds-body-s , .gds-label-m , .gds-label-s , .gds-label-xs , .gds-label-xxs , .gds-label-m-alt , .gds-body-m-alt , .gds-body-s-alt , .gds-body-xs-alt').each(function (each) {
         if (!$(this).hasClass("FontSet")) {
             $(this).addClass('FontSet');
         }

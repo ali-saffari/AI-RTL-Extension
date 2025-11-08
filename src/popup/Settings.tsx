@@ -23,8 +23,6 @@ interface SettingsProps {
     onRtlAlgorithmChange: (value: string) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
-    analyticsEnabled: boolean;
-    onAnalyticsChange: (enabled: boolean) => void;
     isDarkMode: boolean;
 }
 
@@ -33,15 +31,12 @@ const Settings: React.FC<SettingsProps> = ({
     onRtlAlgorithmChange,
     supportHide,
     onSupportChange,
-    analyticsEnabled,
-    onAnalyticsChange,
     isDarkMode
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
-    const [analyticsDisableDialogOpen, setAnalyticsDisableDialogOpen] = React.useState(false);
     
     React.useEffect(() => {
         setSelectedValue(rtlAlgorithm);
@@ -88,25 +83,6 @@ const Settings: React.FC<SettingsProps> = ({
     const handleCloseModal = () => {
         setModalOpen(false);
         setSelectedAlgorithm('');
-    };
-
-    const handleAnalyticsChange = (checked: boolean) => {
-        if (!checked && analyticsEnabled) {
-            // اگر می‌خواهد غیرفعال کند، Dialog را نمایش بده
-            setAnalyticsDisableDialogOpen(true);
-        } else {
-            // اگر می‌خواهد فعال کند، مستقیماً فعال کن
-            onAnalyticsChange(checked);
-        }
-    };
-
-    const handleConfirmDisableAnalytics = () => {
-        onAnalyticsChange(false);
-        setAnalyticsDisableDialogOpen(false);
-    };
-
-    const handleCancelDisableAnalytics = () => {
-        setAnalyticsDisableDialogOpen(false);
     };
     
     return (
@@ -492,93 +468,6 @@ const Settings: React.FC<SettingsProps> = ({
                         />
                     </Box>
                 </Paper>
-
-                {/* تنظیمات Analytics */}
-                <Paper elevation={0} sx={{ 
-                    m: 2, 
-                    p: 2, 
-                    borderRadius: 1,
-                    background: isDarkMode ? '#2f2f41' : '#ffffff'
-                }}>
-                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
-                        <Typography variant="h6" sx={{ 
-                            fontWeight: 600, 
-                            color: 'primary.main',
-                            mb: 0.5
-                        }}>
-                            تحلیل استفاده (Analytics)
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                            color: 'text.secondary',
-                            fontSize: '0.8rem'
-                        }}>
-                            برای بهبود عملکرد افزونه، داده‌های استفاده به‌صورت کاملاً ناشناس جمع‌آوری می‌شوند.
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                            color: 'text.secondary',
-                            fontSize: '0.8rem',
-                            mt: 1
-                        }}>
-                            این داده‌ها شامل هیچ‌گونه اطلاعات شخصی یا محتوای حساس نیستند و تنها برای درک بهتر نحوه استفاده کاربران از افزونه و ارتقای تجربه کاربری به کار می‌روند.
-                        </Typography>
-                    </Box>
-                    
-                    <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                    }}>
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="body1" sx={{ 
-                                fontWeight: 500, 
-                                fontSize: '0.95rem',
-                                color: 'text.primary'
-                            }}>
-                                فعال‌سازی Analytics
-                            </Typography>
-                        </Box>
-                        <Switch
-                            checked={analyticsEnabled}
-                            onChange={(e) => handleAnalyticsChange(e.target.checked)}
-                            sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                            }}
-                        />
-                    </Box>
-                    
-                    <Box sx={{ 
-                        mt: 2, 
-                        textAlign: 'center'
-                    }}>
-                        <Typography 
-                            variant="body2" 
-                            component="a"
-                            href="https://chatgpt-rtl.ir/privacy-policy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{ 
-                                color: theme.palette.primary.main,
-                                textDecoration: 'none',
-                                fontSize: '0.75rem',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                    textDecoration: 'underline'
-                                }
-                            }}
-                        >
-                            برای اطلاعات بیشتر، حریم خصوصی را بخوانید
-                        </Typography>
-                    </Box>
-                </Paper>
                 
             </Box>
 
@@ -667,136 +556,6 @@ const Settings: React.FC<SettingsProps> = ({
                         }}
                     >
                         بستن
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Dialog for Analytics Disable Confirmation */}
-            <Dialog 
-                open={analyticsDisableDialogOpen} 
-                onClose={handleCancelDisableAnalytics}
-                maxWidth="sm"
-                fullWidth
-                sx={{
-                    '& .MuiDialog-paper': {
-                        backgroundColor: theme.palette.background.paper,
-                        color: theme.palette.text.primary,
-                        borderRadius: 2,
-                        direction: 'rtl'
-                    }
-                }}
-            >
-                <DialogTitle sx={{ 
-                    textAlign: 'center', 
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                    fontSize: '1.1rem',
-                    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                    py: 2,
-                    mb: 2
-                }}>
-                    مطمئن هستید که Analytics را غیرفعال کنید؟
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
-                    <Typography variant="body1" sx={{ 
-                        color: theme.palette.text.primary, 
-                        mb: 2,
-                        lineHeight: 1.8,
-                        fontSize: '0.95rem',
-                        textAlign: 'justify'
-                    }}>
-                        با غیرفعال کردن Analytics، شما از کمک به بهبود افزونه و ارائه تجربه بهتر برای همه کاربران صرف‌نظر می‌کنید.
-                    </Typography>
-                    <Box sx={{ 
-                        bgcolor: theme.palette.mode === 'dark' 
-                            ? 'rgba(255, 193, 7, 0.1)' 
-                            : 'rgba(255, 193, 7, 0.1)',
-                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 193, 7, 0.3)' : 'rgba(255, 193, 7, 0.3)'}`,
-                        borderRadius: 2,
-                        p: 2,
-                        mb: 2
-                    }}>
-                        <Typography variant="body2" sx={{ 
-                            color: theme.palette.text.secondary,
-                            fontSize: '0.9rem',
-                            lineHeight: 1.7
-                        }}>
-                            <strong>توجه:</strong> داده‌های Analytics به صورت کاملاً ناشناس و غیرشخصی جمع‌آوری می‌شوند. این روش مورد تایید گوگل است و هیچ اطلاعات حساسی شامل نمی‌شود. با فعال نگه داشتن Analytics، به ما کمک می‌کنید تا افزونه را بهتر و سریع‌تر بهبود دهیم.
-                        </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ 
-                        color: theme.palette.text.secondary,
-                        fontSize: '0.85rem',
-                        fontStyle: 'italic',
-                        mb: 2
-                    }}>
-                        در صورت غیرفعال کردن، تمام داده‌های ذخیره شده در مرورگر شما پاک خواهند شد.
-                    </Typography>
-                    <Box sx={{ 
-                        mt: 2,
-                        textAlign: 'center',
-                        pt: 2,
-                        borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                    }}>
-                        <Typography 
-                            variant="body2" 
-                            component="a"
-                            href="https://chatgpt-rtl.ir/privacy-policy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{ 
-                                color: theme.palette.primary.main,
-                                textDecoration: 'none',
-                                fontSize: '0.85rem',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                '&:hover': {
-                                    textDecoration: 'underline'
-                                }
-                            }}
-                        >
-                            برای دریافت اطلاعات بیشتر، می‌توانید حریم خصوصی را مطالعه کنید. در آنجا دقیق و واضح توضیح داده شده است.
-                        </Typography>
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{ 
-                    justifyContent: 'space-between', 
-                    pt: 2,
-                    px: 3,
-                    pb: 3,
-                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                    gap: 2
-                }}>
-                    <Button 
-                        onClick={handleCancelDisableAnalytics}
-                        variant="outlined"
-                        sx={{
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                            color: theme.palette.text.primary,
-                            fontWeight: 600,
-                            px: 3,
-                            '&:hover': {
-                                borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
-                                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-                            }
-                        }}
-                    >
-                        لغو
-                    </Button>
-                    <Button 
-                        onClick={handleConfirmDisableAnalytics}
-                        variant="contained"
-                        sx={{
-                            backgroundColor: theme.palette.error.main,
-                            color: '#ffffff',
-                            fontWeight: 600,
-                            px: 3,
-                            '&:hover': {
-                                backgroundColor: theme.palette.error.dark
-                            }
-                        }}
-                    >
-                        غیرفعال کردن
                     </Button>
                 </DialogActions>
             </Dialog>

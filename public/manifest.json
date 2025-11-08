@@ -1,7 +1,7 @@
 {
     "update_url": "https://clients2.google.com/service/update2/crx",
     "name": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Claude + 20 AI Chat",
-    "version": "3.0.152",
+    "version": "3.1.2",
     "short_name": "RTL ChatGPT",
     "background": {
         "service_worker": "js/background.js"
@@ -60,7 +60,8 @@
                 "https://chat.z.ai/*",
                 "https://lmarena.ai/*",
                 "https://openrouter.ai/*",
-                "https://agent.minimax.io/*"
+                "https://agent.minimax.io/*",
+                "https://jules.google.com/*"
             ]
         }
     ],
@@ -98,7 +99,8 @@
                 "https://chat.z.ai/*",
                 "https://lmarena.ai/*",
                 "https://openrouter.ai/*",
-                "https://agent.minimax.io/*"
+                "https://agent.minimax.io/*",
+                "https://jules.google.com/*"
             ]
         }
     ],

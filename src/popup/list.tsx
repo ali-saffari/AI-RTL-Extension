@@ -44,8 +44,9 @@ const services: Service[] = [
     { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa' },
-    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
+    { key: 'jules', name: 'Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
     { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/' },
+    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot', new: true },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/', new: true },
     { key: 'minimax', name: 'Minimax', icon: '/images/minimax.png', url: 'https://agent.minimax.io/', new: true },
@@ -93,6 +94,7 @@ export default function ServiceList() {
         lmarena: true,
         openrouter: true,
         minimax: true,
+        jules: true,
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
