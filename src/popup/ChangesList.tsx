@@ -14,9 +14,10 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
-        version: "1404/07/11",
+        version: "1404/08/18",
         changes: [
-            { id: "1", text: "افزودن Jules" },
+            { id: "1", text: "افزودن Digen" },
+            { id: "1", text: "افزودن Google Jules" },
             { id: "2", text: "اپدیت Gemini" },
         ]
     },

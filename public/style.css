@@ -750,6 +750,12 @@ pending-request {
 
 }
 
+a.AsSBtn.AsDonate {
+    color: inherit;
+    font-family: 'iranyekan';
+    vertical-align: middle;
+}
+
 
 /*-----Mistral-------*/
 

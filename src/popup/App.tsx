@@ -861,12 +861,12 @@ function App() {
                 <div className="sticky-footer-content">
                     <div className="footer-links">
                         <a 
-                            href="https://alisaffari.ir/" 
+                            href="https://chatgpt-rtl.ir/report/" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"
                         >
-                            ارتباط با من
+                            گزارش مشکل
                         </a>
                         
                         <span className="footer-separator">|</span>

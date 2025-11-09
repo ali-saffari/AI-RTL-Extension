@@ -231,7 +231,7 @@ body[data-theme="light"] .sticky-footer {
 
 .footer-links {
     display: flex;
-    gap: 16px;
+    gap: 8px;
     align-items: center;
     justify-content: center;
     width: 100%;

@@ -27,7 +27,7 @@ export function modalDonate() {
   <div class="As-modal">
  <h2 style="margin-top:0; color:#e67e22;">💛 ممنون که همراه ما هستی!</h2>
    <p>
-اگر از این اکستنشن خوشت اومده، می‌تونی با این سه روش از ما حمایت کنی و مارو برای به‌روزرسانی و اضافه کردن قابلیت‌های جدید دلگرم نگه داری:
+اگر از این اکستنشن خوشت اومده، می‌تونی با این چهار روش از ما حمایت کنی و مارو برای به‌روزرسانی و اضافه کردن قابلیت‌های جدید دلگرم نگه داری:
 
 
 </p>
@@ -69,6 +69,16 @@ export function modalDonate() {
 باورت نمی‌شه چقدر این کار کوچک، تاثیر بزرگی داره.</p>
 </div>
 
+<div class="As-modal-block">
+    <h3 style="color:#9b59b6;">🏆 ۴. حمایت رسانه‌ای</h3>
+    <p>اگر شما یا رسانه‌ای که در آن فعالیت می‌کنید (وبلاگ، کانال تلگرام، سایت، ویدیو، پادکست و...)، از این افزونه حمایت رسانه‌ای کرده‌اید، خیلی خوشحال می‌شوم که خبرش رو به من بدید تا در لیست حامیان رسانه‌ای قرار بگیرید. این کار هم به معرفی بیشتر افزونه کمک می‌کنه و هم قدردانی از شماست.</p>
+    <a href="https://chatgpt-rtl.ir/supporters/" target="_blank" 
+      style="display:inline-block; background:#9b59b6; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
+">
+      صفحه حامیان
+    </a>
+</div>
+
 
     <button class="As-close-btn" id="AscloseBtn">بستن</button>
   </div>
@@ -79,7 +89,11 @@ export function modalDonate() {
 }
 
 
-export function BtnDonate() {
+// export function BtnDonate() {
 
-    return `<div class="AsSBtn AsDonate" id="AsopenBtn" style="z-index: 900">دوست داری ازش حمایت کنی ؟</div>`
+//     return `<div class="AsSBtn AsDonate" id="AsopenBtn" style="z-index: 900">دوست داری ازش حمایت کنی ؟</div>`
+// }
+
+export function BtnDonate() {
+    return `<a href="https://chatgpt-rtl.ir/supporters/" target="_blank" class="AsSBtn AsDonate" style="z-index: 900; text-decoration: none; display: inline-block;">دوست داری ازش حمایت کنی ؟</a>`
 }

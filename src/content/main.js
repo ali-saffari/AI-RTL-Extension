@@ -24,6 +24,8 @@ import { activateLmarena } from './services/lmarena.js';
 import { activateOpenRouter } from './services/openrouter.js';
 import { activateMinimax } from './services/minimax.js';
 import { activateJules } from './services/jules.js';
+import { activate1minai } from './services/1minai.js';
+import { activateDigen } from './services/digen.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -160,6 +162,14 @@ const serviceConfig = {
     jules: {
         urls: ["jules.google.com"],
         activate: activateJules
+    },
+    oneMinai: {
+        urls: ["1min.ai", "app.1min.ai"],
+        activate: activate1minai
+    },
+    digen: {
+        urls: ["digen.ai"],
+        activate: activateDigen
     }
 };
 
