@@ -50,8 +50,6 @@ const services: Service[] = [
     { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/' },
     { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
-    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
-    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true },
     { key: 'lmarena', name: 'LMArena', icon: '/images/lmarena_logo.jpg', url: 'https://lmarena.ai/' },
     { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot' },
@@ -66,7 +64,9 @@ const services: Service[] = [
     { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/' },
     { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true },
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
-    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', new: true }
+    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', new: true },
+    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
+    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true }
     
 ];
 
