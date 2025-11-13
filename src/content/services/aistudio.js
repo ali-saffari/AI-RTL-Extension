@@ -31,7 +31,7 @@ export function setAiStudio() {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             siteConfig: 'aistudio'
-        }); // Enable tracking for AI Studio
+        });
     });
 
     $("ms-text-chunk").each(function (each) {
@@ -40,7 +40,7 @@ export function setAiStudio() {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: false
-        }); // Enable tracking for AI Studio
+        });
     });
 
     $("ms-text-chunk textarea").each(function (each) {

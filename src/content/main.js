@@ -216,7 +216,6 @@ async function initializeAllServices() {
         }
     });
     
-    // Return activeService for URL tracking
     return activeService;
 }
 

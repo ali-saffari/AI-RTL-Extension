@@ -283,8 +283,8 @@ const ChangesList: React.FC = () => {
                                 {versionData.version}
                             </Typography>
                             <Box sx={{ pl: 2 }}>
-                                {versionData.changes.map((change) => (
-                                    <Typography key={change.id} variant="body2" sx={{ 
+                                {versionData.changes.map((change, changeIndex) => (
+                                    <Typography key={`${versionData.version}-${changeIndex}-${change.id}`} variant="body2" sx={{ 
                                         color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)', 
                                         mb: 0.5,
                                         display: 'flex',

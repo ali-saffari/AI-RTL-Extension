@@ -651,6 +651,13 @@ textarea#search-input-textarea {
     color: #888888;
 }
 
+[dir="rtl"] user-query {
+
+    direction: ltr;
+}
+
+
+
 
 
 pending-request {

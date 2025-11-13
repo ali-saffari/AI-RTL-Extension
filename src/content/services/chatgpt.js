@@ -3,51 +3,6 @@ import { isRTL, detectTextDirection, analyzeTextDirectionFirstWord } from '../ut
 import { addCopyright } from '../utils/copyright.js';
 import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphWithBreaks, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-// Observer for .text-message .markdown elements
-let markdownObserver = null;
-
-export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_full') {
-    // Clean up existing observer
-    if (markdownObserver) {
-        markdownObserver.disconnect();
-    }
-
-    // Create new observer
-    markdownObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        // Check if the added node is a .text-message .markdown element
-                        const markdownElements = $(node).find('.text-message .markdown').add(
-                            $(node).filter('.text-message .markdown')
-                        );
-                        
-                        markdownElements.each(function() {
-                         
-                            setTimeout(() => {
-                                processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-                                    fontClass: 'FontSetImportantGPT',
-                                    processedClass: 'AsOkText',
-                                    isContainer: true,
-                                    siteConfig: 'chatgpt'
-                                });
-                            }, 100);
-                        
-                        });
-                    }
-                });
-            }
-        });
-    });
-
-    // Start observing
-    markdownObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-}
-
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     // Check if React is still hydrating
     if (document.querySelector('[data-reactroot]') && !document.querySelector('[data-reactroot]').__reactInternalInstance) {
@@ -77,14 +32,14 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    // $('.text-message .markdown').each(function (each) {
-    //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-    //         fontClass: 'FontSetImportantGPT',
-    //         processedClass: 'AsOkText',
-    //         isContainer: true,
-    //         siteConfig: 'chatgpt'
-    //     });
-    // })
+    $('.text-message .markdown').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSetImportantGPT',
+            processedClass: 'AsOkText',
+            isContainer: true,
+            siteConfig: 'chatgpt'
+        });
+    })
 
     $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
         if (!$(this).parent().hasClass("AsOk")) {
@@ -177,9 +132,6 @@ export function initializeChatGptHistory() {
 export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     // RTL algorithm is now available as parameter
     console.log('ChatGPT RTL activated with algorithm:', rtlAlgorithm);
-    
-    // Initialize the markdown observer
-    initializeMarkdownObserver(rtlAlgorithm);
     
     // Wait for React to fully load before initializing
     setTimeout(() => {

@@ -1,0 +1,19 @@
+{
+  "extension_name": {
+    "message": "ChatGPT RTL (فارسی) | راست‌چین و بهینه‌سازی بیش از ۲۰ هوش مصنوعی",
+    "description": "نام کامل افزونه"
+  },
+  "extension_short_name": {
+    "message": "RTL ChatGPT",
+    "description": "نام کوتاه افزونه"
+  },
+  "extension_description": {
+    "message": "راست‌چین فارسی و فونت بهینه برای ChatGPT، DeepSeek، Claude، Copilot، Gemini و ۲۰+ ابزار AI. بهینه‌سازی RTL خودکار",
+    "description": "توضیحات افزونه"
+  },
+  "extension_action_title": {
+    "message": "RTL (Persian/Farsi)",
+    "description": "عنوان دکمه اکستنشن"
+  }
+}
+
