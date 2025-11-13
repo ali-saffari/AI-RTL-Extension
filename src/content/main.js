@@ -28,6 +28,7 @@ import { activate1minai } from './services/1minai.js';
 import { activateDigen } from './services/digen.js';
 import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
+import { activateChatsonic } from './services/chatsonic.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -180,6 +181,10 @@ const serviceConfig = {
     synaps: {
         urls: ["synaps.app", "www.synaps.app", "my.synaps.app"],
         activate: activateSynaps
+    },
+    writesonic: {
+        urls: ["app.writesonic.com"],
+        activate: activateChatsonic
     }
 };
 

@@ -7,7 +7,7 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebooklm: true, jules: true, lovable: true, synaps: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true
+    notebooklm: true, jules: true, lovable: true, synaps: true, writesonic: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true
 };
 
 // ============================================

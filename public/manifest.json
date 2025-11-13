@@ -67,7 +67,8 @@
                 "https://www.lovable.dev/*",
                 "https://synaps.app/*",
                 "https://www.synaps.app/*",
-                "https://my.synaps.app/*"
+                "https://my.synaps.app/*",
+                "https://app.writesonic.com/*"
             ]
         }
     ],
@@ -114,7 +115,8 @@
                 "https://www.lovable.dev/*",
                 "https://synaps.app/*",
                 "https://www.synaps.app/*",
-                "https://my.synaps.app/*"
+                "https://my.synaps.app/*",
+                "https://app.writesonic.com/*"
             ]
         }
     ],
