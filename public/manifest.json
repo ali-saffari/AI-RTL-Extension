@@ -62,7 +62,12 @@
                 "https://jules.google.com/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
-                "https://digen.ai/*"
+                "https://digen.ai/*",
+                "https://lovable.dev/*",
+                "https://www.lovable.dev/*",
+                "https://synaps.app/*",
+                "https://www.synaps.app/*",
+                "https://my.synaps.app/*"
             ]
         }
     ],
@@ -104,7 +109,12 @@
                 "https://jules.google.com/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
-                "https://digen.ai/*"
+                "https://digen.ai/*",
+                "https://lovable.dev/*",
+                "https://www.lovable.dev/*",
+                "https://synaps.app/*",
+                "https://www.synaps.app/*",
+                "https://my.synaps.app/*"
             ]
         }
     ],

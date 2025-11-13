@@ -26,6 +26,8 @@ import { activateMinimax } from './services/minimax.js';
 import { activateJules } from './services/jules.js';
 import { activate1minai } from './services/1minai.js';
 import { activateDigen } from './services/digen.js';
+import { activateLovable } from './services/lovable.js';
+import { activateSynaps } from './services/synaps.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -170,6 +172,14 @@ const serviceConfig = {
     digen: {
         urls: ["digen.ai"],
         activate: activateDigen
+    },
+    lovable: {
+        urls: ["lovable.dev", "www.lovable.dev"],
+        activate: activateLovable
+    },
+    synaps: {
+        urls: ["synaps.app", "www.synaps.app", "my.synaps.app"],
+        activate: activateSynaps
     }
 };
 

@@ -35,7 +35,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
 
 
     // Process markdown container elements using RTL algorithm
-    $('[class*="ChatMessage-module__content"]').each(function (each) {
+    $('.markdown-body').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -44,7 +44,17 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+    
 
+    
+    $('[class*="UserMessage"] , [class*="ConversationListV2-module__item"]').each(function (each) {
+
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+      
+    });
 
 }
 
