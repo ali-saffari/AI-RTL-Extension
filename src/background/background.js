@@ -11,10 +11,53 @@ const SERVICE_FLAGS = {
 };
 
 // ============================================
+// USER ID GENERATION & VALIDATION
+// ============================================
+
+/**
+ * Get or create user ID and update uninstall URL with uid
+ */
+async function initializeUserId() {
+    try {
+        const result = await chrome.storage.sync.get(['uid']);
+        let uid = result.uid;
+        
+        if (!uid) {
+            // Generate 10-digit random number
+            const randomNumber = Math.floor(Math.random() * 9000000000) + 1000000000;
+            const numberString = randomNumber.toString();
+            
+            // Calculate checksum (like Iranian National ID algorithm)
+            let sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(numberString[9 - i], 10) * (i + 1);
+            }
+            const remainder = sum % 11;
+            const checksum = remainder < 2 ? remainder.toString() : (11 - remainder === 10 ? 'A' : (11 - remainder).toString());
+            
+            uid = numberString + checksum;
+            await chrome.storage.sync.set({ uid });
+        }
+        
+        chrome.runtime.setUninstallURL(`https://chatgpt-rtl.ir/uninstall-feedback/?uid=${uid}`);
+        return uid;
+    } catch (error) {
+        console.error('Error initializing user ID:', error);
+        chrome.runtime.setUninstallURL('https://chatgpt-rtl.ir/uninstall-feedback/?error=1');
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
-chrome.runtime.onInstalled.addListener((details) => {
+// Initialize user ID and set uninstall URL when service worker starts
+initializeUserId();
+
+chrome.runtime.onInstalled.addListener(async (details) => {
+    // Initialize user ID and set uninstall URL with ID
+    await initializeUserId();
+    
     if (details.reason === 'install') {
         chrome.storage.sync.set({
             ...SERVICE_FLAGS,
