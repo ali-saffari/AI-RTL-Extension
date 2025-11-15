@@ -724,13 +724,13 @@ function App() {
                                         <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>راه‌حل چیست؟</strong>
                                         <br />
                                         اگر افزونه روی سایتی کار نمی‌کند، این کاملاً طبیعی است! 
-                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://t.me/mrmaterial" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
+                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://chatgpt-rtl.ir/report/?source=extension-popup-telegram-help" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
                                         <br /><br />
                                         همچنین پیشنهادات و ایده‌های شما برای بهبود افزونه بسیار ارزشمند است و از ارسال آن‌ها استقبال می‌کنیم.
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                                            <a href="https://t.me/mrmaterial" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                            <a href="https://chatgpt-rtl.ir/report/?source=extension-popup-telegram-contact" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                                 <Typography variant="body2" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                     '&:hover': { textDecoration: 'underline' }, 
@@ -797,7 +797,7 @@ function App() {
                                         هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                                        <a href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                        <a href="https://chatgpt-rtl.ir/?source=extension-popup-chrome-store-about" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
@@ -826,7 +826,7 @@ function App() {
                                         این افزونه با عشق و انرژی شخصی ساخته شده و همچنان رایگان در اختیار شما قرار دارد. حمایت شما، چه با ثبت نظر و امتیاز و چه با معرفی افزونه به دوستان و دیگران، انگیزه‌ی ادامه‌ی مسیر و توسعه‌ی قابلیت‌های جدید را برای من فراهم می‌کند. اگر مایل بودید می‌توانید با یک دونیت کوچک نیز از پروژه حمایت کنید.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                        <a href="https://donito.me/chatgpt_rtl" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                        <a href="https://chatgpt-rtl.ir/supporters/?source=extension-popup-donito-about" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
@@ -861,7 +861,7 @@ function App() {
                 <div className="sticky-footer-content">
                     <div className="footer-links">
                         <a 
-                            href="https://chatgpt-rtl.ir/report/" 
+                            href="https://chatgpt-rtl.ir/report/?source=extension-popup-footer-report" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"
@@ -872,7 +872,7 @@ function App() {
                         <span className="footer-separator">|</span>
                         
                         <a 
-                            href="https://chromewebstore.google.com/detail/rtl-chatgpt-persianfarsi/pjpmebofipgpjaincgoboibbmicccbne" 
+                            href="https://chatgpt-rtl.ir/?source=extension-popup-chrome-store-footer" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"
@@ -883,7 +883,7 @@ function App() {
                         <span className="footer-separator">|</span>
                         
                         <a 
-                            href="https://donito.me/chatgpt_rtl" 
+                            href="https://chatgpt-rtl.ir/supporters/?source=extension-popup-donito-footer" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"

@@ -39,11 +39,11 @@ async function initializeUserId() {
             await chrome.storage.sync.set({ uid });
         }
         
-        chrome.runtime.setUninstallURL(`https://chatgpt-rtl.ir/uninstall-feedback/?uid=${uid}`);
+        chrome.runtime.setUninstallURL(`https://chatgpt-rtl.ir/uninstall-feedback/?uid=${uid}&source=extension-uninstall`);
         return uid;
     } catch (error) {
         console.error('Error initializing user ID:', error);
-        chrome.runtime.setUninstallURL('https://chatgpt-rtl.ir/uninstall-feedback/?error=1');
+        chrome.runtime.setUninstallURL('https://chatgpt-rtl.ir/uninstall-feedback/?error=1&source=extension-uninstall');
     }
 }
 
