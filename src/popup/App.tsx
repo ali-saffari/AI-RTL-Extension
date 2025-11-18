@@ -15,6 +15,10 @@ import {
     Tooltip,
     SvgIcon
 } from '@mui/material';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+import { prefixer } from 'stylis';
+import rtlPlugin from 'stylis-plugin-rtl';
 import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiFileDocumentEdit, mdiMessageText, mdiStar, mdiHeart } from '@mdi/js';
 // Using Material-UI built-in icons instead of icons-material package
 import CssBaseline from '@mui/material/CssBaseline';
@@ -23,6 +27,12 @@ import Settings from './Settings';
 import ChangesList from './ChangesList';
 import './App.css';
 import manifest from '../../public/manifest.json';
+
+// Create rtl cache
+const cacheRtl = createCache({
+    key: 'muirtl',
+    stylisPlugins: [prefixer, rtlPlugin],
+});
 
 const darkTheme = createTheme({
     direction: 'rtl',
@@ -132,21 +142,8 @@ const darkTheme = createTheme({
                     fontFamily: '"iranyekan"',
                 },
             },
-        },
-        MuiList: {
-            styleOverrides: {
-                root: {
-                    direction: 'ltr',
-                },
-            },
-        },
-        MuiListItem: {
-            styleOverrides: {
-                root: {
-                    direction: 'ltr',
-                },
-            },
-        },
+        }
+
     },
 });
 
@@ -263,34 +260,36 @@ const lightTheme = createTheme({
                     fontFamily: '"iranyekan"',
                 },
             },
-        },
-        MuiList: {
-            styleOverrides: {
-                root: {
-                    direction: 'ltr',
-                },
-            },
-        },
-        MuiListItem: {
-            styleOverrides: {
-                root: {
-                    direction: 'ltr',
-                },
-            },
-        },
+        }
+       
     },
 });
+
+interface TextSelectorSettings {
+    enabled: 'enabled' | 'allowed_sites' | 'disabled';
+    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
+    highlightColor: string;
+    highlightOpacity: number;
+    logoDisplay: 'always' | 'on_hover' | 'disabled';
+}
 
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
+    const [textSelectorSettings, setTextSelectorSettings] = React.useState<TextSelectorSettings>({
+        enabled: 'enabled',
+        highlightMode: 'on_selection',
+        highlightColor: '#ff0000',
+        highlightOpacity: 0.1,
+        logoDisplay: 'always'
+    });
 
     // Load settings from storage on component mount
     React.useEffect(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode'], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'textSelectorSettings'], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -299,6 +298,9 @@ function App() {
                 }
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
+                }
+                if (result.textSelectorSettings) {
+                    setTextSelectorSettings(result.textSelectorSettings);
                 }
             });
         } catch (error) {
@@ -324,6 +326,16 @@ function App() {
             chrome.storage.sync.set({ supportHide: enabled });
         } catch (error) {
             console.log('Failed to save support setting:', error);
+        }
+    };
+
+    // Save text selector settings to storage when changed
+    const handleTextSelectorSettingsChange = (settings: TextSelectorSettings) => {
+        setTextSelectorSettings(settings);
+        try {
+            chrome.storage.sync.set({ textSelectorSettings: settings });
+        } catch (error) {
+            console.log('Failed to save text selector settings:', error);
         }
     };
 
@@ -488,9 +500,10 @@ function App() {
     }, [isDarkMode]);
 
     return (
-        <ThemeProvider theme={currentTheme}>
-            <CssBaseline />
-            <div className="App" dir="rtl" >
+        <CacheProvider value={cacheRtl}>
+            <ThemeProvider theme={currentTheme}>
+                <CssBaseline />
+                <div className="App" dir="rtl" >
                 <Paper 
                     elevation={0} 
                     sx={{ 
@@ -608,23 +621,10 @@ function App() {
                         <Tabs
                             value={tabValue}
                             onChange={handleTabChange}
-                            sx={{ 
+                            style={{ 
                                 direction: 'rtl',
-                                boxShadow: 'none',
-                                '& .MuiTab-root': {
-                                    color:  isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.9)',
-                                    fontWeight: 500,
-                                    fontSize: '0.8rem',
-                                    boxShadow: 'none'
-                                },
-                                '& .MuiTab-root.Mui-selected': {
-                                    color: '#ffffff',
-                                    fontWeight: 600,
-                                    boxShadow: 'none'
-                                },
-                                '& .MuiTabs-indicator': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#ffffff'
-                                }
+                                boxShadow: 'none'
+                        
                             }}
                         >
                             <Tab label="سایت‌ها" />
@@ -658,17 +658,16 @@ function App() {
                         </div>
                         
                         <div id="settings-section">
-                   
-
                             <Settings
                                 rtlAlgorithm={rtlAlgorithm}
                                 onRtlAlgorithmChange={handleRtlAlgorithmChange}
                                 supportHide={supportHide}
                                 onSupportChange={handleSupportChange}
                                 isDarkMode={isDarkMode}
+                                textSelectorSettings={textSelectorSettings}
+                                onTextSelectorSettingsChange={handleTextSelectorSettingsChange}
                             />
                             
-                      
                         </div>
 
                         
@@ -894,6 +893,7 @@ function App() {
                 </div>
             </div>
         </ThemeProvider>
+        </CacheProvider>
     );
 }
 

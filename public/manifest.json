@@ -49,5 +49,9 @@
     "action": {
         "default_popup": "index.html",
         "default_title": "__MSG_extension_action_title__"
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
     }
 }

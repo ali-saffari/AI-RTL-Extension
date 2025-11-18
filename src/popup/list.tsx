@@ -22,7 +22,7 @@ import {
     Box,
     Paper,
 } from '@mui/material';
-import { mdiInformationOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiOpenInNew } from '@mdi/js';
 
 interface Service {
     key: string;
@@ -159,17 +159,18 @@ export default function ServiceList() {
         <>
             <List
                 sx={{ width: '100%', maxWidth: 360, backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
+                style={{ direction: 'ltr' }}
                 subheader={
                     <ListSubheader 
                         component="div" 
                         id="nested-list-subheader" 
                         sx={{ 
                             textAlign: 'center', 
-                            direction: 'rtl',
                             backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                             color: isDarkMode ? '#ffffff' : '#000000',
                             borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`
                         }}
+                        style={{ direction: 'ltr' }}
                     >
                         {Object.values(checked).filter(Boolean).length} سایت فعال
                     </ListSubheader>
@@ -177,9 +178,9 @@ export default function ServiceList() {
             >
                 {services.map((service, index) => (
                     <React.Fragment key={service.key}>
-                            <a href={service.url} target="_blank" rel="noopener noreferrer">
-                                <ListItem disablePadding>
-                                    <ListItemButton>
+                            <ListItem disablePadding style={{ direction: 'ltr' }}>
+                                <ListItemButton style={{ direction: 'ltr' }}>
+                                    <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                                         <ListItemIcon sx={{ minWidth: 40 }}>
                                             <Avatar 
                                                 sx={{ width: 30, height: 30 }} 
@@ -187,87 +188,120 @@ export default function ServiceList() {
                                                 src={chrome.runtime.getURL(service.icon)}
                                             />
                                         </ListItemIcon>
-                                        <ListItemText 
-                                            primary={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    </a>
+                                    <ListItemText 
+                                        primary={
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                                                     <Typography sx={{ 
                                                         color: isDarkMode ? '#ffffff' : '#000000',
-                                                        fontWeight: 500
+                                                        fontWeight: 500,
+                                                        '&:hover': {
+                                                            textDecoration: 'underline'
+                                                        }
                                                     }}>
                                                         {service.name}
                                                     </Typography>
-                                                    {service.new && (
-                                                        <Box component="span" sx={{ 
-                                                            px: 1, 
-                                                            py: 0.3, 
-                                                            bgcolor: isDarkMode 
-                                                                ? 'rgb(33, 46, 65)' 
-                                                                : 'rgba(30, 64, 175, 0.1)',
-                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                            color: isDarkMode ? '#00e9ff' : '#1c39bb', 
-                                                            borderRadius: 1, 
-                                                            fontSize: '0.7rem',
-                                                            fontWeight: 600
+                                                </a>
+                                                <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        sx={{ 
+                                                            p: 0.5,
+                                                            color: 'text.primary',
+                                                            opacity: 0.4,
+                                                            transition: 'all 0.2s ease',
+                                                            '&:hover': {
+                                                                opacity: 1,
+                                                                transform: 'scale(1.1)',
+                                                                '& .MuiSvgIcon-root': {
+                                                                    color: '#ffffff'
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SvgIcon sx={{ 
+                                                            fontSize: '1.15rem',
+                                                            color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                                                            transition: 'all 0.2s ease'
                                                         }}>
-                                                            جدید
-                                                        </Box>
-                                                    )}
-                                                </Box>
-                                            }
-                                        />
-                                        
-                                        {service.helpText && !(service.key === 'copilot' && isEdge) && (
-                                            <IconButton 
-                                                size="small" 
-                                                sx={{ 
-                                                    ml: 1,
-                                                    color: 'text.primary',
-                                                    opacity: 0.8,
-                                                    '&:hover': {
-                                                        opacity: 1,
-                                                        color: 'primary.main'
-                                                    }
-                                                }}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    setSelectedService(service);
-                                                    setHelpModalOpen(true);
-                                                }}
-                                            >
-                                                <SvgIcon sx={{ 
-                                                    fontSize: '1.25rem',
-                                                    color: isDarkMode ? '#ffffff' : '#000000'
-                                                }}>
-                                                    <path d={mdiInformationOutline} />
-                                                </SvgIcon>
-                                            </IconButton>
-                                        )}
-                                        
-                                        <Switch
-                                            edge="end"
-                                            onChange={handleChange(service.key)}
-                                            checked={checked?.[service.key] || false}
-                                            disabled={service.key === 'copilot' && isEdge}
-                                            data-list-switch="true"
-                                            inputProps={{
-                                                'aria-labelledby': `switch-list-label-${service.key}`,
-                                            }}
-                                            sx={{
-                                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                                },
-                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                                },
-                                                '& .Mui-disabled': {
-                                                    opacity: 0.5
+                                                            <path d={mdiOpenInNew} />
+                                                        </SvgIcon>
+                                                    </IconButton>
+                                                </a>
+                                                {service.new && (
+                                                    <Box component="span" sx={{ 
+                                                        px: 1, 
+                                                        py: 0.3, 
+                                                        bgcolor: isDarkMode 
+                                                            ? 'rgb(33, 46, 65)' 
+                                                            : 'rgba(30, 64, 175, 0.1)',
+                                                        border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                        color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                                                        borderRadius: 1, 
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        جدید
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        }
+                                    />
+                                    
+                                    {service.helpText && !(service.key === 'copilot' && isEdge) && (
+                                        <IconButton 
+                                            size="small" 
+                                            sx={{ 
+                                                ml: 1,
+                                                color: 'text.primary',
+                                                opacity: 0.8,
+                                                '&:hover': {
+                                                    opacity: 1,
+                                                    color: 'primary.main'
                                                 }
                                             }}
-                                        />
-                                    </ListItemButton>
-                                </ListItem>
-                            </a>
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setSelectedService(service);
+                                                setHelpModalOpen(true);
+                                            }}
+                                        >
+                                            <SvgIcon sx={{ 
+                                                fontSize: '1.25rem',
+                                                color: isDarkMode ? '#ffffff' : '#000000'
+                                            }}>
+                                                <path d={mdiInformationOutline} />
+                                            </SvgIcon>
+                                        </IconButton>
+                                    )}
+                                    
+                                    <Switch
+                                        edge="start"
+                                    
+                                        onChange={handleChange(service.key)}
+                                        checked={checked?.[service.key] || false}
+                                        disabled={service.key === 'copilot' && isEdge}
+                                        data-list-switch="true"
+                                        inputProps={{
+                                            'aria-labelledby': `switch-list-label-${service.key}`,
+                                        }}
+                                        sx={{
+                                            transform: 'rotate(180deg)',
+                                            '& .MuiSwitch-switchBase.Mui-checked': {
+                                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            },
+                                            '& .Mui-disabled': {
+                                                opacity: 0.5
+                                            }
+                                        }}
+                                    />
+                                </ListItemButton>
+                            </ListItem>
                         {service.key === 'copilot' && isEdge && (
                             <Box sx={{ px: 2, py: 1.5 }}>
                                 <Paper 

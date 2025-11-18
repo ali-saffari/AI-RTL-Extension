@@ -88,3 +88,40 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         }
     }
 });
+
+// Handle messages from content scripts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'openPopup') {
+        try {
+            // Open popup in a new tab
+            const popupUrl = chrome.runtime.getURL('index.html');
+            console.log('[Background] Opening popup at:', popupUrl);
+            chrome.tabs.create({ url: popupUrl }, (tab) => {
+                if (chrome.runtime.lastError) {
+                    console.error('[Background] Error creating tab:', chrome.runtime.lastError);
+                    sendResponse({ success: false, error: chrome.runtime.lastError.message });
+                } else {
+                    console.log('[Background] Tab created successfully:', tab);
+                    sendResponse({ success: true });
+                }
+            });
+            return true; // Keep the message channel open for async response
+        } catch (error) {
+            console.error('[Background] Exception opening popup:', error);
+            sendResponse({ success: false, error: error.message });
+            return true;
+        }
+    } else if (message.action === 'openOptionsPage') {
+        try {
+            // Open options page
+            chrome.runtime.openOptionsPage();
+            sendResponse({ success: true });
+            return true;
+        } catch (error) {
+            console.error('[Background] Exception opening options page:', error);
+            sendResponse({ success: false, error: error.message });
+            return true;
+        }
+    }
+    return false;
+});

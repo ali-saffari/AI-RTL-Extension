@@ -350,8 +350,38 @@ function showPopupMenu(range, element) {
     logo.src = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
     logo.alt = 'RTL Extension';
     
-    // Add click handler to expand menu
+    // Settings button - Create first and add handler before header handler
+    const settingsBtn = document.createElement('button');
+    settingsBtn.className = 'rtl-text-selector-menu-settings-btn';
+    settingsBtn.type = 'button';
+    settingsBtn.innerHTML = '⚙️';
+    settingsBtn.title = 'تنظیمات';
+    
+    // Add click handler for settings button
+    settingsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        // Open options page via background script
+        if (chrome.runtime && chrome.runtime.sendMessage) {
+            chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('[RTL Text Selector] Error:', chrome.runtime.lastError);
+                }
+            });
+        }
+        
+        hidePopupMenu();
+        removeHighlight();
+    }, true);
+    
+    // Add click handler to expand menu (for header and logo only)
     const expandMenu = (e) => {
+        // Don't expand if clicking on settings button
+        if (e.target === settingsBtn || settingsBtn.contains(e.target)) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -364,33 +394,6 @@ function showPopupMenu(range, element) {
     
     header.addEventListener('click', expandMenu, true);
     logo.addEventListener('click', expandMenu, true);
-    
-    // Settings button
-    const settingsBtn = document.createElement('button');
-    settingsBtn.className = 'rtl-text-selector-menu-settings-btn';
-    settingsBtn.type = 'button';
-    settingsBtn.innerHTML = '⚙️';
-    settingsBtn.title = 'تنظیمات';
-    settingsBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        
-        // Open extension popup or settings page
-        if (chrome.runtime?.openOptionsPage) {
-            chrome.runtime.openOptionsPage();
-        } else {
-            chrome.runtime.sendMessage({ action: 'openOptions' });
-        }
-        
-        hidePopupMenu();
-        removeHighlight();
-    }, true);
-    
-    // Prevent settings button from expanding menu
-    settingsBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-    }, false);
     
     header.appendChild(logo);
     header.appendChild(settingsBtn);

@@ -27,6 +27,7 @@ class CopyBackgroundPlugin {
 module.exports = {
     entry: {
         popup: './src/popup/index.tsx',
+        options: './src/options/index.tsx',
         // background: './src/background/index.ts', // Excluded from bundle - will be copied directly
         content: './src/content/index.ts'
     },
