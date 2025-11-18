@@ -29,6 +29,7 @@ import { activateDigen } from './services/digen.js';
 import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
 import { activateChatsonic } from './services/chatsonic.js';
+import { activateErnie } from './services/ernie.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -185,6 +186,10 @@ const serviceConfig = {
     writesonic: {
         urls: ["app.writesonic.com"],
         activate: activateChatsonic
+    },
+    ernie: {
+        urls: ["ernie.baidu.com", "www.ernie.baidu.com"],
+        activate: activateErnie
     }
 };
 

@@ -847,6 +847,12 @@ a.AsSBtn.AsDonate {
 .FontSetNodeName {
     font-size: 16px !important;
 }
+
+.AsOkNotebooklm[dir="rtl"] .ng-star-inserted  {
+    font-family: iranyekan, sans-serif !important;
+}
+
+
 /* --------OpenRouter------------- */
 
 .FontOpenRouter ol.pl-8[dir="rtl"] {

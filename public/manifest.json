@@ -68,7 +68,9 @@
                 "https://synaps.app/*",
                 "https://www.synaps.app/*",
                 "https://my.synaps.app/*",
-                "https://app.writesonic.com/*"
+                "https://app.writesonic.com/*",
+                "https://ernie.baidu.com/*",
+                "https://www.ernie.baidu.com/*"
             ]
         }
     ],
@@ -116,7 +118,9 @@
                 "https://synaps.app/*",
                 "https://www.synaps.app/*",
                 "https://my.synaps.app/*",
-                "https://app.writesonic.com/*"
+                "https://app.writesonic.com/*",
+                "https://ernie.baidu.com/*",
+                "https://www.ernie.baidu.com/*"
             ]
         }
     ],

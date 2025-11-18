@@ -79,7 +79,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
   
 
-     $('[class*="note-header"] , [class*="mindmap"]').each(function (each) {
+     $('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger').each(function (each) {
 
 
         if (!$(this).hasClass("FontSet")) {
@@ -121,6 +121,8 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
     
     $('.message-text-content , .summary-content , .note-editor , .artifact-content , .elements-container').each(function (each) {
+
+        $(this).addClass('AsOkNotebooklm');
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

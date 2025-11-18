@@ -66,7 +66,8 @@ const services: Service[] = [
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
     { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', new: true },
     { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
-    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true }
+    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true },
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true }
     
 ];
 
@@ -105,6 +106,7 @@ export default function ServiceList() {
         lovable: true,
         synaps: true,
         writesonic: true,
+        ernie: true,
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);

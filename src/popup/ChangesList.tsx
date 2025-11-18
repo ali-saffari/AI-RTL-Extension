@@ -19,6 +19,7 @@ const changesData: VersionChanges[] = [
             { id: "1", text: "افزودن Lovable" },
             { id: "2", text: "افزودن Synaps" },
             { id: "3", text: "افزودن Writesonic (Chatsonic)" },
+            { id: "4", text: "افزودن Ernie (Baidu)" },
         ]
     },
     {

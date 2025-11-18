@@ -12,7 +12,7 @@ export function setDigen(rtlAlgorithm = 'advanced_full') {
 
     }
 
-    $('textarea, input[type="text"], input[type="search"], input:not([type]) , .tiptap ').each(function (each) {
+    $('textarea, input[type="text"], input[type="search"], input:not([type]) , .tiptap . .line-clamp-2 ').each(function (each) {
         const inputElement = $(this);
         
         if (inputElement.data('rtl-listener-added')) {

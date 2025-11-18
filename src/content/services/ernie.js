@@ -1,0 +1,78 @@
+// ernie.js service functions
+import { addCopyright } from '../utils/copyright.js';
+import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+
+export function setErnie(rtlAlgorithm = 'advanced_full') {
+    if (chrome.runtime?.id) {
+        // Add copyright notice - selector should be adjusted based on actual site structure
+        let fo2 = `footer`
+        addCopyright($(fo2), 'AsBoxErnie AsBoxB', 'margin-top: 4px; margin-bottom: -5px; font-size: 13px;');
+    }
+
+    // Process textarea elements
+    $('textarea').each(function (each) {
+        if ($(this).data('rtl-listener-added')) {
+            return;
+        }
+        $(this).data('rtl-listener-added', true);
+        
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+        
+        $(this).on('input keyup paste', function() {
+            requestAnimationFrame(() => {
+                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    fontClass: 'FontSet'
+                });
+            });
+        });
+    });
+
+    // Process message content and chat elements
+    $('.dialog-card-wrapper').each(function (each) {
+   
+        
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
+
+    // Process common text elements
+    
+    $(' [class*="container_"] span').each(function (each) {
+        if (!$(this).hasClass("FontSet")) {
+            $(this).addClass('FontSet');
+        }
+
+    });
+
+
+
+    $('[class*="questionText_"] span, [class*="sessionName"]').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'Asok',
+            rtlClass: 'AsRtl',
+        });
+    });
+}
+
+// Main activation function for Ernie
+export function activateErnie(rtlAlgorithm = 'advanced_full') {
+    console.log('Ernie RTL activated with algorithm:', rtlAlgorithm);
+    
+    // Initial setup
+    setErnie(rtlAlgorithm);
+
+    // Periodic updates
+    setInterval(() => {
+        setErnie(rtlAlgorithm);
+    }, 1000);
+}
+
