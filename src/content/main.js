@@ -30,9 +30,13 @@ import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
 import { activateChatsonic } from './services/chatsonic.js';
 import { activateErnie } from './services/ernie.js';
+import { initTextSelector } from './utils/textSelector.js';
 
 // Global variables
 let site = window.location.hostname;
+
+// Initialize text selector highlighter (works on all sites)
+initTextSelector();
 
 // Listen for storage changes
 chrome.storage.sync.onChanged.addListener((changes) => {
