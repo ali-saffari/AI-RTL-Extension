@@ -54,7 +54,7 @@ export function modalDonate() {
     <h3 style="color:#f39c12;">⭐ ۲. دادن ۵ ستاره</h3>
     <p>اگر نمی‌تونی حمایت مالی کنی، اشکالی نداره! فقط با دادن ۵ ستاره به اکستنشن، کلی دلگرمی بهمون می‌دی و نشون می‌دی که کنارمون هستی!</p>
     
-       <a href="https://chatgpt-rtl.ir/?source=extension-modal-chrome-store-rating" target="_blank" 
+       <a href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" 
       style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;       margin-top: 11px;
 ">
       صفحه رسمی اکستنشن

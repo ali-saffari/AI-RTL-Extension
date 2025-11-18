@@ -797,7 +797,7 @@ function App() {
                                         هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                                        <a href="https://chatgpt-rtl.ir/?source=extension-popup-chrome-store-about" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                        <a href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
@@ -872,7 +872,7 @@ function App() {
                         <span className="footer-separator">|</span>
                         
                         <a 
-                            href="https://chatgpt-rtl.ir/?source=extension-popup-chrome-store-footer" 
+                            href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"
