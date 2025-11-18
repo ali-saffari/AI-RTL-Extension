@@ -10,6 +10,8 @@ let highlightStyle = null;
 let currentHighlightedElement = null;
 let popupMenu = null;
 let isMenuOpen = false;
+let mousePosition = null;
+let isMenuMinimized = true;
 
 /**
  * Initialize text selection highlighter
@@ -37,6 +39,13 @@ export function initTextSelector() {
                 min-width: 130px;
                 direction: rtl;
                 overflow: hidden;
+                transition: all 0.2s ease;
+            }
+            .rtl-text-selector-menu.minimized {
+                min-width: auto;
+                width: auto;
+                padding: 0;
+                border-radius: 6px;
             }
             .rtl-text-selector-menu-header {
                 display: flex;
@@ -45,11 +54,29 @@ export function initTextSelector() {
                 padding: 6px 10px;
                 background: #f9fafb;
                 border-bottom: 1px solid #e5e7eb;
+                cursor: pointer;
+                transition: background-color 0.15s;
+            }
+            .rtl-text-selector-menu.minimized .rtl-text-selector-menu-header {
+                border-bottom: none;
+                padding: 6px;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+            }
+            .rtl-text-selector-menu-header:hover {
+                background-color: #f3f4f6;
             }
             .rtl-text-selector-menu-logo {
                 width: 18px;
                 height: 18px;
                 object-fit: contain;
+                cursor: pointer;
+            }
+            .rtl-text-selector-menu.minimized .rtl-text-selector-menu-logo {
+                width: 20px;
+                height: 20px;
             }
             .rtl-text-selector-menu-settings-btn {
                 width: 20px;
@@ -72,6 +99,15 @@ export function initTextSelector() {
             }
             .rtl-text-selector-menu-body {
                 padding: 2px 0;
+                max-height: 500px;
+                overflow: hidden;
+                transition: max-height 0.2s ease, opacity 0.2s ease;
+            }
+            .rtl-text-selector-menu.minimized .rtl-text-selector-menu-body {
+                display: none;
+            }
+            .rtl-text-selector-menu.minimized .rtl-text-selector-menu-settings-btn {
+                display: none;
             }
             .rtl-text-selector-menu-item {
                 padding: 6px 12px;
@@ -108,29 +144,37 @@ export function initTextSelector() {
         }
     }
 
-    // Add selection change listener
+    // Add selection change listener (for highlighting during selection)
     document.addEventListener('selectionchange', handleSelectionChange);
     
-    // Also listen for mouseup to catch selection end
-    document.addEventListener('mouseup', () => {
-        // Small delay to allow selection to complete and menu to show
+    // Listen for mouseup to catch selection end and show menu
+    document.addEventListener('mouseup', (e) => {
+        // Store mouse position
+        mousePosition = { x: e.clientX, y: e.clientY };
+        
+        // Small delay to allow selection to complete
         setTimeout(() => {
             if (!isMenuOpen) {
-                handleSelectionChange();
+                showMenuAfterSelection();
             }
         }, 100);
     });
     
-    // Listen for keyup to catch keyboard selections
+    // Listen for keyup to catch keyboard selections end
     document.addEventListener('keyup', () => {
+        // Clear mouse position for keyboard selection
+        mousePosition = null;
+        
         if (!isMenuOpen) {
-            handleSelectionChange();
+            setTimeout(() => {
+                showMenuAfterSelection();
+            }, 50);
         }
     });
 }
 
 /**
- * Handle text selection changes
+ * Handle text selection changes (only highlight during selection)
  */
 function handleSelectionChange() {
     // If menu is open, don't process selection changes
@@ -170,7 +214,7 @@ function handleSelectionChange() {
     // Find the best container element (not inline elements)
     element = findBestContainer(element);
     
-    // Highlight the element
+    // Highlight the element (only highlight, don't show menu)
     if (!element || element === document.body || element === document.documentElement) {
         return;
     }
@@ -178,15 +222,72 @@ function handleSelectionChange() {
     element.classList.add('rtl-selected-element');
     currentHighlightedElement = element;
     
-    // Log selected element
-    console.log('[RTL Text Selector] Selected element:', element);
-    
     // Optional: Scroll into view
     try {
         element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (e) {
         // Silent fail
     }
+}
+
+/**
+ * Show menu after selection is complete
+ */
+function showMenuAfterSelection() {
+    // If menu is open, don't process
+    if (isMenuOpen) {
+        return;
+    }
+    
+    const selection = window.getSelection();
+    
+    // Check if there's a selection
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        // If no selection, remove highlight
+        if (currentHighlightedElement) {
+            currentHighlightedElement.classList.remove('rtl-selected-element');
+            currentHighlightedElement = null;
+        }
+        return;
+    }
+    
+    // Get the range
+    const range = selection.getRangeAt(0);
+    
+    // Find the common ancestor container
+    const commonAncestor = range.commonAncestorContainer;
+    
+    // Get the element (if node is text, get parent element)
+    let element = commonAncestor.nodeType === Node.TEXT_NODE 
+        ? commonAncestor.parentElement 
+        : commonAncestor;
+    
+    // If it's not an element, try to get parent
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+        element = element?.parentElement || document.body;
+    }
+    
+    // Find the best container element (not inline elements)
+    element = findBestContainer(element);
+    
+    // Check if element is valid
+    if (!element || element === document.body || element === document.documentElement) {
+        return;
+    }
+    
+    // Make sure element is highlighted
+    if (currentHighlightedElement !== element) {
+        // Remove previous highlight
+        if (currentHighlightedElement) {
+            currentHighlightedElement.classList.remove('rtl-selected-element');
+        }
+        // Add highlight to current element
+        element.classList.add('rtl-selected-element');
+        currentHighlightedElement = element;
+    }
+    
+    // Log selected element
+    console.log('[RTL Text Selector] Selected element:', element);
     
     // Show popup menu
     showPopupMenu(range, element);
@@ -234,14 +335,9 @@ function showPopupMenu(range, element) {
     hidePopupMenu();
     isMenuOpen = false;
     
-    // Get selection position
-    const rect = range.getBoundingClientRect();
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    
     // Create popup menu
     popupMenu = document.createElement('div');
-    popupMenu.className = 'rtl-text-selector-menu';
+    popupMenu.className = 'rtl-text-selector-menu minimized';
     popupMenu.id = 'rtl-text-selector-popup';
     
     // Create header with logo and settings button
@@ -253,6 +349,21 @@ function showPopupMenu(range, element) {
     logo.className = 'rtl-text-selector-menu-logo';
     logo.src = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
     logo.alt = 'RTL Extension';
+    
+    // Add click handler to expand menu
+    const expandMenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        if (isMenuMinimized) {
+            popupMenu.classList.remove('minimized');
+            isMenuMinimized = false;
+        }
+    };
+    
+    header.addEventListener('click', expandMenu, true);
+    logo.addEventListener('click', expandMenu, true);
     
     // Settings button
     const settingsBtn = document.createElement('button');
@@ -275,6 +386,11 @@ function showPopupMenu(range, element) {
         hidePopupMenu();
         removeHighlight();
     }, true);
+    
+    // Prevent settings button from expanding menu
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+    }, false);
     
     header.appendChild(logo);
     header.appendChild(settingsBtn);
@@ -325,9 +441,21 @@ function showPopupMenu(range, element) {
     
     popupMenu.appendChild(menuBody);
     
-    // Position the menu above the selection
-    const menuTop = rect.top + scrollY - 10; // 10px above selection
-    const menuLeft = rect.left + scrollX;
+    // Position the menu next to mouse cursor (or selection if mouse position not available)
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    
+    let menuTop, menuLeft;
+    if (mousePosition) {
+        // Use mouse position if available
+        menuTop = mousePosition.y + scrollY + 10; // 10px below cursor
+        menuLeft = mousePosition.x + scrollX + 10; // 10px right of cursor
+    } else {
+        // Fallback to selection position (for keyboard selection)
+        const rect = range.getBoundingClientRect();
+        menuTop = rect.top + scrollY + 10; // 10px below selection
+        menuLeft = rect.left + scrollX + 10; // 10px right of selection
+    }
     
     popupMenu.style.top = menuTop + 'px';
     popupMenu.style.left = menuLeft + 'px';
@@ -354,12 +482,14 @@ function showPopupMenu(range, element) {
         
         // Check if menu goes off top edge
         if (menuRect.top < 0) {
-            popupMenu.style.top = (rect.bottom + scrollY + 10) + 'px';
+            const currentTop = parseInt(popupMenu.style.top) || 0;
+            popupMenu.style.top = (currentTop - menuRect.top + 10) + 'px';
         }
         
         // Check if menu goes off bottom edge
         if (menuRect.bottom > viewportHeight) {
-            popupMenu.style.top = (rect.top + scrollY - menuRect.height - 10) + 'px';
+            const currentTop = parseInt(popupMenu.style.top) || 0;
+            popupMenu.style.top = (currentTop - (menuRect.bottom - viewportHeight) - 10) + 'px';
         }
     }, 0);
     
@@ -440,6 +570,7 @@ function hidePopupMenu() {
         popupMenu = null;
     }
     isMenuOpen = false;
+    isMenuMinimized = true; // Reset to minimized state
 }
 
 /**
