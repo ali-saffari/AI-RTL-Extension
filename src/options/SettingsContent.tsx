@@ -28,6 +28,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [analytics, setAnalytics] = React.useState(true);
+    const [previewEnabled, setPreviewEnabled] = React.useState(true);
     
     const [textSelectorSettings, setTextSelectorSettings] = React.useState<TextSelectorSettings>({
         enabled: 'enabled',
@@ -44,7 +45,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'rtlAlgorithmMode', 
                 'supportHide', 
                 'textSelectorSettings',
-                'analytics'
+                'analytics',
+                'previewEnabled'
             ], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
@@ -57,6 +59,11 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (result.analytics !== undefined) {
                     setAnalytics(result.analytics);
+                }
+                if (result.previewEnabled !== undefined) {
+                    setPreviewEnabled(result.previewEnabled);
+                } else {
+                    setPreviewEnabled(true); // Default to enabled
                 }
             });
         } catch (error) {
@@ -81,6 +88,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.analytics) {
                     setAnalytics(changes.analytics.newValue);
+                }
+                if (changes.previewEnabled) {
+                    setPreviewEnabled(changes.previewEnabled.newValue);
                 }
             }
         };
@@ -129,6 +139,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.set({ analytics: enabled });
         } catch (error) {
             console.log('Failed to save analytics setting:', error);
+        }
+    };
+
+    const handlePreviewChange = (enabled: boolean) => {
+        setPreviewEnabled(enabled);
+        try {
+            chrome.storage.sync.set({ previewEnabled: enabled });
+        } catch (error) {
+            console.log('Failed to save preview setting:', error);
         }
     };
 
@@ -185,6 +204,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         rtlAlgorithm={rtlAlgorithm}
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
                         isDarkMode={isDarkMode}
+                        previewEnabled={previewEnabled}
+                        onPreviewChange={handlePreviewChange}
                     />
                 )}
                 {tabValue === 1 && (

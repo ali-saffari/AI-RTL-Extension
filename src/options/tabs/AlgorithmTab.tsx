@@ -16,7 +16,8 @@ import {
     Button,
     Card,
     CardContent,
-    Grid
+    Grid,
+    Switch
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 
@@ -24,12 +25,16 @@ interface AlgorithmTabProps {
     rtlAlgorithm: string;
     onRtlAlgorithmChange: (value: string) => void;
     isDarkMode: boolean;
+    previewEnabled: boolean;
+    onPreviewChange: (enabled: boolean) => void;
 }
 
 const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
-    isDarkMode
+    isDarkMode,
+    previewEnabled,
+    onPreviewChange
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -83,26 +88,11 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
         setSelectedAlgorithm('');
     };
 
-    // Preview examples for each algorithm
-    const previewExamples = {
-        'advanced_section': {
-            title: 'مثال: متن چندزبانه',
-            example: 'Hello world\n\nسلام دنیا\n\nThis is a test\n\nاین یک تست است'
-        },
-        'advanced_full': {
-            title: 'مثال: متن یکپارچه',
-            example: 'این یک متن نمونه است که به صورت یکپارچه پردازش می‌شود و جهت مناسب برای کل متن تعیین می‌گردد.'
-        },
-        'first_word': {
-            title: 'مثال: تشخیص سریع',
-            example: 'سلام این یک متن فارسی است که با بررسی اولین کلمه جهت آن مشخص می‌شود.'
-        }
-    };
 
     return (
         <Grid container spacing={3}>
             {/* Settings Section */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={ 6 }>
                 <Card elevation={2} sx={{ height: '100%' }}>
                     <CardContent style={{ direction: 'ltr' }}>
                         <Box sx={{ mb: 1.5, textAlign: 'center' }}>
@@ -244,41 +234,171 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
 
             {/* Preview Section */}
             <Grid item xs={12} md={6}>
-                <Card elevation={2} sx={{ height: '100%' }}>
-                    <CardContent>
-                        <Box sx={{ mb: 2, textAlign: 'center' }}>
-                            <Typography variant="h6" sx={{ 
-                                fontWeight: 600, 
-                                color: 'primary.main',
-                                mb: 0.5
+                    <Card elevation={2} sx={{ height: '100%' }}>
+                        <CardContent>
+                            <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                <Typography variant="h6" sx={{ 
+                                    fontWeight: 600, 
+                                    color: 'primary.main',
+                                    mb: 0.5
+                                }}>
+                                    پیش نمایش
+                                </Typography>
+                                <Typography variant="body2" sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '0.85rem'
+                                }}>
+                                    {selectedValue === 'advanced_section' && 'مثال: متن چندزبانه'}
+                                    {selectedValue === 'advanced_full' && 'مثال: متن یکپارچه'}
+                                    {selectedValue === 'first_word' && 'مثال: تشخیص سریع'}
+                                </Typography>
+                            </Box>
+                            
+                            <Box sx={{
+                                p: 3,
+                                borderRadius: 2,
+                                bgcolor: theme.palette.background.paper,
+                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                                minHeight: '300px',
+                                whiteSpace: 'pre-wrap',
+                                fontSize: '0.95rem',
+                                lineHeight: 1.8,
+                                color: theme.palette.text.primary,
+                                direction: previewEnabled ? 'rtl' : 'ltr',
+                                textAlign: previewEnabled ? 'right' : 'left',
+                                mb: 2
                             }}>
-                                پیش نمایش
-                            </Typography>
-                            <Typography variant="body2" sx={{ 
-                                color: 'text.secondary',
-                                fontSize: '0.85rem'
+                                {selectedValue === 'advanced_section' && (
+                                    <>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                            Hello world! This is an English sentence that demonstrates how the advanced section algorithm works. When you have multiple paragraphs with different languages, each section is analyzed independently to determine the correct text direction. The system uses sophisticated techniques to identify the dominant language and structure of each بخش separately.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: previewEnabled ? 'ltr' : 'rtl', textAlign: previewEnabled ? 'left' : 'right' }}>
+                                            Advanced سیستم پیشرفته از الگوریتم‌های machine learning استفاده می‌کند تا جهت متن را به درستی تشخیص دهد. وقتی شما چندین پاراگراف با زبان‌های مختلف دارید، هر بخش به صورت مستقل بررسی می‌شود تا جهت مناسب متن تعیین شود. با استفاده از تکنیک‌های natural language processing و text analysis، سیستم می‌تواند بهترین جهت را برای هر بخش انتخاب کند.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                            Another English paragraph with multiple sentences. Each section is analyzed separately by the algorithm. This means that if you have a long English paragraph followed by a Persian paragraph, the algorithm will correctly identify the direction for each one independently. The system processes each block of text as a separate unit, ensuring accurate direction detection. This approach works well for mixed content that includes both English and فارسی words.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: previewEnabled ? 'ltr' : 'rtl', textAlign: previewEnabled ? 'left' : 'right' }}>
+                                            این یک پاراگراف فارسی است که شامل چند جمله می‌شود. هر بخش به صورت جداگانه بررسی می‌شود. این یعنی اگر شما یک پاراگراف طولانی انگلیسی داشته باشید و بعد یک پاراگراف فارسی، الگوریتم به درستی جهت هر کدام را به صورت مستقل تشخیص می‌دهد. سیستم هر بلوک متن را به عنوان یک واحد جداگانه پردازش می‌کند و با استفاده از algorithm و processing techniques، دقت بالایی در تشخیص جهت ارائه می‌دهد.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                            Mixed content: English and فارسی together in the same paragraph. This is a more complex scenario where the algorithm needs to analyze the content carefully to determine the overall direction of the paragraph based on the dominant language or the structure of the text.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: previewEnabled ? 'ltr' : 'rtl', textAlign: previewEnabled ? 'left' : 'right' }}>
+                                            محتوای ترکیبی: انگلیسی و فارسی در یک پاراگراف. این یک سناریوی پیچیده‌تر است که الگوریتم باید محتوا را به دقت بررسی کند تا جهت کلی پاراگراف را بر اساس زبان غالب یا ساختار متن تعیین کند. این روش برای متون چندزبانه بسیار مناسب است.
+                                        </Typography>
+                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: previewEnabled ? 'ltr' : 'rtl', textAlign: previewEnabled ? 'left' : 'right' }}>
+                                            نتیجه: الگوریتم هر بخش را به صورت مستقل پردازش می‌کند و جهت مناسب را برای هر بخش تعیین می‌نماید. این روش برای متون چندزبانه، مقالات علمی، و محتوای ترکیبی بسیار کارآمد است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.
+                                        </Typography>
+                                    </>
+                                )}
+                                {selectedValue === 'advanced_full' && (
+                                    <>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            Hello و خوش آمدید به این سیستم پیشرفته. این الگوریتم یکپارچه تمام متن را به عنوان یک واحد واحد پردازش می‌کند و با استفاده از تکنیک‌های machine learning و natural language processing، جهت مناسب را برای کل متن تعیین می‌نماید. این روش برای متون طولانی که شامل محتوای ترکیبی هستند بسیار مناسب است.
+                                        </Typography>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            الگوریتم با بررسی کل ساختار متن، از جمله کلمه‌های کلیدی مانند algorithm، processing، و detection، بهترین جهت را انتخاب می‌کند. این approach باعث می‌شود که دقت بالایی در تشخیص جهت متن داشته باشیم و برای محتوای پیچیده‌تر مانند مقالات علمی، documentation، و technical content بسیار کارآمد باشد.
+                                        </Typography>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            سیستم با تحلیل عمیق محتوا و در نظر گیری context و semantic structure، می‌تواند حتی در متون بسیار پیچیده که شامل کلمات انگلیسی و فارسی به صورت مخلوط هستند، بهترین تصمیم را بگیرد. این روش برای محتوای طولانی که نیاز به پردازش یکپارچه دارد، بسیار مناسب است و performance بهتری نسبت به روش‌های دیگر ارائه می‌دهد.
+                                        </Typography>
+                                    </>
+                                )}
+                                {selectedValue === 'first_word' && (
+                                    <>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            اتکا به کلمهٔ اول برای تشخیص راست‌چین بودن قابل‌اعتماد نیست، چون ممکن است آن کلمه نشانهٔ روشن زبانی نداشته باشد و سیستم را دچار اشتباه کند؛ بااین‌حال بسیاری از سایت‌ها به همین رفتار تکیه می‌کنند.
+                                        </Typography>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            در متن‌های چندزبانه این روش مشکل‌ساز می‌شود، زیرا ممکن است صفحه با یک کلمهٔ انگلیسی شروع شود اما ادامهٔ متن فارسی باشد. با وجود این ضعف، اغلب سایت‌های راست‌چین همین شیوه را به‌کار می‌برند، چون مرورگر به‌صورت پیش‌فرض جهت متن را بر اساس اولین کاراکتر تعیین می‌کند.
+                                        </Typography>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction: previewEnabled ? 'ltr' : 'rtl',
+                                            textAlign: previewEnabled ? 'left' : 'right'
+                                        }}>
+                                            همچنین اگر متن با اعداد یا علائم آغاز شود، تشخیص جهت دشوار می‌شود؛ اما باز هم بیشتر سایت‌هایی که از راست‌چین استفاده می‌کنند همین مکانیزم پیش‌فرض مرورگر را به‌عنوان روش اصلی تشخیص جهت متن می‌پذیرند.
+                                        </Typography>
+                                        <Typography paragraph sx={{ 
+                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                            fontSize: '0.95rem',
+                                            lineHeight: 1.8,
+                                            direction:  'rtl',
+                                            textAlign: 'right',
+                                            color: previewEnabled ? 'rgba(220, 38, 38, 0.75)' : 'inherit'
+                                        }}>
+                                            Example این متن با انگلیسی شروع شده و مرورگر به‌صورت پیش‌فرض آن را به‌عنوان متن چپ‌چین تشخیص می‌دهد، حتی اگر ادامهٔ متن فارسی باشد. این همان رفتاری است که در بسیاری از سایت‌های راست‌چین مشاهده می‌شود و دلیل استفاده از این روش ساده است.
+                                        </Typography>
+                                    </>
+                                )}
+                            </Box>
+
+                            <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                gap: 1,
+                                pt: 1,
+                                borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                              
                             }}>
-                                {previewExamples[selectedValue as keyof typeof previewExamples]?.title}
-                            </Typography>
-                        </Box>
-                        
-                        <Box sx={{
-                            p: 3,
-                            borderRadius: 2,
-                            bgcolor: theme.palette.background.paper,
-                            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                            minHeight: '300px',
-                            whiteSpace: 'pre-wrap',
-                            fontFamily: 'monospace',
-                            fontSize: '0.95rem',
-                            lineHeight: 1.8,
-                            color: theme.palette.text.primary
-                        }}>
-                            {previewExamples[selectedValue as keyof typeof previewExamples]?.example}
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Grid>
+                                <Typography variant="body2" sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '0.85rem',
+
+                                }}>
+                                    {previewEnabled ? 'الگوریتم فعال' : 'الگوریتم غیرفعال'}
+                                </Typography>
+                                <Switch
+                                    checked={previewEnabled}
+                                    onChange={(e) => onPreviewChange(e.target.checked)}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                    }}
+                                />
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
 
             {/* Modal for Algorithm Descriptions */}
             <Dialog 
