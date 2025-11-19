@@ -421,3 +421,4 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
 
 export default ExtensionSettings;
 
+

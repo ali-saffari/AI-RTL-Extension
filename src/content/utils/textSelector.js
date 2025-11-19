@@ -12,20 +12,201 @@ let popupMenu = null;
 let isMenuOpen = false;
 let mousePosition = null;
 let isMenuMinimized = true;
+let textSelectorSettings = null;
+let aiSitesList = null;
+
+/**
+ * Get list of AI sites from service config
+ */
+function getAISitesList() {
+    if (aiSitesList) {
+        return aiSitesList;
+    }
+    
+    // List of AI site domains (from main.js serviceConfig)
+    aiSitesList = [
+        'chatgpt.com',
+        'claude.ai',
+        'copilot.microsoft.com',
+        'bing.com',
+        'www.bing.com',
+        'github.com',
+        'perplexity.ai',
+        'www.perplexity.ai',
+        'duckduckgo.com',
+        'aistudio.google.com',
+        'chat.deepseek.com',
+        'you.com',
+        'chat.qwenlm.ai',
+        'chat.qwen.ai',
+        'poe.com',
+        'monica.im',
+        'gemini.google.com',
+        'grok.com',
+        'chat.mistral.ai',
+        'manus.im',
+        'www.kimi.com',
+        'www.blackbox.ai',
+        'notebooklm.google.com',
+        'chat.z.ai',
+        'lmarena.ai',
+        'openrouter.ai',
+        'agent.minimax.io',
+        'jules.google.com',
+        '1min.ai',
+        'app.1min.ai',
+        'digen.ai',
+        'lovable.dev',
+        'www.lovable.dev',
+        'synaps.app',
+        'www.synaps.app',
+        'my.synaps.app',
+        'app.writesonic.com',
+        'ernie.baidu.com'
+    ];
+    
+    return aiSitesList;
+}
+
+/**
+ * Check if current site is an AI site
+ */
+function isAISite() {
+    const hostname = window.location.hostname;
+    const aiSites = getAISitesList();
+    return aiSites.some(site => hostname === site || hostname.endsWith('.' + site));
+}
+
+/**
+ * Check if current site is in allowed sites list
+ */
+function isAllowedSite(callback) {
+    chrome.storage.sync.get(['allowedSites', 'customAllowedSites'], (result) => {
+        const hostname = window.location.hostname;
+        let isAllowed = false;
+        
+        // Check old allowedSites format
+        if (result.allowedSites && Array.isArray(result.allowedSites)) {
+            isAllowed = result.allowedSites.some(site => 
+                hostname === site || hostname.endsWith('.' + site)
+            );
+        }
+        
+        // Check customAllowedSites format
+        if (!isAllowed && result.customAllowedSites && Array.isArray(result.customAllowedSites)) {
+            isAllowed = result.customAllowedSites.some(site => 
+                hostname === site || hostname.endsWith('.' + site)
+            );
+        }
+        
+        callback(isAllowed);
+    });
+}
+
+/**
+ * Check if text selector should be enabled based on settings
+ */
+function shouldEnableTextSelector(callback) {
+    chrome.storage.sync.get(['textSelectorSettings'], (result) => {
+        if (!result.textSelectorSettings) {
+            // Default: disabled if no settings
+            callback(false);
+            return;
+        }
+        
+        const settings = result.textSelectorSettings;
+        textSelectorSettings = settings;
+        
+        // Check if manualRtlEnabled is false or undefined
+        if (!settings.manualRtlEnabled) {
+            callback(false);
+            return;
+        }
+        
+        // Check site mode
+        const siteMode = settings.manualRtlSiteMode || 'all';
+        const hostname = window.location.hostname;
+        
+        if (siteMode === 'all') {
+            callback(true);
+            return;
+        }
+        
+        if (siteMode === 'ai_sites') {
+            callback(isAISite());
+            return;
+        }
+        
+        if (siteMode === 'allowed_sites') {
+            isAllowedSite((isAllowed) => {
+                callback(isAllowed);
+            });
+            return;
+        }
+        
+        if (siteMode === 'ai_and_allowed') {
+            const isAI = isAISite();
+            if (isAI) {
+                callback(true);
+                return;
+            }
+            isAllowedSite((isAllowed) => {
+                callback(isAllowed);
+            });
+            return;
+        }
+        
+        // Default: disabled
+        callback(false);
+    });
+}
 
 /**
  * Initialize text selection highlighter
  */
 export function initTextSelector() {
+    // Check if text selector should be enabled
+    shouldEnableTextSelector((enabled) => {
+        if (!enabled) {
+            console.log('[RTL Text Selector] Disabled based on settings');
+            return;
+        }
+        
+        // Initialize if enabled
+        initTextSelectorInternal();
+    });
+    
+    // Listen for settings changes
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'sync' && changes.textSelectorSettings) {
+            shouldEnableTextSelector((enabled) => {
+                if (!enabled) {
+                    // Cleanup if disabled
+                    cleanupTextSelector();
+                } else {
+                    // Re-initialize if enabled
+                    if (!highlightStyle) {
+                        initTextSelectorInternal();
+                    }
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Internal initialization function
+ */
+function initTextSelectorInternal() {
     // Create style element for highlighting
     if (!highlightStyle) {
         highlightStyle = document.createElement('style');
         highlightStyle.id = 'rtl-text-selector-style';
         highlightStyle.textContent = `
             .rtl-selected-element {
-                outline: 3px solid red !important;
+                outline: 3px solid var(--rtl-highlight-color, red) !important;
                 outline-offset: 2px !important;
-                background-color: rgba(255, 0, 0, 0.1) !important;
+                background-color: var(--rtl-highlight-bg, rgba(255, 0, 0, 0.1)) !important;
             }
             .rtl-text-selector-menu {
                 position: absolute;
@@ -144,6 +325,14 @@ export function initTextSelector() {
         }
     }
 
+    // Load settings and update highlight style
+    chrome.storage.sync.get(['textSelectorSettings'], (result) => {
+        if (result.textSelectorSettings) {
+            textSelectorSettings = result.textSelectorSettings;
+            updateHighlightStyle(result.textSelectorSettings);
+        }
+    });
+    
     // Add selection change listener (for highlighting during selection)
     document.addEventListener('selectionchange', handleSelectionChange);
     
@@ -174,9 +363,40 @@ export function initTextSelector() {
 }
 
 /**
+ * Update highlight style based on settings
+ */
+function updateHighlightStyle(settings) {
+    if (!highlightStyle) return;
+    
+    const highlightColor = settings.highlightColor || '#ff0000';
+    const highlightOpacity = settings.highlightOpacity || 0.1;
+    
+    // Convert hex color to rgba
+    const r = parseInt(highlightColor.slice(1, 3), 16);
+    const g = parseInt(highlightColor.slice(3, 5), 16);
+    const b = parseInt(highlightColor.slice(5, 7), 16);
+    
+    const bgColor = `rgba(${r}, ${g}, ${b}, ${highlightOpacity})`;
+    
+    // Update CSS variables
+    document.documentElement.style.setProperty('--rtl-highlight-color', highlightColor);
+    document.documentElement.style.setProperty('--rtl-highlight-bg', bgColor);
+}
+
+/**
  * Handle text selection changes (only highlight during selection)
  */
 function handleSelectionChange() {
+    // Check if text selector is enabled
+    if (!textSelectorSettings || !textSelectorSettings.manualRtlEnabled) {
+        return;
+    }
+    
+    // Check highlight mode
+    if (textSelectorSettings.highlightMode === 'disabled') {
+        return;
+    }
+    
     // If menu is open, don't process selection changes
     if (isMenuOpen) {
         return;
@@ -219,8 +439,11 @@ function handleSelectionChange() {
         return;
     }
     
-    element.classList.add('rtl-selected-element');
-    currentHighlightedElement = element;
+    // Only highlight if highlightMode is 'on_selection'
+    if (textSelectorSettings && textSelectorSettings.highlightMode === 'on_selection') {
+        element.classList.add('rtl-selected-element');
+        currentHighlightedElement = element;
+    }
     
     // Optional: Scroll into view
     try {
@@ -234,6 +457,11 @@ function handleSelectionChange() {
  * Show menu after selection is complete
  */
 function showMenuAfterSelection() {
+    // Check if text selector is enabled
+    if (!textSelectorSettings || !textSelectorSettings.manualRtlEnabled) {
+        return;
+    }
+    
     // If menu is open, don't process
     if (isMenuOpen) {
         return;
@@ -275,22 +503,26 @@ function showMenuAfterSelection() {
         return;
     }
     
-    // Make sure element is highlighted
-    if (currentHighlightedElement !== element) {
-        // Remove previous highlight
-        if (currentHighlightedElement) {
-            currentHighlightedElement.classList.remove('rtl-selected-element');
+    // Make sure element is highlighted (if highlightMode allows)
+    if (textSelectorSettings && textSelectorSettings.highlightMode !== 'disabled') {
+        if (currentHighlightedElement !== element) {
+            // Remove previous highlight
+            if (currentHighlightedElement) {
+                currentHighlightedElement.classList.remove('rtl-selected-element');
+            }
+            // Add highlight to current element
+            element.classList.add('rtl-selected-element');
+            currentHighlightedElement = element;
         }
-        // Add highlight to current element
-        element.classList.add('rtl-selected-element');
-        currentHighlightedElement = element;
     }
     
     // Log selected element
     console.log('[RTL Text Selector] Selected element:', element);
     
-    // Show popup menu
-    showPopupMenu(range, element);
+    // Show popup menu (only if highlightMode is 'on_direction_change' or 'on_selection')
+    if (!textSelectorSettings || textSelectorSettings.highlightMode !== 'disabled') {
+        showPopupMenu(range, element);
+    }
 }
 
 /**
@@ -406,8 +638,7 @@ function showPopupMenu(range, element) {
     // Create menu items
     const menuItems = [
         { text: 'راست چین', direction: 'rtl' },
-        { text: 'چپ چین', direction: 'ltr' },
-        { text: 'هوشمند', direction: 'auto' }
+        { text: 'چپ چین', direction: 'ltr' }
     ];
     
     menuItems.forEach((item, index) => {

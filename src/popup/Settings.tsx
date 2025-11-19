@@ -31,6 +31,9 @@ interface TextSelectorSettings {
     highlightColor: string;
     highlightOpacity: number;
     logoDisplay: 'always' | 'on_hover' | 'disabled';
+    manualRtlEnabled?: boolean;
+    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
+    menuDisplayMode?: 'logo_first' | 'menu_direct';
 }
 
 interface SettingsProps {
@@ -54,7 +57,10 @@ const Settings: React.FC<SettingsProps> = ({
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
         highlightOpacity: 0.1,
-        logoDisplay: 'always'
+        logoDisplay: 'always',
+        manualRtlEnabled: false,
+        manualRtlSiteMode: 'all',
+        menuDisplayMode: 'logo_first'
     },
     onTextSelectorSettingsChange
 }) => {

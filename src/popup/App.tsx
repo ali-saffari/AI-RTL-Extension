@@ -271,6 +271,9 @@ interface TextSelectorSettings {
     highlightColor: string;
     highlightOpacity: number;
     logoDisplay: 'always' | 'on_hover' | 'disabled';
+    manualRtlEnabled?: boolean;
+    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
+    menuDisplayMode?: 'logo_first' | 'menu_direct';
 }
 
 function App() {
@@ -283,7 +286,10 @@ function App() {
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
         highlightOpacity: 0.1,
-        logoDisplay: 'always'
+        logoDisplay: 'always',
+        manualRtlEnabled: false,
+        manualRtlSiteMode: 'all',
+        menuDisplayMode: 'logo_first'
     });
 
     // Load settings from storage on component mount
@@ -300,7 +306,17 @@ function App() {
                     setIsDarkMode(result.isDarkMode);
                 }
                 if (result.textSelectorSettings) {
-                    setTextSelectorSettings(result.textSelectorSettings);
+                    setTextSelectorSettings({
+                        enabled: 'enabled',
+                        highlightMode: 'on_selection',
+                        highlightColor: '#ff0000',
+                        highlightOpacity: 0.1,
+                        logoDisplay: 'always',
+                        manualRtlEnabled: false,
+                        manualRtlSiteMode: 'all',
+                        menuDisplayMode: 'logo_first',
+                        ...result.textSelectorSettings
+                    });
                 }
             });
         } catch (error) {

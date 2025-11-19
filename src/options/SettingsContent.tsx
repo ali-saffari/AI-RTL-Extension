@@ -16,6 +16,9 @@ interface TextSelectorSettings {
     highlightColor: string;
     highlightOpacity: number;
     logoDisplay: 'always' | 'on_hover' | 'disabled';
+    manualRtlEnabled?: boolean;
+    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
+    menuDisplayMode?: 'logo_first' | 'menu_direct';
 }
 
 interface SettingsContentProps {
@@ -24,7 +27,31 @@ interface SettingsContentProps {
 
 const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const theme = useTheme();
-    const [tabValue, setTabValue] = React.useState(0);
+    
+    // Map hash to tab index
+    const hashToTabIndex: { [key: string]: number } = {
+        'algorithm': 0,
+        'manual-rtl': 1,
+        'other-settings': 2
+    };
+    
+    // Map tab index to hash
+    const tabIndexToHash: { [key: number]: string } = {
+        0: 'algorithm',
+        1: 'manual-rtl',
+        2: 'other-settings'
+    };
+    
+    // Get initial tab from hash or default to 0
+    const getInitialTab = (): number => {
+        if (typeof window !== 'undefined') {
+            const hash = window.location.hash.slice(1); // Remove #
+            return hashToTabIndex[hash] !== undefined ? hashToTabIndex[hash] : 0;
+        }
+        return 0;
+    };
+    
+    const [tabValue, setTabValue] = React.useState(getInitialTab);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [analytics, setAnalytics] = React.useState(true);
@@ -35,7 +62,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
         highlightOpacity: 0.1,
-        logoDisplay: 'always'
+        logoDisplay: 'always',
+        manualRtlEnabled: false,
+        manualRtlSiteMode: 'all',
+        menuDisplayMode: 'logo_first'
     });
 
     // Load all settings from storage
@@ -55,7 +85,17 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                     setSupportHide(result.supportHide);
                 }
                 if (result.textSelectorSettings) {
-                    setTextSelectorSettings(result.textSelectorSettings);
+                    setTextSelectorSettings({
+                        enabled: 'enabled',
+                        highlightMode: 'on_selection',
+                        highlightColor: '#ff0000',
+                        highlightOpacity: 0.1,
+                        logoDisplay: 'always',
+                        manualRtlEnabled: false,
+                        manualRtlSiteMode: 'all',
+                        menuDisplayMode: 'logo_first',
+                        ...result.textSelectorSettings
+                    });
                 }
                 if (result.analytics !== undefined) {
                     setAnalytics(result.analytics);
@@ -101,9 +141,38 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.onChanged.removeListener(handleStorageChange);
         };
     }, [loadSettings]);
+    
+    // Handle hash change in URL and set initial hash
+    React.useEffect(() => {
+        // Set initial hash if not present
+        if (typeof window !== 'undefined') {
+            if (!window.location.hash) {
+                window.location.hash = tabIndexToHash[tabValue] || 'algorithm';
+            }
+        }
+        
+        const handleHashChange = () => {
+            if (typeof window !== 'undefined') {
+                const hash = window.location.hash.slice(1);
+                if (hashToTabIndex[hash] !== undefined) {
+                    setTabValue(hashToTabIndex[hash]);
+                }
+            }
+        };
+        
+        window.addEventListener('hashchange', handleHashChange);
+        
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, [tabValue]);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
+        // Update URL hash
+        if (typeof window !== 'undefined' && tabIndexToHash[newValue]) {
+            window.location.hash = tabIndexToHash[newValue];
+        }
     };
 
     const handleRtlAlgorithmChange = (value: string) => {
