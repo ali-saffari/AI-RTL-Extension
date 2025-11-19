@@ -30,7 +30,7 @@ import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
 import { activateChatsonic } from './services/chatsonic.js';
 import { activateErnie } from './services/ernie.js';
-import { initTextSelector } from './utils/textSelector.js';
+import { initTextSelector } from './manual-rtl/index.js';
 
 // Global variables
 let site = window.location.hostname;
