@@ -1,5 +1,5 @@
 import { manualRtlState } from './state.js';
-import { refreshLogoDisplayOnManualElements } from './logo.js';
+import { refreshLogoDisplayOnManualElements, applyLogoDisplayToElement } from './logo.js';
 import { getManualLogoUrl } from './assets.js';
 import { findBestContainer } from './dom.js';
 
@@ -96,6 +96,8 @@ export function handleSelectionChange() {
 
     if (manualRtlState.textSelectorSettings.highlightMode === 'on_selection') {
         updateElementHighlight(element, true);
+        // اعمال لوگو روی element انتخاب شده
+        applyLogoDisplayToElement(element);
     }
 
     try {

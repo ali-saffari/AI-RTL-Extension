@@ -1,6 +1,7 @@
 import { manualRtlState } from './state.js';
 import { updateElementHighlight } from './highlight.js';
 import { applyDirection, hasDirectionChanges, removeDirectionChanges } from './direction.js';
+import { applyLogoDisplayToElement } from './logo.js';
 import { getExtensionLogoUrl, getManualLogoUrl } from './assets.js';
 import { LOGO_ICON_OFFSET, LOGO_ICON_SIZE } from './constants.js';
 import { findBestContainer } from './dom.js';
@@ -24,6 +25,8 @@ export function handleMenuDisplayForElement(element, range, options = {}) {
         updateElementHighlight(null, false);
     } else if (shouldShowHighlight) {
         updateElementHighlight(element, true);
+        // اعمال لوگو روی element
+        applyLogoDisplayToElement(element);
     } else {
         updateElementHighlight(null, false);
     }

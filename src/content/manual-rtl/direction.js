@@ -1,5 +1,6 @@
 import { detectTextDirection } from '../utils/analyzeDirection.js';
 import { applyLogoDisplayToElement } from './logo.js';
+import { manualRtlState } from './state.js';
 
 export function applyDirection(element, direction) {
     if (!element) {
@@ -40,6 +41,16 @@ export function applyDirection(element, direction) {
         console.error('[RTL Text Selector] ❌ Error setting direction style:', error);
     }
 
+    // اعمال فونت اگر تنظیمات فعال باشد
+    const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false; // به صورت پیش‌فرض true
+    if (applyFont) {
+        try {
+            element.style.setProperty('font-family', "iranyekan, 'IRANYekan', Tahoma, Arial, sans-serif", 'important');
+        } catch (error) {
+            console.error('[RTL Text Selector] ❌ Error setting font-family:', error);
+        }
+    }
+
     applyLogoDisplayToElement(element);
 }
 
@@ -76,6 +87,15 @@ export function hasDirectionChanges(element) {
         }
     }
 
+    // بررسی font-family style (اگر تنظیمات فونت فعال باشد)
+    const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false;
+    if (applyFont) {
+        const fontFamilyStyle = element.style.getPropertyValue('font-family');
+        if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -96,6 +116,15 @@ export function removeDirectionChanges(element) {
 
         // حذف text-align style
         element.style.removeProperty('text-align');
+
+        // حذف font-family style (اگر تنظیمات فونت فعال باشد)
+        const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false;
+        if (applyFont) {
+            const fontFamilyStyle = element.style.getPropertyValue('font-family');
+            if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
+                element.style.removeProperty('font-family');
+            }
+        }
 
         // حذف کلاس‌های مربوط به افزونه
         if (element.classList) {

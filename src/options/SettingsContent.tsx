@@ -19,6 +19,7 @@ interface TextSelectorSettings {
     manualRtlEnabled?: boolean;
     manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
     menuDisplayMode?: 'logo_first' | 'menu_direct';
+    applyFont?: boolean;
 }
 
 interface SettingsContentProps {

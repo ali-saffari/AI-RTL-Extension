@@ -13,7 +13,8 @@ import {
     Card,
     CardContent,
     Grid,
-    Switch
+    Switch,
+    Button
 } from '@mui/material';
 
 interface TextSelectorSettings {
@@ -25,6 +26,7 @@ interface TextSelectorSettings {
     manualRtlEnabled?: boolean;
     manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
     menuDisplayMode?: 'logo_first' | 'menu_direct';
+    applyFont?: boolean;
 }
 
 interface ManualRTLTabProps {
@@ -216,6 +218,28 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     React.useEffect(() => {
         setMenuExpanded(textSelectorSettings.menuDisplayMode === 'menu_direct');
     }, [textSelectorSettings.menuDisplayMode]);
+    
+    // تنظیمات پیش‌فرض برای راست‌چین دستی
+    const getDefaultManualRTLSettings = (): Partial<TextSelectorSettings> => {
+        return {
+            manualRtlEnabled: true,
+            manualRtlSiteMode: 'all',
+            menuDisplayMode: 'logo_first',
+            highlightMode: 'on_direction_change',
+            highlightColor: '#ff0000',
+            highlightOpacity: 0.3,
+            logoDisplay: 'always',
+            applyFont: true
+        };
+    };
+    
+    const handleResetToDefault = () => {
+        const defaultSettings = getDefaultManualRTLSettings();
+        onTextSelectorSettingsChange({
+            ...textSelectorSettings,
+            ...defaultSettings
+        });
+    };
     
     // تعیین اینکه آیا باید highlight نمایش داده شود یا نه
     const shouldShowHighlight = textSelectorSettings.highlightMode === 'disabled' 
@@ -561,6 +585,51 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 
                         <Divider sx={{ my: 2 }} />
 
+                        {/* اعمال فونت */}
+                        <Box sx={{ mb: 3 }}>
+                            <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between',
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: theme.palette.background.paper,
+                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                            }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body1" sx={{ 
+                                        fontWeight: 500, 
+                                        fontSize: '0.95rem',
+                                        color: 'text.primary',
+                                        mb: 0.5
+                                    }}>
+                                        اعمال فونت
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ 
+                                        color: 'text.secondary',
+                                        fontSize: '0.8rem'
+                                    }}>
+                                        اعمال فونت ایران یکان روی متن‌های تغییر جهت داده شده
+                                    </Typography>
+                                </Box>
+                                <Switch
+                                    checked={textSelectorSettings.applyFont !== false}
+                                    onChange={(e) => onTextSelectorSettingsChange({
+                                        ...textSelectorSettings,
+                                        applyFont: e.target.checked
+                                    })}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                    }}
+                                />
+                            </Box>
+                        </Box>
+
                         {/* نمایش لوگو */}
                         <Box sx={{ mb: 2 }}>
                             <FormControl fullWidth>
@@ -579,6 +648,31 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     <MenuItem value="disabled">غیرفعال</MenuItem>
                                 </Select>
                             </FormControl>
+                        </Box>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
+                        <Box sx={{ mb: 2 }}>
+                            <Button
+                                variant="outlined"
+                                fullWidth
+                                onClick={handleResetToDefault}
+                                sx={{
+                                    py: 1.5,
+                                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                                    color: 'text.primary',
+                                    fontWeight: 500,
+                                    '&:hover': {
+                                        borderColor: theme.palette.primary.main,
+                                        backgroundColor: theme.palette.mode === 'dark' 
+                                            ? 'rgba(0, 233, 255, 0.1)' 
+                                            : 'rgba(30, 64, 175, 0.1)'
+                                    }
+                                }}
+                            >
+                                بازنشانی به تنظیمات پیش‌فرض
+                            </Button>
                         </Box>
                     </CardContent>
                 </Card>
