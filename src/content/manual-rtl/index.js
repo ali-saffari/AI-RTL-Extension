@@ -2,7 +2,7 @@ import { manualRtlState } from './state.js';
 import { ensureHighlightStyle, removeHighlightStyle } from './styles.js';
 import { shouldEnableTextSelector } from './settings.js';
 import { updateHighlightStyle, handleSelectionChange, updateElementHighlight } from './highlight.js';
-import { showMenuAfterSelection, hidePopupMenu } from './menu.js';
+import { showMenuAfterSelection } from './menu.js';
 import { handleManualLogoClick } from './logoTrigger.js';
 import { updateMousePositionFromEvent, resetMousePosition } from './dom.js';
 
@@ -72,13 +72,11 @@ function onKeyUp() {
 
 export function removeHighlight() {
     updateElementHighlight(null, false);
-    hidePopupMenu();
 }
 
 export function cleanupTextSelector() {
     removeHighlightStyle();
     removeHighlight();
-    hidePopupMenu();
 
     document.removeEventListener('selectionchange', handleSelectionChange);
     document.removeEventListener('mouseup', onMouseUp);

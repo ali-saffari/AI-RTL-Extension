@@ -19,9 +19,17 @@ export function applyLogoDisplayToElement(element) {
     }
     element.classList.add(className);
 
+    // اضافه کردن element لوگو اگر وجود نداشته باشد
+    let logoIcon = element.querySelector('.rtl-manual-logo-icon');
+    if (!logoIcon) {
+        logoIcon = document.createElement('span');
+        logoIcon.className = 'rtl-manual-logo-icon';
+        element.appendChild(logoIcon);
+    }
+
     const logoUrl = getManualLogoUrl();
     if (logoUrl) {
-        element.style.setProperty('--rtl-manual-logo-image', `url("${logoUrl}")`);
+        logoIcon.style.setProperty('background-image', `url("${logoUrl}")`);
     }
 }
 
@@ -36,10 +44,23 @@ export function isLogoAreaClick(element, event) {
     }
 
     const rect = element.getBoundingClientRect();
-    const left = rect.left + LOGO_ICON_OFFSET;
-    const top = rect.top + LOGO_ICON_OFFSET;
-    const right = left + LOGO_ICON_SIZE;
-    const bottom = top + LOGO_ICON_SIZE;
+    const computedStyle = window.getComputedStyle(element);
+    const direction = computedStyle.direction || 'ltr';
+    
+    // لوگو در bottom: 6px و inset-inline-end: 6px قرار دارد
+    const bottom = rect.bottom - LOGO_ICON_OFFSET;
+    const top = bottom - LOGO_ICON_SIZE;
+    
+    let left, right;
+    if (direction === 'rtl') {
+        // برای RTL: inset-inline-end = right
+        right = rect.right - LOGO_ICON_OFFSET;
+        left = right - LOGO_ICON_SIZE;
+    } else {
+        // برای LTR: inset-inline-end = left
+        left = rect.left + LOGO_ICON_OFFSET;
+        right = left + LOGO_ICON_SIZE;
+    }
 
     return event.clientX >= left && event.clientX <= right && event.clientY >= top && event.clientY <= bottom;
 }

@@ -23,6 +23,9 @@ export function handleManualLogoClick(event) {
         return;
     }
 
+    // بررسی اینکه آیا کلیک روی icon بوده یا نه
+    const isLogoIconClick = target instanceof Element && target.classList.contains('rtl-manual-logo-icon');
+    
     let manualElement = null;
     if (target instanceof Element) {
         manualElement = target.closest('.rtl-manual-direction-element');
@@ -30,7 +33,13 @@ export function handleManualLogoClick(event) {
         manualElement = target.parentElement.closest('.rtl-manual-direction-element');
     }
 
-    if (!manualElement || !isLogoAreaClick(manualElement, event)) {
+    // اگر کلیک روی icon نبوده، بررسی کن که آیا در ناحیه لوگو کلیک شده یا نه
+    if (!isLogoIconClick && (!manualElement || !isLogoAreaClick(manualElement, event))) {
+        return;
+    }
+    
+    // اگر manualElement پیدا نشد، return کن
+    if (!manualElement) {
         return;
     }
 
@@ -43,10 +52,10 @@ export function handleManualLogoClick(event) {
         return;
     }
 
-    const rect = manualElement.getBoundingClientRect();
+    // استفاده از موقعیت واقعی موس برای باز کردن منو کنار موس
     manualRtlState.mousePosition = {
-        x: rect.left + LOGO_ICON_OFFSET,
-        y: rect.top + LOGO_ICON_OFFSET,
+        x: event.clientX,
+        y: event.clientY
     };
 
     handleMenuDisplayForElement(manualElement, range, { forceHighlight: true, forceExpanded: true });

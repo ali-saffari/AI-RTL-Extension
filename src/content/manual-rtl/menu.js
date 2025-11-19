@@ -31,6 +31,80 @@ export function handleMenuDisplayForElement(element, range, options = {}) {
     showPopupMenu(range, element, { forceExpanded });
 }
 
+function recalculateMenuPosition(popupMenu) {
+    if (!popupMenu || !popupMenu.parentNode) {
+        return;
+    }
+
+    requestAnimationFrame(() => {
+        const menuRect = popupMenu.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        
+        let finalLeft = parseInt(popupMenu.style.left, 10) || 0;
+        let finalTop = parseInt(popupMenu.style.top, 10) || 0;
+        
+        // تنظیم موقعیت افقی - اول سعی می‌کنیم سمت راست موس قرار دهیم
+        if (manualRtlState.mousePosition) {
+            const mouseX = manualRtlState.mousePosition.x;
+            const spaceOnRight = viewportWidth - mouseX;
+            const spaceOnLeft = mouseX;
+            
+            if (spaceOnRight >= menuRect.width + 10) {
+                // جا در سمت راست هست
+                finalLeft = mouseX + scrollX + 10;
+            } else if (spaceOnLeft >= menuRect.width + 10) {
+                // جا در سمت چپ هست
+                finalLeft = mouseX + scrollX - menuRect.width - 10;
+            } else {
+                // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
+                finalLeft = scrollX + (viewportWidth - menuRect.width) / 2;
+            }
+        }
+        
+        // بررسی و اصلاح موقعیت افقی در صورت خروج از viewport
+        const menuLeftInViewport = finalLeft - scrollX;
+        if (menuLeftInViewport + menuRect.width > viewportWidth) {
+            finalLeft = scrollX + viewportWidth - menuRect.width - 10;
+        }
+        if (menuLeftInViewport < 0) {
+            finalLeft = scrollX + 10;
+        }
+        
+        // تنظیم موقعیت عمودی - اول سعی می‌کنیم زیر موس قرار دهیم
+        if (manualRtlState.mousePosition) {
+            const mouseY = manualRtlState.mousePosition.y;
+            const spaceBelow = viewportHeight - mouseY;
+            const spaceAbove = mouseY;
+            
+            if (spaceBelow >= menuRect.height + 10) {
+                // جا در پایین هست
+                finalTop = mouseY + scrollY + 10;
+            } else if (spaceAbove >= menuRect.height + 10) {
+                // جا در بالا هست
+                finalTop = mouseY + scrollY - menuRect.height - 10;
+            } else {
+                // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
+                finalTop = scrollY + (viewportHeight - menuRect.height) / 2;
+            }
+        }
+        
+        // بررسی و اصلاح موقعیت عمودی در صورت خروج از viewport
+        const menuTopInViewport = finalTop - scrollY;
+        if (menuTopInViewport + menuRect.height > viewportHeight) {
+            finalTop = scrollY + viewportHeight - menuRect.height - 10;
+        }
+        if (menuTopInViewport < 0) {
+            finalTop = scrollY + 10;
+        }
+        
+        popupMenu.style.left = `${finalLeft}px`;
+        popupMenu.style.top = `${finalTop}px`;
+    });
+}
+
 export function showPopupMenu(range, element, options = {}) {
     hidePopupMenu();
     manualRtlState.isMenuOpen = false;
@@ -84,7 +158,6 @@ export function showPopupMenu(range, element, options = {}) {
             });
         }
 
-        hidePopupMenu();
         updateElementHighlight(null, false);
     }, true);
 
@@ -112,18 +185,20 @@ export function showPopupMenu(range, element, options = {}) {
             updateElementHighlight(element, true);
         }
 
+        // محاسبه مجدد موقعیت منو بعد از expand
+        recalculateMenuPosition(popupMenu);
+
         setTimeout(() => {
             if (manualRtlState.popupMenu) {
                 manualRtlState.popupMenu._isExpanding = false;
+                // محاسبه مجدد موقعیت بعد از اینکه منو کاملاً expand شد
+                recalculateMenuPosition(manualRtlState.popupMenu);
             }
         }, 100);
     };
 
     if (menuDisplayMode === 'logo_first') {
-        header.addEventListener('click', expandMenu, true);
-        mainLogo.addEventListener('click', expandMenu, true);
-        extensionLogo.addEventListener('click', expandMenu, true);
-        logosWrapper.addEventListener('click', expandMenu, true);
+        popupMenu.addEventListener('click', expandMenu, true);
     } else {
         header.style.cursor = 'default';
     }
@@ -154,7 +229,6 @@ export function showPopupMenu(range, element, options = {}) {
             applyDirection(element, item.direction);
 
             setTimeout(() => {
-                hidePopupMenu();
                 updateElementHighlight(null, false);
             }, 100);
         }, true);
@@ -177,11 +251,12 @@ export function showPopupMenu(range, element, options = {}) {
     let menuLeft;
 
     if (manualRtlState.mousePosition) {
-        menuTop = manualRtlState.mousePosition.y + scrollY + 10;
+        // منو را کنار موس قرار می‌دهیم (هم‌ارتفاع با موس)
+        menuTop = manualRtlState.mousePosition.y + scrollY;
         menuLeft = manualRtlState.mousePosition.x + scrollX + 10;
     } else {
         const rect = range.getBoundingClientRect();
-        menuTop = rect.top + scrollY + 10;
+        menuTop = rect.top + scrollY;
         menuLeft = rect.left + scrollX + 10;
     }
 
@@ -196,49 +271,21 @@ export function showPopupMenu(range, element, options = {}) {
         manualRtlState.currentMenuElement = element;
     }
 
-    requestAnimationFrame(() => {
-        const menuRect = popupMenu.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        if (menuRect.right > viewportWidth) {
-            popupMenu.style.left = `${viewportWidth - menuRect.width - 10}px`;
-        }
-
-        if (menuRect.left < 0) {
-            popupMenu.style.left = '10px';
-        }
-
-        if (menuRect.top < 0) {
-            const currentTop = parseInt(popupMenu.style.top, 10) || 0;
-            popupMenu.style.top = `${currentTop - menuRect.top + 10}px`;
-        }
-
-        if (menuRect.bottom > viewportHeight) {
-            const currentTop = parseInt(popupMenu.style.top, 10) || 0;
-            popupMenu.style.top = `${currentTop - (menuRect.bottom - viewportHeight) - 10}px`;
-        }
-    });
+    recalculateMenuPosition(popupMenu);
 
     setTimeout(() => {
-        if (menuDisplayMode === 'logo_first') {
-            const closeHandler = (event) => {
-                if (manualRtlState.popupMenu && manualRtlState.popupMenu.contains(event.target)) {
-                    return;
-                }
-                if (manualRtlState.popupMenu && manualRtlState.popupMenu._isExpanding) {
-                    return;
-                }
-                closeMenuOnOutsideClick(event);
-            };
+        const closeHandler = (event) => {
+            if (manualRtlState.popupMenu && manualRtlState.popupMenu.contains(event.target)) {
+                return;
+            }
+            if (manualRtlState.popupMenu && manualRtlState.popupMenu._isExpanding) {
+                return;
+            }
+            closeMenuOnOutsideClick(event);
+        };
 
-            document.addEventListener('click', closeHandler, true);
-            popupMenu._closeHandler = closeHandler;
-        } else {
-            popupMenu._closeHandler = null;
-        }
-
-        document.addEventListener('selectionchange', closeMenuOnSelectionChange, true);
+        document.addEventListener('click', closeHandler, true);
+        popupMenu._closeHandler = closeHandler;
     }, 300);
 }
 
@@ -254,7 +301,6 @@ export function hidePopupMenu() {
         document.removeEventListener('click', popupMenu._closeHandler, true);
         popupMenu._closeHandler = null;
     }
-    document.removeEventListener('selectionchange', closeMenuOnSelectionChange, true);
 
     if (popupMenu.parentNode) {
         popupMenu.parentNode.removeChild(popupMenu);
@@ -273,14 +319,6 @@ export function hidePopupMenu() {
 export function closeMenuOnOutsideClick() {
     hidePopupMenu();
     updateElementHighlight(null, false);
-}
-
-export function closeMenuOnSelectionChange() {
-    const selection = window.getSelection();
-    if (selection && selection.isCollapsed) {
-        hidePopupMenu();
-        updateElementHighlight(null, false);
-    }
 }
 
 export function showMenuAfterSelection() {
