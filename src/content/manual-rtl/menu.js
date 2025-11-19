@@ -31,7 +31,7 @@ export function handleMenuDisplayForElement(element, range, options = {}) {
     showPopupMenu(range, element, { forceExpanded });
 }
 
-function recalculateMenuPosition(popupMenu) {
+function recalculateMenuPosition(popupMenu, centerOnMouse = false) {
     if (!popupMenu || !popupMenu.parentNode) {
         return;
     }
@@ -46,21 +46,45 @@ function recalculateMenuPosition(popupMenu) {
         let finalLeft = parseInt(popupMenu.style.left, 10) || 0;
         let finalTop = parseInt(popupMenu.style.top, 10) || 0;
         
-        // تنظیم موقعیت افقی - اول سعی می‌کنیم سمت راست موس قرار دهیم
         if (manualRtlState.mousePosition) {
             const mouseX = manualRtlState.mousePosition.x;
-            const spaceOnRight = viewportWidth - mouseX;
-            const spaceOnLeft = mouseX;
+            const mouseY = manualRtlState.mousePosition.y;
             
-            if (spaceOnRight >= menuRect.width + 10) {
-                // جا در سمت راست هست
-                finalLeft = mouseX + scrollX + 10;
-            } else if (spaceOnLeft >= menuRect.width + 10) {
-                // جا در سمت چپ هست
-                finalLeft = mouseX + scrollX - menuRect.width - 10;
+            if (centerOnMouse) {
+                // قرار دادن منو طوری که موس در مرکز یا نزدیک مرکز منو باشد
+                // سعی می‌کنیم موس را در یک سوم بالای منو قرار دهیم
+                finalLeft = mouseX + scrollX - (menuRect.width * 0.3);
+                finalTop = mouseY + scrollY - (menuRect.height * 0.2);
             } else {
-                // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
-                finalLeft = scrollX + (viewportWidth - menuRect.width) / 2;
+                // تنظیم موقعیت افقی - اول سعی می‌کنیم سمت راست موس قرار دهیم
+                const spaceOnRight = viewportWidth - mouseX;
+                const spaceOnLeft = mouseX;
+                
+                if (spaceOnRight >= menuRect.width + 10) {
+                    // جا در سمت راست هست
+                    finalLeft = mouseX + scrollX + 10;
+                } else if (spaceOnLeft >= menuRect.width + 10) {
+                    // جا در سمت چپ هست
+                    finalLeft = mouseX + scrollX - menuRect.width - 10;
+                } else {
+                    // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
+                    finalLeft = scrollX + (viewportWidth - menuRect.width) / 2;
+                }
+                
+                // تنظیم موقعیت عمودی - اول سعی می‌کنیم زیر موس قرار دهیم
+                const spaceBelow = viewportHeight - mouseY;
+                const spaceAbove = mouseY;
+                
+                if (spaceBelow >= menuRect.height + 10) {
+                    // جا در پایین هست
+                    finalTop = mouseY + scrollY + 10;
+                } else if (spaceAbove >= menuRect.height + 10) {
+                    // جا در بالا هست
+                    finalTop = mouseY + scrollY - menuRect.height - 10;
+                } else {
+                    // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
+                    finalTop = scrollY + (viewportHeight - menuRect.height) / 2;
+                }
             }
         }
         
@@ -71,24 +95,6 @@ function recalculateMenuPosition(popupMenu) {
         }
         if (menuLeftInViewport < 0) {
             finalLeft = scrollX + 10;
-        }
-        
-        // تنظیم موقعیت عمودی - اول سعی می‌کنیم زیر موس قرار دهیم
-        if (manualRtlState.mousePosition) {
-            const mouseY = manualRtlState.mousePosition.y;
-            const spaceBelow = viewportHeight - mouseY;
-            const spaceAbove = mouseY;
-            
-            if (spaceBelow >= menuRect.height + 10) {
-                // جا در پایین هست
-                finalTop = mouseY + scrollY + 10;
-            } else if (spaceAbove >= menuRect.height + 10) {
-                // جا در بالا هست
-                finalTop = mouseY + scrollY - menuRect.height - 10;
-            } else {
-                // جا در هیچ سمتی نیست، منو را در مرکز قرار می‌دهیم
-                finalTop = scrollY + (viewportHeight - menuRect.height) / 2;
-            }
         }
         
         // بررسی و اصلاح موقعیت عمودی در صورت خروج از viewport
@@ -185,14 +191,14 @@ export function showPopupMenu(range, element, options = {}) {
             updateElementHighlight(element, true);
         }
 
-        // محاسبه مجدد موقعیت منو بعد از expand
-        recalculateMenuPosition(popupMenu);
+        // محاسبه مجدد موقعیت منو بعد از expand - قرار دادن منو طوری که موس روی آن باشد
+        recalculateMenuPosition(popupMenu, true);
 
         setTimeout(() => {
             if (manualRtlState.popupMenu) {
                 manualRtlState.popupMenu._isExpanding = false;
-                // محاسبه مجدد موقعیت بعد از اینکه منو کاملاً expand شد
-                recalculateMenuPosition(manualRtlState.popupMenu);
+                // محاسبه مجدد موقعیت بعد از اینکه منو کاملاً expand شد - قرار دادن منو طوری که موس روی آن باشد
+                recalculateMenuPosition(manualRtlState.popupMenu, true);
             }
         }, 100);
     };

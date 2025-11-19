@@ -28,6 +28,9 @@ export function initTextSelector() {
                     cleanupTextSelector();
                 } else if (!manualRtlState.highlightStyle) {
                     initTextSelectorInternal();
+                } else {
+                    // اگر text selector فعال است، logo display را به‌روزرسانی کن
+                    updateHighlightStyle(changes.textSelectorSettings.newValue);
                 }
             });
         }

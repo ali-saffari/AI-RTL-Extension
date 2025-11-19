@@ -8,6 +8,9 @@ export function updateHighlightStyle(settings) {
         return;
     }
 
+    // به‌روزرسانی تنظیمات در state
+    manualRtlState.textSelectorSettings = settings;
+
     const highlightColor = settings.highlightColor || '#ff0000';
     const highlightOpacity = typeof settings.highlightOpacity === 'number'
         ? Math.min(Math.max(settings.highlightOpacity, 0), 1)
@@ -29,6 +32,8 @@ export function updateHighlightStyle(settings) {
     if (logoUrl) {
         document.documentElement.style.setProperty('--rtl-manual-logo-image', `url("${logoUrl}")`);
     }
+    
+    // به‌روزرسانی logo display برای تمام element های موجود
     refreshLogoDisplayOnManualElements();
 }
 

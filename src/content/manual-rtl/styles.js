@@ -133,13 +133,10 @@ const STYLE_CONTENT = `
         background-repeat: no-repeat;
         background-size: contain;
         opacity: 0;
-        transition: opacity 0.2s ease, filter 0.2s ease;
+        transition: opacity 0.2s ease;
         pointer-events: auto;
         z-index: 1;
         cursor: pointer;
-    }
-    .rtl-manual-direction-element:hover .rtl-manual-logo-icon {
-        filter: brightness(0) invert(1);
     }
     .rtl-manual-logo-always .rtl-manual-logo-icon {
         opacity: 1;
