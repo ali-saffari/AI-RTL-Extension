@@ -1,6 +1,6 @@
 import { manualRtlState } from './state.js';
 import { updateElementHighlight } from './highlight.js';
-import { applyDirection } from './direction.js';
+import { applyDirection, hasDirectionChanges, removeDirectionChanges } from './direction.js';
 import { getExtensionLogoUrl, getManualLogoUrl } from './assets.js';
 import { LOGO_ICON_OFFSET, LOGO_ICON_SIZE } from './constants.js';
 import { findBestContainer } from './dom.js';
@@ -247,6 +247,32 @@ export function showPopupMenu(range, element, options = {}) {
             menuBody.appendChild(divider);
         }
     });
+
+    // اضافه کردن دکمه حذف تغییرات اگر تغییرات وجود داشته باشد
+    if (hasDirectionChanges(element)) {
+        const divider = document.createElement('div');
+        divider.className = 'rtl-text-selector-menu-divider';
+        menuBody.appendChild(divider);
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'rtl-text-selector-menu-item';
+        removeButton.textContent = 'حذف تغییرات';
+        removeButton.type = 'button';
+
+        removeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+
+            removeDirectionChanges(element);
+
+            setTimeout(() => {
+                updateElementHighlight(null, false);
+            }, 100);
+        }, true);
+
+        menuBody.appendChild(removeButton);
+    }
 
     popupMenu.appendChild(menuBody);
 
