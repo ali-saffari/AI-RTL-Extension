@@ -248,7 +248,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         const hostname = message.hostname || derivedHostname || activeTabInfo.hostname || '';
         const favicon = message.favicon || sender?.tab?.favIconUrl || activeTabInfo.favicon || '';
-
         activeTabInfo.hostname = hostname;
         activeTabInfo.favicon = favicon;
         activeTabInfo.lastUpdatedAt = Date.now();
@@ -304,8 +303,18 @@ function setupEventListeners() {
     chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
         if (!tabId) return;
         console.log('[Events] Tab updated', { tabId, changeInfo });
-        if (activeTabInfo?.tabId === tabId && changeInfo?.favIconUrl) {
-            activeTabInfo.favicon = changeInfo.favIconUrl;
+        if (activeTabInfo?.tabId === tabId) {
+            if (changeInfo?.favIconUrl) {
+                activeTabInfo.favicon = changeInfo.favIconUrl;
+            }
+            if (changeInfo?.url) {
+                try {
+                    const url = new URL(changeInfo.url);
+                    activeTabInfo.hostname = url.hostname;
+                } catch (err) {
+                    console.warn('[ActiveTab] Invalid URL in update:', changeInfo.url);
+                }
+            }
             activeTabInfo.lastUpdatedAt = Date.now();
             dumpActiveTabInfo('Updated from tab change');
             broadcastActiveTabInfo('tab-updated');

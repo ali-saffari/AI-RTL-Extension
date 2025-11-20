@@ -85,11 +85,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     const activeHostname = activeTabInfo?.hostname?.trim() || '';
     const hasSiteDetails = Boolean(activeHostname && activeTabInfo?.favicon);
     const faviconSrc = hasSiteDetails ? (activeTabInfo?.favicon || '') : '';
-    const siteStatusLabel = activeTabInfo?.tabId == null
-        ? 'سایتی پیدا نشد'
-        : activeHostname
-            ? ''
-            : 'رفرش کنید';
     const shouldShowCheckbox = Boolean(activeHostname);
     const displayHostname = React.useMemo(() => {
         if (!activeHostname) return '';
@@ -136,6 +131,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     };
 
     return (
+        <>
         <Box
             sx={{
                 display: 'flex',
@@ -241,102 +237,175 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         : '1px solid rgba(30, 64, 175, 0.2)'
                 }}
             >
-                
-
-              
+                {activeHostname ? (
                     <FormControlLabel
                         sx={{
-                            pt: 0.5,
-                            pb: 0.5,
+                            pt: 1.5,
+                            pb: 0,
                             m: 0,
                             display: 'flex',
                             flexDirection: 'row-reverse',
                             justifyContent: 'space-between'
                         }}
                         control={
-                            shouldShowCheckbox ? (
-                                <Checkbox
-                                    checked={manualRtlSettings.manualRtlEnabled !== false && manualRtlSettings.enabled !== 'disabled'}
-                                    onChange={handleCheckboxChange}
-                                    sx={{
-                                        p: 0,
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                        '&.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                        }
-                                    }}
-                                />
-                            ) : (
-                                <Box sx={{ width: 0, height: 0 }} />
-                            )
+                            <Checkbox
+                                checked={manualRtlSettings.manualRtlEnabled !== false && manualRtlSettings.enabled !== 'disabled'}
+                                onChange={handleCheckboxChange}
+                                sx={{
+                                    p: 0,
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    '&.Mui-checked': {
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                    }
+                                }}
+                            />
                         }
-                            label={
-                                <Typography
-                                    variant="body2"
-                                    component="div"
+                        label={
+                            <Typography
+                                variant="body2"
+                                component="div"
+                                sx={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 500,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b',
+                                    fontFamily: 'iranyekan',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: 0.5
+                                }}
+                            >
+                                <span>برای</span>
+                                <Box
+                                    component="span"
                                     sx={{
-                                        fontSize: '0.7rem',
-                                        fontWeight: 500,
-                                        color: isDarkMode ? '#ffffff' : '#1e293b',
-                                        fontFamily: 'iranyekan',
-                                        display: 'flex',
+                                        display: 'inline-flex',
                                         alignItems: 'center',
-                                        flexWrap: 'wrap',
-                                        gap: 0.5
+                                        gap: 0.4,
+                                        px: 0.8,
+                                        py: 0.2,
+                                        borderRadius: 1,
+                                        backgroundColor: isDarkMode
+                                            ? 'rgba(0, 233, 255, 0.08)'
+                                            : 'rgba(30, 64, 175, 0.08)'
                                     }}
                                 >
-                                    {activeHostname ? (
-                                        <>
-                                            <span>سایت</span>
-                                            <Box
-                                                component="span"
-                                                sx={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 0.4,
-                                                    px: 0.8,
-                                                    py: 0.2,
-                                                    borderRadius: 1,
-                                                    backgroundColor: isDarkMode
-                                                        ? 'rgba(0, 233, 255, 0.08)'
-                                                        : 'rgba(30, 64, 175, 0.08)'
-                                                }}
-                                            >
-                                                {hasSiteDetails ? (
-                                                    <img
-                                                        src={faviconSrc}
-                                                        alt={activeHostname}
-                                                        style={{
-                                                            width: 14,
-                                                            height: 14,
-                                                            borderRadius: 3,
-                                                            border: isDarkMode
-                                                                ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                                : '1px solid rgba(30, 64, 175, 0.2)'
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <SvgIcon
-                                                        sx={{
-                                                            fontSize: '0.85rem',
-                                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                                        }}
-                                                    >
-                                                        <path d={mdiWeb} />
-                                                    </SvgIcon>
-                                                )}
-                                                <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
-                                            </Box>
-                                            <span>در لیست مجاز قرار گیرد؟</span>
-                                        </>
-                                    ) : siteStatusLabel}
-                                </Typography>
-                            }
+                                    {hasSiteDetails ? (
+                                        <img
+                                            src={faviconSrc}
+                                            alt={activeHostname}
+                                            style={{
+                                                width: 14,
+                                                height: 14,
+                                                borderRadius: 3,
+                                                border: isDarkMode
+                                                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                    : '1px solid rgba(30, 64, 175, 0.2)'
+                                            }}
+                                        />
+                                    ) : (
+                                        <SvgIcon
+                                            sx={{
+                                                fontSize: '0.85rem',
+                                                color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                            }}
+                                        >
+                                            <path d={mdiWeb} />
+                                        </SvgIcon>
+                                    )}
+                                    <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
+                                </Box>
+                                <span>راست چین دستی فعال شود؟</span>
+                            </Typography>
+                        }
                         labelPlacement="start"
                     />
-                
+                ) : activeTabInfo?.tabId != null ? (
+                    <Box
+                        sx={{
+                            pt: 1.6,
+                            pb: 0.2,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 0.3,
+                            textAlign: 'center'
+                        }}
+                    >
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: '0.7rem',
+                                fontWeight: 500,
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                                fontFamily: 'iranyekan'
+                            }}
+                        >
+                            صفحه رو رفرش کنید
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: '0.65rem',
+                                fontWeight: 400,
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                                fontFamily: 'iranyekan',
+                                opacity: 0.8
+                            }}
+                        >
+                            اگر بعد از رفرش باز هم این پیام رو دیدید، یعنی روی این سایت امکان فعال‌سازی وجود ندارد
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Box
+                        sx={{
+                            pt: 1.2,
+                            pb: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: '0.7rem',
+                                fontWeight: 500,
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                                fontFamily: 'iranyekan'
+                            }}
+                        >
+                            سایتی پیدا نشد
+                        </Typography>
+                    </Box>
+                )}
             </Box>
         </Box>
+        <Box
+            sx={{
+                mx: 2,
+                mt: 1,
+                px: 1,
+                py: 0.8,
+                textAlign: 'center'
+            }}
+        >
+            <Typography
+                variant="body2"
+                component="div"
+                sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: 400,
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                    fontFamily: 'iranyekan',
+                    lineHeight: 1.5
+                }}
+            >
+                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> نداره و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+            </Typography>
+        </Box>
+    </>
     );
 };
 
