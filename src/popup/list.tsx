@@ -172,7 +172,7 @@ export default function ServiceList() {
                         }}
                         style={{ direction: 'ltr' }}
                     >
-                        {Object.values(checked).filter(Boolean).length} سایت فعال
+                        {Object.values(checked).filter(Boolean).length} فعال
                     </ListSubheader>
                 }
             >
