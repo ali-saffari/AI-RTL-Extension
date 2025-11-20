@@ -10,7 +10,7 @@ export function applyLogoDisplayToElement(element) {
     element.classList.add('rtl-manual-direction-element');
     element.classList.remove('rtl-manual-logo-always', 'rtl-manual-logo-hover', 'rtl-manual-logo-disabled');
 
-    const logoDisplay = manualRtlState.textSelectorSettings?.logoDisplay || 'always';
+    const logoDisplay = manualRtlState.manualRtlSettings?.logoDisplay || 'always';
     let className = 'rtl-manual-logo-always';
     if (logoDisplay === 'on_hover') {
         className = 'rtl-manual-logo-hover';

@@ -30,8 +30,8 @@ interface TextSelectorSettings {
 }
 
 interface ManualRTLTabProps {
-    textSelectorSettings: TextSelectorSettings;
-    onTextSelectorSettingsChange: (settings: TextSelectorSettings) => void;
+    manualRtlSettings: TextSelectorSettings;
+    onManualRtlSettingsChange: (settings: TextSelectorSettings) => void;
     isDarkMode: boolean;
 }
 
@@ -207,17 +207,17 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
 };
 
 const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
-    textSelectorSettings,
-    onTextSelectorSettingsChange,
+    manualRtlSettings,
+    onManualRtlSettingsChange,
     isDarkMode
 }) => {
     const theme = useTheme();
-    const [menuExpanded, setMenuExpanded] = React.useState(textSelectorSettings.menuDisplayMode === 'menu_direct');
+    const [menuExpanded, setMenuExpanded] = React.useState(manualRtlSettings.menuDisplayMode === 'menu_direct');
     
     // وقتی menuDisplayMode تغییر می‌کند، state را به‌روزرسانی کن
     React.useEffect(() => {
-        setMenuExpanded(textSelectorSettings.menuDisplayMode === 'menu_direct');
-    }, [textSelectorSettings.menuDisplayMode]);
+        setMenuExpanded(manualRtlSettings.menuDisplayMode === 'menu_direct');
+    }, [manualRtlSettings.menuDisplayMode]);
     
     // تنظیمات پیش‌فرض برای راست‌چین دستی
     const getDefaultManualRTLSettings = (): Partial<TextSelectorSettings> => {
@@ -235,19 +235,19 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     
     const handleResetToDefault = () => {
         const defaultSettings = getDefaultManualRTLSettings();
-        onTextSelectorSettingsChange({
-            ...textSelectorSettings,
+        onManualRtlSettingsChange({
+            ...manualRtlSettings,
             ...defaultSettings
         });
     };
     
     // تعیین اینکه آیا باید highlight نمایش داده شود یا نه
-    const shouldShowHighlight = textSelectorSettings.highlightMode === 'disabled' 
+    const shouldShowHighlight = manualRtlSettings.highlightMode === 'disabled' 
         ? false 
-        : textSelectorSettings.highlightMode === 'on_selection' 
+        : manualRtlSettings.highlightMode === 'on_selection' 
         ? true 
-        : textSelectorSettings.highlightMode === 'on_direction_change'
-        ? (textSelectorSettings.menuDisplayMode === 'menu_direct' || menuExpanded)
+        : manualRtlSettings.highlightMode === 'on_direction_change'
+        ? (manualRtlSettings.menuDisplayMode === 'menu_direct' || menuExpanded)
         : false;
 
     // Template example
@@ -308,14 +308,15 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         color: 'text.secondary',
                                         fontSize: '0.8rem'
                                     }}>
-                                        {textSelectorSettings.manualRtlEnabled ? 'فعال' : 'غیرفعال'}
+                                        {manualRtlSettings.manualRtlEnabled ? 'فعال' : 'غیرفعال'}
                                     </Typography>
                                 </Box>
                                 <Switch
-                                    checked={textSelectorSettings.manualRtlEnabled ?? false}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        manualRtlEnabled: e.target.checked
+                                    checked={manualRtlSettings.manualRtlEnabled ?? false}
+                                    onChange={(e) => onManualRtlSettingsChange({
+                                        ...manualRtlSettings,
+                                        manualRtlEnabled: e.target.checked,
+                                        enabled: e.target.checked ? 'enabled' : 'disabled'
                                     })}
                                     sx={{
                                         '& .MuiSwitch-switchBase.Mui-checked': {
@@ -329,351 +330,356 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             </Box>
                         </Box>
 
-                        {/* روی چه سایت‌هایی فعال باشه */}
-                        <Box sx={{ mb: 3, opacity: textSelectorSettings.manualRtlEnabled ? 1 : 0.5 }}>
-                            <FormControl fullWidth sx={{ mb: 2 }} disabled={!textSelectorSettings.manualRtlEnabled}>
-                                <InputLabel id="site-mode-label"> سایت‌های فعال </InputLabel>
-                                <Select
-                                    labelId="site-mode-label"
-                                    value={textSelectorSettings.manualRtlSiteMode ?? 'all'}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        manualRtlSiteMode: e.target.value as 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed'
-                                    })}
-                                    label="سایت‌های فعال"
-                                >
-                                    <MenuItem value="all">همه</MenuItem>
-                                    <MenuItem value="ai_sites">فقط لیست سایت‌های هوش مصنوعی افزونه</MenuItem>
-                                    <MenuItem value="allowed_sites">فقط سایت‌های که تعریف شده در لیست مجاز </MenuItem>
-                                    <MenuItem value="ai_and_allowed">سایت‌های مجاز و هوش مصنوعی‌های افزونه</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                        {/* همه تنظیمات دیگر - فقط وقتی فعال است */}
+                        {manualRtlSettings.manualRtlEnabled && (
+                            <>
+                                {/* روی چه سایت‌هایی فعال باشه */}
+                                <Box sx={{ mb: 3 }}>
+                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                        <InputLabel id="site-mode-label"> سایت‌های فعال </InputLabel>
+                                        <Select
+                                            labelId="site-mode-label"
+                                            value={manualRtlSettings.manualRtlSiteMode ?? 'all'}
+                                            onChange={(e) => onManualRtlSettingsChange({
+                                                ...manualRtlSettings,
+                                                manualRtlSiteMode: e.target.value as 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed'
+                                            })}
+                                            label="سایت‌های فعال"
+                                        >
+                                            <MenuItem value="all">همه</MenuItem>
+                                            <MenuItem value="ai_sites">فقط لیست سایت‌های هوش مصنوعی افزونه</MenuItem>
+                                            <MenuItem value="allowed_sites">فقط سایت‌های که تعریف شده در لیست مجاز </MenuItem>
+                                            <MenuItem value="ai_and_allowed">سایت‌های مجاز و هوش مصنوعی‌های افزونه</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
 
-                        <Divider sx={{ my: 2 }} />
+                                <Divider sx={{ my: 2 }} />
 
-                        {/* نحوه نمایش منوی تغییر جهت */}
-                        <Box sx={{ mb: 3 }}>
-                            <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel id="menu-display-mode-label">نحوه نمایش منوی تغییر جهت</InputLabel>
-                                <Select
-                                    labelId="menu-display-mode-label"
-                                    value={textSelectorSettings.menuDisplayMode ?? 'logo_first'}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        menuDisplayMode: e.target.value as 'logo_first' | 'menu_direct'
-                                    })}
-                                    label="نحوه نمایش منوی تغییر جهت"
-                                >
-                                    <MenuItem value="logo_first">ابتدا لوگو نمایش داده شود (دو مرحله‌ای)</MenuItem>
-                                    <MenuItem value="menu_direct">مستقیم منو نمایش داده شود (تک مرحله‌ای)</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                {/* نحوه نمایش منوی تغییر جهت */}
+                                <Box sx={{ mb: 3 }}>
+                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                        <InputLabel id="menu-display-mode-label">نحوه نمایش منوی تغییر جهت</InputLabel>
+                                        <Select
+                                            labelId="menu-display-mode-label"
+                                            value={manualRtlSettings.menuDisplayMode ?? 'logo_first'}
+                                            onChange={(e) => onManualRtlSettingsChange({
+                                                ...manualRtlSettings,
+                                                menuDisplayMode: e.target.value as 'logo_first' | 'menu_direct'
+                                            })}
+                                            label="نحوه نمایش منوی تغییر جهت"
+                                        >
+                                            <MenuItem value="logo_first">ابتدا لوگو نمایش داده شود (دو مرحله‌ای)</MenuItem>
+                                            <MenuItem value="menu_direct">مستقیم منو نمایش داده شود (تک مرحله‌ای)</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
 
-                        {/* نحوه نمایش محل تغییر */}
-                        <Box sx={{ mb: 3 }}>
-                            <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel id="highlight-mode-label">نحوه نمایش محل تغییر</InputLabel>
-                                <Select
-                                    labelId="highlight-mode-label"
-                                    value={textSelectorSettings.highlightMode}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        highlightMode: e.target.value as 'disabled' | 'on_selection' | 'on_direction_change'
-                                    })}
-                                    label="نحوه نمایش محل تغییر"
-                                >
-                                    <MenuItem value="disabled">غیرفعال</MenuItem>
-                                    <MenuItem value="on_selection">زمان انتخاب متن</MenuItem>
-                                    <MenuItem value="on_direction_change">زمان باز شدن منو تنظیم جهت</MenuItem>
-                                </Select>
-                            </FormControl>
-                            
-                            {/* پیش‌نمایش نحوه نمایش */}
-                            <Box sx={{ 
-                                mt: 2,
-                                p: 2,
-                                borderRadius: 2,
-                                bgcolor: theme.palette.background.paper,
-                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                            }}>
-                                <Typography variant="body2" sx={{ 
-                                    mb: 3.5,
-                                    color: 'text.secondary',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 500
-                                }}>
-                                    پیش‌نمایش:
-                                </Typography>
-                           
-                                    <Box
+                                {/* نحوه نمایش محل تغییر */}
+                                <Box sx={{ mb: 3 }}>
+                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                        <InputLabel id="highlight-mode-label">نحوه نمایش محل تغییر</InputLabel>
+                                        <Select
+                                            labelId="highlight-mode-label"
+                                            value={manualRtlSettings.highlightMode}
+                                            onChange={(e) => onManualRtlSettingsChange({
+                                                ...manualRtlSettings,
+                                                highlightMode: e.target.value as 'disabled' | 'on_selection' | 'on_direction_change'
+                                            })}
+                                            label="نحوه نمایش محل تغییر"
+                                        >
+                                            <MenuItem value="disabled">غیرفعال</MenuItem>
+                                            <MenuItem value="on_selection">زمان انتخاب متن</MenuItem>
+                                            <MenuItem value="on_direction_change">زمان باز شدن منو تنظیم جهت</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    
+                                    {/* پیش‌نمایش نحوه نمایش */}
+                                    <Box sx={{ 
+                                        mt: 2,
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                                    }}>
+                                        <Typography variant="body2" sx={{ 
+                                            mb: 3.5,
+                                            color: 'text.secondary',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 500
+                                        }}>
+                                            پیش‌نمایش:
+                                        </Typography>
+                                   
+                                            <Box
+                                                sx={{
+                                                    px: 1.5,
+                                                    py: 1,
+                                                    my: 2,
+                                                    mb: shouldShowHighlight && manualRtlSettings.menuDisplayMode === 'menu_direct' ? 5 : 2,
+                                                    borderRadius: 0.5,
+                                                    backgroundColor: shouldShowHighlight
+                                                        ? `rgba(${parseInt(manualRtlSettings.highlightColor.slice(1, 3), 16)}, ${parseInt(manualRtlSettings.highlightColor.slice(3, 5), 16)}, ${parseInt(manualRtlSettings.highlightColor.slice(5, 7), 16)}, ${manualRtlSettings.highlightOpacity * 0.2})`
+                                                        : 'transparent',
+                                                    outline: shouldShowHighlight
+                                                        ? `3px solid rgba(${parseInt(manualRtlSettings.highlightColor.slice(1, 3), 16)}, ${parseInt(manualRtlSettings.highlightColor.slice(3, 5), 16)}, ${parseInt(manualRtlSettings.highlightColor.slice(5, 7), 16)}, ${manualRtlSettings.highlightOpacity})`
+                                                        : 'none',
+                                                    outlineOffset: '0',
+                                                    width: '100%',
+                                                    boxSizing: 'border-box',
+                                                    position: 'relative'
+                                                }}
+                                            >
+                                                <Typography 
+                                                    variant="body2" 
+                                                    component="div"
+                                                    sx={{ 
+                                                        fontSize: '0.9rem',
+                                                    
+                                                        lineHeight: 1.8,
+                                                        color: 'text.primary',
+                                                        userSelect: 'none'
+                                                    }}
+                                                >
+                                                    {manualRtlSettings.highlightMode === 'disabled' ? (
+                                                        <>
+                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            <Box
+                                                                component="span"
+                                                                sx={{
+                                                                    backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
+                                                                    color: '#ffffff',
+                                                                    px: 0.5,
+                                                                    py: 0.25,
+                                                                    borderRadius: 0.25,
+                                                                    display: 'inline-block',
+                                                                    userSelect: 'none',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                <MenuPreview 
+                                                                    menuDisplayMode={manualRtlSettings.menuDisplayMode} 
+                                                                    isExpanded={menuExpanded}
+                                                                    onExpandedChange={setMenuExpanded}
+                                                                />
+                                                            </Box>
+                                                            {' '}و بقیه متن به صورت عادی است. در حالت غیرفعال هیچ highlight نمایش داده نمی‌شود.
+                                                        </>
+                                                    ) : manualRtlSettings.highlightMode === 'on_selection' ? (
+                                                        <>
+                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            <Box
+                                                                component="span"
+                                                                sx={{
+                                                                    backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
+                                                                    color: '#ffffff',
+                                                                    px: 0.5,
+                                                                    py: 0.25,
+                                                                    borderRadius: 0.25,
+                                                                    display: 'inline-block',
+                                                                    userSelect: 'none',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                <MenuPreview 
+                                                                    menuDisplayMode={manualRtlSettings.menuDisplayMode} 
+                                                                    isExpanded={menuExpanded}
+                                                                    onExpandedChange={setMenuExpanded}
+                                                                />
+                                                            </Box>
+                                                            {' '}و بقیه متن به صورت عادی است. در این حالت highlight در زمان انتخاب متن نمایش داده می‌شود و تفاوتی نمی‌کند.
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            <Box
+                                                                component="span"
+                                                                sx={{
+                                                                    backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
+                                                                    color: '#ffffff',
+                                                                    px: 0.5,
+                                                                    py: 0.25,
+                                                                    borderRadius: 0.25,
+                                                                    display: 'inline-block',
+                                                                    userSelect: 'none',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                <MenuPreview 
+                                                                    menuDisplayMode={manualRtlSettings.menuDisplayMode} 
+                                                                    isExpanded={menuExpanded}
+                                                                    onExpandedChange={setMenuExpanded}
+                                                                />
+                                                            </Box>
+                                                            {' '}و بقیه متن به صورت عادی است. در این حالت highlight فقط زمانی نمایش داده می‌شود که منو باز باشد.{' '}
+                                                            <br />
+                                                            اگر حالت نمایش منو "مستقیم منو" باشد، highlight همیشه نمایش داده می‌شود. اگر حالت نمایش منو "ابتدا لوگو" باشد، highlight فقط بعد از کلیک روی لوگو و باز شدن منو نمایش داده می‌شود.
+                                                        </>
+                                                    )}
+                                                </Typography>
+                                            </Box>
+                                    </Box>
+                                </Box>
+
+                                {/* رنگ محل انتخاب شده - فقط وقتی disabled نیست */}
+                                {manualRtlSettings.highlightMode !== 'disabled' && (
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="body2" sx={{ 
+                                        fontWeight: 500, 
+                                        mb: 1.5,
+                                        color: 'text.primary'
+                                    }}>
+                                        رنگ محل انتخاب شده
+                                    </Typography>
+                                    
+                                    {/* انتخاب رنگ */}
+                                    <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                        {['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map((color) => (
+                                            <Box
+                                                key={color}
+                                                onClick={() => {
+                                                    onManualRtlSettingsChange({
+                                                        ...manualRtlSettings,
+                                                        highlightColor: color
+                                                    });
+                                                }}
+                                                sx={{
+                                                    width: 40,
+                                                    height: 40,
+                                                    borderRadius: 1,
+                                                    bgcolor: color,
+                                                    cursor: 'pointer',
+                                                    border: manualRtlSettings.highlightColor === color ? `3px solid ${theme.palette.primary.main}` : '1px solid rgba(0,0,0,0.2)'
+                                                }}
+                                            />
+                                        ))}
+                                    </Box>
+
+                                    {/* شدت رنگ */}
+                                    <Box sx={{ px: 2 }}>
+                                        <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                                            شدت رنگ: {Math.round(manualRtlSettings.highlightOpacity * 100)}%
+                                        </Typography>
+                                        <Slider
+                                            value={manualRtlSettings.highlightOpacity}
+                                            onChange={(_, value) => {
+                                                onManualRtlSettingsChange({
+                                                    ...manualRtlSettings,
+                                                    highlightOpacity: value as number
+                                                });
+                                            }}
+                                            min={0}
+                                            max={1}
+                                            step={0.1}
+                                            sx={{
+                                                '& .MuiSlider-thumb': {
+                                                    color: theme.palette.primary.main
+                                                },
+                                                '& .MuiSlider-track': {
+                                                    color: theme.palette.primary.main
+                                                }
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+                                )}
+
+                                <Divider sx={{ my: 2 }} />
+
+                                {/* اعمال فونت */}
+                                <Box sx={{ mb: 3 }}>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                                    }}>
+                                        <Box sx={{ flex: 1 }}>
+                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 500, 
+                                                fontSize: '0.95rem',
+                                                color: 'text.primary',
+                                                mb: 0.5
+                                            }}>
+                                                اعمال فونت
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ 
+                                                color: 'text.secondary',
+                                                fontSize: '0.8rem'
+                                            }}>
+                                                اعمال فونت ایران یکان روی متن‌های تغییر جهت داده شده
+                                            </Typography>
+                                        </Box>
+                                        <Switch
+                                            checked={manualRtlSettings.applyFont !== false}
+                                            onChange={(e) => onManualRtlSettingsChange({
+                                                ...manualRtlSettings,
+                                                applyFont: e.target.checked
+                                            })}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+
+                                {/* نمایش لوگو */}
+                                <Box sx={{ mb: 2 }}>
+                                    <FormControl fullWidth>
+                                        <InputLabel id="logo-display-label">نمایش لوگو روی قسمت های فعال شده</InputLabel>
+                                        <Select
+                                            labelId="logo-display-label"
+                                            value={manualRtlSettings.logoDisplay}
+                                            onChange={(e) => onManualRtlSettingsChange({
+                                                ...manualRtlSettings,
+                                                logoDisplay: e.target.value as 'always' | 'on_hover' | 'disabled'
+                                            })}
+                                            label="نمایش لوگو روی قسمت های فعال شده"
+                                        >
+                                            <MenuItem value="always">همیشه نمایش بده</MenuItem>
+                                            <MenuItem value="on_hover">زمان hover شدن موس</MenuItem>
+                                            <MenuItem value="disabled">غیرفعال</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+
+                                <Divider sx={{ my: 2 }} />
+
+                                {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
+                                <Box sx={{ mb: 2 }}>
+                                    <Button
+                                        variant="outlined"
+                                        fullWidth
+                                        onClick={handleResetToDefault}
                                         sx={{
-                                            px: 1.5,
-                                            py: 1,
-                                            my: 2,
-                                            mb: shouldShowHighlight && textSelectorSettings.menuDisplayMode === 'menu_direct' ? 5 : 2,
-                                            borderRadius: 0.5,
-                                            backgroundColor: shouldShowHighlight
-                                                ? `rgba(${parseInt(textSelectorSettings.highlightColor.slice(1, 3), 16)}, ${parseInt(textSelectorSettings.highlightColor.slice(3, 5), 16)}, ${parseInt(textSelectorSettings.highlightColor.slice(5, 7), 16)}, ${textSelectorSettings.highlightOpacity * 0.2})`
-                                                : 'transparent',
-                                            outline: shouldShowHighlight
-                                                ? `3px solid rgba(${parseInt(textSelectorSettings.highlightColor.slice(1, 3), 16)}, ${parseInt(textSelectorSettings.highlightColor.slice(3, 5), 16)}, ${parseInt(textSelectorSettings.highlightColor.slice(5, 7), 16)}, ${textSelectorSettings.highlightOpacity})`
-                                                : 'none',
-                                            outlineOffset: '0',
-                                            width: '100%',
-                                            boxSizing: 'border-box',
-                                            position: 'relative'
+                                            py: 1.5,
+                                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                                            color: 'text.primary',
+                                            fontWeight: 500,
+                                            '&:hover': {
+                                                borderColor: theme.palette.primary.main,
+                                                backgroundColor: theme.palette.mode === 'dark' 
+                                                    ? 'rgba(0, 233, 255, 0.1)' 
+                                                    : 'rgba(30, 64, 175, 0.1)'
+                                            }
                                         }}
                                     >
-                                        <Typography 
-                                            variant="body2" 
-                                            component="div"
-                                            sx={{ 
-                                                fontSize: '0.9rem',
-                                            
-                                                lineHeight: 1.8,
-                                                color: 'text.primary',
-                                                userSelect: 'none'
-                                            }}
-                                        >
-                                            {textSelectorSettings.highlightMode === 'disabled' ? (
-                                                <>
-                                                    این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
-                                                    <Box
-                                                        component="span"
-                                                        sx={{
-                                                            backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
-                                                            color: '#ffffff',
-                                                            px: 0.5,
-                                                            py: 0.25,
-                                                            borderRadius: 0.25,
-                                                            display: 'inline-block',
-                                                            userSelect: 'none',
-                                                            position: 'relative'
-                                                        }}
-                                                    >
-                                                        این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
-                                                        <MenuPreview 
-                                                            menuDisplayMode={textSelectorSettings.menuDisplayMode} 
-                                                            isExpanded={menuExpanded}
-                                                            onExpandedChange={setMenuExpanded}
-                                                        />
-                                                    </Box>
-                                                    {' '}و بقیه متن به صورت عادی است. در حالت غیرفعال هیچ highlight نمایش داده نمی‌شود.
-                                                </>
-                                            ) : textSelectorSettings.highlightMode === 'on_selection' ? (
-                                                <>
-                                                    این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
-                                                    <Box
-                                                        component="span"
-                                                        sx={{
-                                                            backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
-                                                            color: '#ffffff',
-                                                            px: 0.5,
-                                                            py: 0.25,
-                                                            borderRadius: 0.25,
-                                                            display: 'inline-block',
-                                                            userSelect: 'none',
-                                                            position: 'relative'
-                                                        }}
-                                                    >
-                                                        این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
-                                                        <MenuPreview 
-                                                            menuDisplayMode={textSelectorSettings.menuDisplayMode} 
-                                                            isExpanded={menuExpanded}
-                                                            onExpandedChange={setMenuExpanded}
-                                                        />
-                                                    </Box>
-                                                    {' '}و بقیه متن به صورت عادی است. در این حالت highlight در زمان انتخاب متن نمایش داده می‌شود و تفاوتی نمی‌کند.
-                                                </>
-                                            ) : (
-                                                <>
-                                                    این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
-                                                    <Box
-                                                        component="span"
-                                                        sx={{
-                                                            backgroundColor: theme.palette.mode === 'dark' ? '#093dab' : '#3367d1',
-                                                            color: '#ffffff',
-                                                            px: 0.5,
-                                                            py: 0.25,
-                                                            borderRadius: 0.25,
-                                                            display: 'inline-block',
-                                                            userSelect: 'none',
-                                                            position: 'relative'
-                                                        }}
-                                                    >
-                                                        این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
-                                                        <MenuPreview 
-                                                            menuDisplayMode={textSelectorSettings.menuDisplayMode} 
-                                                            isExpanded={menuExpanded}
-                                                            onExpandedChange={setMenuExpanded}
-                                                        />
-                                                    </Box>
-                                                    {' '}و بقیه متن به صورت عادی است. در این حالت highlight فقط زمانی نمایش داده می‌شود که منو باز باشد.{' '}
-                                                    <br />
-                                                    اگر حالت نمایش منو "مستقیم منو" باشد، highlight همیشه نمایش داده می‌شود. اگر حالت نمایش منو "ابتدا لوگو" باشد، highlight فقط بعد از کلیک روی لوگو و باز شدن منو نمایش داده می‌شود.
-                                                </>
-                                            )}
-                                        </Typography>
-                                    </Box>
-                            </Box>
-                        </Box>
-
-                        {/* رنگ محل انتخاب شده - فقط وقتی disabled نیست */}
-                        {textSelectorSettings.highlightMode !== 'disabled' && (
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="body2" sx={{ 
-                                fontWeight: 500, 
-                                mb: 1.5,
-                                color: 'text.primary'
-                            }}>
-                                رنگ محل انتخاب شده
-                            </Typography>
-                            
-                            {/* انتخاب رنگ */}
-                            <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                {['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map((color) => (
-                                    <Box
-                                        key={color}
-                                        onClick={() => {
-                                            onTextSelectorSettingsChange({
-                                                ...textSelectorSettings,
-                                                highlightColor: color
-                                            });
-                                        }}
-                                        sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: 1,
-                                            bgcolor: color,
-                                            cursor: 'pointer',
-                                            border: textSelectorSettings.highlightColor === color ? `3px solid ${theme.palette.primary.main}` : '1px solid rgba(0,0,0,0.2)'
-                                        }}
-                                    />
-                                ))}
-                            </Box>
-
-                            {/* شدت رنگ */}
-                            <Box sx={{ px: 2 }}>
-                                <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                                    شدت رنگ: {Math.round(textSelectorSettings.highlightOpacity * 100)}%
-                                </Typography>
-                                <Slider
-                                    value={textSelectorSettings.highlightOpacity}
-                                    onChange={(_, value) => {
-                                        onTextSelectorSettingsChange({
-                                            ...textSelectorSettings,
-                                            highlightOpacity: value as number
-                                        });
-                                    }}
-                                    min={0}
-                                    max={1}
-                                    step={0.1}
-                                    sx={{
-                                        '& .MuiSlider-thumb': {
-                                            color: theme.palette.primary.main
-                                        },
-                                        '& .MuiSlider-track': {
-                                            color: theme.palette.primary.main
-                                        }
-                                    }}
-                                />
-                            </Box>
-                        </Box>
-                        )}
-
-                        <Divider sx={{ my: 2 }} />
-
-                        {/* اعمال فونت */}
-                        <Box sx={{ mb: 3 }}>
-                            <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between',
-                                p: 2,
-                                borderRadius: 2,
-                                bgcolor: theme.palette.background.paper,
-                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                            }}>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography variant="body1" sx={{ 
-                                        fontWeight: 500, 
-                                        fontSize: '0.95rem',
-                                        color: 'text.primary',
-                                        mb: 0.5
-                                    }}>
-                                        اعمال فونت
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ 
-                                        color: 'text.secondary',
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        اعمال فونت ایران یکان روی متن‌های تغییر جهت داده شده
-                                    </Typography>
+                                        بازنشانی به تنظیمات پیش‌فرض
+                                    </Button>
                                 </Box>
-                                <Switch
-                                    checked={textSelectorSettings.applyFont !== false}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        applyFont: e.target.checked
-                                    })}
-                                    sx={{
-                                        '& .MuiSwitch-switchBase.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                        },
-                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                        },
-                                    }}
-                                />
-                            </Box>
-                        </Box>
-
-                        {/* نمایش لوگو */}
-                        <Box sx={{ mb: 2 }}>
-                            <FormControl fullWidth>
-                                <InputLabel id="logo-display-label">نمایش لوگو روی قسمت های فعال شده</InputLabel>
-                                <Select
-                                    labelId="logo-display-label"
-                                    value={textSelectorSettings.logoDisplay}
-                                    onChange={(e) => onTextSelectorSettingsChange({
-                                        ...textSelectorSettings,
-                                        logoDisplay: e.target.value as 'always' | 'on_hover' | 'disabled'
-                                    })}
-                                    label="نمایش لوگو روی قسمت های فعال شده"
-                                >
-                                    <MenuItem value="always">همیشه نمایش بده</MenuItem>
-                                    <MenuItem value="on_hover">زمان hover شدن موس</MenuItem>
-                                    <MenuItem value="disabled">غیرفعال</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
-
-                        <Divider sx={{ my: 2 }} />
-
-                        {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
-                        <Box sx={{ mb: 2 }}>
-                            <Button
-                                variant="outlined"
-                                fullWidth
-                                onClick={handleResetToDefault}
-                                sx={{
-                                    py: 1.5,
-                                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                    color: 'text.primary',
-                                    fontWeight: 500,
-                                    '&:hover': {
-                                        borderColor: theme.palette.primary.main,
-                                        backgroundColor: theme.palette.mode === 'dark' 
-                                            ? 'rgba(0, 233, 255, 0.1)' 
-                                            : 'rgba(30, 64, 175, 0.1)'
-                                    }
-                                }}
-                            >
-                                بازنشانی به تنظیمات پیش‌فرض
-                            </Button>
-                        </Box>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
             </Grid>

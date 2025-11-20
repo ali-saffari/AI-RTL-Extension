@@ -42,7 +42,7 @@ export function applyDirection(element, direction) {
     }
 
     // اعمال فونت اگر تنظیمات فعال باشد
-    const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false; // به صورت پیش‌فرض true
+    const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false; // به صورت پیش‌فرض true
     if (applyFont) {
         try {
             element.style.setProperty('font-family', "iranyekan, 'IRANYekan', Tahoma, Arial, sans-serif", 'important');
@@ -88,7 +88,7 @@ export function hasDirectionChanges(element) {
     }
 
     // بررسی font-family style (اگر تنظیمات فونت فعال باشد)
-    const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false;
+    const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
     if (applyFont) {
         const fontFamilyStyle = element.style.getPropertyValue('font-family');
         if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
@@ -118,7 +118,7 @@ export function removeDirectionChanges(element) {
         element.style.removeProperty('text-align');
 
         // حذف font-family style (اگر تنظیمات فونت فعال باشد)
-        const applyFont = manualRtlState.textSelectorSettings?.applyFont !== false;
+        const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
         if (applyFont) {
             const fontFamilyStyle = element.style.getPropertyValue('font-family');
             if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {

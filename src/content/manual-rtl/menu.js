@@ -11,8 +11,8 @@ export function handleMenuDisplayForElement(element, range, options = {}) {
         return;
     }
 
-    const highlightMode = manualRtlState.textSelectorSettings?.highlightMode || 'disabled';
-    const menuDisplayMode = manualRtlState.textSelectorSettings?.menuDisplayMode || 'logo_first';
+    const highlightMode = manualRtlState.manualRtlSettings?.highlightMode || 'disabled';
+    const menuDisplayMode = manualRtlState.manualRtlSettings?.menuDisplayMode || 'logo_first';
     const menuStartsMinimized = menuDisplayMode !== 'menu_direct';
     const forceExpanded = options.forceExpanded || false;
     const forceHighlight = options.forceHighlight || false;
@@ -118,7 +118,7 @@ export function showPopupMenu(range, element, options = {}) {
     hidePopupMenu();
     manualRtlState.isMenuOpen = false;
 
-    const menuDisplayMode = manualRtlState.textSelectorSettings?.menuDisplayMode || 'logo_first';
+    const menuDisplayMode = manualRtlState.manualRtlSettings?.menuDisplayMode || 'logo_first';
     const forceExpanded = options.forceExpanded || false;
     const startsMinimized = !forceExpanded && menuDisplayMode !== 'menu_direct';
 
@@ -190,7 +190,7 @@ export function showPopupMenu(range, element, options = {}) {
         popupMenu.classList.remove('minimized');
         manualRtlState.isMenuMinimized = false;
 
-        if (manualRtlState.textSelectorSettings?.highlightMode === 'on_direction_change') {
+        if (manualRtlState.manualRtlSettings?.highlightMode === 'on_direction_change') {
             updateElementHighlight(element, true);
         }
 
@@ -357,7 +357,7 @@ export function closeMenuOnOutsideClick() {
 }
 
 export function showMenuAfterSelection() {
-    if (!manualRtlState.textSelectorSettings || !manualRtlState.textSelectorSettings.manualRtlEnabled) {
+    if (!manualRtlState.manualRtlSettings || !manualRtlState.manualRtlSettings.manualRtlEnabled) {
         return;
     }
 

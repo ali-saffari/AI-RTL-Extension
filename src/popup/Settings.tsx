@@ -42,8 +42,8 @@ interface SettingsProps {
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     isDarkMode: boolean;
-    textSelectorSettings?: TextSelectorSettings;
-    onTextSelectorSettingsChange?: (settings: TextSelectorSettings) => void;
+    manualRtlSettings?: TextSelectorSettings;
+    onManualRtlSettingsChange?: (settings: TextSelectorSettings) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -52,7 +52,7 @@ const Settings: React.FC<SettingsProps> = ({
     supportHide,
     onSupportChange,
     isDarkMode,
-    textSelectorSettings = {
+    manualRtlSettings = {
         enabled: 'enabled',
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
@@ -62,7 +62,7 @@ const Settings: React.FC<SettingsProps> = ({
         manualRtlSiteMode: 'all',
         menuDisplayMode: 'logo_first'
     },
-    onTextSelectorSettingsChange
+    onManualRtlSettingsChange
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -526,136 +526,86 @@ const Settings: React.FC<SettingsProps> = ({
                         </Typography>
                     </Box>
 
-             
-
-                    {/* فعال/غیرفعال بودن */}
-                    <Box sx={{ mb: 3 }}>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel id="enabled-label">وضعیت فعال‌سازی</InputLabel>
-                            <Select
-                                labelId="enabled-label"
-                                value={textSelectorSettings.enabled}
-                                onChange={(e) => onTextSelectorSettingsChange?.({
-                                    ...textSelectorSettings,
-                                    enabled: e.target.value as 'enabled' | 'allowed_sites' | 'disabled'
-                                })}
-                                label="وضعیت فعال‌سازی"
-                           
-                            >
-                                <MenuItem value="enabled">فعال</MenuItem>
-                                <MenuItem value="allowed_sites">فقط سایت‌های مجاز</MenuItem>
-                                <MenuItem value="disabled">غیرفعال</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    {/* نحوه نمایش محل تغییر */}
-                    <Box sx={{ mb: 3 }}>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel id="highlight-mode-label">نحوه نمایش محل تغییر</InputLabel>
-                            <Select
-                                labelId="highlight-mode-label"
-                                value={textSelectorSettings.highlightMode}
-                                onChange={(e) => onTextSelectorSettingsChange?.({
-                                    ...textSelectorSettings,
-                                    highlightMode: e.target.value as 'disabled' | 'on_selection' | 'on_direction_change'
-                                })}
-                                label="نحوه نمایش محل تغییر"
-                            >
-                                <MenuItem value="disabled">غیرفعال</MenuItem>
-                                <MenuItem value="on_selection">زمان انتخاب متن</MenuItem>
-                                <MenuItem value="on_direction_change">زمان باز شدن منو تنظیم جهت</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    {/* رنگ محل انتخاب شده */}
-                    <Box sx={{ mb: 3, opacity: textSelectorSettings.highlightMode === 'disabled' ? 0.5 : 1 }}>
-                        <Typography variant="body1" sx={{ 
-                            fontWeight: 500, 
-                            mb: 1.5,
-                            color: 'text.primary'
-                        }}>
-                            رنگ محل انتخاب شده
-                        </Typography>
-                        
-                        {/* انتخاب رنگ */}
-                        <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                            {['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map((color) => (
-                                <Box
-                                    key={color}
-                                    onClick={() => {
-                                        if (textSelectorSettings.highlightMode !== 'disabled') {
-                                            onTextSelectorSettingsChange?.({
-                                                ...textSelectorSettings,
-                                                highlightColor: color
-                                            });
-                                        }
-                                    }}
-                                    sx={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 1,
-                                        bgcolor: color,
-                                        cursor: textSelectorSettings.highlightMode === 'disabled' ? 'not-allowed' : 'pointer',
-                                        border: textSelectorSettings.highlightColor === color ? `3px solid ${theme.palette.primary.main}` : '1px solid rgba(0,0,0,0.2)',
-                                        opacity: textSelectorSettings.highlightMode === 'disabled' ? 0.5 : 1
-                                    }}
-                                />
-                            ))}
-                        </Box>
-
-                        {/* شدت رنگ */}
-                        <Box sx={{ px: 2 }}>
-                            <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                                شدت رنگ: {Math.round(textSelectorSettings.highlightOpacity * 100)}%
+                    {/* فعال/غیرفعال بودن - Toggle ساده */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                        mb: 2
+                    }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body1" sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.95rem',
+                                color: 'text.primary'
+                            }}>
+                                راست‌چین دستی
                             </Typography>
-                            <Slider
-                                value={textSelectorSettings.highlightOpacity}
-                                onChange={(_, value) => {
-                                    if (textSelectorSettings.highlightMode !== 'disabled') {
-                                        onTextSelectorSettingsChange?.({
-                                            ...textSelectorSettings,
-                                            highlightOpacity: value as number
-                                        });
-                                    }
-                                }}
-                                min={0}
-                                max={1}
-                                step={0.1}
-                                disabled={textSelectorSettings.highlightMode === 'disabled'}
-                                sx={{
-                                    '& .MuiSlider-thumb': {
-                                        color: theme.palette.primary.main
-                                    },
-                                    '& .MuiSlider-track': {
-                                        color: theme.palette.primary.main
-                                    }
-                                }}
-                            />
+                            <Typography variant="body2" sx={{ 
+                                color: 'text.secondary',
+                                fontSize: '0.8rem',
+                                mt: 0.5
+                            }}>
+                                {(manualRtlSettings.enabled === 'disabled' || manualRtlSettings.manualRtlEnabled === false) ? 'غیرفعال' : 'فعال'}
+                            </Typography>
                         </Box>
+                        <Switch
+                            checked={manualRtlSettings.enabled !== 'disabled' && manualRtlSettings.manualRtlEnabled !== false}
+                            onChange={(e) => {
+                                const newEnabled = e.target.checked ? 'enabled' : 'disabled';
+                                onManualRtlSettingsChange?.({
+                                    ...manualRtlSettings,
+                                    enabled: newEnabled,
+                                    manualRtlEnabled: e.target.checked
+                                });
+                            }}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                            }}
+                        />
                     </Box>
 
-                    <Divider sx={{ my: 2 }} />
-
-                    {/* نمایش لوگو */}
-                    <Box sx={{ mb: 2 }}>
-                        <FormControl fullWidth>
-                            <InputLabel id="logo-display-label">نمایش لوگو در کنار متن تغییر کرده</InputLabel>
-                            <Select
-                                labelId="logo-display-label"
-                                value={textSelectorSettings.logoDisplay}
-                                onChange={(e) => onTextSelectorSettingsChange?.({
-                                    ...textSelectorSettings,
-                                    logoDisplay: e.target.value as 'always' | 'on_hover' | 'disabled'
-                                })}
-                                label="نمایش لوگو در کنار متن تغییر کرده"
+                    {/* لینک به تنظیمات پیشرفته */}
+                    <Box sx={{ 
+                        textAlign: 'center',
+                        mt: 2
+                    }}>
+                        <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.85rem'
+                        }}>
+                            برای تنظیمات پیشرفته به{' '}
+                            <Button
+                                variant="text"
+                                size="small"
+                                onClick={() => {
+                                    chrome.runtime.openOptionsPage();
+                                }}
+                                sx={{
+                                    color: theme.palette.primary.main,
+                                    textTransform: 'none',
+                                    fontSize: '0.85rem',
+                                    minWidth: 'auto',
+                                    p: 0,
+                                    '&:hover': {
+                                        textDecoration: 'underline',
+                                        backgroundColor: 'transparent'
+                                    }
+                                }}
                             >
-                                <MenuItem value="always">همیشه نمایش بده</MenuItem>
-                                <MenuItem value="on_hover">زمان hover شدن موس</MenuItem>
-                                <MenuItem value="disabled">غیرفعال</MenuItem>
-                            </Select>
-                        </FormControl>
+                                صفحه تنظیمات
+                            </Button>
+                            {' '}مراجعه کنید
+                        </Typography>
                     </Box>
                 </Paper>
                 

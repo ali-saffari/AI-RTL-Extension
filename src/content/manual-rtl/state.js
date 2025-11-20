@@ -5,7 +5,7 @@ export const manualRtlState = {
     isMenuOpen: false,
     mousePosition: null,
     isMenuMinimized: true,
-    textSelectorSettings: null,
+    manualRtlSettings: null,
     aiSitesList: null,
     cachedLogoUrl: null,
     cachedExtensionLogoUrl: null,

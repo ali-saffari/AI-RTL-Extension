@@ -17,10 +17,11 @@ export function initTextSelector() {
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'sync' && changes.textSelectorSettings) {
-            if (changes.textSelectorSettings.newValue) {
-                manualRtlState.textSelectorSettings = changes.textSelectorSettings.newValue;
-                updateHighlightStyle(changes.textSelectorSettings.newValue);
+        if (areaName === 'sync' && (changes.manualRtlSettings || changes.textSelectorSettings)) {
+            const newSettings = (changes.manualRtlSettings || changes.textSelectorSettings)?.newValue;
+            if (newSettings) {
+                manualRtlState.manualRtlSettings = newSettings;
+                updateHighlightStyle(newSettings);
             }
 
             shouldEnableTextSelector((enabled) => {
@@ -30,7 +31,7 @@ export function initTextSelector() {
                     initTextSelectorInternal();
                 } else {
                     // اگر text selector فعال است، logo display را به‌روزرسانی کن
-                    updateHighlightStyle(changes.textSelectorSettings.newValue);
+                    updateHighlightStyle(newSettings);
                 }
             });
         }
@@ -40,10 +41,11 @@ export function initTextSelector() {
 function initTextSelectorInternal() {
     ensureHighlightStyle();
 
-    chrome.storage.sync.get(['textSelectorSettings'], (result) => {
-        if (result.textSelectorSettings) {
-            manualRtlState.textSelectorSettings = result.textSelectorSettings;
-            updateHighlightStyle(result.textSelectorSettings);
+    chrome.storage.sync.get(['manualRtlSettings', 'textSelectorSettings'], (result) => {
+        const settings = result.manualRtlSettings || result.textSelectorSettings;
+        if (settings) {
+            manualRtlState.manualRtlSettings = settings;
+            updateHighlightStyle(settings);
         }
     });
 

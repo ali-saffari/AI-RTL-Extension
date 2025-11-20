@@ -58,7 +58,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     
-    const [textSelectorSettings, setTextSelectorSettings] = React.useState<TextSelectorSettings>({
+    const [manualRtlSettings, setManualRtlSettings] = React.useState<TextSelectorSettings>({
         enabled: 'enabled',
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
@@ -75,7 +75,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.get([
                 'rtlAlgorithmMode', 
                 'supportHide', 
-                'textSelectorSettings',
+                'manualRtlSettings',
+                'manualRtlSettings',
                 'analytics',
                 'previewEnabled'
             ], (result) => {
@@ -85,8 +86,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
                 }
-                if (result.textSelectorSettings) {
-                    setTextSelectorSettings({
+                // Support both old and new key names for migration
+                const settings = result.manualRtlSettings || result.manualRtlSettings;
+                if (settings) {
+                    setManualRtlSettings({
                         enabled: 'enabled',
                         highlightMode: 'on_selection',
                         highlightColor: '#ff0000',
@@ -95,7 +98,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         manualRtlEnabled: false,
                         manualRtlSiteMode: 'all',
                         menuDisplayMode: 'logo_first',
-                        ...result.textSelectorSettings
+                        ...settings
                     });
                 }
                 if (result.analytics !== undefined) {
@@ -124,8 +127,11 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
                 }
-                if (changes.textSelectorSettings) {
-                    setTextSelectorSettings(changes.textSelectorSettings.newValue);
+                if (changes.manualRtlSettings || changes.manualRtlSettings) {
+                    const newSettings = (changes.manualRtlSettings || changes.manualRtlSettings)?.newValue;
+                    if (newSettings) {
+                        setManualRtlSettings(newSettings);
+                    }
                 }
                 if (changes.analytics) {
                     setAnalytics(changes.analytics.newValue);
@@ -194,12 +200,12 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
-    const handleTextSelectorSettingsChange = (settings: TextSelectorSettings) => {
-        setTextSelectorSettings(settings);
+    const handleManualRtlSettingsChange = (settings: TextSelectorSettings) => {
+        setManualRtlSettings(settings);
         try {
-            chrome.storage.sync.set({ textSelectorSettings: settings });
+            chrome.storage.sync.set({ manualRtlSettings: settings });
         } catch (error) {
-            console.log('Failed to save text selector settings:', error);
+            console.log('Failed to save manual RTL settings:', error);
         }
     };
 
@@ -280,8 +286,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 )}
                 {tabValue === 1 && (
                     <ManualRTLTab
-                        textSelectorSettings={textSelectorSettings}
-                        onTextSelectorSettingsChange={handleTextSelectorSettingsChange}
+                        manualRtlSettings={manualRtlSettings}
+                        onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         isDarkMode={isDarkMode}
                     />
                 )}

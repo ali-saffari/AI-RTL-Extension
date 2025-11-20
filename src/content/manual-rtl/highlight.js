@@ -9,7 +9,7 @@ export function updateHighlightStyle(settings) {
     }
 
     // به‌روزرسانی تنظیمات در state
-    manualRtlState.textSelectorSettings = settings;
+    manualRtlState.manualRtlSettings = settings;
 
     const highlightColor = settings.highlightColor || '#ff0000';
     const highlightOpacity = typeof settings.highlightOpacity === 'number'
@@ -59,11 +59,11 @@ export function updateElementHighlight(element, shouldHighlight) {
 }
 
 export function handleSelectionChange() {
-    if (!manualRtlState.textSelectorSettings || !manualRtlState.textSelectorSettings.manualRtlEnabled) {
+    if (!manualRtlState.manualRtlSettings || !manualRtlState.manualRtlSettings.manualRtlEnabled) {
         return;
     }
 
-    if (manualRtlState.textSelectorSettings.highlightMode === 'disabled') {
+    if (manualRtlState.manualRtlSettings.highlightMode === 'disabled') {
         return;
     }
 
@@ -94,7 +94,7 @@ export function handleSelectionChange() {
         return;
     }
 
-    if (manualRtlState.textSelectorSettings.highlightMode === 'on_selection') {
+    if (manualRtlState.manualRtlSettings.highlightMode === 'on_selection') {
         updateElementHighlight(element, true);
         // اعمال لوگو روی element انتخاب شده
         applyLogoDisplayToElement(element);

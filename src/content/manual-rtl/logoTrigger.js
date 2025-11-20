@@ -5,11 +5,11 @@ import { createRangeForElement } from './dom.js';
 import { handleMenuDisplayForElement } from './menu.js';
 
 export function handleManualLogoClick(event) {
-    if (!manualRtlState.textSelectorSettings || !manualRtlState.textSelectorSettings.manualRtlEnabled) {
+    if (!manualRtlState.manualRtlSettings || !manualRtlState.manualRtlSettings.manualRtlEnabled) {
         return;
     }
 
-    const logoDisplay = manualRtlState.textSelectorSettings.logoDisplay || 'always';
+    const logoDisplay = manualRtlState.manualRtlSettings.logoDisplay || 'always';
     if (logoDisplay === 'disabled') {
         return;
     }

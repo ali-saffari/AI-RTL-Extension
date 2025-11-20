@@ -281,7 +281,7 @@ function App() {
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
-    const [textSelectorSettings, setTextSelectorSettings] = React.useState<TextSelectorSettings>({
+    const [manualRtlSettings, setManualRtlSettings] = React.useState<TextSelectorSettings>({
         enabled: 'enabled',
         highlightMode: 'on_selection',
         highlightColor: '#ff0000',
@@ -293,9 +293,9 @@ function App() {
     });
 
     // Load settings from storage on component mount
-    React.useEffect(() => {
+    const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'textSelectorSettings'], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'textSelectorSettings'], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -305,8 +305,10 @@ function App() {
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
                 }
-                if (result.textSelectorSettings) {
-                    setTextSelectorSettings({
+                // Support both old and new key names for migration
+                const settings = result.manualRtlSettings || result.textSelectorSettings;
+                if (settings) {
+                    setManualRtlSettings({
                         enabled: 'enabled',
                         highlightMode: 'on_selection',
                         highlightColor: '#ff0000',
@@ -315,7 +317,7 @@ function App() {
                         manualRtlEnabled: false,
                         manualRtlSiteMode: 'all',
                         menuDisplayMode: 'logo_first',
-                        ...result.textSelectorSettings
+                        ...settings
                     });
                 }
             });
@@ -324,6 +326,47 @@ function App() {
             console.log('Chrome storage access failed, using default values:', error);
         }
     }, []);
+
+    React.useEffect(() => {
+        loadSettings();
+
+        // Listen for storage changes to sync with options page
+        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+            if (areaName === 'sync') {
+                if (changes.rtlAlgorithmMode) {
+                    setRtlAlgorithm(changes.rtlAlgorithmMode.newValue);
+                }
+                if (changes.supportHide) {
+                    setSupportHide(changes.supportHide.newValue);
+                }
+                if (changes.isDarkMode) {
+                    setIsDarkMode(changes.isDarkMode.newValue);
+                }
+                if (changes.manualRtlSettings || changes.textSelectorSettings) {
+                    const newSettings = (changes.manualRtlSettings || changes.textSelectorSettings)?.newValue;
+                    if (newSettings) {
+                        setManualRtlSettings({
+                            enabled: 'enabled',
+                            highlightMode: 'on_selection',
+                            highlightColor: '#ff0000',
+                            highlightOpacity: 0.1,
+                            logoDisplay: 'always',
+                            manualRtlEnabled: false,
+                            manualRtlSiteMode: 'all',
+                            menuDisplayMode: 'logo_first',
+                            ...newSettings
+                        });
+                    }
+                }
+            }
+        };
+
+        chrome.storage.onChanged.addListener(handleStorageChange);
+
+        return () => {
+            chrome.storage.onChanged.removeListener(handleStorageChange);
+        };
+    }, [loadSettings]);
 
     // Save RTL algorithm setting to storage when changed
     const handleRtlAlgorithmChange = (value: string) => {
@@ -345,13 +388,13 @@ function App() {
         }
     };
 
-    // Save text selector settings to storage when changed
-    const handleTextSelectorSettingsChange = (settings: TextSelectorSettings) => {
-        setTextSelectorSettings(settings);
+    // Save manual RTL settings to storage when changed
+    const handleManualRtlSettingsChange = (settings: TextSelectorSettings) => {
+        setManualRtlSettings(settings);
         try {
-            chrome.storage.sync.set({ textSelectorSettings: settings });
+            chrome.storage.sync.set({ manualRtlSettings: settings });
         } catch (error) {
-            console.log('Failed to save text selector settings:', error);
+            console.log('Failed to save manual RTL settings:', error);
         }
     };
 
@@ -680,8 +723,8 @@ function App() {
                                 supportHide={supportHide}
                                 onSupportChange={handleSupportChange}
                                 isDarkMode={isDarkMode}
-                                textSelectorSettings={textSelectorSettings}
-                                onTextSelectorSettingsChange={handleTextSelectorSettingsChange}
+                                manualRtlSettings={manualRtlSettings}
+                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
                             />
                             
                         </div>
