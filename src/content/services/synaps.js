@@ -6,14 +6,14 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 export function setSynaps(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright if needed
-        // addCopyright($(selector), 'AsBoxSynaps', 'margin-top: 2px;');
+        // addCopyright(AQ(selector), 'AsBoxSynaps', 'margin-top: 2px;');
     }
 
-    $('textarea , input[type="text"],  input[type="search"]').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea , input[type="text"],  input[type="search"]').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -21,7 +21,7 @@ export function setSynaps(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup paste', function() {
+        AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'

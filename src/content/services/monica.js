@@ -6,15 +6,15 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 export function setMonica(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `[class*="input-wrapper-"]`
-        addCopyright($(fo2).parent(), 'AsBoxMonica AsBoxB');
+        addCopyright(AQ(fo2).parent(), 'AsBoxMonica AsBoxB');
     }
 
     // Process textarea elements with RTL algorithm
-    $('body textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('body textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -25,7 +25,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
@@ -35,7 +35,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
 
     
     // Process paragraph and name wrapper elements with RTL algorithm
-    $('body p, [class*="name-wrapper-"]').each(function (each) {
+    AQ('body p, [class*="name-wrapper-"]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',
@@ -45,7 +45,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process markdown elements using RTL algorithm
-    $('[class*="chat-message-"] [class*="markdown-"]').each(function (each) {
+    AQ('[class*="chat-message-"] [class*="markdown-"]').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

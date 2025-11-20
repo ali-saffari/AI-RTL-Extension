@@ -21,19 +21,19 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
 
 export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
-        addCopyright($('.omnibar-container').parent() , 'AsBoxB' );
+        addCopyright(AQ('.omnibar-container').parent() , 'AsBoxB' );
     }
 
     // Process textarea elements with RTL algorithm
-    $('body textarea , body input[type="text"], body input[type="search"]').each(function (each) {
+    AQ('body textarea , body input[type="text"], body input[type="search"]').each(function (each) {
         
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -44,7 +44,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
@@ -53,7 +53,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process input elements with RTL algorithm
-    $('.projects-header , .mat-title-large , .mat-body-medium , [class*="project-button-"]').each(function (each) {
+    AQ('.projects-header , .mat-title-large , .mat-body-medium , [class*="project-button-"]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
@@ -63,38 +63,38 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
     
 
-    $('.mat-button-toggle-label-content , .mat-mdc-button , .extendable-label , .create-new-label , .project-table-title , .mat-mdc-cell , .mat-headline-medium  , .mat-label-small ,.mat-label-large ,.title-and-promo , .panel-header-content ,.panel-content-title ').each(function (each) {
+    AQ('.mat-button-toggle-label-content , .mat-mdc-button , .extendable-label , .create-new-label , .project-table-title , .mat-mdc-cell , .mat-headline-medium  , .mat-label-small ,.mat-label-large ,.title-and-promo , .panel-header-content ,.panel-content-title ').each(function (each) {
 
-            if (!$(this).hasClass("FontSet")) {
-                $(this).addClass('FontSet');
+            if (!AQ(this).hasClass("FontSet")) {
+                AQ(this).addClass('FontSet');
             }
     
     });
-    $('.panel-header-content .mat-title-small ,.footer , .selected-num ,.notebook-title ,.dropzone__description ,.loading-message').each(function (each) {
+    AQ('.panel-header-content .mat-title-small ,.footer , .selected-num ,.notebook-title ,.dropzone__description ,.loading-message').each(function (each) {
 
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
 
     });
   
 
-     $('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger').each(function (each) {
+     AQ('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger').each(function (each) {
 
 
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
 
     });
 
   
 
-    $('.node-name').each(function (each) {
+    AQ('.node-name').each(function (each) {
 
 
-        if (!$(this).hasClass("FontSetNodeName")) {
-            $(this).addClass('FontSetNodeName FontSet' );
+        if (!AQ(this).hasClass("FontSetNodeName")) {
+            AQ(this).addClass('FontSetNodeName FontSet' );
         }
 
     });
@@ -102,17 +102,17 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
 
     
-    $('[class*="mat-"]:not([class*="mat-icon"]):not([class*="mat-fab"]):not([class*="mat-mini-fab"]):not([class*="mat-raised-button"]):not([class*="mat-flat-button"]):not([class*="mat-stroked-button"])').each(function (each) {
+    AQ('[class*="mat-"]:not([class*="mat-icon"]):not([class*="mat-fab"]):not([class*="mat-mini-fab"]):not([class*="mat-raised-button"]):not([class*="mat-flat-button"]):not([class*="mat-stroked-button"])').each(function (each) {
 
 
 
-        if (!$(this).hasClass("AsOkFontSet")) {
-            $(this).addClass('AsOkFontSet');
-            const text = $(this).val() || $(this).text();
+        if (!AQ(this).hasClass("AsOkFontSet")) {
+            AQ(this).addClass('AsOkFontSet');
+            const text = AQ(this).val() || AQ(this).text();
             const direction = detectDirectionByAlgorithm(text, rtlAlgorithm);
 
             if (direction === 'rtl') {
-                $(this).addClass('FontSet');
+                AQ(this).addClass('FontSet');
             }
           
         }
@@ -120,9 +120,9 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
 
     
-    $('.message-text-content , .summary-content , .note-editor , .artifact-content , .elements-container').each(function (each) {
+    AQ('.message-text-content , .summary-content , .note-editor , .artifact-content , .elements-container').each(function (each) {
 
-        $(this).addClass('AsOkNotebooklm');
+        AQ(this).addClass('AsOkNotebooklm');
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -136,7 +136,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
  
     // Process notebook content elements using RTL algorithm
-    // $('.notebook-content, .notebook-text, .document-content, .source-content, .summary-content, .generated-content').each(function (each) {
+    // AQ('.notebook-content, .notebook-text, .document-content, .source-content, .summary-content, .generated-content').each(function (each) {
     //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
     //         fontClass: 'FontSet',
     //         processedClass: 'AsOk',

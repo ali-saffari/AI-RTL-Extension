@@ -9,16 +9,16 @@ export function setChatsonic(rtlAlgorithm = 'advanced_full') {
         let fo2 = `.w-full.rounded-2xl.bg-sc-secondary`
         
         // Add copyright using utility function
-        addCopyright($(fo2).parent(), 'AsBoxGemini AsBoxB' , 'margin-top: 4px; margin-bottom: -4px; font-size: 13px;');
+        addCopyright(AQ(fo2).parent(), 'AsBoxGemini AsBoxB' , 'margin-top: 4px; margin-bottom: -4px; font-size: 13px;');
 
     }
 
     // Process textarea elements for text direction detection
-    $('textarea, input[type="text"], input[type="search"], input:not([type]) , .tiptap ').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea, input[type="text"], input[type="search"], input:not([type]) , .tiptap ').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -26,7 +26,7 @@ export function setChatsonic(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup paste', function() {
+        AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
@@ -37,16 +37,16 @@ export function setChatsonic(rtlAlgorithm = 'advanced_full') {
 
     
 
-    // $('.font-inter ').each(function (each) {
-    //     if ($(this).hasClass('AsOkText')) {
+    // AQ('.font-inter ').each(function (each) {
+    //     if (AQ(this).hasClass('AsOkText')) {
     //         return;
     //     }
-    //     $(this).addClass('AsOkText')
+    //     AQ(this).addClass('AsOkText')
     // });
 
     // Process markdown content
-    $('.markdown, .chatsonic ').each(function (each) {
-        if ($(this).hasClass('AsOkText')) {
+    AQ('.markdown, .chatsonic ').each(function (each) {
+        if (AQ(this).hasClass('AsOkText')) {
             return;
         }
         
@@ -58,7 +58,7 @@ export function setChatsonic(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process elements with font-normal and font-medium classes
-    $('.text-n-subtle').each(function (each) {
+    AQ('.text-n-subtle').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',

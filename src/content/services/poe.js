@@ -8,12 +8,12 @@ export function setPoeCom(rtlAlgorithm = 'advanced_full') {
 
     if (chrome.runtime?.id) {
         let fo2 = `[class*="ChatPageMainFooter_footerInner"]`
-        addCopyright($(fo2), 'AsBoxDuckduckgo', '');
+        addCopyright(AQ(fo2), 'AsBoxDuckduckgo', '');
     }
 
 
     // Process text area and button elements with RTL algorithm
-    $('[class*="GrowingTextArea_textArea"], [class*="ResendRemixFollowupButton_right"], [class*="ChatHistoryListItem_seenTitle"]').each(function (each) {
+    AQ('[class*="GrowingTextArea_textArea"], [class*="ResendRemixFollowupButton_right"], [class*="ChatHistoryListItem_seenTitle"]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
@@ -22,7 +22,7 @@ export function setPoeCom(rtlAlgorithm = 'advanced_full') {
 
     
     // Process markdown container elements using RTL algorithm
-    $('[class*="Markdown_markdownContainer"]').each(function (each) {
+    AQ('[class*="Markdown_markdownContainer"]').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

@@ -7,11 +7,11 @@ export function setGrok(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright if needed
         let copyrightElement = `.relative.w-full.px-gutter`
-        addCopyright($(copyrightElement), 'AsBoxB', 'margin-bottom: -9px;margin-top: 7px;');
+        addCopyright(AQ(copyrightElement), 'AsBoxB', 'margin-bottom: -9px;margin-top: 7px;');
     }
 
     // Process response content markdown elements using RTL algorithm
-    $('.response-content-markdown').each(function (each) {
+    AQ('.response-content-markdown').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'noFont',
             processedClass: 'AsOk',
@@ -21,8 +21,8 @@ export function setGrok(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    $('.rtl-mask-applied').each(function (each) {
-        $(this).css('mask-image', 'none');
+    AQ('.rtl-mask-applied').each(function (each) {
+        AQ(this).css('mask-image', 'none');
     });
 
 
@@ -47,21 +47,21 @@ export function activateGrok(rtlAlgorithm = 'advanced_full') {
  
 
     // Additional event listener for input event (real-time typing)
-    $(document).on('input', '[contenteditable="true"]', function() {
+    AQ(document).on('input', '[contenteditable="true"]', function() {
         // Find the reference element with specific classes
-        const referenceElement = $('.flex.grow.gap-1\\.5.max-w-full.pointer-events-none.invisible');
+        const referenceElement = AQ('.flex.grow.gap-1\\.5.max-w-full.pointer-events-none.invisible');
         if (referenceElement.length > 0) {
             const referenceWidth = referenceElement.width() + 20;
             
             // Set width only for parent2 div
-            const $parent2 = $(this).parent().parent();
+            const $parent2 = AQ(this).parent().parent();
             
             if ($parent2.length > 0) {
                 $parent2.css('width', referenceWidth + 'px');
             }
 
-            $('.ProseMirror').each(function (each) {
-                const $element = $(this);
+            AQ('.ProseMirror').each(function (each) {
+                const $element = AQ(this);
                 
                 // Check if dirAuto is enabled and direction cannot be detected
                 let text = $element.text().trim();
@@ -77,7 +77,7 @@ export function activateGrok(rtlAlgorithm = 'advanced_full') {
                         // Check p elements inside for data-placeholder
                         const $pElements = $element.find('p');
                         for (let i = 0; i < $pElements.length; i++) {
-                            const pPlaceholder = $($pElements[i]).attr('data-placeholder');
+                            const pPlaceholder = AQ($pElements[i]).attr('data-placeholder');
                             if (pPlaceholder) {
                                 placeholder = pPlaceholder.trim();
                                 console.log('ProseMirror: Found p data-placeholder:', placeholder);
@@ -124,14 +124,14 @@ export function activateGrok(rtlAlgorithm = 'advanced_full') {
                 // Check for newly added .rtl-mask-applied elements
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === 1) { // Element node
-                        const $node = $(node);
+                        const $node = AQ(node);
                         if ($node.hasClass('rtl-mask-applied')) {
                             $node.css('mask-image', 'none');
                         }
                         
                         // Check children for .rtl-mask-applied elements
                         $node.find('.rtl-mask-applied').each(function() {
-                            $(this).css('mask-image', 'none');
+                            AQ(this).css('mask-image', 'none');
                         });
 
                     }
@@ -139,13 +139,13 @@ export function activateGrok(rtlAlgorithm = 'advanced_full') {
             } else if (mutation.type === 'attributes') {
                 if (mutation.attributeName === 'class') {
                     // Check for elements that get the rtl-mask-applied class added
-                    const $target = $(mutation.target);
+                    const $target = AQ(mutation.target);
                     if ($target.hasClass('rtl-mask-applied')) {
                         $target.css('mask-image', 'none');
                     }
                 } else if (mutation.attributeName === 'style') {
                     // Check for mask-image changes in style attribute
-                    const $target = $(mutation.target);
+                    const $target = AQ(mutation.target);
                     if ($target.hasClass('rtl-mask-applied')) {
                         const currentMaskImage = $target.css('mask-image');
                         if (currentMaskImage && currentMaskImage !== 'none') {

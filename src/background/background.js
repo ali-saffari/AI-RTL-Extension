@@ -1,3 +1,6 @@
+// Import dynamic services configuration
+import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
+
 // ============================================
 // CONFIGURATION
 // ============================================
@@ -7,8 +10,9 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebooklm: true, jules: true, lovable: true, synaps: true, writesonic: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true, ernie: true
+    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true
 };
+
 
 // ============================================
 // USER ID GENERATION & VALIDATION
@@ -58,16 +62,37 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Initialize user ID and set uninstall URL with ID
     await initializeUserId();
     
+    // Default manual RTL settings
+    const defaultManualRtlSettings = {
+        enabled: 'enabled',
+        highlightMode: 'on_selection',
+        highlightColor: '#ff0000',
+        highlightOpacity: 0.1,
+        logoDisplay: 'always',
+        manualRtlEnabled: false,
+        manualRtlSiteMode: 'all',
+        menuDisplayMode: 'logo_first'
+    };
+    
     if (details.reason === 'install') {
+        // Create default flags for dynamic services (all disabled by default)
+        const dynamicServiceFlags = {};
+        Object.keys(DYNAMIC_SERVICES).forEach(service => {
+            dynamicServiceFlags[service] = false;
+        });
+        
         chrome.storage.sync.set({
             ...SERVICE_FLAGS,
-            rtlAlgorithmMode: 'advanced_full'
+            ...dynamicServiceFlags,
+            rtlAlgorithmMode: 'advanced_full',
+            manualRtlSettings: defaultManualRtlSettings
         });
     } else if (details.reason === 'update') {
         try {
             chrome.storage.sync.get((storedData) => {
                 const updates = {};
                 const allServices = Object.keys(SERVICE_FLAGS);
+                const allDynamicServices = Object.keys(DYNAMIC_SERVICES);
                 
                 allServices.forEach(service => {
                     if (!storedData.hasOwnProperty(service)) {
@@ -75,12 +100,65 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                     }
                 });
                 
+                allDynamicServices.forEach(service => {
+                    if (!storedData.hasOwnProperty(service)) {
+                        updates[service] = false; // Dynamic services default to disabled
+                    }
+                });
+                
                 if (!storedData.hasOwnProperty('rtlAlgorithmMode')) {
                     updates.rtlAlgorithmMode = storedData.rtlAlgorithm === 'first_word' ? 'first_word' : 'advanced_full';
                 }
                 
+                // Check and initialize manual RTL settings
+                // Migrate from textSelectorSettings to manualRtlSettings if needed
+                if (storedData.textSelectorSettings && !storedData.manualRtlSettings) {
+                    // Migrate old textSelectorSettings to manualRtlSettings
+                    updates.manualRtlSettings = {
+                        ...defaultManualRtlSettings,
+                        ...storedData.textSelectorSettings
+                    };
+                } else {
+                    const existingManualRtlSettings = storedData.manualRtlSettings;
+                    if (!existingManualRtlSettings) {
+                        // No manual RTL settings exist, set defaults
+                        updates.manualRtlSettings = defaultManualRtlSettings;
+                    } else {
+                        // Merge existing settings with defaults to ensure all fields exist
+                        const mergedSettings = {
+                            ...defaultManualRtlSettings,
+                            ...existingManualRtlSettings
+                        };
+                        // Check if any new fields were added to defaults
+                        let needsUpdate = false;
+                        Object.keys(defaultManualRtlSettings).forEach(key => {
+                            if (!existingManualRtlSettings.hasOwnProperty(key)) {
+                                needsUpdate = true;
+                            }
+                        });
+                        if (needsUpdate) {
+                            updates.manualRtlSettings = mergedSettings;
+                        }
+                    }
+                }
+                
                 if (Object.keys(updates).length > 0) {
-                    chrome.storage.sync.set(updates);
+                    chrome.storage.sync.set(updates, () => {
+                        // After migration, remove old textSelectorSettings if it exists
+                        if (storedData.textSelectorSettings && !storedData.manualRtlSettings) {
+                            chrome.storage.sync.remove('textSelectorSettings');
+                        }
+                    });
+                } else if (storedData.textSelectorSettings && !storedData.manualRtlSettings) {
+                    // If no other updates, just migrate and remove old key
+                    chrome.storage.sync.set({
+                        manualRtlSettings: {
+                            ...defaultManualRtlSettings,
+                            ...storedData.textSelectorSettings
+                        }
+                    }, () => {
+                        chrome.storage.sync.remove('textSelectorSettings');
+                    });
                 }
             });
         } catch (error) {
@@ -271,6 +349,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             session: null
         });
         return true;
+    } else if (message.action === 'requestPermissionsAndEnableService') {
+        // Handle permission request and service activation from popup
+        // Note: This is called from popup onClick (user gesture context)
+        (async () => {
+            try {
+                const { serviceKey } = message;
+                const service = DYNAMIC_SERVICES[serviceKey];
+                
+                if (!service || !service.origins) {
+                    sendResponse?.({ success: false, error: 'Service not found' });
+                    return;
+                }
+                
+                // Request permissions
+                const permissions = ['scripting'];
+                const granted = await chrome.permissions.request({ permissions, origins: service.origins });
+                
+                if (granted) {
+                    // Enable the service
+                    await chrome.storage.sync.set({ [serviceKey]: true });
+                    console.log(`[Background] Service ${serviceKey} enabled after permission grant`);
+                    sendResponse?.({ success: true, granted: true });
+                } else {
+                    sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
+                }
+            } catch (error) {
+                console.error('[Background] Error in requestPermissionsAndEnableService:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true; // Keep message channel open for async response
     }
     return false;
 });
@@ -280,74 +389,95 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // EVENT LISTENERS
 // ============================================
 
-async function activateContentScriptForWritesonic(tabId) {
+async function activateContentScriptForDynamicSites(tabId) {
     if (!tabId) return;
     
+    console.log('[Background] activateContentScriptForDynamicSites', tabId);
     try {
         const tab = await chrome.tabs.get(tabId);
+        console.log('[Background] tab', tab);
         if (!tab.url) return;
         
+        // Check if tab is in a valid state (not error page, not chrome:// pages)
+        if (tab.url.startsWith('chrome://') || 
+            tab.url.startsWith('chrome-extension://') || 
+            tab.url.startsWith('about:') ||
+            tab.status !== 'complete') {
+            return;
+        }
+        
+        console.log('[Background] tab.url', tab.url);
+
         const url = new URL(tab.url);
-        if (url.hostname !== 'app.writesonic.com' && url.hostname !== 'www.app.writesonic.com') {
+        const serviceName = getServiceNameFromHostname(url.hostname);
+        
+        if (!serviceName) {
+            return;
+        }
+        
+        // Get service setting from storage first
+        const storage = await chrome.storage.sync.get([serviceName, 'rtlAlgorithmMode']);
+        const serviceEnabled = storage[serviceName] === true;
+        const rtlAlgorithm = storage.rtlAlgorithmMode || 'advanced_full';
+        
+        // If service is not enabled, no need to check permissions
+        if (!serviceEnabled) {
+            console.log(`[Background] ${serviceName} is disabled in settings`);
             return;
         }
         
         // Check if permissions are granted
         const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-        const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
         
-        if (!hasScripting || !hasAllUrls) {
+        // Check required origins based on service
+        const service = DYNAMIC_SERVICES[serviceName];
+        let hasRequiredOrigins = false;
+        if (service) {
+            // For all dynamic services, check their specific origins
+            hasRequiredOrigins = await chrome.permissions.contains({ origins: service.origins });
+        }
+        
+        console.log('[Background] hasScripting', hasScripting);
+        console.log('[Background] hasRequiredOrigins', hasRequiredOrigins);
+        
+        // If permissions are missing, return without injecting
+        if (!hasScripting || !hasRequiredOrigins) {
+            console.log(`[Background] Missing permissions for ${serviceName}`);
             return;
         }
         
         // Inject content script activation
         try {
-            // Get writesonic setting from storage
-            const storage = await chrome.storage.sync.get(['writesonic', 'rtlAlgorithmMode']);
-            const writesonicEnabled = storage.writesonic !== false;
-            const rtlAlgorithm = storage.rtlAlgorithmMode || 'advanced_full';
-            
-            if (writesonicEnabled) {
-                // Inject CSS files first
+            if (serviceEnabled) {
+                // Inject all files together (CSS and JavaScript in parallel)
+                console.log('[Background] inject all files together (CSS and JavaScript in parallel)');
                 try {
-                    await chrome.scripting.insertCSS({
-                        target: { tabId: tabId },
-                        files: ['css/fontiran-iranyekan.css', 'style.css']
-                    });
-                    console.log('[Background] CSS files injected for writesonic.com');
-                } catch (cssError) {
-                    console.error('[Background] Error injecting CSS:', cssError);
+                    await Promise.all([
+                        chrome.scripting.insertCSS({
+                            target: { tabId: tabId },
+                            files: ['css/fontiran-iranyekan.css', 'style.css']
+                        }),
+                        chrome.scripting.executeScript({
+                            target: { tabId: tabId },
+                            files: ['js/myJquery-3.7.1.js', 'js/content.js']
+                        })
+                    ]);
+                    console.log(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
+                } catch (injectError) {
+                    // Ignore errors for error pages or invalid tabs
+                    if (injectError.message && injectError.message.includes('error page')) {
+                        console.log('[Background] Tab is showing error page, skipping injection');
+                    } else {
+                        console.error('[Background] Error injecting files:', injectError);
+                    }
                 }
-                
-                // Inject jQuery
-                try {
-                    await chrome.scripting.executeScript({
-                        target: { tabId: tabId },
-                        files: ['jquery-3.7.1.js']
-                    });
-                    console.log('[Background] jQuery injected for writesonic.com');
-                } catch (jqueryError) {
-                    console.error('[Background] Error injecting jQuery:', jqueryError);
-                }
-                
-                // Inject content.js
-                try {
-                    await chrome.scripting.executeScript({
-                        target: { tabId: tabId },
-                        files: ['js/content.js']
-                    });
-                    console.log('[Background] Content script injected for writesonic.com tab', tabId);
-                } catch (contentError) {
-                    console.error('[Background] Error injecting content script:', contentError);
-                }
-            } else {
-                console.log('[Background] Writesonic is disabled in settings');
             }
         } catch (injectError) {
-            console.error('[Background] Error injecting content script for writesonic:', injectError);
+            console.error(`[Background] Error injecting content script for ${serviceName}:`, injectError);
         }
     } catch (error) {
         // Tab might not be accessible, ignore
+        console.error(`B [Background] Error injecting content script for ${serviceName}:`, injectError);
     }
 }
 
@@ -359,8 +489,8 @@ function setupEventListeners() {
         dumpActiveTabInfo('After activation');
         broadcastActiveTabInfo('tab-activated');
         
-        // Activate content script for writesonic
-        await activateContentScriptForWritesonic(activeInfo.tabId);
+        // Activate content script for dynamic sites (not in manifest)
+        await activateContentScriptForDynamicSites(activeInfo.tabId);
     });
 
     chrome.tabs.onRemoved.addListener((tabId) => {
@@ -399,9 +529,9 @@ function setupEventListeners() {
 
 
 
-        // Inject content script for writesonic.com when page is complete
+        // Inject content script for dynamic sites (not in manifest) when page is complete
         if (changeInfo?.status === 'complete') {
-            await activateContentScriptForWritesonic(tabId);
+            await activateContentScriptForDynamicSites(tabId);
         }
     });
 

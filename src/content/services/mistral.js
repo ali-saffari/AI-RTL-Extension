@@ -7,15 +7,15 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
     if (chrome.runtime?.id) {
         let fo2 = `.relative.start-0.end-0.bottom-0.flex.w-full.flex-col.items-center`
-        addCopyright($(fo2), 'AsMistral', '');
+        addCopyright(AQ(fo2), 'AsMistral', '');
     }
 
     // Process textarea elements with RTL algorithm
-    $('body textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('body textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -25,7 +25,7 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -33,7 +33,7 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process paragraph elements with RTL algorithm
-    $('.select-text').each(function (each) {
+    AQ('.select-text').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -45,7 +45,7 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
 
 
     // Process markdown-container-style elements using RTL algorithm
-    $('.markdown-container-style').each(function (each) {
+    AQ('.markdown-container-style').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
@@ -71,7 +71,7 @@ export function activateMistral(rtlAlgorithm = 'advanced_full') {
 
     // Additional processing for ProseMirror elements
     setInterval(() => {
-        $(".ProseMirror-focused").each(function (each) {
+        AQ(".ProseMirror-focused").each(function (each) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOk'

@@ -6,15 +6,15 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 export function setManus(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.flex.flex-col.sticky.bottom-0`
-        addCopyright($(fo2), 'AsMistral', '');
+        addCopyright(AQ(fo2), 'AsMistral', '');
     }
 
     // Process textarea elements with RTL algorithm
-    $("body textarea").each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ("body textarea").each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -24,7 +24,7 @@ export function setManus(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -34,7 +34,7 @@ export function setManus(rtlAlgorithm = 'advanced_full') {
 
 
     // Process manus-markdown elements using RTL algorithm
-    $('.manus-markdown').each(function (each) {
+    AQ('.manus-markdown').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
@@ -43,14 +43,14 @@ export function setManus(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process other common text elements with RTL algorithm
-    $("body p و body span, body h1, body h2, body h3, body h4, body h5, body h6, .truncate").each(function (each) {
+    AQ("body p و body span, body h1, body h2, body h3, body h4, body h5, body h6, .truncate").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
     });
 
-    $("span.text-start.font-serif  , .u-break-words").each(function (each) {
+    AQ("span.text-start.font-serif  , .u-break-words").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'

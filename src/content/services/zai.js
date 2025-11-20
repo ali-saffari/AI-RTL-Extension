@@ -11,15 +11,15 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
     }
 
     // Process textarea and input elements with RTL algorithm
-    $('body textarea, body input[type="text"], body input[type="search"]').each(function (each) {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ('body textarea, body input[type="text"], body input[type="search"]').each(function (each) {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
 
@@ -30,7 +30,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
@@ -39,7 +39,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
     });
 
     // // Process message content elements
-    $(' .textGradientDark , .chat-user .rounded-xl').each(function (each) {
+    AQ(' .textGradientDark , .chat-user .rounded-xl').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOK',
@@ -48,20 +48,20 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
     });
 
     // // Process text content elements
-    // $('.text-content, .message-text, .response-text, .content, .text').each(function (each) {
-    //     if (!$(this).hasClass("AsOkFontSet")) {
-    //         $(this).addClass('AsOkFontSet');
-    //         const text = $(this).val() || $(this).text();
+    // AQ('.text-content, .message-text, .response-text, .content, .text').each(function (each) {
+    //     if (!AQ(this).hasClass("AsOkFontSet")) {
+    //         AQ(this).addClass('AsOkFontSet');
+    //         const text = AQ(this).val() || AQ(this).text();
     //         const direction = detectDirectionByAlgorithm(text, rtlAlgorithm);
 
     //         if (direction === 'rtl') {
-    //             $(this).addClass('FontSet');
+    //             AQ(this).addClass('FontSet');
     //         }
     //     }
     // });
 
     // Process conversation elements using RTL algorithm
-    $('.chat-assistant').each(function (each) {
+    AQ('.chat-assistant').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',

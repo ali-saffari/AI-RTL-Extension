@@ -20,19 +20,19 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
 
     if (chrome.runtime?.id) {
-        $(fo).each(function (each) {
-                addCopyright($(this).parent(), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
+        AQ(fo).each(function (each) {
+                addCopyright(AQ(this).parent(), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
         })
     }
 
-    $('.hljs-comment').each(function (each) {
+    AQ('.hljs-comment').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
     })
 
-    $('.text-message .markdown').each(function (each) {
+    AQ('.text-message .markdown').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
@@ -41,27 +41,27 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    $(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
-        if (!$(this).parent().hasClass("AsOk")) {
-            $(this).parent().addClass('AsOk');
-            const text = $(this).text()
-            $(this).addClass('FontSetImportantGPT');
+    AQ(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
+        if (!AQ(this).parent().hasClass("AsOk")) {
+            AQ(this).parent().addClass('AsOk');
+            const text = AQ(this).text()
+            AQ(this).addClass('FontSetImportantGPT');
             if (isRTL(text)) {
-                $(this).parent().addClass("setRight")
+                AQ(this).parent().addClass("setRight")
             }
 
         }
     })
 
-    $('body').each(function (each) {
-        $(this).addClass('FontSet');
+    AQ('body').each(function (each) {
+        AQ(this).addClass('FontSet');
     })
 
-    $(presentation).each(function (each) {
-        $(this).addClass('FontSet');
+    AQ(presentation).each(function (each) {
+        AQ(this).addClass('FontSet');
     })
 
-    $(presentation + '#prosemirror-editor-container').each(function (each) {
+    AQ(presentation + '#prosemirror-editor-container').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOk',
@@ -69,12 +69,12 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    $("#prompt-textarea").each(function (each) {
+    AQ("#prompt-textarea").each(function (each) {
         // Check if already processed to avoid duplicate event listeners
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -83,8 +83,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('keyup paste', function() {
-            const currentText = $(this).text();
+        AQ(this).on('keyup paste', function() {
+            const currentText = AQ(this).text();
             console.log('Prompt textarea text:', currentText);
             
             // Use requestAnimationFrame to avoid React conflicts
@@ -101,22 +101,22 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 }
 
 export function initializeChatGptHistory() {
-    $('#history .__menu-item').each(function (each) {
-        const text = $(this).text()
+    AQ('#history .__menu-item').each(function (each) {
+        const text = AQ(this).text()
         let p = isRTL(text);
 
-        if ((text !== "New chat") && !$(this).hasClass("AsOkList")) {
-            $(this).addClass('AsOkList');
+        if ((text !== "New chat") && !AQ(this).hasClass("AsOkList")) {
+            AQ(this).addClass('AsOkList');
 
             if (p) {
-                $(this).attr("dir", "rtl");
-                $(this).addClass('AsRtlList');
-                $(this).addClass('FontSet');
-                $(this).parent().addClass('AsRtlList_parent');
+                AQ(this).attr("dir", "rtl");
+                AQ(this).addClass('AsRtlList');
+                AQ(this).addClass('FontSet');
+                AQ(this).parent().addClass('AsRtlList_parent');
             }
         }
 
-        let absoluteItem = $(this).parent().parent().find(".absolute.bottom-0")
+        let absoluteItem = AQ(this).parent().parent().find(".absolute.bottom-0")
 
         if (!absoluteItem.hasClass("AsOk")) {
             absoluteItem.addClass('AsOk');

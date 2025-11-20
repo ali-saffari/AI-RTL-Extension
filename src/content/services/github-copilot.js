@@ -6,17 +6,17 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `[class*="ConversationView-module__footer"]`
-        addCopyright($(fo2), 'AsBoxGitHubCopilot AsBoxB', `margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
+        addCopyright(AQ(fo2), 'AsBoxGitHubCopilot AsBoxB', `margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
     }
 
 
     
-    $('[class*="ChatInput-module__inputContainer"]').each(function (each) {
+    AQ('[class*="ChatInput-module__inputContainer"]').each(function (each) {
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -26,7 +26,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -35,7 +35,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
 
 
     // Process markdown container elements using RTL algorithm
-    $('.markdown-body').each(function (each) {
+    AQ('.markdown-body').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -47,7 +47,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     
 
     
-    $('[class*="UserMessage"] , [class*="ConversationListV2-module__item"]').each(function (each) {
+    AQ('[class*="UserMessage"] , [class*="ConversationListV2-module__item"]').each(function (each) {
 
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',

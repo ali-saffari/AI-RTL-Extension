@@ -6,11 +6,11 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 export function setKimi(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         let fo2 = `.chat-action`
-        addCopyright($(fo2), 'AsKimi', 'margin-bottom: 10px');
+        addCopyright(AQ(fo2), 'AsKimi', 'margin-bottom: 10px');
     }
 
     // Process markdown-container elements using RTL algorithm
-    $('.markdown-container').each(function (each) {
+    AQ('.markdown-container').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -19,7 +19,7 @@ export function setKimi(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process paragraph elements with RTL algorithm
-    $(".user-content , .user-name").each(function (each) {
+    AQ(".user-content , .user-name").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -27,7 +27,7 @@ export function setKimi(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process other common text elements with RTL algorithm
-    $("body span, body h1, body h2, body h3, body h4, body h5, body h6, .chat-input-editor").each(function (each) {
+    AQ("body span, body h1, body h2, body h3, body h4, body h5, body h6, .chat-input-editor").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'

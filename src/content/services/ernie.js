@@ -7,22 +7,22 @@ export function setErnie(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright notice - selector should be adjusted based on actual site structure
         let fo2 = `footer`
-        addCopyright($(fo2), 'AsBoxErnie AsBoxB', 'margin-top: 4px; margin-bottom: -5px; font-size: 13px;');
+        addCopyright(AQ(fo2), 'AsBoxErnie AsBoxB', 'margin-top: 4px; margin-bottom: -5px; font-size: 13px;');
     }
 
     // Process textarea elements
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
-        $(this).on('input keyup paste', function() {
+        AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
@@ -32,7 +32,7 @@ export function setErnie(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process message content and chat elements
-    $('.dialog-card-wrapper').each(function (each) {
+    AQ('.dialog-card-wrapper').each(function (each) {
    
         
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
@@ -45,16 +45,16 @@ export function setErnie(rtlAlgorithm = 'advanced_full') {
 
     // Process common text elements
     
-    $(' [class*="container_"] span').each(function (each) {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ(' [class*="container_"] span').each(function (each) {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
 
     });
 
 
 
-    $('[class*="questionText_"] span, [class*="sessionName"]').each(function (each) {
+    AQ('[class*="questionText_"] span, [class*="sessionName"]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',

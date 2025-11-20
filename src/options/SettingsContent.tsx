@@ -76,7 +76,6 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'rtlAlgorithmMode', 
                 'supportHide', 
                 'manualRtlSettings',
-                'manualRtlSettings',
                 'analytics',
                 'previewEnabled'
             ], (result) => {
@@ -86,8 +85,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
                 }
-                // Support both old and new key names for migration
-                const settings = result.manualRtlSettings || result.manualRtlSettings;
+                // Use manualRtlSettings
+                const settings = result.manualRtlSettings;
                 if (settings) {
                     setManualRtlSettings({
                         enabled: 'enabled',
@@ -127,8 +126,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
                 }
-                if (changes.manualRtlSettings || changes.manualRtlSettings) {
-                    const newSettings = (changes.manualRtlSettings || changes.manualRtlSettings)?.newValue;
+                if (changes.manualRtlSettings) {
+                    const newSettings = changes.manualRtlSettings?.newValue;
                     if (newSettings) {
                         setManualRtlSettings(newSettings);
                     }

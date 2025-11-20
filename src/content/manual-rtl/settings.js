@@ -77,8 +77,8 @@ function isAllowedSite(callback) {
 }
 
 export function shouldEnableTextSelector(callback) {
-    chrome.storage.sync.get(['manualRtlSettings', 'textSelectorSettings'], (result) => {
-        const settings = result.manualRtlSettings || result.textSelectorSettings;
+    chrome.storage.sync.get(['manualRtlSettings'], (result) => {
+        const settings = result.manualRtlSettings;
         if (!settings) {
             callback(false);
             return;

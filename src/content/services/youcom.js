@@ -8,14 +8,14 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright to Youcom interface
         let fo2 = `#ydc-content-area #ChatQueryBar`;
-        addCopyright($(fo2), 'AsBoxYoucom AsBoxB', `margin-top: 8px; margin-bottom: 0px; transform: scale(0.9);`);
+        addCopyright(AQ(fo2), 'AsBoxYoucom AsBoxB', `margin-top: 8px; margin-bottom: 0px; transform: scale(0.9);`);
     }
 
 
     // Process header elements
-    $(".ebfm092").each(function (each) {
-        if (!$(this).hasClass("AsRtl")) {
-            $(this).addClass('AsRtl');
+    AQ(".ebfm092").each(function (each) {
+        if (!AQ(this).hasClass("AsRtl")) {
+            AQ(this).addClass('AsRtl');
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
@@ -25,7 +25,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process title elements
-    $("._1bxvbd41").each(function (each) {
+    AQ("._1bxvbd41").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -35,7 +35,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process history elements
-    $("._1yjdfrt0").each(function (each) {
+    AQ("._1yjdfrt0").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -44,7 +44,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process sources elements
-    $("._1g72v5i5 , ._1g72v5i6 , _1ynbgno6 , .jj3gyx7").each(function (each) {
+    AQ("._1g72v5i5 , ._1g72v5i6 , _1ynbgno6 , .jj3gyx7").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -54,7 +54,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process markdown content if it exists
-    $(".jfuQrJ").each(function (each) {
+    AQ(".jfuQrJ").each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -64,7 +64,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process dINDbt elements
-    $(".dINDbt").each(function (each) {
+    AQ(".dINDbt").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -75,24 +75,24 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process textarea elements
-    $('textarea').each(function (each) {
+    AQ('textarea').each(function (each) {
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
 
         
-        if (!$(this).hasClass("AsOk")) {
+        if (!AQ(this).hasClass("AsOk")) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'CopilotFontSet',
                 processedClass: 'AsOk'
             });
             
             // Add event listener for real-time text direction detection
-            $(this).on('input keyup', function() {
+            AQ(this).on('input keyup', function() {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'CopilotFontSet'
                 });
@@ -101,7 +101,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process answer parser elements
-    $(".AnswerParser_AnswerParserSharedStyles__0GZUj").each(function (each) {
+    AQ(".AnswerParser_AnswerParserSharedStyles__0GZUj").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -110,7 +110,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
 
     // Process answer parser content elements
-    $(".AnswerParser_TextContainer__z_Iiv ,.AnswerParser_AnswerParserUnorderedList__P_1FW ,.AnswerParser_AnswerParserH4__ghxg8").each(function (each) {
+    AQ(".AnswerParser_TextContainer__z_Iiv ,.AnswerParser_AnswerParserUnorderedList__P_1FW ,.AnswerParser_AnswerParserH4__ghxg8").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'

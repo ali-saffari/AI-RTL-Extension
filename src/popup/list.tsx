@@ -23,6 +23,7 @@ import {
     Paper,
 } from '@mui/material';
 import { mdiInformationOutline, mdiOpenInNew } from '@mdi/js';
+import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 
 interface Service {
     key: string;
@@ -62,10 +63,10 @@ const services: Service[] = [
     { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
     { key: 'blackbox', name: 'Black Box', icon: '/images/blackbox.png', url: 'https://www.blackbox.ai/' },
     { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/' },
-    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
     { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', new: true },
     { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
+    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true },
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
     { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true },
     { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true }
     
@@ -111,9 +112,28 @@ export default function ServiceList() {
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+    const [permissionServiceName, setPermissionServiceName] = useState<string>('');
+    const [permissionServiceKey, setPermissionServiceKey] = useState<string>('');
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+    
+    // Get browser language and determine "Allow" button text
+    const getAllowButtonText = () => {
+        const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+        const langCode = browserLang.split('-')[0].toLowerCase();
+        
+        if (langCode === 'fa') {
+            return 'اجازه دادن';
+        } else if (langCode === 'ar') {
+            return 'السماح';
+        } else {
+            return 'Allow';
+        }
+    };
+    
+    const allowButtonText = getAllowButtonText();
 
     useEffect(() => {
         try {
@@ -139,11 +159,41 @@ export default function ServiceList() {
         }
     }, [isEdge]);
 
-    const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    // Get list of dynamic service keys
+    const dynamicServices = Object.keys(DYNAMIC_SERVICES);
+
+    const handleChange = (key: string) => async (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
         // Prevent enabling Copilot in Edge
         if (key === 'copilot' && isEdge) {
             return;
         }
+        
+        // If enabling a dynamic service, check permissions
+        if (checked && dynamicServices.includes(key)) {
+            const service = DYNAMIC_SERVICES[key as keyof typeof DYNAMIC_SERVICES];
+            if (service && service.origins) {
+                const origins = service.origins;
+                try {
+                    const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+                    const hasOrigins = await chrome.permissions.contains({ origins });
+                    
+                    if (!hasScripting || !hasOrigins) {
+                        // Show permission dialog
+                        const serviceName = services.find(s => s.key === key)?.name || key;
+                        setPermissionServiceName(serviceName);
+                        setPermissionServiceKey(key);
+                        setPermissionModalOpen(true);
+                        // Don't enable the service
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error checking permissions:', error);
+                    alert(`خطا در بررسی مجوزها برای ${services.find(s => s.key === key)?.name}`);
+                    return;
+                }
+            }
+        }
+        
         try {
             chrome.storage.sync.set({ [key]: checked });
         } catch (error) {
@@ -364,6 +414,94 @@ export default function ServiceList() {
                         color="primary"
                     >
                         متوجه شدم
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Permission Required Modal */}
+            <Dialog 
+                open={permissionModalOpen} 
+                onClose={() => setPermissionModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        padding: '8px'
+                    }
+                }}
+            >
+                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                    نیاز به مجوز
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                    <Typography 
+                        variant="body1" 
+                        paragraph 
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    >
+                        برای فعال کردن <strong>{permissionServiceName}</strong>، نیاز به مجوز دسترسی به این سایت دارید.
+                    </Typography>
+                    <Typography 
+                        variant="body1" 
+                        paragraph 
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    >
+                        برای دریافت مجوز، روی لینک زیر کلیک کنید تا سایت باز شود. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سرویس به صورت خودکار فعال می‌شود.
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button 
+                        onClick={async () => {
+                            try {
+                                const key = permissionServiceKey;
+                                const service = DYNAMIC_SERVICES[key as keyof typeof DYNAMIC_SERVICES];
+                                const serviceInfo = services.find(s => s.key === key);
+                                
+                                if (!service || !service.origins || !serviceInfo) {
+                                    setPermissionModalOpen(false);
+                                    return;
+                                }
+                                
+                                // Send message to background to request permissions and enable service
+                                chrome.runtime.sendMessage({
+                                    action: 'requestPermissionsAndEnableService',
+                                    serviceKey: key
+                                }, (response) => {
+                                    if (chrome.runtime.lastError) {
+                                        console.error('Error sending message:', chrome.runtime.lastError);
+                                        alert('خطا در ارتباط با background script. لطفاً دوباره تلاش کنید.');
+                                        return;
+                                    }
+                                    
+                                    if (response?.success) {
+                                        // Update UI
+                                        setChecked(prev => ({ ...prev, [key]: true }));
+                                        setPermissionModalOpen(false);
+                                        console.log(`[Service] ${serviceInfo.name} enabled successfully`);
+                                    } else if (response?.granted === false) {
+                                        alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
+                                    } else {
+                                        alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error requesting permissions:', error);
+                                alert('خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                            }
+                        }}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan' }}
+                    >
+                        دریافت مجوز
+                    </Button>
+                    <Button 
+                        onClick={() => setPermissionModalOpen(false)}
+                        variant="text"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan' }}
+                    >
+                        بستن
                     </Button>
                 </DialogActions>
             </Dialog>

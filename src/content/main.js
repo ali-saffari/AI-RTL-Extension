@@ -296,7 +296,7 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
 
     if (changes.supportHide) {
         const hide = changes.supportHide.newValue === true;
-        $('.AsBox')[hide ? 'hide' : 'show']();
+        AQ('.AsBox')[hide ? 'hide' : 'show']();
         return;
     }
     

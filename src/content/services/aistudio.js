@@ -16,55 +16,55 @@ export function setAiStudio() {
     // Add copyright to footer sections
     if (chrome.runtime?.id) {
         let fo2 = `section footer`;
-        addCopyright($(fo2), 'AsBoxB', 'margin-top: 14px');
+        addCopyright(AQ(fo2), 'AsBoxB', 'margin-top: 14px');
     }
 
-    $("ms-chat-turn").each(function (each) {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ("ms-chat-turn").each(function (each) {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
     });
 
-    $("ms-text-chunk").each(function (each) {
+    AQ("ms-text-chunk").each(function (each) {
         // پردازش پیشرفته تمام عناصر متنی
-        processTablesInContainer($(this), {
+        processTablesInContainer(AQ(this), {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             siteConfig: 'aistudio'
         });
     });
 
-    $("ms-text-chunk").each(function (each) {
+    AQ("ms-text-chunk").each(function (each) {
         // پردازش پیشرفته تمام عناصر متنی
-        processTextElementsAdvanced($(this), {
+        processTextElementsAdvanced(AQ(this), {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: false
         });
     });
 
-    $("ms-text-chunk textarea").each(function (each) {
+    AQ("ms-text-chunk textarea").each(function (each) {
         
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
-            $(this).addClass('FontSetImportant2');
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
+            AQ(this).addClass('FontSetImportant2');
             
-            const text = $(this).val() || $(this).text();
+            const text = AQ(this).val() || AQ(this).text();
 
             if (text && text.trim()) {
-                $(this).attr("dir", analyzeTextDirection(text));
+                AQ(this).attr("dir", analyzeTextDirection(text));
             }
 
             // Add input event listener for real-time direction detection
-            $(this).on('input keyup paste', function() {
-                const currentText = $(this).val();
+            AQ(this).on('input keyup paste', function() {
+                const currentText = AQ(this).val();
                 if (currentText && currentText.trim()) {
-                    $(this).attr("dir", analyzeTextDirection(currentText));
+                    AQ(this).attr("dir", analyzeTextDirection(currentText));
                 }
             });
         }

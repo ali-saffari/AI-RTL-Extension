@@ -10684,22 +10684,22 @@ if ( typeof define === "function" && define.amd ) {
 
 var
 
-	// Map over AsjQuery in case of overwrite
-	_AsjQuery = window.AsjQuery;
+	// Map over AQ in case of overwrite
+	_AQ = window.AQ;
 
 jQuery.noConflict = function( deep ) {
-	if ( window.AsjQuery === jQuery ) {
-		window.AsjQuery = _AsjQuery;
+	if ( window.AQ === jQuery ) {
+		window.AQ = _AQ;
 	}
 
 	return jQuery;
 };
 
-// Expose AsjQuery identifier, even in AMD
+// Expose AQ identifier, even in AMD
 // (trac-7102#comment:10, https://github.com/jquery/jquery/pull/557)
 // and CommonJS for browser emulators (trac-13566)
 if ( typeof noGlobal === "undefined" ) {
-	window.AsjQuery = jQuery;
+	window.AQ = jQuery;
 }
 
 

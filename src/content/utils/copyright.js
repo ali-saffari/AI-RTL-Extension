@@ -4,7 +4,7 @@ import { modalDonateFun, modalDonate, BtnDonate } from './modal.js';
 
 /**
  * Adds copyright to target element with custom class and style
- * @param {jQuery} $targetElement - jQuery element to append copyright to
+ * @param {AQ} $targetElement - AQ element to append copyright to
  * @param {string} customClass - Custom CSS class for the copyright box
  * @param {string} customStyle - Custom inline styles for the copyright box
  */
@@ -12,7 +12,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
     // Convert string selector to jQuery object if needed
     let $element;
     if (typeof $targetElement === 'string') {
-        $element = $($targetElement);
+        $element = AQ($targetElement);
     } else {
         $element = $targetElement;
     }
@@ -42,7 +42,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         $element.addClass("AsOk");
         
         // Check if AsBox class already exists on the site
-        if ($('.AsBox').length === 0) {
+        if (AQ('.AsBox').length === 0) {
             const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(extensionIconPath) : extensionIconPath;
             
             $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
@@ -63,10 +63,10 @@ ${BtnDonate()}
 
             }
             
-            $('body').each(function (each) {
-                if (!$(this).hasClass("AsDonateOk")) {
-                    $(this).append(modalDonate());
-                    $(this).addClass("AsDonateOk");
+            AQ('body').each(function (each) {
+                if (!AQ(this).hasClass("AsDonateOk")) {
+                    AQ(this).append(modalDonate());
+                    AQ(this).addClass("AsDonateOk");
                 }
             });
             modalDonateFun();

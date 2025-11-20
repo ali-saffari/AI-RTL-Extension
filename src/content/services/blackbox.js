@@ -6,19 +6,19 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 // BlackBox service functions
 export function setBlackBox(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
-    const $targetElement = $('.relative.min-w-40 > .px-4');
+    const $targetElement = AQ('.relative.min-w-40 > .px-4');
     if ($targetElement.length > 0) {
         addCopyright($targetElement, 'AsKimi AsBoxB', 'margin-bottom: 0px; ');
     }
 
     // Process textarea elements using RTL algorithm
-    $("body textarea").each(function (each) {
+    AQ("body textarea").each(function (each) {
 
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -27,7 +27,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup paste', function() {
+        AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
@@ -37,7 +37,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process prose elements using RTL algorithm
-    $('.prose').each(function (each) {
+    AQ('.prose').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
@@ -46,7 +46,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process cmdk-group-items elements using RTL algorithm
-    $('[cmdk-group-items]').each(function (each) {
+    AQ('[cmdk-group-items]').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -54,9 +54,9 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process markdown tables
-    $('.markdown-table').each(function (each) {
-        if (!$(this).prev('.table-scroll-help').length) {
-            $(this).before(`
+    AQ('.markdown-table').each(function (each) {
+        if (!AQ(this).prev('.table-scroll-help').length) {
+            AQ(this).before(`
                 <div class="table-scroll-help bg-blue-50 dark:bg-blue-900/20 border-2 rounded-lg px-3 py-2 my-2 text-xs text-gray-700 dark:text-gray-300 text-center font-iran-yekan" style="border-color: #3b82f6;">
                      💡 نکته: اگر جدول کامل نمایش داده نمی‌شه، با اسکرول افقی می‌تونی کل جدول رو ببینی
                 </div>
@@ -64,9 +64,9 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
         }
         
         // Add blue scroll styling to parent
-        $(this).parent().addClass('custom-scrollbar');
+        AQ(this).parent().addClass('custom-scrollbar');
 
-        processTextElementsByRtlAlgorithm($(this).parent()[0], rtlAlgorithm, {
+        processTextElementsByRtlAlgorithm(AQ(this).parent()[0], rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
             isContainer: true

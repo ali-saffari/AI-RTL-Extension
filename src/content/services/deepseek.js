@@ -8,15 +8,15 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         let fo2 = `._871cbca`
         
         // Add copyright using utility function
-        addCopyright($(fo2), 'AsBoxDuckduckgo');
+        addCopyright(AQ(fo2), 'AsBoxDuckduckgo');
     }
 
     // Process textarea elements for text direction detection
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -24,7 +24,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -34,8 +34,8 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
 
 
     // Process ds-message elements (messages in chat)
-    $('.ds-message').each(function (each) {
-        if ($(this).find('.ds-markdown').length > 0) {
+    AQ('.ds-message').each(function (each) {
+        if (AQ(this).find('.ds-markdown').length > 0) {
             // If ds-markdown exists inside, use advanced function for complex messages
             processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
@@ -44,7 +44,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
             });
         } else {
             // Otherwise, style the div inside ds-message for simple messages
-            $(this).find('div').each(function() {
+            AQ(this).find('div').each(function() {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     processedClass: 'AsOk'
@@ -54,7 +54,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process _546d736 elements for text direction detection (history items)
-    $('._546d736 , .afa34042').each(function (each) {
+    AQ('._546d736 , .afa34042').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             // processedClass: 'AsOk',

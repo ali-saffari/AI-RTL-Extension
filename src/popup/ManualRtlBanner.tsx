@@ -5,8 +5,7 @@ import {
     IconButton,
     SvgIcon,
     Checkbox,
-    FormControlLabel,
-    Button
+    FormControlLabel
 } from '@mui/material';
 import { mdiCog, mdiWeb } from '@mdi/js';
 
@@ -42,7 +41,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     onManualRtlSettingsChange
 }) => {
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
-    const [hasPermissions, setHasPermissions] = React.useState<boolean | null>(null);
 
     React.useEffect(() => {
         let isMounted = true;
@@ -83,38 +81,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
             chrome.runtime.onMessage.removeListener(handleActiveTabUpdate);
         };
     }, []);
-
-    // Check if permissions are granted
-    React.useEffect(() => {
-        const checkPermissions = async () => {
-            try {
-                const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-                const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
-                setHasPermissions(hasScripting && hasAllUrls);
-            } catch (error) {
-                console.log('[ManualRtlBanner] Error checking permissions:', error);
-                setHasPermissions(false);
-            }
-        };
-        checkPermissions();
-    }, []);
-
-    const handleRequestPermissions = async () => {
-        try {
-            const permissions = ['scripting'];
-            const origins = ['<all_urls>'];
-            const granted = await chrome.permissions.request({ permissions, origins });
-            setHasPermissions(granted);
-            if (granted) {
-                console.log('[ManualRtlBanner] Permissions granted');
-            } else {
-                console.log('[ManualRtlBanner] Permissions denied');
-            }
-        } catch (error) {
-            console.error('[ManualRtlBanner] Error requesting permissions:', error);
-            setHasPermissions(false);
-        }
-    };
 
     const activeHostname = activeTabInfo?.hostname?.trim() || '';
     const hasSiteDetails = Boolean(activeHostname && activeTabInfo?.favicon);
@@ -262,26 +228,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     </a>
                 </Box>
             </Box>
-            <Box sx={{ pt: 1, pb: 0.5, display: 'flex', justifyContent: 'center' }}>
-                                <Button
-                                    variant="contained"
-                                    size="small"
-                                    onClick={handleRequestPermissions}
-                                    sx={{
-                                        fontSize: '0.7rem',
-                                        fontFamily: 'iranyekan',
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                        color: isDarkMode ? '#000' : '#fff',
-                                        '&:hover': {
-                                            backgroundColor: isDarkMode ? '#00b8d4' : '#152c7a'
-                                        },
-                                        px: 2,
-                                        py: 0.5
-                                    }}
-                                >
-                                    فعال کردن دسترسی‌ها
-                                </Button>
-                            </Box>
            
             <Box
                 sx={{

@@ -7,13 +7,13 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
               let fo2 = `.chat-message-input-container.in-chat`
-         addCopyright($(fo2), 'AsBoxQwen AsBoxB' ,`margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
+         addCopyright(AQ(fo2), 'AsBoxQwen AsBoxB' ,`margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
 
 
     }
 
     // Process chat messages and input elements
-    $(".chat-assistant , .user-message , #chat-input").each(function (each) {
+    AQ(".chat-assistant , .user-message , #chat-input").each(function (each) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
@@ -22,7 +22,7 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process chat item drag elements
-    $(".chat-item-drag").each(function (each) {
+    AQ(".chat-item-drag").each(function (each) {
 
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
@@ -33,7 +33,7 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     
 
     // Process markdown prose elements
-    $(".response-message-body .markdown-prose").each(function (each) {
+    AQ(".response-message-body .markdown-prose").each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -43,7 +43,7 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
 
 
     // Process font primary and scrollbar hidden elements
-    $(".font-primary ,.scrollbar-hidden").each(function (each) {
+    AQ(".font-primary ,.scrollbar-hidden").each(function (each) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'

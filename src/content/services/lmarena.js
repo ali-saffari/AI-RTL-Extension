@@ -23,11 +23,11 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
                 
-        let fo3 = $('.relative .flex.flex-col.items-center.px-4')
+        let fo3 = AQ('.relative .flex.flex-col.items-center.px-4')
         fo3.addClass('pb-12');
         fo3.removeClass('pb-6');
 
-        let fo4 = $('.bg-surface-primary .border-border-faint.bg-surface-primary.min-h-0.w-full.flex-none .absolute')
+        let fo4 = AQ('.bg-surface-primary .border-border-faint.bg-surface-primary.min-h-0.w-full.flex-none .absolute')
         fo4.css('bottom', '-2.8rem');
         fo4.css('text-align', 'center');
 
@@ -45,17 +45,17 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
 
 
     // Process textarea and input elements with RTL algorithm
-    $('body textarea, body input[type="text"], body input[type="search"]').each(function (each) {
+    AQ('body textarea, body input[type="text"], body input[type="search"]').each(function (each) {
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
 
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -64,7 +64,7 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
@@ -73,20 +73,20 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process message content elements
-    $(' [data-sidebar="menu-item"] ').each(function (each) {
-        if (!$(this).hasClass("AsOkText")) {
-            $(this).addClass('AsOkText');
-            const text = $(this).val() || $(this).text();
+    AQ(' [data-sidebar="menu-item"] ').each(function (each) {
+        if (!AQ(this).hasClass("AsOkText")) {
+            AQ(this).addClass('AsOkText');
+            const text = AQ(this).val() || AQ(this).text();
             const direction = detectDirectionByAlgorithm(text, rtlAlgorithm);
-            $(this).attr('dir' , direction);
+            AQ(this).attr('dir' , direction);
             if (direction === 'rtl') {
-                $(this).addClass('FontSet');
+                AQ(this).addClass('FontSet');
             }
           
         }
     });
 
-    $('.prose').each(function (each) {
+    AQ('.prose').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',

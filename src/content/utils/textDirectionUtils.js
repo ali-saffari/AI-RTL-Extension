@@ -37,7 +37,7 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
         setTextAlign = false
     } = options;
     
-    const $element = $(element);
+    const $element = AQ(element);
     
     // Check if already processed
     if ($element.hasClass(processedClass)) {
@@ -75,7 +75,7 @@ function setTextDirectionAndFont(element, options = {}) {
         textToUse = providedText;
     } else {
         // متن رو بدون محتوای تگ a برای تشخیص جهت استفاده کن
-        const $tempElement = $(element).clone();
+        const $tempElement = AQ(element).clone();
         $tempElement.find('a').remove();
         $tempElement.find('div.rounded-xl').remove();
         $tempElement.find('pre, code').remove();
@@ -85,7 +85,7 @@ function setTextDirectionAndFont(element, options = {}) {
         
         // اگر text() خالی بود، val() رو چک کن (برای input/textarea)
         if (!textToUse || !textToUse.trim()) {
-            textToUse = $(element).val();
+            textToUse = AQ(element).val();
             if (textToUse) {
                 textToUse = textToUse.trim();
             }
@@ -99,20 +99,20 @@ function setTextDirectionAndFont(element, options = {}) {
     // If detectTextDirection returns empty or null, use 'auto'
     const finalDirection = direction || 'auto';
 
-        // $(element).attr('data-text', textToUse)
-        $(element).attr('data-direction', finalDirection)
+        // AQ(element).attr('data-text', textToUse)
+        AQ(element).attr('data-direction', finalDirection)
 
-    $(element).attr("dir", finalDirection);
+    AQ(element).attr("dir", finalDirection);
     if (fontClass) {
-        $(element).addClass(fontClass);
+        AQ(element).addClass(fontClass);
     }
     
     // Set text alignment if setTextAlign is enabled
     if (setTextAlign && finalDirection !== 'auto') {
         if (finalDirection === 'rtl') {
-            $(element).css('text-align', 'right');
+            AQ(element).css('text-align', 'right');
         } else {
-            $(element).css('text-align', 'left');
+            AQ(element).css('text-align', 'left');
         }
     }
     
@@ -125,7 +125,7 @@ function setTextDirectionAndFont(element, options = {}) {
  * @param {string} fontClass - Font class to apply (optional)
  */
 function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign) {
-    const $element = $(element);
+    const $element = AQ(element);
     
     // Check if already processed using data attribute
     if ($element.data('rtl-processed')) {
@@ -159,7 +159,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
             
             parts.forEach((part, index) => {
                 if (part.trim()) {
-                    const tempDiv = $('<div>').html(part);
+                    const tempDiv = AQ('<div>').html(part);
                     const cleanText = tempDiv.text().trim();
                     
                     if (cleanText) {
@@ -178,7 +178,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                 let newHtml = '';
                 parts.forEach((part, index) => {
                     if (part.trim()) {
-                        const tempDiv = $('<div>').html(part);
+                        const tempDiv = AQ('<div>').html(part);
                         const cleanText = tempDiv.text().trim();
                         
                         if (cleanText) {
@@ -239,7 +239,7 @@ export function processTablesInContainer(container, options = {}) {
  
 
     container.find('table').each(function() {
-        const $table = $(this);
+        const $table = AQ(this);
 
 
 
@@ -253,7 +253,7 @@ export function processTablesInContainer(container, options = {}) {
         // Check if all table items are already processed
         const allTableItems = $table.find('th, td, caption, tr');
         const unprocessedItems = allTableItems.filter(function() {
-            return !$(this).hasClass(processedClass);
+            return !AQ(this).hasClass(processedClass);
         });
         
         // If there are unprocessed items, skip this table for now
@@ -272,7 +272,7 @@ export function processTablesInContainer(container, options = {}) {
         const tableElements = $table.find('th, td, caption').add($table.find('tr').not(':has(th, td)'));
         
         tableElements.each(function() {
-            const text = $(this).text();
+            const text = AQ(this).text();
             if (text && text.trim()) {
                 allTableText += ' ' + text.trim();
             }
@@ -318,7 +318,7 @@ export function processTablesInContainer(container, options = {}) {
                             console.log('Found .absolute.top-1.right-1 elements:', $absoluteElements.length, 'in parent:', $current[0]);
                             // Change right-1 to left for RTL optimization
                             $absoluteElements.each(function() {
-                                $(this).removeClass('right-1').addClass('left-1');
+                                AQ(this).removeClass('right-1').addClass('left-1');
                                 console.log('Changed right-1 to left-1 for element:', this);
                             });
                         }
@@ -355,12 +355,12 @@ export function processTablesInContainer(container, options = {}) {
     
     // Also process ARIA table roles
     container.find('[role="table"]').each(function() {
-        const $table = $(this);
+        const $table = AQ(this);
         
         // Check if all ARIA table items are already processed
         const allAriaTableItems = $table.find('[role="cell"], [role="columnheader"], [role="rowheader"], [role="row"]');
         const unprocessedAriaItems = allAriaTableItems.filter(function() {
-            return !$(this).hasClass(processedClass);
+            return !AQ(this).hasClass(processedClass);
         });
         
         // If there are unprocessed items, skip this table for now
@@ -378,7 +378,7 @@ export function processTablesInContainer(container, options = {}) {
         const tableElements = $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]');
         
         tableElements.each(function() {
-            const text = $(this).text();
+            const text = AQ(this).text();
             if (text && text.trim()) {
                 allTableText += ' ' + text.trim();
             }
@@ -464,7 +464,7 @@ function processTextElementsAdvanced(container, options = {}) {
             !['code', 'pre'].includes(tag)
         );
         container.find(allTagsSetFont.join(',')).each(function() {
-            const $element = $(this);
+            const $element = AQ(this);
             if (!$element.hasClass(fontClass)) {
                 $element.addClass(fontClass);
             }
@@ -477,8 +477,8 @@ function processTextElementsAdvanced(container, options = {}) {
 
     if (removeDirAuto) {
         container.find('*[dir="auto"]').each(function() {
-            if (!$(this).hasClass("removeedDirAuto")) {
-                $(this).removeAttr('dir').addClass("removeedDirAuto");
+            if (!AQ(this).hasClass("removeedDirAuto")) {
+                AQ(this).removeAttr('dir').addClass("removeedDirAuto");
             }
         });
     }
@@ -493,7 +493,7 @@ function processTextElementsAdvanced(container, options = {}) {
     const allElements = container.children();
     
     allElements.each(function() {
-        const $element = $(this);
+        const $element = AQ(this);
         
         // Skip if already processed
         if ($element.hasClass(processedClass)) {
@@ -537,7 +537,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
             // let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
 
-            $(this).attr('data-org-dir', direction);
+            AQ(this).attr('data-org-dir', direction);
 
             // If this is a main container, check all similar header tags and set direction based on majority
             if (mainContainer) {
@@ -550,7 +550,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
                 // Count directions of all headers
                 allHeaders.each(function() {
-                    const headerDir = $(this).attr('data-org-dir');
+                    const headerDir = AQ(this).attr('data-org-dir');
                     if (headerDir === 'rtl') {
                         rtlCount++;
                     } else if (headerDir === 'ltr') {
@@ -570,12 +570,12 @@ function processTextElementsAdvanced(container, options = {}) {
 
                 
                 mainContainer.find(tagName).each(function() {
-                    $(this).attr('dir', majorityDir);
+                    AQ(this).attr('dir', majorityDir);
         
                     // if (majorityDir === 'rtl') {
-                    //     $(this).css('text-align', 'right');
+                    //     AQ(this).css('text-align', 'right');
                     // } else {
-                    //     $(this).css('text-align', 'left');
+                    //     AQ(this).css('text-align', 'left');
                     // }
                 });
                 
@@ -834,7 +834,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         let unprocessedCount = 0;
                         
                         listItems.each(function() {
-                            const $li = $(this);
+                            const $li = AQ(this);
                             if ($li.hasClass(processedClass)) {
                                 processedCount++;
                             } else {
@@ -859,27 +859,27 @@ function processTextElementsAdvanced(container, options = {}) {
 
                                 $li.find('pre, code').each(function() {
 
-                                    const text = $(this).text();
-                                    const hasLanguageTextClass = $(this).hasClass('language-text') || $(this).find('.language-text').length > 0;
+                                    const text = AQ(this).text();
+                                    const hasLanguageTextClass = AQ(this).hasClass('language-text') || AQ(this).find('.language-text').length > 0;
                                     const isCodeContent = !hasLanguageTextClass && isCode(text);
                                     
-                                    $(this).addClass(processedClass);
+                                    AQ(this).addClass(processedClass);
                         
                                     if (isCodeContent) {
-                                        $(this).attr('data-debug-mode', 'code-element-ltr');
+                                        AQ(this).attr('data-debug-mode', 'code-element-ltr');
                                         // If content is detected as code, always force LTR
-                                        $(this).attr("dir", "ltr");
+                                        AQ(this).attr("dir", "ltr");
                                         // if (fontClass) {
                                         //     $element.addClass(fontClass);
                                         // }
-                                        $(this).addClass('AsSetLtr');
-                                        $(this).addClass('FontSetCode');
-                                        $(this).addClass(processedClass);
+                                        AQ(this).addClass('AsSetLtr');
+                                        AQ(this).addClass('FontSetCode');
+                                        AQ(this).addClass(processedClass);
                                     } else {
-                                        $(this).attr('data-debug-mode', 'code-element-normal');
+                                        AQ(this).attr('data-debug-mode', 'code-element-normal');
                                         // If not code or has language-text class, use normal direction detection
-                                        $(this).find('*').removeAttr('dir');
-                                        $(this).addClass(processedClass);
+                                        AQ(this).find('*').removeAttr('dir');
+                                        AQ(this).addClass(processedClass);
                                         setTextDirectionAndFont(this, { fontClass, setTextAlign });
                                     }
 
@@ -894,7 +894,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         let ltrCount = 0;
                         
                         processedItems.each(function() {
-                            const dir = $(this).attr('data-direction');
+                            const dir = AQ(this).attr('data-direction');
                             if (dir === 'rtl') {
                                 rtlCount++;
                             } else if (dir === 'ltr') {
@@ -944,18 +944,18 @@ function processTextElementsAdvanced(container, options = {}) {
                         // جهت آیتم‌ها رو به جهت لیست تغییر بده
                         processedItems.each(function() {
 
-                            $(this).attr('data-org-dir',  $(this).attr('dir'));
+                            AQ(this).attr('data-org-dir',  AQ(this).attr('dir'));
 
-                            // $(this).attr('data-dir', listDirection);
+                            // AQ(this).attr('data-dir', listDirection);
                            
-                            $(this).attr('dir', listDirection);
+                            AQ(this).attr('dir', listDirection);
                             
                             // Set text alignment for list items if setTextAlign is enabled
                             if (setTextAlign) {
                                 if (listDirection === 'rtl') {
-                                    $(this).css('text-align', 'right');
+                                    AQ(this).css('text-align', 'right');
                                 } else {
-                                    $(this).css('text-align', 'left');
+                                    AQ(this).css('text-align', 'left');
                                 }
                             }
                            
@@ -1031,7 +1031,7 @@ function getAttributeTextElements() {
  * @param {Object} options - Additional options (optional)
  */
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
-    const $element = $(element);
+    const $element = AQ(element);
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -1164,7 +1164,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
  * @param {string} options.rtlClass - Class to add when direction is RTL (optional, defaults to null)
  */
 function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
-    const $element = $(element);
+    const $element = AQ(element);
     
     // Default options for each algorithm
     const defaultOptions = {

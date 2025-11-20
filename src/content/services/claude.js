@@ -8,8 +8,8 @@ const ELEMENT_MAP = [
     {
         target: '.sticky fieldset.flex.flex-col .items-stretch.transition-all',
         function: (element) => {
-            if ($(element).length > 0) {
-                addCopyright($(element).parent(), 'AsBoxClaude', '');
+            if (AQ(element).length > 0) {
+                addCopyright(AQ(element).parent(), 'AsBoxClaude', '');
             }
         }
     },
@@ -17,21 +17,21 @@ const ELEMENT_MAP = [
         target: '.ProseMirror , textarea',
         function: (element, rtlAlgorithm) => {
             
-            if ($(this).data('rtl-listener-added')) {
+            if (AQ(this).data('rtl-listener-added')) {
                 return;
             }
-            $(this).data('rtl-listener-added', true);
+            AQ(this).data('rtl-listener-added', true);
 
             
-            if (!$(element).hasClass("AsOk")) {
-                $(element).addClass('AsOk FontClaude');
+            if (!AQ(element).hasClass("AsOk")) {
+                AQ(element).addClass('AsOk FontClaude');
                 
                 setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     processedClass: 'AsOk'
                 });
                 
-                $(element).on('keyup paste input', function() {
+                AQ(element).on('keyup paste input', function() {
      
                     
                     requestAnimationFrame(() => {
@@ -46,11 +46,11 @@ const ELEMENT_MAP = [
     {
         target: '.mb-1.mt-1',
         function: (element, rtlAlgorithm) => {
-            const text = $(element).find('.break-words').text();
+            const text = AQ(element).find('.break-words').text();
             
-            if (isRTL(text) && !$(element).hasClass("AsRtlClaudeUser")) {
-                $(element).addClass('AsRtlClaudeUser');
-                $(element).addClass('FontSet');
+            if (isRTL(text) && !AQ(element).hasClass("AsRtlClaudeUser")) {
+                AQ(element).addClass('AsRtlClaudeUser');
+                AQ(element).addClass('FontSet');
             }
         }
     },
@@ -58,7 +58,7 @@ const ELEMENT_MAP = [
         //پاسخ های کلاود
         target: '.standard-markdown , .progressive-markdown , .font-claude-response',
         function: (element, rtlAlgorithm) => {
-            $(element).addClass('AsOk FontSet FontClaude');
+            AQ(element).addClass('AsOk FontSet FontClaude');
             
             processTextElementsByRtlAlgorithm(element, rtlAlgorithm, {
                 fontClass: 'FontSet FontClaude',
@@ -71,7 +71,7 @@ const ELEMENT_MAP = [
         //بخشی که سمت راست باز میشود
         target: '#standard-markdown-artifact , #markdown-artifact',
         function: (element, rtlAlgorithm) => {
-            $(element).addClass('AsOk FontSet FontClaude');
+            AQ(element).addClass('AsOk FontSet FontClaude');
             
             processTextElementsByRtlAlgorithm(element, rtlAlgorithm, {
                 fontClass: 'FontSet FontClaude',
@@ -107,7 +107,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     function set(rtlAlgorithm) {
         // Process all elements using the mapping array
         ELEMENT_MAP.forEach(({ target, function: processFunction }) => {
-            $(target).each(function() {
+            AQ(target).each(function() {
                 processFunction(this, rtlAlgorithm);
             });
         });

@@ -10,7 +10,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
 
     if (chrome.runtime?.id) {
         // Add copyright using utility function
-        const targetElement = $(fo);
+        const targetElement = AQ(fo);
         // targetElement.addClass("red")
 
         if (targetElement.length > 0) {
@@ -19,7 +19,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
     }
 
     // Process all text elements using processTextElementsAdvanced
-    $('[data-content="ai-message"] .break-words').each(function (each) {
+    AQ('[data-content="ai-message"] .break-words').each(function (each) {
     
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
@@ -30,7 +30,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
            
     });
 
-    $('[data-content="user-message"] .break-words').each(function (each) {
+    AQ('[data-content="user-message"] .break-words').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk'
@@ -38,8 +38,8 @@ export function setItems_copilotBing(rtlAlgorithm) {
     });
 
         // Process listbox options for text direction detection
-        $('[role="listbox"] [role="option"]').each(function (each) {
-            const text = $(this).text();
+        AQ('[role="listbox"] [role="option"]').each(function (each) {
+            const text = AQ(this).text();
             if (text && text.trim()) {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'CopilotFontSet',
@@ -51,11 +51,11 @@ export function setItems_copilotBing(rtlAlgorithm) {
 
 
     // Process textarea elements for text direction detection
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -64,7 +64,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'CopilotFontSet',
             });

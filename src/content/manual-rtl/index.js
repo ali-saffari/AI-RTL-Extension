@@ -17,8 +17,8 @@ export function initTextSelector() {
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'sync' && (changes.manualRtlSettings || changes.textSelectorSettings)) {
-            const newSettings = (changes.manualRtlSettings || changes.textSelectorSettings)?.newValue;
+        if (areaName === 'sync' && changes.manualRtlSettings) {
+            const newSettings = changes.manualRtlSettings?.newValue;
             if (newSettings) {
                 manualRtlState.manualRtlSettings = newSettings;
                 updateHighlightStyle(newSettings);
@@ -41,8 +41,8 @@ export function initTextSelector() {
 function initTextSelectorInternal() {
     ensureHighlightStyle();
 
-    chrome.storage.sync.get(['manualRtlSettings', 'textSelectorSettings'], (result) => {
-        const settings = result.manualRtlSettings || result.textSelectorSettings;
+    chrome.storage.sync.get(['manualRtlSettings'], (result) => {
+        const settings = result.manualRtlSettings;
         if (settings) {
             manualRtlState.manualRtlSettings = settings;
             updateHighlightStyle(settings);

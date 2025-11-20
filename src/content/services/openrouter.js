@@ -6,11 +6,11 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright notice
-        addCopyright($('.sm\\:mb-2.sm\\:mt-0.flex-shrink-0.md\\:px-4'), 'AsBoxOpenRouter AsBoxB', 'margin-top: 5px;margin-bottom: -8px;');
+        addCopyright(AQ('.sm\\:mb-2.sm\\:mt-0.flex-shrink-0.md\\:px-4'), 'AsBoxOpenRouter AsBoxB', 'margin-top: 5px;margin-bottom: -8px;');
     }
 
     // Process message content
-    $('.items-stretch .font-normal').each(function() {
+    AQ('.items-stretch .font-normal').each(function() {
 
             processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet FontOpenRouter',
@@ -22,7 +22,7 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
 
     
 
-    $('.break-words').each(function (each) {
+    AQ('.break-words').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
@@ -33,14 +33,14 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     
 
     // Process input fields
-    $('textarea, input[type="text"], .input-field').each(function() {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ('textarea, input[type="text"], .input-field').each(function() {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
 
@@ -50,7 +50,7 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
@@ -59,9 +59,9 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     });
 
     // // Apply font to body
-    $('body').each(function() {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ('body').each(function() {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
     });
 }

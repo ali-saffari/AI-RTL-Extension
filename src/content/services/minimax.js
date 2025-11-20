@@ -6,11 +6,11 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 export function setMinimax(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright notice
-        addCopyright($('.relative.hidden .drag-wrapper'), 'AsBoxMinimax AsBoxB', 'margin-top: 5px;margin-bottom: -2px;');
+        addCopyright(AQ('.relative.hidden .drag-wrapper'), 'AsBoxMinimax AsBoxB', 'margin-top: 5px;margin-bottom: -2px;');
     }
 
     // Process message content
-    $('.message-content, .message-text, .conversation-message, .chat-message, .content').each(function() {
+    AQ('.message-content, .message-text, .conversation-message, .chat-message, .content').each(function() {
      
             processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet FontMinimax',
@@ -21,17 +21,17 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process input fields
-    $('textarea, input[type="text"], .input-field').each(function() {
+    AQ('textarea, input[type="text"], .input-field').each(function() {
 
         
-        if (!$(this).hasClass("FontSetImportant")) {
-            $(this).addClass('FontSetImportant');
+        if (!AQ(this).hasClass("FontSetImportant")) {
+            AQ(this).addClass('FontSetImportant');
         }
 
-        if ($(this).data('rtl-listener-added')) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         
@@ -41,7 +41,7 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time direction detection
-        $(this).on('keyup paste input', function() {
+        AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSetImportant',
                 setTextAlign: true
@@ -50,9 +50,9 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
     });
 
     // Apply font to body
-    $('body').each(function() {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ('body').each(function() {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
     });
 }

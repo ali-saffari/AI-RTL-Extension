@@ -5,7 +5,7 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 
 export function setLovable(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
-        addCopyright($('#chat-input').parent(), 'AsBoxGemini AsBoxB' , 'margin-top: 2px; margin-bottom: -5px; font-size: 13px;');
+        addCopyright(AQ('#chat-input').parent(), 'AsBoxGemini AsBoxB' , 'margin-top: 2px; margin-bottom: -5px; font-size: 13px;');
     }
 
 
@@ -13,11 +13,11 @@ export function setLovable(rtlAlgorithm = 'advanced_full') {
 
 
     // Process textarea elements for text direction detection
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -25,7 +25,7 @@ export function setLovable(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup paste', function() {
+        AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
@@ -35,7 +35,7 @@ export function setLovable(rtlAlgorithm = 'advanced_full') {
     });
 
 
-    $('.font-normal , .font-medium').each(function (each) {
+    AQ('.font-normal , .font-medium').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',
@@ -46,7 +46,7 @@ export function setLovable(rtlAlgorithm = 'advanced_full') {
 
     
     // Process markdown content
-    $('.prose-markdown-mobile').each(function (each) {
+    AQ('.prose-markdown-mobile').each(function (each) {
 
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -56,18 +56,18 @@ export function setLovable(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    $('input[type="text"], input[type="search"]').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('input[type="text"], input[type="search"]').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'

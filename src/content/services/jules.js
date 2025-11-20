@@ -8,11 +8,11 @@ export function setJules(rtlAlgorithm = 'advanced_full') {
         let fo2 = `.disclaimer`
         
         // Add copyright using utility function
-        addCopyright($(fo2), 'AsBoxGemini AsBoxB' , 'margin-top: 4px; margin-bottom: -16px; font-size: 13px;');
+        addCopyright(AQ(fo2), 'AsBoxGemini AsBoxB' , 'margin-top: 4px; margin-bottom: -16px; font-size: 13px;');
     }
 
     // Process markdown panels with RTL algorithm
-    $('.markdown  , .ProseMirror , .research-step-description').each(function (each) {
+    AQ('.markdown  , .ProseMirror , .research-step-description').each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
@@ -22,11 +22,11 @@ export function setJules(rtlAlgorithm = 'advanced_full') {
     });
 
 
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -35,7 +35,7 @@ export function setJules(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -44,9 +44,9 @@ export function setJules(rtlAlgorithm = 'advanced_full') {
 
     
 
-    $('.task-description  , .chat-header-text').each(function (each) {
-        if (!$(this).hasClass("FontSet")) {
-            $(this).addClass('FontSet');
+    AQ('.task-description  , .chat-header-text').each(function (each) {
+        if (!AQ(this).hasClass("FontSet")) {
+            AQ(this).addClass('FontSet');
         }
     });
 

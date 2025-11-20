@@ -8,15 +8,15 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
         let fo2 = `.eRjZTOsvr6gqJe3E2Yc6`
         
         // Add copyright using utility function
-        addCopyright($(fo2), 'AsBoxDuckduckgo');
+        addCopyright(AQ(fo2), 'AsBoxDuckduckgo');
     }
 
     // Process textarea elements for text direction detection
-    $('textarea').each(function (each) {
-        if ($(this).data('rtl-listener-added')) {
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
             return;
         }
-        $(this).data('rtl-listener-added', true);
+        AQ(this).data('rtl-listener-added', true);
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -25,7 +25,7 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
         });
         
         // Add event listener for real-time text direction detection
-        $(this).on('input keyup', function() {
+        AQ(this).on('input keyup', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
@@ -33,7 +33,7 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process p elements for text direction detection
-    $(".PMQFURe7WSKqXJk9e3Jn , .decaGrVqUoziItl4Iarp ").each(function (each) {
+    AQ(".PMQFURe7WSKqXJk9e3Jn , .decaGrVqUoziItl4Iarp ").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
@@ -41,14 +41,14 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process ucB71mHYvyHsWKjYfYKI elements using advanced function
-    $('.ucB71mHYvyHsWKjYfYKI').each(function (each) {
+    AQ('.ucB71mHYvyHsWKjYfYKI').each(function (each) {
         // Disable horizontal scroll only
-        $(this).css({
+        AQ(this).css({
             'overflow-x': 'hidden',
             'overflow-y': 'auto'
         });
         
-        $(this).addClass('activateDuckduckgo')
+        AQ(this).addClass('activateDuckduckgo')
 
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',

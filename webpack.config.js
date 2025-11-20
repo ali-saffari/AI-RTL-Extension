@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
@@ -20,7 +21,8 @@ module.exports = {
         popup: './src/popup/index.tsx',
         options: './src/options/index.tsx',
         background: './src/background/background.js',
-        content: './src/content/index.ts'
+        content: './src/content/index.ts',
+        'myJquery-3.7.1': './src/myJquery-3.7.1.js'
     },
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
@@ -83,5 +85,21 @@ module.exports = {
     output: {
         path: path.join(__dirname, 'dist/js'),
         filename: '[name].js',
+    },
+    optimization: {
+        minimize: isProduction,
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: {
+                    compress: {
+                        drop_console: false,
+                    },
+                    format: {
+                        comments: false,
+                    },
+                },
+                extractComments: false,
+            }),
+        ],
     },
 };

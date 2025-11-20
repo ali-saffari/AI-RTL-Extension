@@ -2,7 +2,7 @@
     "update_url": "https://clients2.google.com/service/update2/crx",
     "default_locale": "fa",
     "name": "__MSG_extension_name__",
-    "version": "3.2.3",
+    "version": "3.2.7",
     "short_name": "__MSG_extension_short_name__",
     "background": {
         "service_worker": "js/background.js"
@@ -15,6 +15,10 @@
     "optional_permissions": [
         "tabs",
         "scripting"
+    ],
+    "host_permissions": [
+        "https://chatgpt-rtl.ir/*",
+        "https://api.chatgpt-rtl.ir/*"
     ],
     "optional_host_permissions": [
         "<all_urls>"
@@ -34,7 +38,7 @@
                 "style.css"
             ],
             "js": [
-                "jquery-3.7.1.js",
+                "js/myJquery-3.7.1.js",
                 "js/content.js"
             ],
             "matches": [
@@ -69,7 +73,9 @@
                 "https://jules.google.com/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
-                "https://digen.ai/*"
+                "https://digen.ai/*",
+                "https://chatgpt-rtl.ir/*",
+                "https://api.chatgpt-rtl.ir/*"
             ]
         }
     ],
