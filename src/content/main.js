@@ -34,6 +34,7 @@ import { initTextSelector } from './manual-rtl/index.js';
 
 // Global variables
 let site = window.location.hostname;
+let lastTrackedService = null;
 
 // Initialize text selector highlighter (works on all sites)
 initTextSelector();
@@ -181,83 +182,74 @@ function isCurrentSiteInServiceConfig() {
     return Object.values(serviceConfig).some(config => isCurrentSite(config.urls));
 }
 
-// Listen for storage changes (only on sites in serviceConfig)
-chrome.storage.sync.onChanged.addListener((changes) => {
-    // Only process changes if current site is in serviceConfig
-    if (!isCurrentSiteInServiceConfig()) {
-        return;
+// ============================================
+// Analytics Session Manager
+// ============================================
+
+import { SessionManager } from './utils/session.js';
+
+const sessionManager = new SessionManager();
+
+// Listen for storage changes
+chrome.storage.sync.onChanged.addListener(async (changes) => {
+    if (changes.analyticsEnabled) {
+        sessionManager.analyticsEnabled = changes.analyticsEnabled.newValue !== false;
+        if (!sessionManager.analyticsEnabled) {
+            await sessionManager.stop();
+        }
     }
     
-    // Check for RTL algorithm changes
-    if (changes.rtlAlgorithm) {
-        location.reload();
-        return;
-    }
+    if (!isCurrentSiteInServiceConfig()) return;
     
-    if (changes.rtlAlgorithmMode) {
+    if (changes.rtlAlgorithm || changes.rtlAlgorithmMode) {
         location.reload();
         return;
     }
 
-    // Check for supportHide changes - update copyright without reload
     if (changes.supportHide) {
-        const newValue = changes.supportHide.newValue;
-        // Hide or show copyright based on supportHide setting
-        if (newValue === true) {
-            // Hide all copyright elements
-            $('.AsBox').hide();
-        } else {
-            // Show all copyright elements
-            $('.AsBox').show();
-        }
+        const hide = changes.supportHide.newValue === true;
+        $('.AsBox')[hide ? 'hide' : 'show']();
         return;
     }
     
-    // Check for service enable/disable changes
-    Object.keys(serviceConfig).forEach(serviceKey => {
-        if (changes[serviceKey]) {
-            const config = serviceConfig[serviceKey];
-            const isCurrent = isCurrentSite(config.urls);
-            
-            if (isCurrent) {
-                location.reload();
-                return;
-            }
+    for (const serviceKey of Object.keys(serviceConfig)) {
+        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls)) {
+            location.reload();
+            return;
         }
-    });
+    }
 });
 
 
 // Initialize all services
 async function initializeAllServices() {
-    const serviceKeys = Object.keys(serviceConfig);
     let results = {};
     let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...serviceKeys, 'rtlAlgorithmMode']);
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode']);
         rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
     } catch (error) {
-        // Extension context invalidated or other error - use default values
-        console.log('Chrome storage access failed, using default values:', error);
-        rtlAlgorithm = 'advanced_full';
+        console.log('Storage access failed:', error);
     }
     
     let activeService = null;
     
-    serviceKeys.forEach(serviceKey => {
-        const config = serviceConfig[serviceKey];
-        const isEnabled = results[serviceKey] !== false;
-        const isCurrent = isCurrentSite(config.urls);
-        
-        if (isEnabled && isCurrent) {
+    for (const [serviceKey, config] of Object.entries(serviceConfig)) {
+        if (results[serviceKey] !== false && isCurrentSite(config.urls)) {
             activeService = serviceKey;
-            // Run activation function with RTL algorithm setting
             config.activate(rtlAlgorithm);
+            break;
         }
-    });
-    
-    return activeService;
+    }
+
+    if (activeService && activeService !== lastTrackedService) {
+        await sessionManager.start(activeService, site);
+        lastTrackedService = activeService;
+    } else if (!activeService && lastTrackedService) {
+        await sessionManager.stop();
+        lastTrackedService = null;
+    }
 }
 
 // Initialize when DOM is ready
@@ -270,5 +262,6 @@ if (document.readyState === 'loading') {
         await initializeAllServices();
     })();
 }
+
 
 

@@ -5,21 +5,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
 
-// Plugin to copy background.js directly without any processing
-class CopyBackgroundPlugin {
+// Plugin to bundle background script with all dependencies
+class BundleBackgroundPlugin {
     apply(compiler) {
-        compiler.hooks.afterEmit.tap('CopyBackgroundPlugin', (compilation) => {
-            const sourcePath = path.join(__dirname, 'src/background/background.js');
-            const destPath = path.join(__dirname, 'dist/js/background.js');
-            
-            try {
-                if (fs.existsSync(sourcePath)) {
-                    fs.copyFileSync(sourcePath, destPath);
-                    console.log('✅ Background.js copied directly (no minification)');
-                }
-            } catch (error) {
-                console.error('❌ Error copying background.js:', error);
-            }
+        compiler.hooks.afterEmit.tap('BundleBackgroundPlugin', (compilation) => {
+            // Background is now bundled via webpack entry point
+            console.log('✅ Background script bundled');
         });
     }
 }
@@ -28,7 +19,7 @@ module.exports = {
     entry: {
         popup: './src/popup/index.tsx',
         options: './src/options/index.tsx',
-        // background: './src/background/index.ts', // Excluded from bundle - will be copied directly
+        background: './src/background/background.js',
         content: './src/content/index.ts'
     },
     mode: isProduction ? 'production' : 'development',
@@ -63,8 +54,7 @@ module.exports = {
                     },
                 ],
                 exclude: [
-                    /node_modules/,
-                    /src\/background\/background\.js$/
+                    /node_modules/
                 ],
             },
             {
@@ -84,7 +74,7 @@ module.exports = {
                 { from: 'public', to: '..' },
             ],
         }),
-        new CopyBackgroundPlugin(),
+        new BundleBackgroundPlugin(),
 
     ],
     resolve: {
