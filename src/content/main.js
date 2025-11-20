@@ -36,6 +36,54 @@ import { initTextSelector } from './manual-rtl/index.js';
 let site = window.location.hostname;
 let lastTrackedService = null;
 
+function getFaviconUrl() {
+    const selectors = [
+        'link[rel="icon"]',
+        'link[rel="shortcut icon"]',
+        'link[rel="apple-touch-icon"]',
+        'link[rel~="icon"]'
+    ];
+
+    for (const selector of selectors) {
+        const link = document.querySelector(selector);
+        if (link?.href) {
+            return link.href;
+        }
+    }
+
+    try {
+        return new URL('/favicon.ico', window.location.origin).href;
+    } catch {
+        return '';
+    }
+}
+
+function reportActiveSiteToBackground() {
+    if (!chrome?.runtime?.sendMessage) return;
+
+    try {
+        chrome.runtime.sendMessage({
+            action: 'contentSiteInfo',
+            hostname: window.location.hostname,
+            favicon: getFaviconUrl()
+        }, () => {
+            if (chrome.runtime.lastError) {
+                console.warn('[Content] Failed to report site info:', chrome.runtime.lastError.message);
+            }
+        });
+    } catch (error) {
+        console.warn('[Content] Exception while reporting site info:', error.message);
+    }
+}
+
+reportActiveSiteToBackground();
+window.addEventListener('focus', reportActiveSiteToBackground, { passive: true });
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        reportActiveSiteToBackground();
+    }
+});
+
 // Initialize text selector highlighter (works on all sites)
 initTextSelector();
 
