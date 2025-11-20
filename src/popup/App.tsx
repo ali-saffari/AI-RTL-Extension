@@ -390,11 +390,149 @@ function App() {
         }
     };
 
+    // Request permissions and inject manual RTL code
+    const requestPermissionsAndInjectCode = async (tabId: number | null) => {
+        if (!tabId) return;
+
+        try {
+            // Request optional permissions
+            const permissions = ['scripting'];
+            const origins = ['<all_urls>'];
+            const granted = await chrome.permissions.request({ permissions, origins });
+            
+            if (!granted) {
+                console.log('[Manual RTL] Permissions not granted');
+                return;
+            }
+
+            // Get the active tab URL to check if we can inject
+            const tab = await chrome.tabs.get(tabId);
+            if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('about:')) {
+                console.log('[Manual RTL] Cannot inject on this URL:', tab.url);
+                return;
+            }
+
+            // Inject manual RTL initialization code using scripting API
+            try {
+                await chrome.scripting.executeScript({
+                    target: { tabId: tabId },
+                    func: () => {
+                        // Trigger manual RTL initialization by dispatching a custom event
+                        // The content script will listen for this and initialize manual RTL
+                        if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('manualRtlActivate'));
+                        }
+                    }
+                });
+                console.log('[Manual RTL] Code injected successfully');
+            } catch (injectError) {
+                console.error('[Manual RTL] Error injecting code:', injectError);
+            }
+        } catch (error) {
+            console.error('[Manual RTL] Error requesting permissions:', error);
+        }
+    };
+
+    // Inject manual RTL code for ernie.baidu.com if permissions are granted
+    const injectManualRtlForErnie = async () => {
+        try {
+            // Check if permissions are granted
+            const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+            const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
+            
+            if (!hasScripting || !hasAllUrls) {
+                console.log('[Manual RTL] Permissions not granted for ernie.baidu.com');
+                return;
+            }
+
+            // Get all tabs with ernie.baidu.com
+            const tabs = await chrome.tabs.query({ url: '*://ernie.baidu.com/*' });
+            
+            for (const tab of tabs) {
+                if (!tab.id || !tab.url) continue;
+                
+                try {
+                    // Inject manual RTL activation event
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        func: () => {
+                            if (typeof window !== 'undefined') {
+                                window.dispatchEvent(new CustomEvent('manualRtlActivate'));
+                            }
+                        }
+                    });
+                    console.log(`[Manual RTL] Code injected for ernie.baidu.com tab ${tab.id}`);
+                } catch (injectError) {
+                    console.error(`[Manual RTL] Error injecting code for tab ${tab.id}:`, injectError);
+                }
+            }
+        } catch (error) {
+            console.error('[Manual RTL] Error in injectManualRtlForErnie:', error);
+        }
+    };
+
+    // Inject content script for writesonic.com if permissions are granted
+    const injectContentForWritesonic = async () => {
+        try {
+            // Check if permissions are granted
+            const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+            const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
+            
+            if (!hasScripting || !hasAllUrls) {
+                console.log('[Writesonic] Permissions not granted');
+                return;
+            }
+
+            // Get all tabs with app.writesonic.com
+            const tabs = await chrome.tabs.query({ url: '*://app.writesonic.com/*' });
+            
+            for (const tab of tabs) {
+                if (!tab.id || !tab.url) continue;
+                
+                try {
+                    // Inject content script activation event
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        func: () => {
+                            if (typeof window !== 'undefined') {
+                                // Trigger content script initialization
+                                window.dispatchEvent(new CustomEvent('contentScriptActivate'));
+                                // Also trigger manual RTL activation
+                                window.dispatchEvent(new CustomEvent('manualRtlActivate'));
+                            }
+                        }
+                    });
+                    console.log(`[Writesonic] Content script activated for tab ${tab.id}`);
+                } catch (injectError) {
+                    console.error(`[Writesonic] Error injecting code for tab ${tab.id}:`, injectError);
+                }
+            }
+        } catch (error) {
+            console.error('[Writesonic] Error in injectContentForWritesonic:', error);
+        }
+    };
+
     // Save manual RTL settings to storage when changed
-    const handleManualRtlSettingsChange = (settings: TextSelectorSettings) => {
+    const handleManualRtlSettingsChange = async (settings: TextSelectorSettings) => {
         setManualRtlSettings(settings);
         try {
             chrome.storage.sync.set({ manualRtlSettings: settings });
+            
+            // If enabling manual RTL, request permissions and inject code
+            if (settings.manualRtlEnabled && settings.enabled !== 'disabled') {
+                // Get active tab ID
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                    if (tabs[0]?.id) {
+                        requestPermissionsAndInjectCode(tabs[0].id);
+                    }
+                });
+                
+                // Inject code for ernie.baidu.com if permissions are granted
+                injectManualRtlForErnie();
+                
+                // Inject content script for writesonic.com if permissions are granted
+                injectContentForWritesonic();
+            }
         } catch (error) {
             console.log('Failed to save manual RTL settings:', error);
         }

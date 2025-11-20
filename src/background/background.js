@@ -90,6 +90,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 let activeTabInfo = null;
+const alertedTabs = new Set();
 
 function getActiveTabSnapshot() {
     if (!activeTabInfo) {
@@ -110,7 +111,7 @@ function broadcastActiveTabInfo(reason = 'unknown') {
     if (!chrome?.runtime?.sendMessage) return;
 
     const snapshot = getActiveTabSnapshot();
-    console.log('[ActiveTab] Broadcasting update', { reason, snapshot });
+    // console.log('[ActiveTab] Broadcasting update', { reason, snapshot });
 
     try {
         chrome.runtime.sendMessage({
@@ -118,11 +119,11 @@ function broadcastActiveTabInfo(reason = 'unknown') {
             payload: snapshot
         }, () => {
             if (chrome.runtime.lastError) {
-                console.warn('[ActiveTab] Broadcast warning:', chrome.runtime.lastError.message);
+                // console.warn('[ActiveTab] Broadcast warning:', chrome.runtime.lastError.message);
             }
         });
     } catch (error) {
-        console.warn('[ActiveTab] Broadcast exception:', error?.message);
+        // console.warn('[ActiveTab] Broadcast exception:', error?.message);
     }
 }
 
@@ -143,7 +144,7 @@ function resetActiveTabInfo(tabId) {
     broadcastActiveTabInfo('reset-start');
 
     if (!chrome?.tabs?.get) {
-        console.log('[ActiveTab] Initialized without tab access', activeTabInfo);
+        // console.log('[ActiveTab] Initialized without tab access', activeTabInfo);
         return;
     }
 
@@ -155,7 +156,7 @@ function resetActiveTabInfo(tabId) {
 
             if (chrome.runtime.lastError || !tab?.url) {
                 if (chrome.runtime.lastError) {
-                    console.warn('[ActiveTab] Unable to fetch initial tab info:', chrome.runtime.lastError.message);
+                    // console.warn('[ActiveTab] Unable to fetch initial tab info:', chrome.runtime.lastError.message);
                 }
                 return;
             }
@@ -165,30 +166,30 @@ function resetActiveTabInfo(tabId) {
                 activeTabInfo.hostname = url.hostname;
                 activeTabInfo.favicon = tab.favIconUrl || '';
                 activeTabInfo.lastUpdatedAt = Date.now();
-                console.log('[ActiveTab] Initialized from tab info', { hostname: activeTabInfo.hostname, favicon: activeTabInfo.favicon });
+                // console.log('[ActiveTab] Initialized from tab info', { hostname: activeTabInfo.hostname, favicon: activeTabInfo.favicon });
                 broadcastActiveTabInfo('reset-tab-details');
             } catch (err) {
-                console.warn('[ActiveTab] Invalid tab URL:', tab.url, err?.message);
+                // console.warn('[ActiveTab] Invalid tab URL:', tab.url, err?.message);
             }
         });
     } catch (error) {
-        console.warn('[ActiveTab] Exception while reading tab info:', error.message);
+        // console.warn('[ActiveTab] Exception while reading tab info:', error.message);
     }
 }
 
 function dumpActiveTabInfo(context) {
     if (!activeTabInfo) {
-        console.log(`[ActiveTab] ${context}: no active tab info`);
+        // console.log(`[ActiveTab] ${context}: no active tab info`);
         return;
     }
 
-    console.log(`[ActiveTab] ${context}`, {
-        tabId: activeTabInfo.tabId,
-        hostname: activeTabInfo.hostname,
-        favicon: activeTabInfo.favicon,
-        activatedAt: activeTabInfo.activatedAt,
-        lastUpdatedAt: activeTabInfo.lastUpdatedAt
-    });
+    // console.log(`[ActiveTab] ${context}`, {
+    //     tabId: activeTabInfo.tabId,
+    //     hostname: activeTabInfo.hostname,
+    //     favicon: activeTabInfo.favicon,
+    //     activatedAt: activeTabInfo.activatedAt,
+    //     lastUpdatedAt: activeTabInfo.lastUpdatedAt
+    // });
 }
 
 // Handle messages from content scripts
@@ -279,13 +280,87 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // EVENT LISTENERS
 // ============================================
 
+async function activateContentScriptForWritesonic(tabId) {
+    if (!tabId) return;
+    
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        if (!tab.url) return;
+        
+        const url = new URL(tab.url);
+        if (url.hostname !== 'app.writesonic.com' && url.hostname !== 'www.app.writesonic.com') {
+            return;
+        }
+        
+        // Check if permissions are granted
+        const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+        const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
+        
+        if (!hasScripting || !hasAllUrls) {
+            return;
+        }
+        
+        // Inject content script activation
+        try {
+            // Get writesonic setting from storage
+            const storage = await chrome.storage.sync.get(['writesonic', 'rtlAlgorithmMode']);
+            const writesonicEnabled = storage.writesonic !== false;
+            const rtlAlgorithm = storage.rtlAlgorithmMode || 'advanced_full';
+            
+            if (writesonicEnabled) {
+                // Inject CSS files first
+                try {
+                    await chrome.scripting.insertCSS({
+                        target: { tabId: tabId },
+                        files: ['css/fontiran-iranyekan.css', 'style.css']
+                    });
+                    console.log('[Background] CSS files injected for writesonic.com');
+                } catch (cssError) {
+                    console.error('[Background] Error injecting CSS:', cssError);
+                }
+                
+                // Inject jQuery
+                try {
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        files: ['jquery-3.7.1.js']
+                    });
+                    console.log('[Background] jQuery injected for writesonic.com');
+                } catch (jqueryError) {
+                    console.error('[Background] Error injecting jQuery:', jqueryError);
+                }
+                
+                // Inject content.js
+                try {
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        files: ['js/content.js']
+                    });
+                    console.log('[Background] Content script injected for writesonic.com tab', tabId);
+                } catch (contentError) {
+                    console.error('[Background] Error injecting content script:', contentError);
+                }
+            } else {
+                console.log('[Background] Writesonic is disabled in settings');
+            }
+        } catch (injectError) {
+            console.error('[Background] Error injecting content script for writesonic:', injectError);
+        }
+    } catch (error) {
+        // Tab might not be accessible, ignore
+    }
+}
+
 function setupEventListeners() {
-    chrome.tabs.onActivated.addListener((activeInfo) => {
+    chrome.tabs.onActivated.addListener(async (activeInfo) => {
         if (!activeInfo?.tabId) return;
         console.log('[Events] Tab activated', activeInfo);
         resetActiveTabInfo(activeInfo.tabId);
         dumpActiveTabInfo('After activation');
         broadcastActiveTabInfo('tab-activated');
+        
+        // Activate content script for writesonic
+        await activateContentScriptForWritesonic(activeInfo.tabId);
     });
 
     chrome.tabs.onRemoved.addListener((tabId) => {
@@ -294,15 +369,17 @@ function setupEventListeners() {
             if (activeTabInfo?.tabId === tabId) {
                 dumpActiveTabInfo('Before removal reset');
                 activeTabInfo = null;
-                console.log('[ActiveTab] Cleared because tab removed');
+                // console.log('[ActiveTab] Cleared because tab removed');
                 broadcastActiveTabInfo('tab-removed');
             }
+            // Remove from alerted tabs set
+            alertedTabs.delete(tabId);
         }
     });
 
     chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
         if (!tabId) return;
-        console.log('[Events] Tab updated', { tabId, changeInfo });
+        // console.log('[Events] Tab updated', { tabId, changeInfo });
         if (activeTabInfo?.tabId === tabId) {
             if (changeInfo?.favIconUrl) {
                 activeTabInfo.favicon = changeInfo.favIconUrl;
@@ -312,14 +389,22 @@ function setupEventListeners() {
                     const url = new URL(changeInfo.url);
                     activeTabInfo.hostname = url.hostname;
                 } catch (err) {
-                    console.warn('[ActiveTab] Invalid URL in update:', changeInfo.url);
+                    // console.warn('[ActiveTab] Invalid URL in update:', changeInfo.url);
                 }
             }
             activeTabInfo.lastUpdatedAt = Date.now();
             dumpActiveTabInfo('Updated from tab change');
             broadcastActiveTabInfo('tab-updated');
         }
+
+
+
+        // Inject content script for writesonic.com when page is complete
+        if (changeInfo?.status === 'complete') {
+            await activateContentScriptForWritesonic(tabId);
+        }
     });
+
 
     chrome.windows.onFocusChanged.addListener((windowId) => {
         if (windowId === chrome.windows.WINDOW_ID_NONE) {

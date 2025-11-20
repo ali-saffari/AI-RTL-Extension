@@ -5,7 +5,8 @@ import {
     IconButton,
     SvgIcon,
     Checkbox,
-    FormControlLabel
+    FormControlLabel,
+    Button
 } from '@mui/material';
 import { mdiCog, mdiWeb } from '@mdi/js';
 
@@ -41,6 +42,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     onManualRtlSettingsChange
 }) => {
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
+    const [hasPermissions, setHasPermissions] = React.useState<boolean | null>(null);
 
     React.useEffect(() => {
         let isMounted = true;
@@ -81,6 +83,38 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
             chrome.runtime.onMessage.removeListener(handleActiveTabUpdate);
         };
     }, []);
+
+    // Check if permissions are granted
+    React.useEffect(() => {
+        const checkPermissions = async () => {
+            try {
+                const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+                const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
+                setHasPermissions(hasScripting && hasAllUrls);
+            } catch (error) {
+                console.log('[ManualRtlBanner] Error checking permissions:', error);
+                setHasPermissions(false);
+            }
+        };
+        checkPermissions();
+    }, []);
+
+    const handleRequestPermissions = async () => {
+        try {
+            const permissions = ['scripting'];
+            const origins = ['<all_urls>'];
+            const granted = await chrome.permissions.request({ permissions, origins });
+            setHasPermissions(granted);
+            if (granted) {
+                console.log('[ManualRtlBanner] Permissions granted');
+            } else {
+                console.log('[ManualRtlBanner] Permissions denied');
+            }
+        } catch (error) {
+            console.error('[ManualRtlBanner] Error requesting permissions:', error);
+            setHasPermissions(false);
+        }
+    };
 
     const activeHostname = activeTabInfo?.hostname?.trim() || '';
     const hasSiteDetails = Boolean(activeHostname && activeTabInfo?.favicon);
@@ -228,7 +262,26 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     </a>
                 </Box>
             </Box>
-
+            <Box sx={{ pt: 1, pb: 0.5, display: 'flex', justifyContent: 'center' }}>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={handleRequestPermissions}
+                                    sx={{
+                                        fontSize: '0.7rem',
+                                        fontFamily: 'iranyekan',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#000' : '#fff',
+                                        '&:hover': {
+                                            backgroundColor: isDarkMode ? '#00b8d4' : '#152c7a'
+                                        },
+                                        px: 2,
+                                        py: 0.5
+                                    }}
+                                >
+                                    فعال کردن دسترسی‌ها
+                                </Button>
+                            </Box>
            
             <Box
                 sx={{
@@ -238,88 +291,91 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                 }}
             >
                 {activeHostname ? (
-                    <FormControlLabel
-                        sx={{
-                            pt: 1.5,
-                            pb: 0,
-                            m: 0,
-                            display: 'flex',
-                            flexDirection: 'row-reverse',
-                            justifyContent: 'space-between'
-                        }}
-                        control={
-                            <Checkbox
-                                checked={manualRtlSettings.manualRtlEnabled !== false && manualRtlSettings.enabled !== 'disabled'}
-                                onChange={handleCheckboxChange}
-                                sx={{
-                                    p: 0,
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                    '&.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                    }
-                                }}
-                            />
-                        }
-                        label={
-                            <Typography
-                                variant="body2"
-                                component="div"
-                                sx={{
-                                    fontSize: '0.7rem',
-                                    fontWeight: 500,
-                                    color: isDarkMode ? '#ffffff' : '#1e293b',
-                                    fontFamily: 'iranyekan',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5
-                                }}
-                            >
-                                <span>برای</span>
-                                <Box
-                                    component="span"
+                    <>
+                        <FormControlLabel
+                            sx={{
+                                pt: 1.5,
+                                pb: 0,
+                                m: 0,
+                                display: 'flex',
+                                flexDirection: 'row-reverse',
+                                justifyContent: 'space-between'
+                            }}
+                            control={
+                                <Checkbox
+                                    checked={manualRtlSettings.manualRtlEnabled !== false && manualRtlSettings.enabled !== 'disabled'}
+                                    onChange={handleCheckboxChange}
                                     sx={{
-                                        display: 'inline-flex',
+                                        p: 0,
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        '&.Mui-checked': {
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                        }
+                                    }}
+                                />
+                            }
+                            label={
+                                <Typography
+                                    variant="body2"
+                                    component="div"
+                                    sx={{
+                                        fontSize: '0.7rem',
+                                        fontWeight: 500,
+                                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                                        fontFamily: 'iranyekan',
+                                        display: 'flex',
                                         alignItems: 'center',
-                                        gap: 0.4,
-                                        px: 0.8,
-                                        py: 0.2,
-                                        borderRadius: 1,
-                                        backgroundColor: isDarkMode
-                                            ? 'rgba(0, 233, 255, 0.08)'
-                                            : 'rgba(30, 64, 175, 0.08)'
+                                        flexWrap: 'wrap',
+                                        gap: 0.5
                                     }}
                                 >
-                                    {hasSiteDetails ? (
-                                        <img
-                                            src={faviconSrc}
-                                            alt={activeHostname}
-                                            style={{
-                                                width: 14,
-                                                height: 14,
-                                                borderRadius: 3,
-                                                border: isDarkMode
-                                                    ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                    : '1px solid rgba(30, 64, 175, 0.2)'
-                                            }}
-                                        />
-                                    ) : (
-                                        <SvgIcon
-                                            sx={{
-                                                fontSize: '0.85rem',
-                                                color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                            }}
-                                        >
-                                            <path d={mdiWeb} />
-                                        </SvgIcon>
-                                    )}
-                                    <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
-                                </Box>
-                                <span>راست چین دستی فعال شود؟</span>
-                            </Typography>
-                        }
-                        labelPlacement="start"
-                    />
+                                    <span>برای</span>
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 0.4,
+                                            px: 0.8,
+                                            py: 0.2,
+                                            borderRadius: 1,
+                                            backgroundColor: isDarkMode
+                                                ? 'rgba(0, 233, 255, 0.08)'
+                                                : 'rgba(30, 64, 175, 0.08)'
+                                        }}
+                                    >
+                                        {hasSiteDetails ? (
+                                            <img
+                                                src={faviconSrc}
+                                                alt={activeHostname}
+                                                style={{
+                                                    width: 14,
+                                                    height: 14,
+                                                    borderRadius: 3,
+                                                    border: isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                        : '1px solid rgba(30, 64, 175, 0.2)'
+                                                }}
+                                            />
+                                        ) : (
+                                            <SvgIcon
+                                                sx={{
+                                                    fontSize: '0.85rem',
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                                }}
+                                            >
+                                                <path d={mdiWeb} />
+                                            </SvgIcon>
+                                        )}
+                                        <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
+                                    </Box>
+                                    <span>راست چین دستی فعال شود؟</span>
+                                </Typography>
+                            }
+                            labelPlacement="start"
+                        />
+                    
+                    </>
                 ) : activeTabInfo?.tabId != null ? (
                     <Box
                         sx={{

@@ -29,6 +29,9 @@ import { activateDigen } from './services/digen.js';
 import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
 import { activateChatsonic } from './services/chatsonic.js';
+
+// Make activateChatsonic available globally for scripting injection
+window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
 import { initTextSelector } from './manual-rtl/index.js';
 
@@ -68,11 +71,18 @@ function reportActiveSiteToBackground() {
             favicon: getFaviconUrl()
         }, () => {
             if (chrome.runtime.lastError) {
-                console.warn('[Content] Failed to report site info:', chrome.runtime.lastError.message);
+                // Ignore "Extension context invalidated" error - this is normal when extension reloads
+                const errorMessage = chrome.runtime.lastError.message;
+                if (errorMessage && !errorMessage.includes('Extension context invalidated')) {
+                    console.warn('[Content] Failed to report site info:', errorMessage);
+                }
             }
         });
     } catch (error) {
-        console.warn('[Content] Exception while reporting site info:', error.message);
+        // Ignore "Extension context invalidated" error
+        if (error.message && !error.message.includes('Extension context invalidated')) {
+            console.warn('[Content] Exception while reporting site info:', error.message);
+        }
     }
 }
 
@@ -84,8 +94,38 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
+// Listen for content script activation event - register early
+window.addEventListener('contentScriptActivate', async () => {
+    console.log('[Content] Content script activation event received');
+    // Re-initialize all services to ensure they are activated
+    try {
+        // Wait a bit to ensure DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', async () => {
+                console.log('[Content] DOMContentLoaded event received, initializing services');
+                await initializeAllServices();
+            });
+        } else {
+            console.log('[Content] DOM already ready, initializing services');
+            // Small delay to ensure everything is loaded
+            setTimeout(async () => {
+                await initializeAllServices();
+            }, 200);
+        }
+    } catch (error) {
+        console.error('[Content] Error initializing services:', error);
+    }
+}, { once: false });
+
 // Initialize text selector highlighter (works on all sites)
 initTextSelector();
+
+// Listen for manual RTL activation event from scripting injection
+window.addEventListener('manualRtlActivate', () => {
+    console.log('[Content] Manual RTL activation event received');
+    // The manual RTL will be activated via storage change listener
+    // This event just ensures the content script is aware
+});
 
 
 // Service configuration with their activation functions
@@ -299,6 +339,9 @@ async function initializeAllServices() {
         lastTrackedService = null;
     }
 }
+
+// Make initializeAllServices available globally for scripting injection
+window.initializeAllServices = initializeAllServices;
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
