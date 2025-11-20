@@ -19,7 +19,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiFileDocumentEdit, mdiMessageText, mdiStar, mdiHeart } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiFileDocumentEdit, mdiMessageText, mdiStar, mdiHeart, mdiCog } from '@mdi/js';
 // Using Material-UI built-in icons instead of icons-material package
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
@@ -291,6 +291,7 @@ function App() {
         manualRtlSiteMode: 'all',
         menuDisplayMode: 'logo_first'
     });
+ 
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
@@ -695,6 +696,130 @@ function App() {
                     
                
                         <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
+                        {/* Manual RTL Banner */}
+                        <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between', 
+                            gap: 1,
+                            mb: 2,
+                            mt: 2.5,
+                            p: 1.5,
+                            borderRadius: 1,
+                            background: isDarkMode 
+                                ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                                : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
+                            border: isDarkMode 
+                                ? '1px solid rgba(0, 233, 255, 0.3)' 
+                                : '1px solid rgba(30, 64, 175, 0.2)',
+                            mx: 2
+                        }}>
+                            {/* Right side - Logo and text */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, direction: 'rtl' }}>
+                                <img
+                                    src={chrome.runtime.getURL('/images/p logo 100.png')}
+                                    alt="Manual RTL"
+                                    style={{ 
+                                        width: 20, 
+                                        height: 20
+                                    }}
+                                />
+                                <Typography 
+                                    variant="body2" 
+                                    sx={{ 
+                                        fontSize: '0.7rem',
+                                        fontWeight: 400,
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        fontFamily: 'iranyekan'
+                                    }}
+                                >
+                                    راست چین دستی
+                                </Typography>
+                            </Box>
+                            
+                            {/* Left side - Settings icon and status */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, direction: 'ltr' }}>
+                                <Typography 
+                                    variant="body2" 
+                                    sx={{ 
+                                        fontSize: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                            ? '0.55rem'
+                                            : '0.65rem',
+                                        fontWeight: 400,
+                                        color: manualRtlSettings.enabled === 'disabled' 
+                                            ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')
+                                            : (isDarkMode ? '#4caf50' : '#2e7d32'),
+                                        fontFamily: 'iranyekan',
+                                        lineHeight: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                            ? 1.3
+                                            : 1.5,
+                                        whiteSpace: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                            ? 'normal'
+                                            : 'nowrap'
+                                    }}
+                                >
+                                    {(() => {
+                                        if (manualRtlSettings.enabled === 'disabled') {
+                                            return 'غیرفعال';
+                                        }
+                                        if (manualRtlSettings.enabled === 'enabled') {
+                                            if (manualRtlSettings.manualRtlSiteMode === 'all') {
+                                                return 'فعال برای همه سایت‌ها';
+                                            }
+                                            if (manualRtlSettings.manualRtlSiteMode === 'ai_sites') {
+                                                return 'فعال برای سایت‌های هوش مصنوعی';
+                                            }
+                                            if (manualRtlSettings.manualRtlSiteMode === 'allowed_sites') {
+                                                return 'فعال برای سایت‌های مجاز';
+                                            }
+                                            if (manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed') {
+                                                return (
+                                                    <>
+                                                        فعال برای هوش مصنوعی‌ها<br />
+                                                        و سایت‌های مجاز
+                                                    </>
+                                                );
+                                            }
+                                            return 'فعال';
+                                        }
+                                        if (manualRtlSettings.enabled === 'allowed_sites') {
+                                            return 'فعال برای سایت‌های مجاز';
+                                        }
+                                        return 'غیرفعال';
+                                    })()}
+                                </Typography>
+                                <a
+                                    href={chrome.runtime.getURL('options.html#manual-rtl')}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ 
+                                        textDecoration: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <IconButton
+                                        size="small"
+                                        sx={{ 
+                                            p: 0.5,
+                                            color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                                            '&:hover': {
+                                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                            }
+                                        }}
+                                    >
+                                        <SvgIcon sx={{ fontSize: '1rem' }}>
+                                            <path d={mdiCog} />
+                                        </SvgIcon>
+                                    </IconButton>
+                                </a>
+                            </Box>
+                        </Box>
+                        
+                       
+                        
                         <Typography 
                             variant="body1" 
                             sx={{ 
