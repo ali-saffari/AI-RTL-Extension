@@ -38,40 +38,6 @@ let site = window.location.hostname;
 // Initialize text selector highlighter (works on all sites)
 initTextSelector();
 
-// Listen for storage changes
-chrome.storage.sync.onChanged.addListener((changes) => {
-    // Check for RTL algorithm changes
-    if (changes.rtlAlgorithm) {
-        location.reload();
-        return;
-    }
-    
-    if (changes.rtlAlgorithmMode) {
-        location.reload();
-        return;
-    }
-
-
-    // Check for supportHide changes
-    if (changes.supportHide) {
-        location.reload();
-        return;
-    }
-    
-    // Check for service enable/disable changes
-    Object.keys(serviceConfig).forEach(serviceKey => {
-        if (changes[serviceKey]) {
-            const config = serviceConfig[serviceKey];
-            const isCurrent = isCurrentSite(config.urls);
-            
-            if (isCurrent) {
-                location.reload();
-                return;
-            }
-        }
-    });
-});
-
 
 // Service configuration with their activation functions
 const serviceConfig = {
@@ -209,6 +175,57 @@ function isCurrentSite(urls) {
     }
     return urls === site;
 }
+
+// Check if current site is in any serviceConfig
+function isCurrentSiteInServiceConfig() {
+    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls));
+}
+
+// Listen for storage changes (only on sites in serviceConfig)
+chrome.storage.sync.onChanged.addListener((changes) => {
+    // Only process changes if current site is in serviceConfig
+    if (!isCurrentSiteInServiceConfig()) {
+        return;
+    }
+    
+    // Check for RTL algorithm changes
+    if (changes.rtlAlgorithm) {
+        location.reload();
+        return;
+    }
+    
+    if (changes.rtlAlgorithmMode) {
+        location.reload();
+        return;
+    }
+
+    // Check for supportHide changes - update copyright without reload
+    if (changes.supportHide) {
+        const newValue = changes.supportHide.newValue;
+        // Hide or show copyright based on supportHide setting
+        if (newValue === true) {
+            // Hide all copyright elements
+            $('.AsBox').hide();
+        } else {
+            // Show all copyright elements
+            $('.AsBox').show();
+        }
+        return;
+    }
+    
+    // Check for service enable/disable changes
+    Object.keys(serviceConfig).forEach(serviceKey => {
+        if (changes[serviceKey]) {
+            const config = serviceConfig[serviceKey];
+            const isCurrent = isCurrentSite(config.urls);
+            
+            if (isCurrent) {
+                location.reload();
+                return;
+            }
+        }
+    });
+});
 
 
 // Initialize all services

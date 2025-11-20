@@ -1,5 +1,5 @@
 // Copyright utility functions
-import { imagePath, saffariLink, textSaffari } from './constants.js';
+import { extensionIconPath, saffariLink, textSaffari } from './constants.js';
 import { modalDonateFun, modalDonate, BtnDonate } from './modal.js';
 
 /**
@@ -43,7 +43,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         
         // Check if AsBox class already exists on the site
         if ($('.AsBox').length === 0) {
-            const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(imagePath) : imagePath;
+            const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(extensionIconPath) : extensionIconPath;
             
             $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
 

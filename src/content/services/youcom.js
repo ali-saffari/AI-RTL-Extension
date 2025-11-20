@@ -1,7 +1,5 @@
 // youcom.js service functions
-import { imagePath, saffariLink, textSaffari } from '../utils/constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from '../utils/modal.js';
-import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, setTextDirectionAndFontOneTime } from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';
 
