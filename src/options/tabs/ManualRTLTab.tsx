@@ -215,6 +215,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     const [menuExpanded, setMenuExpanded] = React.useState(manualRtlSettings.menuDisplayMode === 'menu_direct');
     const [permissionDialogOpen, setPermissionDialogOpen] = React.useState(false);
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
+    const [showAdvancedSettings, setShowAdvancedSettings] = React.useState(false);
     
     // وقتی menuDisplayMode تغییر می‌کند، state را به‌روزرسانی کن
     React.useEffect(() => {
@@ -391,7 +392,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         <Grid container spacing={3}>
             {/* Settings Section */}
             <Grid item xs={12} md={6}>
-                <Card elevation={2} sx={{ height: '100%' }}>
+                <Card elevation={2}>
                     <CardContent>
                         <Box sx={{ mb: 2, textAlign: 'center' }}>
                             <Typography variant="h6" sx={{ 
@@ -430,7 +431,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         وضعیت
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
-                                        color: 'text.secondary',
+                                        color: manualRtlSettings.manualRtlEnabled ? 'text.secondary' : (theme.palette.mode === 'dark' ? '#f44336' : '#d32f2f'),
                                         fontSize: '0.8rem'
                                     }}>
                                         {manualRtlSettings.manualRtlEnabled ? 'فعال' : 'غیرفعال'}
@@ -451,11 +452,69 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             </Box>
                         </Box>
 
-                        {/* همه تنظیمات دیگر - فقط وقتی فعال است */}
+                        {/* توضیح درباره ارتباط با الگوریتم هوشمند */}
+                        <Box
+                            sx={{
+                                mb: 3,
+                                px: 2,
+                                py: 1.5,
+                                textAlign: 'center',
+                                borderRadius: 2,
+                                bgcolor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.05)' 
+                                    : 'rgba(30, 64, 175, 0.05)',
+                                border: `1px solid ${theme.palette.mode === 'dark' 
+                                    ? 'rgba(0, 233, 255, 0.2)' 
+                                    : 'rgba(30, 64, 175, 0.15)'}`
+                            }}
+                        >
+                            <Typography
+                                variant="body2"
+                                component="div"
+                                sx={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 400,
+                                    color: theme.palette.mode === 'dark' 
+                                        ? 'rgba(255, 255, 255, 0.7)' 
+                                        : 'rgba(0, 0, 0, 0.7)',
+                                    fontFamily: 'iranyekan',
+                                    lineHeight: 1.6
+                                }}
+                            >
+                                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+                            </Typography>
+                        </Box>
+
+                        {/* دکمه تنظیمات پیشرفته - فقط وقتی فعال است */}
                         {manualRtlSettings.manualRtlEnabled && (
+                            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                                <Button
+                                    variant="text"
+                                    onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                                    sx={{
+                                        py: 1,
+                                        px: 2,
+                                        color: 'text.primary',
+                                        fontWeight: 500,
+                                        fontFamily: 'iranyekan',
+                                        fontSize: '0.875rem',
+                                        '&:hover': {
+                                            backgroundColor: theme.palette.mode === 'dark' 
+                                                ? 'rgba(0, 233, 255, 0.1)' 
+                                                : 'rgba(30, 64, 175, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    {showAdvancedSettings ? 'مخفی کردن تنظیمات پیشرفته' : 'تنظیمات پیشرفته'}
+                                </Button>
+                            </Box>
+                        )}
+
+                        {/* همه تنظیمات دیگر - فقط وقتی فعال است و تنظیمات پیشرفته باز است */}
+                        {manualRtlSettings.manualRtlEnabled && showAdvancedSettings && (
                             <>
-                                {/* روی چه سایت‌هایی فعال باشه */}
-                                <Box sx={{ mb: 3 }}>
+                                {/* ب - روی چه سایت‌هایی فعال باشه - موقتاً پنهان شده - به هیچ عنوان پاک نشود */}
+                                {/* <Box sx={{ mb: 3, display: 'none' }}>
                                     <FormControl fullWidth sx={{ mb: 2 }}>
                                         <InputLabel id="site-mode-label"> سایت‌های فعال </InputLabel>
                                         <Select
@@ -466,6 +525,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 manualRtlSiteMode: e.target.value as 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed'
                                             })}
                                             label="سایت‌های فعال"
+                                            disabled
                                         >
                                             <MenuItem value="all">همه</MenuItem>
                                             <MenuItem value="ai_sites">فقط لیست سایت‌های هوش مصنوعی افزونه</MenuItem>
@@ -474,6 +534,8 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         </Select>
                                     </FormControl>
                                 </Box>
+
+                                <Divider sx={{ my: 2 }} /> */}
 
                                 <Divider sx={{ my: 2 }} />
 
@@ -777,131 +839,6 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 
                                 <Divider sx={{ my: 2 }} />
 
-                                <Divider sx={{ my: 2 }} />
-
-                                {/* لیست سایت‌های فعال */}
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography variant="body1" sx={{ 
-                                        fontWeight: 600, 
-                                        fontSize: '0.95rem',
-                                        color: 'text.primary',
-                                        mb: 1.5,
-                                        fontFamily: 'iranyekan'
-                                    }}>
-                                        لیست سایت‌های فعال
-                                    </Typography>
-                                    
-                                    {activeSites.length === 0 ? (
-                                        <Box sx={{ 
-                                            p: 2, 
-                                            textAlign: 'center',
-                                            borderRadius: 1,
-                                            bgcolor: theme.palette.mode === 'dark' 
-                                                ? 'rgba(255, 255, 255, 0.05)' 
-                                                : 'rgba(0, 0, 0, 0.03)'
-                                        }}>
-                                            <Typography variant="body2" sx={{ 
-                                                color: 'text.secondary',
-                                                fontSize: '0.8rem',
-                                                fontFamily: 'iranyekan'
-                                            }}>
-                                                لیست خالی است
-                                            </Typography>
-                                        </Box>
-                                    ) : (
-                                        <>
-                                            <Box sx={{ mb: 1.5 }}>
-                                                {activeSites.map((site, index) => (
-                                                    <Box
-                                                        key={site.hostname}
-                                                        sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'space-between',
-                                                            p: 1.5,
-                                                            mb: 1,
-                                                            borderRadius: 1,
-                                                            bgcolor: theme.palette.mode === 'dark' 
-                                                                ? 'rgba(255, 255, 255, 0.05)' 
-                                                                : 'rgba(0, 0, 0, 0.03)',
-                                                            border: `1px solid ${theme.palette.mode === 'dark' 
-                                                                ? 'rgba(255, 255, 255, 0.1)' 
-                                                                : 'rgba(0, 0, 0, 0.1)'}`
-                                                        }}
-                                                    >
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                                                            {site.favicon ? (
-                                                                <img
-                                                                    src={site.favicon}
-                                                                    alt={site.hostname}
-                                                                    style={{
-                                                                        width: 20,
-                                                                        height: 20,
-                                                                        borderRadius: 3,
-                                                                        border: theme.palette.mode === 'dark'
-                                                                            ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                                            : '1px solid rgba(0, 0, 0, 0.2)'
-                                                                    }}
-                                                                />
-                                                            ) : (
-                                                                <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
-                                                                    <path d={mdiWeb} />
-                                                                </SvgIcon>
-                                                            )}
-                                                            <Typography variant="body2" sx={{ 
-                                                                fontSize: '0.85rem',
-                                                                fontWeight: 500,
-                                                                color: 'text.primary',
-                                                                fontFamily: 'iranyekan',
-                                                                flex: 1
-                                                            }}>
-                                                                {site.hostname}
-                                                            </Typography>
-                                                        </Box>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleRemoveSite(site.hostname)}
-                                                            sx={{
-                                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
-                                                                '&:hover': {
-                                                                    color: '#f44336',
-                                                                    backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <SvgIcon sx={{ fontSize: '1rem' }}>
-                                                                <path d={mdiDelete} />
-                                                            </SvgIcon>
-                                                        </IconButton>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                            <Button
-                                                variant="outlined"
-                                                fullWidth
-                                                onClick={handleClearAllSites}
-                                                sx={{
-                                                    py: 1,
-                                                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                                    color: 'text.primary',
-                                                    fontWeight: 500,
-                                                    fontFamily: 'iranyekan',
-                                                    fontSize: '0.8rem',
-                                                    '&:hover': {
-                                                        borderColor: '#f44336',
-                                                        backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)',
-                                                        color: '#f44336'
-                                                    }
-                                                }}
-                                            >
-                                                پاک کردن همه
-                                            </Button>
-                                        </>
-                                    )}
-                                </Box>
-
-                                <Divider sx={{ my: 2 }} />
-
                                 {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
                                 <Box sx={{ mb: 2 }}>
                                     <Button
@@ -928,11 +865,147 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                         )}
                     </CardContent>
                 </Card>
+
+                {/* لیست سایت‌های فعال - زیر تنظیمات چینش دستی */}
+                {manualRtlSettings.manualRtlEnabled && (
+                    <Card elevation={2} sx={{ mt: 3 }}>
+                        <CardContent>
+                            <Box sx={{ mb: 2, textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ 
+                                    fontWeight: 600, 
+                                    color: 'primary.main',
+                                    mb: 0.5
+                                }}>
+                                    لیست سایت‌های فعال
+                                </Typography>
+                                <Typography variant="body2" sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '0.85rem'
+                                }}>
+                                    سایت‌هایی که راست‌چین دستی برای آن‌ها فعال شده است
+                                </Typography>
+                            </Box>
+                            
+                            {activeSites.length === 0 ? (
+                                <Box sx={{ 
+                                    p: 3, 
+                                    textAlign: 'center',
+                                    borderRadius: 2,
+                                    bgcolor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(255, 255, 255, 0.05)' 
+                                        : 'rgba(0, 0, 0, 0.03)',
+                                    border: `1px solid ${theme.palette.mode === 'dark' 
+                                        ? 'rgba(255, 255, 255, 0.1)' 
+                                        : 'rgba(0, 0, 0, 0.1)'}`
+                                }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: 'text.secondary',
+                                        fontSize: '0.9rem',
+                                        fontFamily: 'iranyekan'
+                                    }}>
+                                        لیست خالی است
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <>
+                                    <Box sx={{ mb: 2 }}>
+                                        {activeSites.map((site, index) => (
+                                            <Box
+                                                key={site.hostname}
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    p: 1.5,
+                                                    mb: 1,
+                                                    borderRadius: 1,
+                                                    bgcolor: theme.palette.mode === 'dark' 
+                                                        ? 'rgba(255, 255, 255, 0.05)' 
+                                                        : 'rgba(0, 0, 0, 0.03)',
+                                                    border: `1px solid ${theme.palette.mode === 'dark' 
+                                                        ? 'rgba(255, 255, 255, 0.1)' 
+                                                        : 'rgba(0, 0, 0, 0.1)'}`
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                                                    {site.favicon ? (
+                                                        <img
+                                                            src={site.favicon}
+                                                            alt={site.hostname}
+                                                            style={{
+                                                                width: 20,
+                                                                height: 20,
+                                                                borderRadius: 3,
+                                                                border: theme.palette.mode === 'dark'
+                                                                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                                    : '1px solid rgba(0, 0, 0, 0.2)'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                                            <path d={mdiWeb} />
+                                                        </SvgIcon>
+                                                    )}
+                                                    <Typography variant="body2" sx={{ 
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 500,
+                                                        color: 'text.primary',
+                                                        fontFamily: 'iranyekan',
+                                                        flex: 1
+                                                    }}>
+                                                        {site.hostname}
+                                                    </Typography>
+                                                </Box>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleRemoveSite(site.hostname)}
+                                                    sx={{
+                                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                                                        '&:hover': {
+                                                            color: '#f44336',
+                                                            backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                        <path d={mdiDelete} />
+                                                    </SvgIcon>
+                                                </IconButton>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={handleClearAllSites}
+                                            sx={{
+                                                py: 1,
+                                                px: 2,
+                                                borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                                                color: 'text.primary',
+                                                fontWeight: 500,
+                                                fontFamily: 'iranyekan',
+                                                fontSize: '0.8rem',
+                                                '&:hover': {
+                                                    borderColor: '#f44336',
+                                                    backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                                                    color: '#f44336'
+                                                }
+                                            }}
+                                        >
+                                            پاک کردن همه
+                                        </Button>
+                                    </Box>
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
             </Grid>
 
             {/* Template Section */}
             <Grid item xs={12} md={6}>
-                <Card elevation={2} sx={{ height: '100%' }}>
+                <Card elevation={2}>
                     <CardContent>
                         <Box sx={{ mb: 2, textAlign: 'center' }}>
                             <Typography variant="h6" sx={{ 
@@ -940,7 +1013,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                تمونه استفاده
+                                راهنمای استفاده
                             </Typography>
                             <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',

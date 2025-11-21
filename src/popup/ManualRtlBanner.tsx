@@ -3,7 +3,8 @@ import {
     Box,
     Typography,
     IconButton,
-    SvgIcon
+    SvgIcon,
+    Button
 } from '@mui/material';
 import { mdiCog } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
@@ -22,6 +23,27 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
 }) => {
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
     const [isValidHttpPage, setIsValidHttpPage] = React.useState<boolean | null>(null);
+    const [showInfoText, setShowInfoText] = React.useState<boolean>(false);
+    const [isAnimating, setIsAnimating] = React.useState<boolean>(false);
+
+    // Load showInfoText state from storage and show with animation if not dismissed
+    React.useEffect(() => {
+        try {
+            chrome.storage.sync.get(['manualRtlInfoDismissed'], (result) => {
+                if (result.manualRtlInfoDismissed !== true) {
+                    // Show with animation after a small delay
+                    setTimeout(() => {
+                        setIsAnimating(true);
+                        setTimeout(() => {
+                            setShowInfoText(true);
+                        }, 50);
+                    }, 100);
+                }
+            });
+        } catch (error) {
+            console.log('[ManualRtlBanner] Error loading info dismissed state:', error);
+        }
+    }, []);
 
     // Check if current tab is http/https
     React.useEffect(() => {
@@ -191,7 +213,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                                 : '0.65rem',
                             fontWeight: 400,
                             color: !manualRtlSettings.manualRtlEnabled
-                                ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')
+                                ? (isDarkMode ? '#f44336' : '#d32f2f')
                                 : (isDarkMode ? '#4caf50' : '#2e7d32'),
                             fontFamily: 'iranyekan',
                             lineHeight: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
@@ -274,38 +296,71 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                 </>
             )}
         </Box>
-        <Box
-            sx={{
-                mx: 2,
-                mt: 1,
-                px: 1,
-                py: 0.8,
-                textAlign: 'center'
-            }}
-        >
-            <Typography
-                variant="body2"
-                component="div"
-                sx={{
-                    fontSize: '0.65rem',
-                    fontWeight: 400,
-                    color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
-                    fontFamily: 'iranyekan',
-                    lineHeight: 1.5
-                }}
-            >
-                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
-            </Typography>
-        </Box>
-        <Box
-            sx={{
-                mx: 2,
-                mt: 1,
-                borderTop: isDarkMode
-                    ? '1px solid rgba(0, 233, 255, 0.2)'
-                    : '1px solid rgba(30, 64, 175, 0.15)'
-            }}
-        />
+        {showInfoText && (
+            <>
+                <Box sx={{ 
+                    mx: 2, 
+                    mt: 1,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    opacity: isAnimating ? 1 : 0,
+                    transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
+                    transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out'
+                }}>
+                    <Typography
+                        variant="body2"
+                        component="div"
+                        sx={{
+                            fontSize: '0.7rem',
+                            fontWeight: 400,
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.6,
+                            flex: 1,
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                        }}
+                    >
+                        فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+                    </Typography>
+                    <Button
+                        size="small"
+                        onClick={() => {
+                            setShowInfoText(false);
+                            try {
+                                chrome.storage.sync.set({ manualRtlInfoDismissed: true });
+                            } catch (error) {
+                                console.log('[ManualRtlBanner] Error saving info dismissed state:', error);
+                            }
+                        }}
+                        sx={{
+                            fontSize: '0.7rem',
+                            fontFamily: 'iranyekan',
+                            textTransform: 'none',
+                            minWidth: 'auto',
+                            whiteSpace: 'nowrap',
+                            borderRadius: '6px !important',
+                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                            '&:hover': {
+                                color: isDarkMode ? '#4dd4ff' : '#3b82f6',
+                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                            }
+                        }}
+                    >
+                        متوجه شدم
+                    </Button>
+                </Box>
+                <Box
+                    sx={{
+                        mx: 2,
+                        mt: 1,
+                        borderTop: isDarkMode
+                            ? '1px solid rgba(0, 233, 255, 0.2)'
+                            : '1px solid rgba(30, 64, 175, 0.15)',
+                        opacity: isAnimating ? 1 : 0,
+                        transition: 'opacity 0.3s ease-in-out'
+                    }}
+                />
+            </>
+        )}
     </>
     );
 };
