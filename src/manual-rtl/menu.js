@@ -145,8 +145,19 @@ export function showPopupMenu(range, element, options = {}) {
     
     const extensionLogo = document.createElement('img');
     extensionLogo.className = 'rtl-text-selector-extension-logo';
-    extensionLogo.src = getExtensionLogoUrl();
+    const extensionLogoUrl = getExtensionLogoUrl();
+    extensionLogo.src = extensionLogoUrl;
     extensionLogo.alt = 'Extension Icon';
+    
+    // Handle image load errors
+    extensionLogo.onerror = () => {
+        console.error('[Manual RTL] Failed to load extension logo from:', extensionLogoUrl);
+        extensionLogo.style.display = 'none';
+    };
+    
+    extensionLogo.onload = () => {
+        console.log('[Manual RTL] Extension logo loaded successfully from:', extensionLogoUrl);
+    };
 
     extensionLogoWrapper.appendChild(extensionLogo);
     logosWrapper.appendChild(mainLogo);
@@ -164,9 +175,9 @@ export function showPopupMenu(range, element, options = {}) {
         event.stopImmediatePropagation();
 
         if (chrome.runtime && chrome.runtime.sendMessage) {
-            chrome.runtime.sendMessage({ action: 'openOptionsPage' }, () => {
+            chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
                 if (chrome.runtime.lastError) {
-                    console.error('[RTL Text Selector] Error:', chrome.runtime.lastError);
+                    console.error('[RTL Text Selector] Error opening options page:', chrome.runtime.lastError);
                 }
             });
         }

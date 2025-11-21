@@ -39,6 +39,8 @@ export function getExtensionLogoUrl() {
     manualRtlState.cachedExtensionLogoUrl = url;
     if (!url) {
         console.error('[Manual RTL] Failed to get extension logo URL for:', extensionIconPath);
+    } else {
+        console.log('[Manual RTL] Extension logo URL:', url, 'from path:', extensionIconPath);
     }
     return manualRtlState.cachedExtensionLogoUrl;
 }

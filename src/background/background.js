@@ -168,7 +168,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 let activeTabInfo = null;
-const alertedTabs = new Set();
 
 function getActiveTabSnapshot() {
     if (!activeTabInfo) {
@@ -189,19 +188,14 @@ function broadcastActiveTabInfo(reason = 'unknown') {
     if (!chrome?.runtime?.sendMessage) return;
 
     const snapshot = getActiveTabSnapshot();
-    // console.log('[ActiveTab] Broadcasting update', { reason, snapshot });
 
     try {
         chrome.runtime.sendMessage({
             action: 'activeTabInfoUpdated',
             payload: snapshot
-        }, () => {
-            if (chrome.runtime.lastError) {
-                // console.warn('[ActiveTab] Broadcast warning:', chrome.runtime.lastError.message);
-            }
         });
     } catch (error) {
-        // console.warn('[ActiveTab] Broadcast exception:', error?.message);
+        // Ignore broadcast errors
     }
 }
 
@@ -222,7 +216,6 @@ function resetActiveTabInfo(tabId) {
     broadcastActiveTabInfo('reset-start');
 
     if (!chrome?.tabs?.get) {
-        // console.log('[ActiveTab] Initialized without tab access', activeTabInfo);
         return;
     }
 
@@ -233,9 +226,6 @@ function resetActiveTabInfo(tabId) {
             }
 
             if (chrome.runtime.lastError || !tab?.url) {
-                if (chrome.runtime.lastError) {
-                    // console.warn('[ActiveTab] Unable to fetch initial tab info:', chrome.runtime.lastError.message);
-                }
                 return;
             }
 
@@ -251,31 +241,16 @@ function resetActiveTabInfo(tabId) {
                 activeTabInfo.hostname = url.hostname;
                 activeTabInfo.favicon = tab.favIconUrl || '';
                 activeTabInfo.lastUpdatedAt = Date.now();
-                // console.log('[ActiveTab] Initialized from tab info', { hostname: activeTabInfo.hostname, favicon: activeTabInfo.favicon });
                 broadcastActiveTabInfo('reset-tab-details');
             } catch (err) {
-                // console.warn('[ActiveTab] Invalid tab URL:', tab.url, err?.message);
+                // Ignore invalid URL errors
             }
         });
     } catch (error) {
-        // console.warn('[ActiveTab] Exception while reading tab info:', error.message);
+        // Ignore tab access errors
     }
 }
 
-function dumpActiveTabInfo(context) {
-    if (!activeTabInfo) {
-        // console.log(`[ActiveTab] ${context}: no active tab info`);
-        return;
-    }
-
-    // console.log(`[ActiveTab] ${context}`, {
-    //     tabId: activeTabInfo.tabId,
-    //     hostname: activeTabInfo.hostname,
-    //     favicon: activeTabInfo.favicon,
-    //     activatedAt: activeTabInfo.activatedAt,
-    //     lastUpdatedAt: activeTabInfo.lastUpdatedAt
-    // });
-}
 
 /**
  * Check if URL is valid http/https page (not extension or chrome://)
@@ -290,87 +265,11 @@ function isValidHttpPage(url) {
     }
 }
 
-/**
- * Get active tab information using tabs permission and log it
- */
-async function logActiveTabInfo() {
-    try {
-        // Check if tabs permission is available
-        const hasTabsPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
-        if (!hasTabsPermission) {
-            console.log('[ActiveTab] tabs permission not granted');
-            return;
-        }
-
-        // Get the active tab
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tabs || tabs.length === 0) {
-            console.log('[ActiveTab] No active tab found');
-            return;
-        }
-
-        const activeTab = tabs[0];
-        if (!activeTab.url) {
-            console.log('[ActiveTab] Active tab has no URL');
-            return;
-        }
-
-        // Only process http/https pages
-        if (!isValidHttpPage(activeTab.url)) {
-            console.log('[ActiveTab] Skipping non-http/https page:', activeTab.url);
-            return;
-        }
-
-        try {
-            const url = new URL(activeTab.url);
-            const hostname = url.hostname;
-            const protocol = url.protocol;
-            const pathname = url.pathname;
-
-            console.log('[ActiveTab] Active site information:', {
-                tabId: activeTab.id,
-                url: activeTab.url,
-                hostname: hostname,
-                protocol: protocol,
-                pathname: pathname,
-                title: activeTab.title || 'No title',
-                favicon: activeTab.favIconUrl || 'No favicon'
-            });
-
-            console.log(`[ActiveTab] Active site: ${hostname} (${activeTab.title || 'No title'})`);
-        } catch (urlError) {
-            console.log('[ActiveTab] Invalid URL:', activeTab.url, urlError.message);
-        }
-    } catch (error) {
-        console.error('[ActiveTab] Error getting active tab info:', error);
-    }
-}
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'openPopup') {
+    if (message.action === 'openOptionsPage') {
         try {
-            // Open popup in a new tab
-            const popupUrl = chrome.runtime.getURL('index.html');
-            console.log('[Background] Opening popup at:', popupUrl);
-            chrome.tabs.create({ url: popupUrl }, (tab) => {
-                if (chrome.runtime.lastError) {
-                    console.error('[Background] Error creating tab:', chrome.runtime.lastError);
-                    sendResponse({ success: false, error: chrome.runtime.lastError.message });
-                } else {
-                    console.log('[Background] Tab created successfully:', tab);
-                    sendResponse({ success: true });
-                }
-            });
-            return true; // Keep the message channel open for async response
-        } catch (error) {
-            console.error('[Background] Exception opening popup:', error);
-            sendResponse({ success: false, error: error.message });
-            return true;
-        }
-    } else if (message.action === 'openOptionsPage') {
-        try {
-            // Open options page
             chrome.runtime.openOptionsPage();
             sendResponse({ success: true });
             return true;
@@ -673,7 +572,6 @@ async function activateManualRtlForSite(tabId) {
                 console.log('[Background] Tab is showing error page, skipping manual RTL injection');
             } else if (injectError.message && injectError.message.includes('extensions gallery cannot be scripted')) {
                 // Store error for this hostname so popup can display appropriate message
-                // console.error('[Background] Error injecting manual RTL: The extensions gallery cannot be scripted');
                 chrome.storage.local.get(['manualRtlUnsupportedSites'], (result) => {
                     const unsupportedSites = result.manualRtlUnsupportedSites || [];
                     if (!unsupportedSites.includes(hostname)) {
@@ -783,7 +681,7 @@ async function activateContentScriptForDynamicSites(tabId) {
         }
     } catch (error) {
         // Tab might not be accessible, ignore
-        console.error(`B [Background] Error injecting content script for ${serviceName}:`, injectError);
+        console.error(`[Background] Error injecting content script for ${serviceName}:`, error);
     }
 }
 
@@ -792,11 +690,7 @@ function setupEventListeners() {
         if (!activeInfo?.tabId) return;
         console.log('[Events] Tab activated', activeInfo);
         resetActiveTabInfo(activeInfo.tabId);
-        dumpActiveTabInfo('After activation');
         broadcastActiveTabInfo('tab-activated');
-        
-        // Log active tab info using tabs permission
-        await logActiveTabInfo();
         
         // Activate content script for dynamic sites (not in manifest)
         await activateContentScriptForDynamicSites(activeInfo.tabId);
@@ -809,19 +703,14 @@ function setupEventListeners() {
         if (tabId) {
             console.log('[Events] Tab removed', tabId);
             if (activeTabInfo?.tabId === tabId) {
-                dumpActiveTabInfo('Before removal reset');
                 activeTabInfo = null;
-                // console.log('[ActiveTab] Cleared because tab removed');
                 broadcastActiveTabInfo('tab-removed');
             }
-            // Remove from alerted tabs set
-            alertedTabs.delete(tabId);
         }
     });
 
     chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
         if (!tabId) return;
-        // console.log('[Events] Tab updated', { tabId, changeInfo });
         if (activeTabInfo?.tabId === tabId) {
             // Only process http/https pages
             if (changeInfo?.url && !isValidHttpPage(changeInfo.url)) {
@@ -838,17 +727,11 @@ function setupEventListeners() {
                     const url = new URL(changeInfo.url);
                     activeTabInfo.hostname = url.hostname;
                 } catch (err) {
-                    // console.warn('[ActiveTab] Invalid URL in update:', changeInfo.url);
+                    // Ignore invalid URL errors
                 }
             }
             activeTabInfo.lastUpdatedAt = Date.now();
-            dumpActiveTabInfo('Updated from tab change');
             broadcastActiveTabInfo('tab-updated');
-            
-            // Log active tab info when URL changes
-            if (changeInfo?.url && changeInfo.status === 'complete') {
-                await logActiveTabInfo();
-            }
         }
 
 
@@ -895,9 +778,6 @@ function setupEventListeners() {
 
 
 setupEventListeners();
-
-// Log active tab info on startup
-logActiveTabInfo();
 
 // Activate manual RTL for existing tabs on startup
 (async () => {
