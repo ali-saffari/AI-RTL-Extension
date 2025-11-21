@@ -24,17 +24,7 @@ import {
     TextField
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
-
-interface TextSelectorSettings {
-    enabled: 'enabled' | 'allowed_sites' | 'disabled';
-    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
-    highlightColor: string;
-    highlightOpacity: number;
-    logoDisplay: 'always' | 'on_hover' | 'disabled';
-    manualRtlEnabled?: boolean;
-    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
-    menuDisplayMode?: 'logo_first' | 'menu_direct';
-}
+import { ManualRtlSettings } from '../types/manualRtl';
 
 interface SettingsProps {
     rtlAlgorithm: string;
@@ -42,8 +32,8 @@ interface SettingsProps {
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     isDarkMode: boolean;
-    manualRtlSettings?: TextSelectorSettings;
-    onManualRtlSettingsChange?: (settings: TextSelectorSettings) => void;
+    manualRtlSettings?: ManualRtlSettings;
+    onManualRtlSettingsChange?: (settings: ManualRtlSettings) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -53,14 +43,14 @@ const Settings: React.FC<SettingsProps> = ({
     onSupportChange,
     isDarkMode,
     manualRtlSettings = {
-        enabled: 'enabled',
-        highlightMode: 'on_selection',
+        manualRtlEnabled: true,
+        manualRtlSiteMode: 'allowed_sites',
+        menuDisplayMode: 'logo_first',
+        highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
-        highlightOpacity: 0.1,
+        highlightOpacity: 0.3,
         logoDisplay: 'always',
-        manualRtlEnabled: false,
-        manualRtlSiteMode: 'all',
-        menuDisplayMode: 'logo_first'
+        applyFont: true
     },
     onManualRtlSettingsChange
 }) => {
@@ -550,16 +540,14 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.8rem',
                                 mt: 0.5
                             }}>
-                                {(manualRtlSettings.enabled === 'disabled' || manualRtlSettings.manualRtlEnabled === false) ? 'غیرفعال' : 'فعال'}
+                                {!manualRtlSettings.manualRtlEnabled ? 'غیرفعال' : 'فعال'}
                             </Typography>
                         </Box>
                         <Switch
-                            checked={manualRtlSettings.enabled !== 'disabled' && manualRtlSettings.manualRtlEnabled !== false}
+                            checked={manualRtlSettings.manualRtlEnabled !== false}
                             onChange={(e) => {
-                                const newEnabled = e.target.checked ? 'enabled' : 'disabled';
                                 onManualRtlSettingsChange?.({
                                     ...manualRtlSettings,
-                                    enabled: newEnabled,
                                     manualRtlEnabled: e.target.checked
                                 });
                             }}

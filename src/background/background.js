@@ -64,14 +64,15 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     
     // Default manual RTL settings
     const defaultManualRtlSettings = {
-        enabled: 'enabled',
-        highlightMode: 'on_selection',
-        highlightColor: '#ff0000',
-        highlightOpacity: 0.1,
-        logoDisplay: 'always',
         manualRtlEnabled: false,
-        manualRtlSiteMode: 'all',
-        menuDisplayMode: 'logo_first'
+        manualRtlSiteMode: 'allowed_sites',
+        menuDisplayMode: 'logo_first',
+        highlightMode: 'on_direction_change',
+        highlightColor: '#ff0000',
+        highlightOpacity: 0.3,
+        logoDisplay: 'always',
+        applyFont: true,
+        activeSites: []
     };
     
     if (details.reason === 'install') {
@@ -239,6 +240,13 @@ function resetActiveTabInfo(tabId) {
                 return;
             }
 
+            // Only process http/https pages
+            if (!isValidHttpPage(tab.url)) {
+                activeTabInfo = null;
+                broadcastActiveTabInfo('reset-skipped-non-http');
+                return;
+            }
+
             try {
                 const url = new URL(tab.url);
                 activeTabInfo.hostname = url.hostname;
@@ -268,6 +276,75 @@ function dumpActiveTabInfo(context) {
     //     activatedAt: activeTabInfo.activatedAt,
     //     lastUpdatedAt: activeTabInfo.lastUpdatedAt
     // });
+}
+
+/**
+ * Check if URL is valid http/https page (not extension or chrome://)
+ */
+function isValidHttpPage(url) {
+    if (!url) return false;
+    try {
+        const urlObj = new URL(url);
+        return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Get active tab information using tabs permission and log it
+ */
+async function logActiveTabInfo() {
+    try {
+        // Check if tabs permission is available
+        const hasTabsPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
+        if (!hasTabsPermission) {
+            console.log('[ActiveTab] tabs permission not granted');
+            return;
+        }
+
+        // Get the active tab
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            console.log('[ActiveTab] No active tab found');
+            return;
+        }
+
+        const activeTab = tabs[0];
+        if (!activeTab.url) {
+            console.log('[ActiveTab] Active tab has no URL');
+            return;
+        }
+
+        // Only process http/https pages
+        if (!isValidHttpPage(activeTab.url)) {
+            console.log('[ActiveTab] Skipping non-http/https page:', activeTab.url);
+            return;
+        }
+
+        try {
+            const url = new URL(activeTab.url);
+            const hostname = url.hostname;
+            const protocol = url.protocol;
+            const pathname = url.pathname;
+
+            console.log('[ActiveTab] Active site information:', {
+                tabId: activeTab.id,
+                url: activeTab.url,
+                hostname: hostname,
+                protocol: protocol,
+                pathname: pathname,
+                title: activeTab.title || 'No title',
+                favicon: activeTab.favIconUrl || 'No favicon'
+            });
+
+            console.log(`[ActiveTab] Active site: ${hostname} (${activeTab.title || 'No title'})`);
+        } catch (urlError) {
+            console.log('[ActiveTab] Invalid URL:', activeTab.url, urlError.message);
+        }
+    } catch (error) {
+        console.error('[ActiveTab] Error getting active tab info:', error);
+    }
 }
 
 // Handle messages from content scripts
@@ -303,43 +380,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: false, error: error.message });
             return true;
         }
-    } else if (message.action === 'contentSiteInfo') {
-        const tabId = sender?.tab?.id;
-        if (!tabId) {
-            sendResponse?.({ success: false, error: 'No tab context' });
-            return true;
-        }
-
-        let derivedHostname = '';
-        try {
-            if (sender?.tab?.url) {
-                derivedHostname = new URL(sender.tab.url).hostname;
-            }
-        } catch (parseError) {
-            console.warn('[Content] Unable to parse sender tab URL:', sender?.tab?.url, parseError?.message);
-        }
-
-        if (!activeTabInfo || activeTabInfo.tabId !== tabId) {
-            console.log('[Content] Site info received for inactive tab, ignoring', { tabId });
-            sendResponse?.({ success: false, error: 'Inactive tab' });
-            return true;
-        }
-
-        const hostname = message.hostname || derivedHostname || activeTabInfo.hostname || '';
-        const favicon = message.favicon || sender?.tab?.favIconUrl || activeTabInfo.favicon || '';
-        activeTabInfo.hostname = hostname;
-        activeTabInfo.favicon = favicon;
-        activeTabInfo.lastUpdatedAt = Date.now();
-
-        console.log('[Content] Active tab info updated', {
-            tabId,
-            hostname,
-            favicon
-        });
-        dumpActiveTabInfo('Current snapshot');
-        broadcastActiveTabInfo('content-update');
-        sendResponse?.({ success: true });
-        return true;
     } else if (message.action === 'getActiveTabInfo' || message.action === 'getActiveSessionInfo') {
         const snapshot = getActiveTabSnapshot();
         sendResponse?.({
@@ -364,6 +404,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 
                 // Request permissions
                 const permissions = ['scripting'];
+
+                console.log('[Background] service.origins', { permissions, origins: service.origins });
                 const granted = await chrome.permissions.request({ permissions, origins: service.origins });
                 
                 if (granted) {
@@ -380,10 +422,202 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         })();
         return true; // Keep message channel open for async response
+    } else if (message.action === 'toggleManualRtlSite') {
+        // Handle adding site to manual RTL active sites list
+        // Request scripting permission for the site before adding
+        // Note: This is called from popup onClick (user gesture context)
+        // Only handles enable=true, disable is handled in popup
+        console.log('[Background] Received toggleManualRtlSite message:', message);
+        (async () => {
+            try {
+                const { hostname, favicon } = message;
+                
+                if (!hostname) {
+                    console.error('[Background] Hostname is required');
+                    sendResponse?.({ success: false, error: 'Hostname is required' });
+                    return;
+                }
+
+                console.log(`[Background] Requesting permissions for ${hostname}`);
+                // Request permissions
+                const permissions = ['scripting'];
+                const origins = [`*://${hostname}/*`];
+                const granted = await chrome.permissions.request({ permissions, origins: origins });
+
+                console.log(`[Background] Permission request result for ${hostname}:`, granted);
+
+                if (granted) {
+                    // Get current active sites
+                    const storage = await chrome.storage.sync.get(['manualRtlActiveSites', 'manualRtlSettings']);
+                    const manualRtlSettings = storage.manualRtlSettings || {};
+                    // Use activeSites from manualRtlSettings if available, otherwise from manualRtlActiveSites
+                    const currentSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+
+                    // Check if site already exists
+                    const siteExists = currentSites.some(site => site.hostname === hostname);
+                    if (siteExists) {
+                        console.log(`[Background] Site ${hostname} already in list`);
+                        sendResponse?.({ success: true, granted: true, alreadyExists: true });
+                        return;
+                    }
+
+                    // Add site to list
+                    const newSite = {
+                        hostname: hostname,
+                        favicon: favicon || undefined,
+                        addedAt: Date.now()
+                    };
+                    const updatedSites = [...currentSites, newSite];
+
+                    // Update both manualRtlActiveSites and manualRtlSettings.activeSites
+                    const updatedSettings = {
+                        ...manualRtlSettings,
+                        activeSites: updatedSites
+                    };
+                    await chrome.storage.sync.set({ 
+                        manualRtlActiveSites: updatedSites,
+                        manualRtlSettings: updatedSettings
+                    });
+
+                    console.log(`[Background] Site ${hostname} added to manual RTL active sites`);
+                    sendResponse?.({ success: true, granted: true });
+                } else {
+                    console.log(`[Background] Permission denied for ${hostname}`);
+                    sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
+                }
+            } catch (error) {
+                console.error('[Background] Error in toggleManualRtlSite:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true; // Keep message channel open for async response
     }
     return false;
 });
 
+
+// ============================================
+// MANUAL RTL INJECTION
+// ============================================
+
+// AI sites list for manual RTL
+const AI_SITES = [
+    'chatgpt.com', 'claude.ai', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
+    'github.com', 'perplexity.ai', 'www.perplexity.ai', 'duckduckgo.com',
+    'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
+    'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'grok.com',
+    'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'www.blackbox.ai',
+    'notebooklm.google.com', 'chat.z.ai', 'lmarena.ai', 'openrouter.ai',
+    'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
+    'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
+    'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com'
+];
+
+function isAISite(hostname) {
+    return AI_SITES.some(site => hostname === site || hostname.endsWith('.' + site));
+}
+
+async function shouldEnableManualRtlForSite(hostname) {
+    try {
+        const storage = await chrome.storage.sync.get(['manualRtlSettings', 'manualRtlActiveSites', 'allowedSites', 'customAllowedSites']);
+        const manualRtlSettings = storage.manualRtlSettings || {};
+        
+        // Check if manual RTL is enabled
+        if (!manualRtlSettings.manualRtlEnabled) {
+            return false;
+        }
+        
+        const siteMode = manualRtlSettings.manualRtlSiteMode || 'allowed_sites';
+        
+        // Check site mode
+        if (siteMode === 'all') {
+            return true;
+        }
+        
+        if (siteMode === 'ai_sites') {
+            return isAISite(hostname);
+        }
+        
+        if (siteMode === 'allowed_sites') {
+            const activeSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+            return activeSites.some(site => site.hostname === hostname);
+        }
+        
+        if (siteMode === 'ai_and_allowed') {
+            if (isAISite(hostname)) {
+                return true;
+            }
+            const activeSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+            return activeSites.some(site => site.hostname === hostname);
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('[Background] Error checking manual RTL for site:', error);
+        return false;
+    }
+}
+
+async function activateManualRtlForSite(tabId) {
+    if (!tabId) return;
+    
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        if (!tab.url) return;
+        
+        // Check if tab is in a valid state
+        if (tab.url.startsWith('chrome://') || 
+            tab.url.startsWith('chrome-extension://') || 
+            tab.url.startsWith('about:') ||
+            tab.status !== 'complete') {
+            return;
+        }
+        
+        const url = new URL(tab.url);
+        const hostname = url.hostname;
+        
+        // Check if manual RTL should be enabled for this site
+        const shouldEnable = await shouldEnableManualRtlForSite(hostname);
+        if (!shouldEnable) {
+            return;
+        }
+        
+        // Check if permissions are granted
+        const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+        if (!hasScripting) {
+            console.log('[Background] Missing scripting permission for manual RTL');
+            return;
+        }
+        
+        // Check if origin permission is granted
+        const origin = `*://${hostname}/*`;
+        const hasOrigin = await chrome.permissions.contains({ origins: [origin] });
+        if (!hasOrigin) {
+            console.log(`[Background] Missing origin permission for ${hostname}`);
+            return;
+        }
+        
+        // Inject manual RTL script
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['js/manual-rtl.js']
+            });
+            
+            console.log(`[Background] Manual RTL injected for ${hostname} (tab ${tabId})`);
+        } catch (injectError) {
+            // Ignore errors for error pages or invalid tabs
+            if (injectError.message && injectError.message.includes('error page')) {
+                console.log('[Background] Tab is showing error page, skipping manual RTL injection');
+            } else {
+                console.error('[Background] Error injecting manual RTL:', injectError);
+            }
+        }
+    } catch (error) {
+        // Tab might not be accessible, ignore
+        console.error('[Background] Error in activateManualRtlForSite:', error);
+    }
+}
 
 // ============================================
 // EVENT LISTENERS
@@ -489,8 +723,14 @@ function setupEventListeners() {
         dumpActiveTabInfo('After activation');
         broadcastActiveTabInfo('tab-activated');
         
+        // Log active tab info using tabs permission
+        await logActiveTabInfo();
+        
         // Activate content script for dynamic sites (not in manifest)
         await activateContentScriptForDynamicSites(activeInfo.tabId);
+        
+        // Activate manual RTL for active sites
+        await activateManualRtlForSite(activeInfo.tabId);
     });
 
     chrome.tabs.onRemoved.addListener((tabId) => {
@@ -511,6 +751,13 @@ function setupEventListeners() {
         if (!tabId) return;
         // console.log('[Events] Tab updated', { tabId, changeInfo });
         if (activeTabInfo?.tabId === tabId) {
+            // Only process http/https pages
+            if (changeInfo?.url && !isValidHttpPage(changeInfo.url)) {
+                activeTabInfo = null;
+                broadcastActiveTabInfo('updated-to-non-http');
+                return;
+            }
+
             if (changeInfo?.favIconUrl) {
                 activeTabInfo.favicon = changeInfo.favIconUrl;
             }
@@ -525,6 +772,11 @@ function setupEventListeners() {
             activeTabInfo.lastUpdatedAt = Date.now();
             dumpActiveTabInfo('Updated from tab change');
             broadcastActiveTabInfo('tab-updated');
+            
+            // Log active tab info when URL changes
+            if (changeInfo?.url && changeInfo.status === 'complete') {
+                await logActiveTabInfo();
+            }
         }
 
 
@@ -532,6 +784,9 @@ function setupEventListeners() {
         // Inject content script for dynamic sites (not in manifest) when page is complete
         if (changeInfo?.status === 'complete') {
             await activateContentScriptForDynamicSites(tabId);
+            
+            // Activate manual RTL for active sites
+            await activateManualRtlForSite(tabId);
         }
     });
 
@@ -544,6 +799,21 @@ function setupEventListeners() {
 
     chrome.storage.sync.onChanged.addListener(async (changes) => {
         console.log('[Events] Storage changed', changes);
+        
+        // If manual RTL settings changed, update active tabs
+        if (changes.manualRtlSettings || changes.manualRtlActiveSites) {
+            try {
+                // Get all tabs and update manual RTL for each
+                const tabs = await chrome.tabs.query({});
+                for (const tab of tabs) {
+                    if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+                        await activateManualRtlForSite(tab.id);
+                    }
+                }
+            } catch (error) {
+                console.error('[Background] Error updating manual RTL after storage change:', error);
+            }
+        }
     });
 
     chrome.runtime.onSuspend.addListener(async () => {
@@ -552,4 +822,21 @@ function setupEventListeners() {
 }
 
 
-setupEventListeners()
+setupEventListeners();
+
+// Log active tab info on startup
+logActiveTabInfo();
+
+// Activate manual RTL for existing tabs on startup
+(async () => {
+    try {
+        const tabs = await chrome.tabs.query({});
+        for (const tab of tabs) {
+            if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+                await activateManualRtlForSite(tab.id);
+            }
+        }
+    } catch (error) {
+        console.error('[Background] Error activating manual RTL on startup:', error);
+    }
+})();

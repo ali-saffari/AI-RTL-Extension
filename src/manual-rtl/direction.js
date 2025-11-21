@@ -1,4 +1,4 @@
-import { detectTextDirection } from '../utils/analyzeDirection.js';
+import { detectTextDirection } from '../content/utils/analyzeDirection.js';
 import { applyLogoDisplayToElement } from './logo.js';
 import { manualRtlState } from './state.js';
 

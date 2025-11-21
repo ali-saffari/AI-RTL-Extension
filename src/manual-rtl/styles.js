@@ -59,14 +59,18 @@ const STYLE_CONTENT = `
         align-items: center;
         gap: 6px;
     }
+    .rtl-text-selector-extension-logo-wrapper {
+        display: flex;
+        align-items: center;
+    }
+    .rtl-text-selector-menu.minimized .rtl-text-selector-extension-logo-wrapper {
+        display: none;
+    }
     .rtl-text-selector-extension-logo {
         width: 18px;
         height: 18px;
         object-fit: contain;
         cursor: pointer;
-    }
-    .rtl-text-selector-menu.minimized .rtl-text-selector-extension-logo {
-        display: none;
     }
     .rtl-text-selector-menu-settings-btn {
         width: 20px;
@@ -153,6 +157,17 @@ const STYLE_CONTENT = `
     .rtl-manual-direction-element.rtl-menu-open .rtl-manual-logo-icon {
         display: none !important;
     }
+    /* Show images that are hidden by torobcheImage and chrome-extension selectors */
+    img[alt="torobcheImage"] {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    img[src^="chrome-extension"] {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
 `;
 
 export function ensureHighlightStyle() {
@@ -177,5 +192,41 @@ export function removeHighlightStyle() {
         manualRtlState.highlightStyle.parentNode.removeChild(manualRtlState.highlightStyle);
         manualRtlState.highlightStyle = null;
     }
+}
+
+// Apply styles directly to images
+export function applyStylesToImages() {
+    // Find images with alt="torobcheImage"
+    const torobcheImages = document.querySelectorAll('img[alt="torobcheImage"]');
+    torobcheImages.forEach(img => {
+        img.style.setProperty('display', 'block', 'important');
+        img.style.setProperty('opacity', '1', 'important');
+        img.style.setProperty('visibility', 'visible', 'important');
+    });
+
+    // Find images with src starting with "chrome-extension"
+    const chromeExtensionImages = document.querySelectorAll('img[src^="chrome-extension"]');
+    chromeExtensionImages.forEach(img => {
+        img.style.setProperty('display', 'block', 'important');
+        img.style.setProperty('opacity', '1', 'important');
+        img.style.setProperty('visibility', 'visible', 'important');
+    });
+}
+
+// Remove styles from images
+export function removeStylesFromImages() {
+    const torobcheImages = document.querySelectorAll('img[alt="torobcheImage"]');
+    torobcheImages.forEach(img => {
+        img.style.removeProperty('display');
+        img.style.removeProperty('opacity');
+        img.style.removeProperty('visibility');
+    });
+
+    const chromeExtensionImages = document.querySelectorAll('img[src^="chrome-extension"]');
+    chromeExtensionImages.forEach(img => {
+        img.style.removeProperty('display');
+        img.style.removeProperty('opacity');
+        img.style.removeProperty('visibility');
+    });
 }
 

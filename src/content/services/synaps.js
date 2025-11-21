@@ -22,6 +22,8 @@ export function setSynaps(rtlAlgorithm = 'advanced_full') {
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup paste', function() {
+
+            console.log('input keyup paste');
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet'

@@ -56,30 +56,24 @@ function isAISite() {
 }
 
 function isAllowedSite(callback) {
-    chrome.storage.sync.get(['allowedSites', 'customAllowedSites'], (result) => {
+    chrome.storage.sync.get(['manualRtlSettings', 'manualRtlActiveSites'], (result) => {
         const hostname = window.location.hostname;
-        let isAllowed = false;
-
-        if (result.allowedSites && Array.isArray(result.allowedSites)) {
-            isAllowed = result.allowedSites.some(site =>
-                hostname === site || hostname.endsWith('.' + site)
-            );
-        }
-
-        if (!isAllowed && result.customAllowedSites && Array.isArray(result.customAllowedSites)) {
-            isAllowed = result.customAllowedSites.some(site =>
-                hostname === site || hostname.endsWith('.' + site)
-            );
-        }
+        const manualRtlSettings = result.manualRtlSettings || {};
+        const activeSites = manualRtlSettings.activeSites || result.manualRtlActiveSites || [];
+        
+        const isAllowed = activeSites.some(site => 
+            site.hostname === hostname || hostname.endsWith('.' + site.hostname)
+        );
 
         callback(isAllowed);
     });
 }
 
 export function shouldEnableTextSelector(callback) {
-    chrome.storage.sync.get(['manualRtlSettings'], (result) => {
+    chrome.storage.sync.get(['manualRtlSettings', 'manualRtlActiveSites'], (result) => {
         const settings = result.manualRtlSettings;
         if (!settings) {
+            console.log('[RTL Text Selector] No manualRtlSettings found');
             callback(false);
             return;
         }
@@ -87,36 +81,50 @@ export function shouldEnableTextSelector(callback) {
         manualRtlState.manualRtlSettings = settings;
 
         if (!settings.manualRtlEnabled) {
+            console.log('[RTL Text Selector] manualRtlEnabled is false');
             callback(false);
             return;
         }
 
-        const siteMode = settings.manualRtlSiteMode || 'all';
+        const siteMode = settings.manualRtlSiteMode || 'allowed_sites';
+        const hostname = window.location.hostname;
+        console.log('[RTL Text Selector] Checking site:', hostname, 'mode:', siteMode);
 
         if (siteMode === 'all') {
+            console.log('[RTL Text Selector] Site mode is "all", enabling');
             callback(true);
             return;
         }
 
         if (siteMode === 'ai_sites') {
-            callback(isAISite());
+            const isAI = isAISite();
+            console.log('[RTL Text Selector] Site mode is "ai_sites", isAI:', isAI);
+            callback(isAI);
             return;
         }
 
         if (siteMode === 'allowed_sites') {
-            isAllowedSite(callback);
+            isAllowedSite((isAllowed) => {
+                console.log('[RTL Text Selector] Site mode is "allowed_sites", isAllowed:', isAllowed);
+                callback(isAllowed);
+            });
             return;
         }
 
         if (siteMode === 'ai_and_allowed') {
             if (isAISite()) {
+                console.log('[RTL Text Selector] Site mode is "ai_and_allowed", isAI: true');
                 callback(true);
                 return;
             }
-            isAllowedSite(callback);
+            isAllowedSite((isAllowed) => {
+                console.log('[RTL Text Selector] Site mode is "ai_and_allowed", isAllowed:', isAllowed);
+                callback(isAllowed);
+            });
             return;
         }
 
+        console.log('[RTL Text Selector] Unknown site mode:', siteMode);
         callback(false);
     });
 }

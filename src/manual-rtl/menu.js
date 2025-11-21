@@ -140,13 +140,17 @@ export function showPopupMenu(range, element, options = {}) {
     mainLogo.src = getManualLogoUrl();
     mainLogo.alt = 'RTL Manual Direction';
 
+    const extensionLogoWrapper = document.createElement('div');
+    extensionLogoWrapper.className = 'rtl-text-selector-extension-logo-wrapper';
+    
     const extensionLogo = document.createElement('img');
     extensionLogo.className = 'rtl-text-selector-extension-logo';
     extensionLogo.src = getExtensionLogoUrl();
     extensionLogo.alt = 'Extension Icon';
 
+    extensionLogoWrapper.appendChild(extensionLogo);
     logosWrapper.appendChild(mainLogo);
-    logosWrapper.appendChild(extensionLogo);
+    logosWrapper.appendChild(extensionLogoWrapper);
 
     const settingsBtn = document.createElement('button');
     settingsBtn.className = 'rtl-text-selector-menu-settings-btn';

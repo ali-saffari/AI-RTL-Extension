@@ -3,36 +3,16 @@ import {
     Box,
     Typography,
     IconButton,
-    SvgIcon,
-    Checkbox,
-    FormControlLabel
+    SvgIcon
 } from '@mui/material';
-import { mdiCog, mdiWeb } from '@mdi/js';
-
-interface TextSelectorSettings {
-    enabled: 'enabled' | 'allowed_sites' | 'disabled';
-    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
-    highlightColor: string;
-    highlightOpacity: number;
-    logoDisplay: 'always' | 'on_hover' | 'disabled';
-    manualRtlEnabled?: boolean;
-    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
-    menuDisplayMode?: 'logo_first' | 'menu_direct';
-}
+import { mdiCog } from '@mdi/js';
+import { ManualRtlSettings } from '../types/manualRtl';
+import SiteActivationSection, { ActiveTabInfoSnapshot } from './SiteActivationSection';
 
 interface ManualRtlBannerProps {
     isDarkMode: boolean;
-    manualRtlSettings: TextSelectorSettings;
-    onManualRtlSettingsChange: (settings: TextSelectorSettings) => void;
-}
-
-interface ActiveTabInfoSnapshot {
-    tabId: number | null;
-    hostname: string;
-    favicon: string;
-    hasHostname?: boolean;
-    activatedAt?: number;
-    lastUpdatedAt?: number;
+    manualRtlSettings: ManualRtlSettings;
+    onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
 }
 
 const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
@@ -41,6 +21,39 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     onManualRtlSettingsChange
 }) => {
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
+    const [isValidHttpPage, setIsValidHttpPage] = React.useState<boolean | null>(null);
+
+    // Check if current tab is http/https
+    React.useEffect(() => {
+        const checkTabUrl = async () => {
+            try {
+                const hasPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
+                if (!hasPermission) {
+                    setIsValidHttpPage(null);
+                    return;
+                }
+
+                const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                if (tabs && tabs.length > 0 && tabs[0].url) {
+                    const url = tabs[0].url;
+                    try {
+                        const urlObj = new URL(url);
+                        const isValid = urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+                        setIsValidHttpPage(isValid);
+                    } catch {
+                        setIsValidHttpPage(false);
+                    }
+                } else {
+                    setIsValidHttpPage(null);
+                }
+            } catch (error) {
+                console.log('[ManualRtlBanner] Error checking tab URL:', error);
+                setIsValidHttpPage(null);
+            }
+        };
+
+        checkTabUrl();
+    }, []);
 
     React.useEffect(() => {
         let isMounted = true;
@@ -91,44 +104,36 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
         if (activeHostname.length <= 20) return activeHostname;
         return `${activeHostname.slice(0, 20)}...`;
     }, [activeHostname]);
+    
+    // Show site activation section only when enabled and mode is allowed_sites or ai_and_allowed
+    const shouldShowSiteSection = React.useMemo(() => {
+        return manualRtlSettings.manualRtlEnabled && 
+               (manualRtlSettings.manualRtlSiteMode === 'allowed_sites' || 
+                manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed');
+    }, [manualRtlSettings.manualRtlEnabled, manualRtlSettings.manualRtlSiteMode]);
 
     const statusText = React.useMemo(() => {
-        if (manualRtlSettings.enabled === 'disabled') {
+        if (!manualRtlSettings.manualRtlEnabled) {
             return 'غیرفعال';
         }
-        if (manualRtlSettings.enabled === 'enabled') {
-            switch (manualRtlSettings.manualRtlSiteMode) {
-                case 'all':
-                    return 'فعال برای همه سایت‌ها';
-                case 'ai_sites':
-                    return 'فعال برای سایت‌های هوش مصنوعی';
-                case 'allowed_sites':
-                    return 'فعال برای سایت‌های مجاز';
-                case 'ai_and_allowed':
-                    return (
-                        <>
-                            فعال برای هوش مصنوعی‌ها<br />
-                            و سایت‌های مجاز
-                        </>
-                    );
-                default:
-                    return 'فعال';
-            }
+        switch (manualRtlSettings.manualRtlSiteMode) {
+            case 'all':
+                return 'فعال برای همه سایت‌ها';
+            case 'ai_sites':
+                return 'فعال برای سایت‌های هوش مصنوعی';
+            case 'allowed_sites':
+                return 'فعال برای سایت‌های مجاز';
+            case 'ai_and_allowed':
+                return (
+                    <>
+                        فعال برای هوش مصنوعی‌ها<br />
+                        و سایت‌های مجاز
+                    </>
+                );
+            default:
+                return 'فعال';
         }
-        if (manualRtlSettings.enabled === 'allowed_sites') {
-            return 'فعال برای سایت‌های مجاز';
-        }
-        return 'غیرفعال';
-    }, [manualRtlSettings.enabled, manualRtlSettings.manualRtlSiteMode]);
-
-    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const isChecked = event.target.checked;
-        onManualRtlSettingsChange({
-            ...manualRtlSettings,
-            enabled: isChecked ? 'enabled' : 'disabled',
-            manualRtlEnabled: isChecked
-        });
-    };
+    }, [manualRtlSettings.manualRtlEnabled, manualRtlSettings.manualRtlSiteMode]);
 
     return (
         <>
@@ -152,7 +157,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    pb: 1.5,
+                    pb: shouldShowSiteSection ? 1.5 : 0,
                 }}
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -181,18 +186,18 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     <Typography
                         variant="body2"
                         sx={{
-                            fontSize: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                            fontSize: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
                                 ? '0.55rem'
                                 : '0.65rem',
                             fontWeight: 400,
-                            color: manualRtlSettings.enabled === 'disabled'
+                            color: !manualRtlSettings.manualRtlEnabled
                                 ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')
                                 : (isDarkMode ? '#4caf50' : '#2e7d32'),
                             fontFamily: 'iranyekan',
-                            lineHeight: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                            lineHeight: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
                                 ? 1.3
                                 : 1.5,
-                            whiteSpace: manualRtlSettings.enabled === 'enabled' && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                            whiteSpace: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
                                 ? 'normal'
                                 : 'nowrap'
                         }}
@@ -229,160 +234,45 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                 </Box>
             </Box>
            
-            <Box
-                sx={{
-                    borderTop: isDarkMode
-                        ? '1px solid rgba(0, 233, 255, 0.3)'
-                        : '1px solid rgba(30, 64, 175, 0.2)'
-                }}
-            >
-                {activeHostname ? (
-                    <>
-                        <FormControlLabel
+            {shouldShowSiteSection && (
+                <>
+                    {isValidHttpPage === false ? (
+                        <Box
                             sx={{
+                                borderTop: isDarkMode
+                                    ? '1px solid rgba(0, 233, 255, 0.3)'
+                                    : '1px solid rgba(30, 64, 175, 0.2)',
                                 pt: 1.5,
-                                pb: 0,
-                                m: 0,
-                                display: 'flex',
-                                flexDirection: 'row-reverse',
-                                justifyContent: 'space-between'
+                                pb: 1,
+                                px: 1.5,
+                                textAlign: 'center'
                             }}
-                            control={
-                                <Checkbox
-                                    checked={manualRtlSettings.manualRtlEnabled !== false && manualRtlSettings.enabled !== 'disabled'}
-                                    onChange={handleCheckboxChange}
-                                    sx={{
-                                        p: 0,
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                        '&.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                        }
-                                    }}
-                                />
-                            }
-                            label={
-                                <Typography
-                                    variant="body2"
-                                    component="div"
-                                    sx={{
-                                        fontSize: '0.7rem',
-                                        fontWeight: 500,
-                                        color: isDarkMode ? '#ffffff' : '#1e293b',
-                                        fontFamily: 'iranyekan',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        flexWrap: 'wrap',
-                                        gap: 0.5
-                                    }}
-                                >
-                                    <span>برای</span>
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 0.4,
-                                            px: 0.8,
-                                            py: 0.2,
-                                            borderRadius: 1,
-                                            backgroundColor: isDarkMode
-                                                ? 'rgba(0, 233, 255, 0.08)'
-                                                : 'rgba(30, 64, 175, 0.08)'
-                                        }}
-                                    >
-                                        {hasSiteDetails ? (
-                                            <img
-                                                src={faviconSrc}
-                                                alt={activeHostname}
-                                                style={{
-                                                    width: 14,
-                                                    height: 14,
-                                                    borderRadius: 3,
-                                                    border: isDarkMode
-                                                        ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                        : '1px solid rgba(30, 64, 175, 0.2)'
-                                                }}
-                                            />
-                                        ) : (
-                                            <SvgIcon
-                                                sx={{
-                                                    fontSize: '0.85rem',
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                                }}
-                                            >
-                                                <path d={mdiWeb} />
-                                            </SvgIcon>
-                                        )}
-                                        <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
-                                    </Box>
-                                    <span>راست چین دستی فعال شود؟</span>
-                                </Typography>
-                            }
-                            labelPlacement="start"
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 500,
+                                    color: isDarkMode ? '#f44336' : '#d32f2f',
+                                    fontFamily: 'iranyekan'
+                                }}
+                            >
+                                برای این صفحه قابل فعال‌سازی نیست
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <SiteActivationSection
+                            isDarkMode={isDarkMode}
+                            activeHostname={activeHostname}
+                            activeTabInfo={activeTabInfo}
+                            manualRtlSettings={manualRtlSettings}
+                            hasSiteDetails={hasSiteDetails}
+                            faviconSrc={faviconSrc}
+                            displayHostname={displayHostname}
                         />
-                    
-                    </>
-                ) : activeTabInfo?.tabId != null ? (
-                    <Box
-                        sx={{
-                            pt: 1.6,
-                            pb: 0.2,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 0.3,
-                            textAlign: 'center'
-                        }}
-                    >
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                fontSize: '0.7rem',
-                                fontWeight: 500,
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                                fontFamily: 'iranyekan'
-                            }}
-                        >
-                            صفحه رو رفرش کنید
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                fontSize: '0.65rem',
-                                fontWeight: 400,
-                                color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
-                                fontFamily: 'iranyekan',
-                                opacity: 0.8
-                            }}
-                        >
-                            اگر بعد از رفرش باز هم این پیام رو دیدید، یعنی روی این سایت امکان فعال‌سازی وجود ندارد
-                        </Typography>
-                    </Box>
-                ) : (
-                    <Box
-                        sx={{
-                            pt: 1.2,
-                            pb: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                fontSize: '0.7rem',
-                                fontWeight: 500,
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                                fontFamily: 'iranyekan'
-                            }}
-                        >
-                            سایتی پیدا نشد
-                        </Typography>
-                    </Box>
-                )}
-            </Box>
+                    )}
+                </>
+            )}
         </Box>
         <Box
             sx={{
@@ -404,9 +294,18 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     lineHeight: 1.5
                 }}
             >
-                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> نداره و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
             </Typography>
         </Box>
+        <Box
+            sx={{
+                mx: 2,
+                mt: 1,
+                borderTop: isDarkMode
+                    ? '1px solid rgba(0, 233, 255, 0.2)'
+                    : '1px solid rgba(30, 64, 175, 0.15)'
+            }}
+        />
     </>
     );
 };

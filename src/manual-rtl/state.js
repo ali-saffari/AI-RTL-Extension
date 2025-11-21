@@ -10,5 +10,6 @@ export const manualRtlState = {
     cachedLogoUrl: null,
     cachedExtensionLogoUrl: null,
     currentMenuElement: null,
+    imageObserver: null,
 };
 

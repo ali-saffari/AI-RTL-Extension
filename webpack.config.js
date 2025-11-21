@@ -22,6 +22,7 @@ module.exports = {
         options: './src/options/index.tsx',
         background: './src/background/background.js',
         content: './src/content/index.ts',
+        'manual-rtl': './src/manual-rtl/content.js',
         'myJquery-3.7.1': './src/myJquery-3.7.1.js'
     },
     mode: isProduction ? 'production' : 'development',

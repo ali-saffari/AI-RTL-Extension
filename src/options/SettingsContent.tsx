@@ -9,18 +9,7 @@ import {
 import AlgorithmTab from './tabs/AlgorithmTab';
 import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
-
-interface TextSelectorSettings {
-    enabled: 'enabled' | 'allowed_sites' | 'disabled';
-    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
-    highlightColor: string;
-    highlightOpacity: number;
-    logoDisplay: 'always' | 'on_hover' | 'disabled';
-    manualRtlEnabled?: boolean;
-    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
-    menuDisplayMode?: 'logo_first' | 'menu_direct';
-    applyFont?: boolean;
-}
+import { ManualRtlSettings } from '../types/manualRtl';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -58,15 +47,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     
-    const [manualRtlSettings, setManualRtlSettings] = React.useState<TextSelectorSettings>({
-        enabled: 'enabled',
-        highlightMode: 'on_selection',
+    const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
+        manualRtlEnabled: true,
+        manualRtlSiteMode: 'allowed_sites',
+        menuDisplayMode: 'logo_first',
+        highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
-        highlightOpacity: 0.1,
+        highlightOpacity: 0.3,
         logoDisplay: 'always',
-        manualRtlEnabled: false,
-        manualRtlSiteMode: 'all',
-        menuDisplayMode: 'logo_first'
+        applyFont: true
     });
 
     // Load all settings from storage
@@ -89,14 +78,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 const settings = result.manualRtlSettings;
                 if (settings) {
                     setManualRtlSettings({
-                        enabled: 'enabled',
-                        highlightMode: 'on_selection',
-                        highlightColor: '#ff0000',
-                        highlightOpacity: 0.1,
-                        logoDisplay: 'always',
-                        manualRtlEnabled: false,
-                        manualRtlSiteMode: 'all',
+                        manualRtlEnabled: true,
+                        manualRtlSiteMode: 'allowed_sites',
                         menuDisplayMode: 'logo_first',
+                        highlightMode: 'on_direction_change',
+                        highlightColor: '#ff0000',
+                        highlightOpacity: 0.3,
+                        logoDisplay: 'always',
+                        applyFont: true,
                         ...settings
                     });
                 }
@@ -199,7 +188,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
-    const handleManualRtlSettingsChange = (settings: TextSelectorSettings) => {
+    const handleManualRtlSettingsChange = (settings: ManualRtlSettings) => {
         setManualRtlSettings(settings);
         try {
             chrome.storage.sync.set({ manualRtlSettings: settings });

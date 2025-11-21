@@ -14,24 +14,24 @@ import {
     CardContent,
     Grid,
     Switch,
-    Button
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    SvgIcon,
+    IconButton
 } from '@mui/material';
-
-interface TextSelectorSettings {
-    enabled: 'enabled' | 'allowed_sites' | 'disabled';
-    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
-    highlightColor: string;
-    highlightOpacity: number;
-    logoDisplay: 'always' | 'on_hover' | 'disabled';
-    manualRtlEnabled?: boolean;
-    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
-    menuDisplayMode?: 'logo_first' | 'menu_direct';
-    applyFont?: boolean;
-}
+import { mdiChevronDown, mdiDelete, mdiWeb } from '@mdi/js';
+import { ManualRtlSettings, ManualRtlActiveSite } from '../../types/manualRtl';
 
 interface ManualRTLTabProps {
-    manualRtlSettings: TextSelectorSettings;
-    onManualRtlSettingsChange: (settings: TextSelectorSettings) => void;
+    manualRtlSettings: ManualRtlSettings;
+    onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     isDarkMode: boolean;
 }
 
@@ -213,17 +213,141 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 }) => {
     const theme = useTheme();
     const [menuExpanded, setMenuExpanded] = React.useState(manualRtlSettings.menuDisplayMode === 'menu_direct');
+    const [permissionDialogOpen, setPermissionDialogOpen] = React.useState(false);
+    const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
     
     // وقتی menuDisplayMode تغییر می‌کند، state را به‌روزرسانی کن
     React.useEffect(() => {
         setMenuExpanded(manualRtlSettings.menuDisplayMode === 'menu_direct');
     }, [manualRtlSettings.menuDisplayMode]);
+
+    // Load active sites list
+    React.useEffect(() => {
+        const loadActiveSites = () => {
+            chrome.storage.sync.get(['manualRtlActiveSites'], (result) => {
+                const sites = result.manualRtlActiveSites || [];
+                setActiveSites(sites);
+            });
+        };
+
+        loadActiveSites();
+
+        // Listen for storage changes
+        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+            if (changes.manualRtlActiveSites) {
+                const sites = changes.manualRtlActiveSites.newValue || [];
+                setActiveSites(sites);
+            }
+        };
+
+        chrome.storage.onChanged.addListener(handleStorageChange);
+        return () => {
+            chrome.storage.onChanged.removeListener(handleStorageChange);
+        };
+    }, []);
+
+    // Remove site from active list
+    const handleRemoveSite = async (hostname: string) => {
+        try {
+            const updatedSites = activeSites.filter(site => site.hostname !== hostname);
+            await chrome.storage.sync.set({ manualRtlActiveSites: updatedSites });
+            
+            // Also update manualRtlSettings.activeSites
+            const updatedSettings = {
+                ...manualRtlSettings,
+                activeSites: updatedSites
+            };
+            await chrome.storage.sync.set({ manualRtlSettings: updatedSettings });
+            onManualRtlSettingsChange(updatedSettings);
+            
+            setActiveSites(updatedSites);
+        } catch (error) {
+            console.error('[ManualRTLTab] Error removing site:', error);
+        }
+    };
+
+    // Clear all sites
+    const handleClearAllSites = async () => {
+        try {
+            const emptySites: ManualRtlActiveSite[] = [];
+            await chrome.storage.sync.set({ manualRtlActiveSites: emptySites });
+            
+            // Also update manualRtlSettings.activeSites
+            const updatedSettings = {
+                ...manualRtlSettings,
+                activeSites: emptySites
+            };
+            await chrome.storage.sync.set({ manualRtlSettings: updatedSettings });
+            onManualRtlSettingsChange(updatedSettings);
+            
+            setActiveSites(emptySites);
+        } catch (error) {
+            console.error('[ManualRTLTab] Error clearing sites:', error);
+        }
+    };
+    
+    // بررسی پرمیشن tabs
+    const checkTabsPermission = async (): Promise<boolean> => {
+        try {
+            const hasPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
+            return hasPermission;
+        } catch (error) {
+            console.error('Error checking tabs permission:', error);
+            return false;
+        }
+    };
+    
+    // درخواست پرمیشن tabs
+    const requestTabsPermission = async (): Promise<boolean> => {
+        try {
+            const granted = await chrome.permissions.request({ permissions: ['tabs'] });
+            return granted;
+        } catch (error) {
+            console.error('Error requesting tabs permission:', error);
+            return false;
+        }
+    };
+    
+    // مدیریت تغییر وضعیت فعال/غیرفعال
+    const handleManualRtlEnabledChange = async (enabled: boolean) => {
+        if (enabled) {
+            // قبل از فعال کردن، پرمیشن tabs را بررسی کن
+            const hasPermission = await checkTabsPermission();
+            if (!hasPermission) {
+                // اگر پرمیشن نداشت، دیالوگ را نمایش بده
+                setPermissionDialogOpen(true);
+                return;
+            }
+        }
+        
+        // اگر پرمیشن داشت یا در حال غیرفعال کردن است، تنظیمات را تغییر بده
+        onManualRtlSettingsChange({
+            ...manualRtlSettings,
+            manualRtlEnabled: enabled,
+        });
+    };
+    
+    // مدیریت درخواست پرمیشن از دیالوگ
+    const handleRequestPermission = async () => {
+        const granted = await requestTabsPermission();
+        if (granted) {
+            setPermissionDialogOpen(false);
+            // حالا می‌توانیم راست چین دستی را فعال کنیم
+            onManualRtlSettingsChange({
+                ...manualRtlSettings,
+                manualRtlEnabled: true,
+            });
+        } else {
+            // اگر کاربر پرمیشن را رد کرد، دیالوگ را ببند
+            setPermissionDialogOpen(false);
+        }
+    };
     
     // تنظیمات پیش‌فرض برای راست‌چین دستی
-    const getDefaultManualRTLSettings = (): Partial<TextSelectorSettings> => {
+    const getDefaultManualRTLSettings = (): Partial<ManualRtlSettings> => {
         return {
             manualRtlEnabled: true,
-            manualRtlSiteMode: 'all',
+            manualRtlSiteMode: 'allowed_sites',
             menuDisplayMode: 'logo_first',
             highlightMode: 'on_direction_change',
             highlightColor: '#ff0000',
@@ -263,6 +387,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 مفید است.`;
 
     return (
+        <>
         <Grid container spacing={3}>
             {/* Settings Section */}
             <Grid item xs={12} md={6}>
@@ -313,11 +438,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 </Box>
                                 <Switch
                                     checked={manualRtlSettings.manualRtlEnabled ?? false}
-                                    onChange={(e) => onManualRtlSettingsChange({
-                                        ...manualRtlSettings,
-                                        manualRtlEnabled: e.target.checked,
-                                        enabled: e.target.checked ? 'enabled' : 'disabled'
-                                    })}
+                                    onChange={(e) => handleManualRtlEnabledChange(e.target.checked)}
                                     sx={{
                                         '& .MuiSwitch-switchBase.Mui-checked': {
                                             color: isDarkMode ? '#00e9ff' : '#1c39bb',
@@ -339,7 +460,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         <InputLabel id="site-mode-label"> سایت‌های فعال </InputLabel>
                                         <Select
                                             labelId="site-mode-label"
-                                            value={manualRtlSettings.manualRtlSiteMode ?? 'all'}
+                                            value={manualRtlSettings.manualRtlSiteMode ?? 'allowed_sites'}
                                             onChange={(e) => onManualRtlSettingsChange({
                                                 ...manualRtlSettings,
                                                 manualRtlSiteMode: e.target.value as 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed'
@@ -656,6 +777,131 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 
                                 <Divider sx={{ my: 2 }} />
 
+                                <Divider sx={{ my: 2 }} />
+
+                                {/* لیست سایت‌های فعال */}
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="body1" sx={{ 
+                                        fontWeight: 600, 
+                                        fontSize: '0.95rem',
+                                        color: 'text.primary',
+                                        mb: 1.5,
+                                        fontFamily: 'iranyekan'
+                                    }}>
+                                        لیست سایت‌های فعال
+                                    </Typography>
+                                    
+                                    {activeSites.length === 0 ? (
+                                        <Box sx={{ 
+                                            p: 2, 
+                                            textAlign: 'center',
+                                            borderRadius: 1,
+                                            bgcolor: theme.palette.mode === 'dark' 
+                                                ? 'rgba(255, 255, 255, 0.05)' 
+                                                : 'rgba(0, 0, 0, 0.03)'
+                                        }}>
+                                            <Typography variant="body2" sx={{ 
+                                                color: 'text.secondary',
+                                                fontSize: '0.8rem',
+                                                fontFamily: 'iranyekan'
+                                            }}>
+                                                لیست خالی است
+                                            </Typography>
+                                        </Box>
+                                    ) : (
+                                        <>
+                                            <Box sx={{ mb: 1.5 }}>
+                                                {activeSites.map((site, index) => (
+                                                    <Box
+                                                        key={site.hostname}
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            p: 1.5,
+                                                            mb: 1,
+                                                            borderRadius: 1,
+                                                            bgcolor: theme.palette.mode === 'dark' 
+                                                                ? 'rgba(255, 255, 255, 0.05)' 
+                                                                : 'rgba(0, 0, 0, 0.03)',
+                                                            border: `1px solid ${theme.palette.mode === 'dark' 
+                                                                ? 'rgba(255, 255, 255, 0.1)' 
+                                                                : 'rgba(0, 0, 0, 0.1)'}`
+                                                        }}
+                                                    >
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                                                            {site.favicon ? (
+                                                                <img
+                                                                    src={site.favicon}
+                                                                    alt={site.hostname}
+                                                                    style={{
+                                                                        width: 20,
+                                                                        height: 20,
+                                                                        borderRadius: 3,
+                                                                        border: theme.palette.mode === 'dark'
+                                                                            ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                                            : '1px solid rgba(0, 0, 0, 0.2)'
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                                                    <path d={mdiWeb} />
+                                                                </SvgIcon>
+                                                            )}
+                                                            <Typography variant="body2" sx={{ 
+                                                                fontSize: '0.85rem',
+                                                                fontWeight: 500,
+                                                                color: 'text.primary',
+                                                                fontFamily: 'iranyekan',
+                                                                flex: 1
+                                                            }}>
+                                                                {site.hostname}
+                                                            </Typography>
+                                                        </Box>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleRemoveSite(site.hostname)}
+                                                            sx={{
+                                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                                                                '&:hover': {
+                                                                    color: '#f44336',
+                                                                    backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                                <path d={mdiDelete} />
+                                                            </SvgIcon>
+                                                        </IconButton>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                            <Button
+                                                variant="outlined"
+                                                fullWidth
+                                                onClick={handleClearAllSites}
+                                                sx={{
+                                                    py: 1,
+                                                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                                                    color: 'text.primary',
+                                                    fontWeight: 500,
+                                                    fontFamily: 'iranyekan',
+                                                    fontSize: '0.8rem',
+                                                    '&:hover': {
+                                                        borderColor: '#f44336',
+                                                        backgroundColor: isDarkMode ? 'rgba(244, 67, 54, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                                                        color: '#f44336'
+                                                    }
+                                                }}
+                                            >
+                                                پاک کردن همه
+                                            </Button>
+                                        </>
+                                    )}
+                                </Box>
+
+                                <Divider sx={{ my: 2 }} />
+
                                 {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
                                 <Box sx={{ mb: 2 }}>
                                     <Button
@@ -740,6 +986,181 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                 </Card>
             </Grid>
         </Grid>
+        
+        {/* دیالوگ درخواست پرمیشن tabs */}
+        <Dialog
+            open={permissionDialogOpen}
+            onClose={() => setPermissionDialogOpen(false)}
+            aria-labelledby="permission-dialog-title"
+            aria-describedby="permission-dialog-description"
+            PaperProps={{
+                sx: {
+                    fontFamily: 'iranyekan',
+                }
+            }}
+        >
+            <DialogTitle id="permission-dialog-title" sx={{ fontFamily: 'iranyekan' }}>
+                درخواست دسترسی
+            </DialogTitle>
+            <DialogContent>
+                <DialogContentText id="permission-dialog-description" sx={{ fontFamily: 'iranyekan' }}>
+                    افزونه برای تشخیص تب فعلی و اعمال راست‌چین روی سایت‌های پشتیبانی‌شده به پرمیشن Tabs نیاز دارد.
+                    <br /><br />
+                    افزونه فقط دامنه و آیکن تب فعلی را دریافت می‌کند. هیچ URL کامل، محتوای صفحه یا داده شخصی خوانده نمی‌شود.
+                </DialogContentText>
+                
+                <Box sx={{ mt: 2 }}>
+                    <Accordion sx={{ fontFamily: 'iranyekan' }}>
+                        <AccordionSummary
+                            expandIcon={
+                                <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                    <path d={mdiChevronDown} />
+                                </SvgIcon>
+                            }
+                            sx={{
+                                fontFamily: 'iranyekan',
+                                '& .MuiAccordionSummary-content': {
+                                    my: 1
+                                }
+                            }}
+                        >
+                            <Typography sx={{ fontFamily: 'iranyekan', fontWeight: 500, fontSize: '0.9rem' }}>
+                                اطلاعات بیشتر
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ fontFamily: 'iranyekan', pt: 2 }}>
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.85rem', lineHeight: 1.8 }}>
+                                پرمیشن Tabs به افزونه اجازه می‌دهد تب فعلی را شناسایی کرده و قابلیت «راست‌چین دستی» را تنها روی همان صفحه فعال کند. این دسترسی بسیار محدود است و افزونه فقط دو مورد را دریافت می‌کند:
+                            </Typography>
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
+                                ۱) دامنه سایت (Domain / Origin)
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
+                                ۲) آیکن سایت (Favicon)
+                            </Typography>
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.85rem', lineHeight: 1.8 }}>
+                                هیچ URL کامل، مسیر صفحه، محتوای سایت، فرم‌ها یا داده حساس دریافت نمی‌شود.
+                            </Typography>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600, color: isDarkMode ? '#4caf50' : '#2e7d32' }}>
+                                مواردی که افزونه دریافت می‌کند
+                            </Typography>
+                            
+                            <Box sx={{ mb: 2, pl: 2 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    <strong>دامنه سایت (Domain / Origin)</strong><br />
+                                    برای اینکه افزونه بداند کدام سرویس یا سایت باز است و آیا در لیست پشتیبانی قرار دارد.
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    <strong>آیکن سایت (Favicon)</strong><br />
+                                    تنها برای نمایش بهتر و شناسایی سریع سایت در رابط کاربری افزونه.
+                                </Typography>
+                            </Box>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600, color: isDarkMode ? '#f44336' : '#d32f2f' }}>
+                                مواردی که افزونه به آنها دسترسی ندارد
+                            </Typography>
+                            
+                            <Box sx={{ mb: 2, pl: 2 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • مسیر کامل URL (مثل /page?id=55)
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • محتوای صفحه، پیام‌ها یا متن تایپ‌شده
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • کوکی‌ها یا sessionها
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • رمزعبورها یا اطلاعات ورود
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • تاریخچه مرورگر
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • اطلاعات شخصی یا قابل‌شناسایی
+                                </Typography>
+                            </Box>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
+                                نحوه استفاده از داده‌ها
+                            </Typography>
+                            
+                            <Box sx={{ mb: 2, pl: 2 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • همه پردازش‌ها به‌صورت محلی (Local) روی دستگاه شما انجام می‌شود.
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • افزونه تنها هنگام فعال‌سازی راست‌چین یا باز کردن پنل، دامنه و آیکن تب فعلی را می‌خواند.
+                                </Typography>
+                            </Box>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
+                                چرا این دسترسی لازم است؟
+                            </Typography>
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                Chrome برای اینکه افزونه بتواند سایت فعلی را تشخیص داده و فقط روی همان تب تغییرات ایجاد کند، استفاده از پرمیشن Tabs را ضروری می‌داند. بدون آن، افزونه نمی‌تواند بفهمد کاربر در کدام سایت است و امکان فعال‌سازی کنترل‌شده راست‌چین وجود نخواهد داشت.
+                            </Typography>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
+                                مثال کاربردی
+                            </Typography>
+                            
+                            <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                وقتی وارد example.com می‌شوید و «راست‌چین دستی» را فعال می‌کنید:
+                            </Typography>
+                            
+                            <Box sx={{ mb: 2, pl: 2 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • افزونه فقط دامنه (example.com) و آیکن سایت را دریافت می‌کند.
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • بررسی می‌کند که آیا این سایت در لیست پشتیبانی است.
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • اگر بله، راست‌چین فقط روی همان تب اعمال می‌شود.
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
+                                    • هیچ بخش دیگری از صفحه، فرم‌ها یا داده‌های کاربری خوانده نمی‌شود.
+                                </Typography>
+                            </Box>
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{ fontFamily: 'iranyekan', direction: 'rtl' }}>
+                <Button onClick={() => setPermissionDialogOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
+                    انصراف
+                </Button>
+                <Button 
+                    onClick={handleRequestPermission} 
+                    variant="contained"
+                    sx={{ 
+                        fontFamily: 'iranyekan',
+                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                        '&:hover': {
+                            backgroundColor: isDarkMode ? '#00b8d4' : '#1e40af'
+                        }
+                    }}
+                >
+                    اعطای دسترسی
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </>
     );
 };
 

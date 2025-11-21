@@ -33,66 +33,11 @@ import { activateChatsonic } from './services/chatsonic.js';
 // Make activateChatsonic available globally for scripting injection
 window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
-import { initTextSelector } from './manual-rtl/index.js';
 
 // Global variables
 let site = window.location.hostname;
 let lastTrackedService = null;
 
-function getFaviconUrl() {
-    const selectors = [
-        'link[rel="icon"]',
-        'link[rel="shortcut icon"]',
-        'link[rel="apple-touch-icon"]',
-        'link[rel~="icon"]'
-    ];
-
-    for (const selector of selectors) {
-        const link = document.querySelector(selector);
-        if (link?.href) {
-            return link.href;
-        }
-    }
-
-    try {
-        return new URL('/favicon.ico', window.location.origin).href;
-    } catch {
-        return '';
-    }
-}
-
-function reportActiveSiteToBackground() {
-    if (!chrome?.runtime?.sendMessage) return;
-
-    try {
-        chrome.runtime.sendMessage({
-            action: 'contentSiteInfo',
-            hostname: window.location.hostname,
-            favicon: getFaviconUrl()
-        }, () => {
-            if (chrome.runtime.lastError) {
-                // Ignore "Extension context invalidated" error - this is normal when extension reloads
-                const errorMessage = chrome.runtime.lastError.message;
-                if (errorMessage && !errorMessage.includes('Extension context invalidated')) {
-                    console.warn('[Content] Failed to report site info:', errorMessage);
-                }
-            }
-        });
-    } catch (error) {
-        // Ignore "Extension context invalidated" error
-        if (error.message && !error.message.includes('Extension context invalidated')) {
-            console.warn('[Content] Exception while reporting site info:', error.message);
-        }
-    }
-}
-
-reportActiveSiteToBackground();
-window.addEventListener('focus', reportActiveSiteToBackground, { passive: true });
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        reportActiveSiteToBackground();
-    }
-});
 
 // Listen for content script activation event - register early
 window.addEventListener('contentScriptActivate', async () => {
@@ -116,9 +61,6 @@ window.addEventListener('contentScriptActivate', async () => {
         console.error('[Content] Error initializing services:', error);
     }
 }, { once: false });
-
-// Initialize text selector highlighter (works on all sites)
-initTextSelector();
 
 // Listen for manual RTL activation event from scripting injection
 window.addEventListener('manualRtlActivate', () => {
@@ -290,18 +232,35 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     if (!isCurrentSiteInServiceConfig()) return;
     
     if (changes.rtlAlgorithm || changes.rtlAlgorithmMode) {
+        // Remove class from body when algorithm changes
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
         location.reload();
         return;
     }
 
     if (changes.supportHide) {
         const hide = changes.supportHide.newValue === true;
-        AQ('.AsBox')[hide ? 'hide' : 'show']();
+        // Wait for AQ to be available
+        const checkAQ = () => {
+            if (typeof window.AQ !== 'undefined') {
+                AQ('.AsBox')[hide ? 'hide' : 'show']();
+            } else {
+                // Retry after a short delay
+                setTimeout(checkAQ, 100);
+            }
+        };
+        checkAQ();
         return;
     }
     
     for (const serviceKey of Object.keys(serviceConfig)) {
         if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls)) {
+            // Remove class from body when service is disabled
+            if (changes[serviceKey].newValue === false && document.body) {
+                document.body.classList.remove('rtl-algorithm-active');
+            }
             location.reload();
             return;
         }
@@ -311,6 +270,12 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
 
 // Initialize all services
 async function initializeAllServices() {
+    // Check if algorithm is already active by checking for class on body
+    if (document.body && document.body.classList.contains('rtl-algorithm-active')) {
+        console.log('[Content] Algorithm already active (class exists on body), skipping initialization...');
+        return;
+    }
+    
     let results = {};
     let rtlAlgorithm = 'advanced_full';
     
@@ -326,7 +291,15 @@ async function initializeAllServices() {
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
         if (results[serviceKey] !== false && isCurrentSite(config.urls)) {
             activeService = serviceKey;
-            config.activate(rtlAlgorithm);
+            if (typeof window.AQ !== 'undefined') {
+                config.activate(rtlAlgorithm);
+                // Add class to body to mark as active
+                if (document.body) {
+                    document.body.classList.add('rtl-algorithm-active');
+                }
+            } else {
+                console.log('config.activate(rtlAlgorithm) - AQ is not defined');
+            }
             break;
         }
     }
@@ -337,6 +310,10 @@ async function initializeAllServices() {
     } else if (!activeService && lastTrackedService) {
         await sessionManager.stop();
         lastTrackedService = null;
+        // Remove class from body when no service is active
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
     }
 }
 

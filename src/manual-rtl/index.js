@@ -1,5 +1,5 @@
 import { manualRtlState } from './state.js';
-import { ensureHighlightStyle, removeHighlightStyle } from './styles.js';
+import { ensureHighlightStyle, removeHighlightStyle, applyStylesToImages, removeStylesFromImages } from './styles.js';
 import { shouldEnableTextSelector } from './settings.js';
 import { updateHighlightStyle, handleSelectionChange, updateElementHighlight } from './highlight.js';
 import { showMenuAfterSelection } from './menu.js';
@@ -39,7 +39,52 @@ export function initTextSelector() {
 }
 
 function initTextSelectorInternal() {
+    // Check if already initialized by checking for class on body
+    if (document.body && document.body.classList.contains('rtl-manual-loaded')) {
+        console.log('[RTL Text Selector] Already loaded (class exists on body), skipping...');
+        return;
+    }
+    
+    // Add class to body to mark as loaded
+    if (document.body) {
+        document.body.classList.add('rtl-manual-loaded');
+    }
+    
     ensureHighlightStyle();
+    
+    // Apply styles to existing images
+    applyStylesToImages();
+    
+    // Set up MutationObserver to apply styles to dynamically added images
+    if (!manualRtlState.imageObserver) {
+        manualRtlState.imageObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // Element node
+                            // Check if the added node is an image
+                            if (node.tagName === 'IMG') {
+                                if (node.getAttribute('alt') === 'torobcheImage' || 
+                                    (node.getAttribute('src') && node.getAttribute('src').startsWith('chrome-extension'))) {
+                                    applyStylesToImages();
+                                }
+                            }
+                            // Check for images inside the added node
+                            const images = node.querySelectorAll?.('img[alt="torobcheImage"], img[src^="chrome-extension"]');
+                            if (images && images.length > 0) {
+                                applyStylesToImages();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        
+        manualRtlState.imageObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
 
     chrome.storage.sync.get(['manualRtlSettings'], (result) => {
         const settings = result.manualRtlSettings;
@@ -82,6 +127,18 @@ export function removeHighlight() {
 export function cleanupTextSelector() {
     removeHighlightStyle();
     removeHighlight();
+    removeStylesFromImages();
+    
+    // Remove class from body when deactivated
+    if (document.body) {
+        document.body.classList.remove('rtl-manual-loaded');
+    }
+    
+    // Disconnect image observer
+    if (manualRtlState.imageObserver) {
+        manualRtlState.imageObserver.disconnect();
+        manualRtlState.imageObserver = null;
+    }
 
     document.removeEventListener('selectionchange', handleSelectionChange);
     document.removeEventListener('mouseup', onMouseUp);

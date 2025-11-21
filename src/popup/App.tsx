@@ -26,6 +26,7 @@ import ServiceList, { services } from './list';
 import Settings from './Settings';
 import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
+import { ManualRtlSettings } from '../types/manualRtl';
 import './App.css';
 import manifest from '../../public/manifest.json';
 
@@ -266,31 +267,20 @@ const lightTheme = createTheme({
     },
 });
 
-interface TextSelectorSettings {
-    enabled: 'enabled' | 'allowed_sites' | 'disabled';
-    highlightMode: 'disabled' | 'on_selection' | 'on_direction_change';
-    highlightColor: string;
-    highlightOpacity: number;
-    logoDisplay: 'always' | 'on_hover' | 'disabled';
-    manualRtlEnabled?: boolean;
-    manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
-    menuDisplayMode?: 'logo_first' | 'menu_direct';
-}
-
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
-    const [manualRtlSettings, setManualRtlSettings] = React.useState<TextSelectorSettings>({
-        enabled: 'enabled',
-        highlightMode: 'on_selection',
+    const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
+        manualRtlEnabled: true,
+        manualRtlSiteMode: 'allowed_sites',
+        menuDisplayMode: 'logo_first',
+        highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
-        highlightOpacity: 0.1,
+        highlightOpacity: 0.3,
         logoDisplay: 'always',
-        manualRtlEnabled: false,
-        manualRtlSiteMode: 'all',
-        menuDisplayMode: 'logo_first'
+        applyFont: true
     });
  
 
@@ -311,14 +301,14 @@ function App() {
                 const settings = result.manualRtlSettings;
                 if (settings) {
                     setManualRtlSettings({
-                        enabled: 'enabled',
-                        highlightMode: 'on_selection',
-                        highlightColor: '#ff0000',
-                        highlightOpacity: 0.1,
-                        logoDisplay: 'always',
-                        manualRtlEnabled: false,
-                        manualRtlSiteMode: 'all',
+                        manualRtlEnabled: true,
+                        manualRtlSiteMode: 'allowed_sites',
                         menuDisplayMode: 'logo_first',
+                        highlightMode: 'on_direction_change',
+                        highlightColor: '#ff0000',
+                        highlightOpacity: 0.3,
+                        logoDisplay: 'always',
+                        applyFont: true,
                         ...settings
                     });
                 }
@@ -348,14 +338,14 @@ function App() {
                     const newSettings = changes.manualRtlSettings?.newValue;
                     if (newSettings) {
                         setManualRtlSettings({
-                            enabled: 'enabled',
-                            highlightMode: 'on_selection',
-                            highlightColor: '#ff0000',
-                            highlightOpacity: 0.1,
-                            logoDisplay: 'always',
-                            manualRtlEnabled: false,
-                            manualRtlSiteMode: 'all',
+                            manualRtlEnabled: true,
+                            manualRtlSiteMode: 'allowed_sites',
                             menuDisplayMode: 'logo_first',
+                            highlightMode: 'on_direction_change',
+                            highlightColor: '#ff0000',
+                            highlightOpacity: 0.3,
+                            logoDisplay: 'always',
+                            applyFont: true,
                             ...newSettings
                         });
                     }
@@ -471,13 +461,13 @@ function App() {
     };
 
     // Save manual RTL settings to storage when changed
-    const handleManualRtlSettingsChange = async (settings: TextSelectorSettings) => {
+    const handleManualRtlSettingsChange = async (settings: ManualRtlSettings) => {
         setManualRtlSettings(settings);
         try {
             chrome.storage.sync.set({ manualRtlSettings: settings });
             
             // If enabling manual RTL, inject code
-            if (settings.manualRtlEnabled && settings.enabled !== 'disabled') {
+            if (settings.manualRtlEnabled) {
                 // Inject code for ernie.baidu.com if permissions are granted
                 injectManualRtlForErnie();
                 

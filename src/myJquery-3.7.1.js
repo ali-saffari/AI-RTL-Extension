@@ -10702,8 +10702,11 @@ if ( typeof noGlobal === "undefined" ) {
 	window.AQ = jQuery;
 }
 
-
-
+// Ensure AQ is always set on window for Chrome extensions
+// This is important when webpack bundles the file and may change the scope
+if ( typeof window !== "undefined" ) {
+	window.AQ = jQuery;
+}
 
 return jQuery;
 } );
