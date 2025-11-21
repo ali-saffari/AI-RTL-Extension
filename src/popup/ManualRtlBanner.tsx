@@ -60,7 +60,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     setIsValidHttpPage(null);
                 }
             } catch (error) {
-                console.log('[ManualRtlBanner] Error checking tab URL:', error);
                 setIsValidHttpPage(null);
             }
         };
@@ -83,7 +82,6 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                 chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
                     if (!isMounted) return;
                     if (chrome.runtime.lastError) {
-                        console.log('[ManualRtlBanner] getActiveTabInfo error:', chrome.runtime.lastError.message);
                         return;
                     }
                     if (response?.success) {
@@ -93,9 +91,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     }
                 });
             } catch (error) {
-                if (isMounted) {
-                    console.log('[ManualRtlBanner] getActiveTabInfo exception:', (error as Error)?.message);
-                }
+                // Silently handle errors
             }
         };
 

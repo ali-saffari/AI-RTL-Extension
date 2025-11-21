@@ -75,7 +75,6 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
             const hasOrigin = await chrome.permissions.contains({ origins: origins });
             setHasPermission(hasScripting && hasOrigin);
         } catch (error) {
-            console.error('[SiteActivationSection] Error checking permission:', error);
             setHasPermission(false);
         }
     }, [activeHostname]);
@@ -183,11 +182,10 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                         setActiveSites(updatedSites);
                         await checkPermission();
                     } catch (error) {
-                        console.error('[SiteActivationSection] Error adding site:', error);
+                        // Silently handle errors
                     }
                 });
             } catch (error) {
-                console.error('[SiteActivationSection] Error checking permission:', error);
                 // On error, show modal as fallback
                 setPermissionModalOpen(true);
             }
@@ -208,7 +206,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     setActiveSites(updatedSites);
                 });
             } catch (error) {
-                console.error('[SiteActivationSection] Error removing site:', error);
+                // Silently handle errors
             }
         }
     };
@@ -457,48 +455,40 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                 return;
                             }
                             
-                            console.log('[SiteActivationSection] Requesting permission via background for:', activeHostname);
-                            
                             // Request permission through background script
                             try {
-                                const response = await chrome.runtime.sendMessage({
-                                    action: 'toggleManualRtlSite',
-                                    hostname: activeHostname,
-                                    favicon: faviconSrc || undefined
+                                const response = await new Promise<any>((resolve, reject) => {
+                                    chrome.runtime.sendMessage({
+                                        action: 'toggleManualRtlSite',
+                                        hostname: activeHostname,
+                                        favicon: faviconSrc || undefined
+                                    }, (response) => {
+                                        if (chrome.runtime.lastError) {
+                                            reject(new Error(chrome.runtime.lastError.message));
+                                            return;
+                                        }
+                                        resolve(response);
+                                    });
                                 });
                                 
-                                console.log('[SiteActivationSection] Background response:', response);
-                                
                                 if (!response || !response.success) {
-                                    console.log('[SiteActivationSection] Permission denied or error:', response?.error);
                                     setPermissionModalOpen(false);
                                     return;
                                 }
                                 
-                                if (response.alreadyExists) {
-                                    // Site already in list, just update state
-                                    console.log('[SiteActivationSection] Site already in list');
-                                    chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
-                                        const currentSites = result.manualRtlActiveSites || [];
-                                        setActiveSites(currentSites);
-                                        await checkPermission();
-                                    });
-                                } else {
-                                    // Site was added, update state
-                                    chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
-                                        const currentSites = result.manualRtlActiveSites || [];
-                                        setActiveSites(currentSites);
-                                        await checkPermission();
-                                    });
-                                }
+                                // Update state regardless of whether site was already in list
+                                chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
+                                    const currentSites = result.manualRtlActiveSites || [];
+                                    setActiveSites(currentSites);
+                                    await checkPermission();
+                                });
                                 
                                 setPermissionModalOpen(false);
                             } catch (error) {
-                                console.error('[SiteActivationSection] Error requesting permission via background:', error);
+                                // Silently handle connection errors
                                 setPermissionModalOpen(false);
                             }
                         } catch (error) {
-                            console.error('[SiteActivationSection] Error in permission request:', error);
                             setPermissionModalOpen(false);
                         }
                     }}

@@ -20,12 +20,10 @@ import { mdiInformationOutline, mdiRefresh, mdiDelete, mdiDownload, mdiUpload } 
 
 interface ExtensionSettingsProps {
     isDarkMode: boolean;
-    onThemeChange?: (isDark: boolean) => void;
 }
 
 const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
-    isDarkMode,
-    onThemeChange
+    isDarkMode
 }) => {
     const theme = useTheme();
     const [autoUpdate, setAutoUpdate] = React.useState(true);
@@ -47,7 +45,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                 }
             });
         } catch (error) {
-            console.log('Failed to load extension settings:', error);
+            // Silently handle load errors
         }
     }, []);
 
@@ -56,7 +54,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
         try {
             chrome.storage.sync.set({ autoUpdate: enabled });
         } catch (error) {
-            console.log('Failed to save auto update setting:', error);
+            // Silently handle save errors
         }
     };
 
@@ -65,7 +63,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
         try {
             chrome.storage.sync.set({ notifications: enabled });
         } catch (error) {
-            console.log('Failed to save notifications setting:', error);
+            // Silently handle save errors
         }
     };
 
@@ -74,7 +72,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
         try {
             chrome.storage.sync.set({ analytics: enabled });
         } catch (error) {
-            console.log('Failed to save analytics setting:', error);
+            // Silently handle save errors
         }
     };
 
@@ -85,7 +83,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                     alert('کش با موفقیت پاک شد.');
                 });
             } catch (error) {
-                console.log('Failed to clear cache:', error);
+                // Silently handle clear errors
             }
         }
     };
@@ -100,7 +98,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                     });
                 });
             } catch (error) {
-                console.log('Failed to clear data:', error);
+                // Silently handle clear errors
             }
         }
     };
@@ -118,7 +116,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                 URL.revokeObjectURL(url);
             });
         } catch (error) {
-            console.log('Failed to export settings:', error);
+            // Silently handle export errors
         }
     };
 
@@ -139,7 +137,6 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                         });
                     } catch (error) {
                         alert('خطا در وارد کردن تنظیمات. لطفاً فایل معتبری انتخاب کنید.');
-                        console.log('Failed to import settings:', error);
                     }
                 };
                 reader.readAsText(file);

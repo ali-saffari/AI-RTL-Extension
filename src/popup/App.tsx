@@ -7,7 +7,6 @@ import {
     Typography,
     Chip,
     Avatar,
-    Container,
     Tabs,
     Tab,
     AppBar,
@@ -19,8 +18,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiFileDocumentEdit, mdiMessageText, mdiStar, mdiHeart, mdiCog } from '@mdi/js';
-// Using Material-UI built-in icons instead of icons-material package
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import Settings from './Settings';
@@ -58,63 +56,18 @@ const darkTheme = createTheme({
     typography: {
         fontFamily: ['"iranyekan"', 'Tahoma', 'Arial'].join(','),
         fontSize: 12,
-        h1: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 700,
-        },
-        h2: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 600,
-        },
-        h3: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 600,
-        },
-        h4: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        h5: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        h6: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        body1: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 400,
-        },
-        body2: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 400,
-        },
+        h1: { fontFamily: '"iranyekan"', fontWeight: 700 },
+        h2: { fontFamily: '"iranyekan"', fontWeight: 600 },
+        h3: { fontFamily: '"iranyekan"', fontWeight: 600 },
+        h4: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        h5: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        h6: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        body1: { fontFamily: '"iranyekan"', fontWeight: 400 },
+        body2: { fontFamily: '"iranyekan"', fontWeight: 400 },
     },
     components: {
         MuiCssBaseline: {
-            styleOverrides: {
-                '@global': {
-                    '@keyframes gradientShift': {
-                        '0%, 100%': {
-                            backgroundPosition: '0% 50%',
-                        },
-                        '50%': {
-                            backgroundPosition: '100% 50%',
-                        },
-                    },
-                    '@keyframes pulse': {
-                        '0%, 100%': {
-                            transform: 'scale(1)',
-                            opacity: 0.8,
-                        },
-                        '50%': {
-                            transform: 'scale(1.2)',
-                            opacity: 1,
-                        },
-                    },
-                },
-            },
+            styleOverrides: {},
         },
         MuiChip: {
             styleOverrides: {
@@ -176,63 +129,18 @@ const lightTheme = createTheme({
     typography: {
         fontFamily: ['"iranyekan"', 'Tahoma', 'Arial'].join(','),
         fontSize: 12,
-        h1: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 700,
-        },
-        h2: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 600,
-        },
-        h3: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 600,
-        },
-        h4: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        h5: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        h6: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 500,
-        },
-        body1: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 400,
-        },
-        body2: {
-            fontFamily: '"iranyekan"',
-            fontWeight: 400,
-        },
+        h1: { fontFamily: '"iranyekan"', fontWeight: 700 },
+        h2: { fontFamily: '"iranyekan"', fontWeight: 600 },
+        h3: { fontFamily: '"iranyekan"', fontWeight: 600 },
+        h4: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        h5: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        h6: { fontFamily: '"iranyekan"', fontWeight: 500 },
+        body1: { fontFamily: '"iranyekan"', fontWeight: 400 },
+        body2: { fontFamily: '"iranyekan"', fontWeight: 400 },
     },
     components: {
         MuiCssBaseline: {
-            styleOverrides: {
-                '@global': {
-                    '@keyframes gradientShift': {
-                        '0%, 100%': {
-                            backgroundPosition: '0% 50%',
-                        },
-                        '50%': {
-                            backgroundPosition: '100% 50%',
-                        },
-                    },
-                    '@keyframes pulse': {
-                        '0%, 100%': {
-                            transform: 'scale(1)',
-                            opacity: 0.8,
-                        },
-                        '50%': {
-                            transform: 'scale(1.2)',
-                            opacity: 1,
-                        },
-                    },
-                },
-            },
+            styleOverrides: {},
         },
         MuiChip: {
             styleOverrides: {
@@ -263,7 +171,6 @@ const lightTheme = createTheme({
                 },
             },
         }
-       
     },
 });
 
@@ -284,8 +191,6 @@ function App() {
     });
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
-    const [activeSitesCount, setActiveSitesCount] = React.useState<number>(0);
- 
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
@@ -304,14 +209,7 @@ function App() {
                 const settings = result.manualRtlSettings;
                 if (settings) {
                     setManualRtlSettings({
-                        manualRtlEnabled: true,
-                        manualRtlSiteMode: 'allowed_sites',
-                        menuDisplayMode: 'logo_first',
-                        highlightMode: 'on_direction_change',
-                        highlightColor: '#ff0000',
-                        highlightOpacity: 0.3,
-                        logoDisplay: 'always',
-                        applyFont: true,
+                        ...manualRtlSettings,
                         ...settings
                     });
                 }
@@ -319,26 +217,10 @@ function App() {
                 if (result.manualRtlInfoDismissed === true) {
                     setManualRtlInfoDismissed(true);
                 }
-                // Calculate active sites count
-                // Detect Edge browser
-                const isEdge = navigator.userAgent.indexOf('Edg') > -1;
-                const activeCount = services.filter(service => {
-                    // Copilot is always disabled in Edge
-                    if (service.key === 'copilot' && isEdge) {
-                        return false;
-                    }
-                    const value = result[service.key];
-                    // If value is explicitly true, it's active
-                    // If value is undefined, it defaults to true (based on ServiceList defaults)
-                    // If value is explicitly false, it's inactive
-                    return value === true || value === undefined;
-                }).length;
-                setActiveSitesCount(activeCount);
                 setIsLoading(false);
             });
         } catch (error) {
             // Extension context invalidated or other error - use default values
-            console.log('Chrome storage access failed, using default values:', error);
             setIsLoading(false);
         }
     }, []);
@@ -362,38 +244,10 @@ function App() {
                     const newSettings = changes.manualRtlSettings?.newValue;
                     if (newSettings) {
                         setManualRtlSettings({
-                            manualRtlEnabled: true,
-                            manualRtlSiteMode: 'allowed_sites',
-                            menuDisplayMode: 'logo_first',
-                            highlightMode: 'on_direction_change',
-                            highlightColor: '#ff0000',
-                            highlightOpacity: 0.3,
-                            logoDisplay: 'always',
-                            applyFont: true,
+                            ...manualRtlSettings,
                             ...newSettings
                         });
                     }
-                }
-                // Update active sites count if any service state changed
-                const serviceKeys = services.map(s => s.key);
-                const hasServiceChange = Object.keys(changes).some(key => serviceKeys.includes(key));
-                if (hasServiceChange) {
-                    // Detect Edge browser
-                    const isEdge = navigator.userAgent.indexOf('Edg') > -1;
-                    chrome.storage.sync.get(serviceKeys, (result) => {
-                        const activeCount = services.filter(service => {
-                            // Copilot is always disabled in Edge
-                            if (service.key === 'copilot' && isEdge) {
-                                return false;
-                            }
-                            const value = result[service.key];
-                            // If value is explicitly true, it's active
-                            // If value is undefined, it defaults to true (based on ServiceList defaults)
-                            // If value is explicitly false, it's inactive
-                            return value === true || value === undefined;
-                        }).length;
-                        setActiveSitesCount(activeCount);
-                    });
                 }
             }
         };
@@ -411,7 +265,7 @@ function App() {
         try {
             chrome.storage.sync.set({ rtlAlgorithmMode: value });
         } catch (error) {
-            console.log('Failed to save RTL algorithm setting:', error);
+            // Silently handle save errors
         }
     };
 
@@ -421,87 +275,7 @@ function App() {
         try {
             chrome.storage.sync.set({ supportHide: enabled });
         } catch (error) {
-            console.log('Failed to save support setting:', error);
-        }
-    };
-
-
-    // Inject manual RTL code for ernie.baidu.com if permissions are granted
-    const injectManualRtlForErnie = async () => {
-        try {
-            // Check if permissions are granted
-            const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-            const hasAllUrls = await chrome.permissions.contains({ origins: ['<all_urls>'] });
-            
-            if (!hasScripting || !hasAllUrls) {
-                console.log('[Manual RTL] Permissions not granted for ernie.baidu.com');
-                return;
-            }
-
-            // Get all tabs with ernie.baidu.com
-            const tabs = await chrome.tabs.query({ url: '*://ernie.baidu.com/*' });
-            
-            for (const tab of tabs) {
-                if (!tab.id || !tab.url) continue;
-                
-                try {
-                    // Inject manual RTL activation event
-                    await chrome.scripting.executeScript({
-                        target: { tabId: tab.id },
-                        func: () => {
-                            if (typeof window !== 'undefined') {
-                                window.dispatchEvent(new CustomEvent('manualRtlActivate'));
-                            }
-                        }
-                    });
-                    console.log(`[Manual RTL] Code injected for ernie.baidu.com tab ${tab.id}`);
-                } catch (injectError) {
-                    console.error(`[Manual RTL] Error injecting code for tab ${tab.id}:`, injectError);
-                }
-            }
-        } catch (error) {
-            console.error('[Manual RTL] Error in injectManualRtlForErnie:', error);
-        }
-    };
-
-    // Inject content script for writesonic.com if permissions are granted
-    const injectContentForWritesonic = async () => {
-        try {
-            // Check if permissions are granted for writesonic.com
-            const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-            const hasWritesonic = await chrome.permissions.contains({ origins: ['*://app.writesonic.com/*', '*://www.app.writesonic.com/*'] });
-            
-            if (!hasScripting || !hasWritesonic) {
-                console.log('[Writesonic] Permissions not granted for writesonic.com');
-                return;
-            }
-
-            // Get all tabs with app.writesonic.com
-            const tabs = await chrome.tabs.query({ url: '*://app.writesonic.com/*' });
-            
-            for (const tab of tabs) {
-                if (!tab.id || !tab.url) continue;
-                
-                try {
-                    // Inject content script activation event
-                    await chrome.scripting.executeScript({
-                        target: { tabId: tab.id },
-                        func: () => {
-                            if (typeof window !== 'undefined') {
-                                // Trigger content script initialization
-                                window.dispatchEvent(new CustomEvent('contentScriptActivate'));
-                                // Also trigger manual RTL activation
-                                window.dispatchEvent(new CustomEvent('manualRtlActivate'));
-                            }
-                        }
-                    });
-                    console.log(`[Writesonic] Content script activated for tab ${tab.id}`);
-                } catch (injectError) {
-                    console.error(`[Writesonic] Error injecting code for tab ${tab.id}:`, injectError);
-                }
-            }
-        } catch (error) {
-            console.error('[Writesonic] Error in injectContentForWritesonic:', error);
+            // Silently handle save errors
         }
     };
 
@@ -510,17 +284,9 @@ function App() {
         setManualRtlSettings(settings);
         try {
             chrome.storage.sync.set({ manualRtlSettings: settings });
-            
-            // If enabling manual RTL, inject code
-            if (settings.manualRtlEnabled) {
-                // Inject code for ernie.baidu.com if permissions are granted
-                injectManualRtlForErnie();
-                
-                // Inject content script for writesonic.com if permissions are granted
-                injectContentForWritesonic();
-            }
+            // Manual RTL will be activated automatically via storage change listener in content scripts
         } catch (error) {
-            console.log('Failed to save manual RTL settings:', error);
+            // Silently handle save errors
         }
     };
 
@@ -531,13 +297,10 @@ function App() {
         try {
             chrome.storage.sync.set({ isDarkMode: newTheme });
         } catch (error) {
-            console.log('Failed to save theme setting:', error);
+            // Silently handle save errors
         }
     };
 
-    // سیستم اسکرول تب‌ها - ساده و کارآمد
-    const TAB_HEADER_HEIGHT = 80; // افزایش ارتفاع برای اطمینان
-    
     // اسکرول دستی - فعال کردن تب بر اساس موقعیت اسکرول
     React.useEffect(() => {
         let scrollTimeout: number;
@@ -585,96 +348,25 @@ function App() {
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
         
-        // اسکرول به بخش مورد نظر با افست
-        setTimeout(() => {
-            console.log('Tab changed to:', newValue);
-            
-            if (newValue === 0) {
-                const element = document.getElementById('sites-section');
-                console.log('Sites section element:', element);
+        const sectionIds = ['sites-section', 'settings-section', 'report-section', 'notes-section'];
+        const sectionId = sectionIds[newValue];
+        
+        if (sectionId) {
+            setTimeout(() => {
+                const element = document.getElementById(sectionId);
                 if (element) {
                     const headerOffset = 60;
                     const elementPosition = element.getBoundingClientRect().top;
                     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
                     const offsetPosition = elementPosition + currentScrollTop - headerOffset;
                     
-                    console.log('Element position:', elementPosition);
-                    console.log('Current scroll top:', currentScrollTop);
-                    console.log('Offset position:', offsetPosition);
-                    
                     window.scrollTo({
                         top: offsetPosition,
                         behavior: "smooth"
                     });
-                    console.log('Scrolled to sites section');
-                } else {
-                    console.log('Sites section not found!');
                 }
-            } else if (newValue === 1) {
-                const element = document.getElementById('settings-section');
-                console.log('Settings section element:', element);
-                if (element) {
-                    const headerOffset = 60;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
-                    
-                    console.log('Element position:', elementPosition);
-                    console.log('Current scroll top:', currentScrollTop);
-                    console.log('Offset position:', offsetPosition);
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-                    console.log('Scrolled to settings section');
-                } else {
-                    console.log('Settings section not found!');
-                }
-            } else if (newValue === 2) {
-                const element = document.getElementById('report-section');
-                console.log('Report section element:', element);
-                if (element) {
-                    const headerOffset = 60;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
-                    
-                    console.log('Element position:', elementPosition);
-                    console.log('Current scroll top:', currentScrollTop);
-                    console.log('Offset position:', offsetPosition);
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-                    console.log('Scrolled to report section');
-                } else {
-                    console.log('Report section not found!');
-                }
-            } else if (newValue === 3) {
-                const element = document.getElementById('notes-section');
-                console.log('Notes section element:', element);
-                if (element) {
-                    const headerOffset = 60;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
-                    
-                    console.log('Element position:', elementPosition);
-                    console.log('Current scroll top:', currentScrollTop);
-                    console.log('Offset position:', offsetPosition);
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-                    console.log('Scrolled to notes section');
-                } else {
-                    console.log('Notes section not found!');
-                }
-            }
-        }, 100);
+            }, 100);
+        }
     };
 
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
@@ -690,7 +382,7 @@ function App() {
         try {
             chrome.storage.sync.set({ manualRtlInfoDismissed: dismissed });
         } catch (error) {
-            console.log('Failed to save manualRtlInfoDismissed:', error);
+            // Silently handle save errors
         }
     }, []);
 
@@ -740,8 +432,6 @@ function App() {
                         borderBottom: isDarkMode 
                             ? '1px solid rgba(0, 234, 255, 0.47)'
                             : '1px solid rgb(0, 234, 255)',
-               
-                    
                     }} 
                     dir="ltr"
                 >
@@ -811,9 +501,7 @@ function App() {
                     </Box>
                 </Paper>
 
-
-
-                <Box sx={{ textAlign: 'center', py: 3, px: 2 ,    background: isDarkMode 
+                <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#b3d1e4' }}>
                     <Typography 
@@ -822,7 +510,6 @@ function App() {
                             fontSize: '0.8rem',
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 1)',
                             lineHeight: 1.4,
-                         
                             fontWeight: 400
                         }}
                     >
@@ -832,15 +519,13 @@ function App() {
 
                 <Paper elevation={0} sx={{ 
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
-                    // border: isDarkMode ? 'none' : '1px solid #e2e8f0',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
                     <AppBar 
                         position="sticky"
                         sx={{
                             backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
-                            color: isDarkMode ? '#ffffff' : '#ffffff',
-                            // borderBottom: isDarkMode ? '1px solid rgba(0, 233, 255, 0.2)' : '1px solid #e2e8f0'
+                            color: '#ffffff'
                         }}
                     >
                         <Tabs
@@ -849,7 +534,6 @@ function App() {
                             style={{ 
                                 direction: 'rtl',
                                 boxShadow: 'none'
-                        
                             }}
                         >
                             <Tab label="سایت‌ها" />
@@ -859,25 +543,23 @@ function App() {
                         </Tabs>
                     </AppBar>
                     
-               
-                        <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
-                        <ManualRtlBanner
-                            isDarkMode={isDarkMode}
-                            manualRtlSettings={manualRtlSettings}
-                            onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                            manualRtlInfoDismissed={manualRtlInfoDismissed}
-                            onManualRtlInfoDismissedChange={handleManualRtlInfoDismissedChange}
-                        />
-                        
-                       
+                    <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
+                        {manualRtlSettings.manualRtlEnabled && (
+                            <ManualRtlBanner
+                                isDarkMode={isDarkMode}
+                                manualRtlSettings={manualRtlSettings}
+                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                                manualRtlInfoDismissed={manualRtlInfoDismissed}
+                                onManualRtlInfoDismissedChange={handleManualRtlInfoDismissedChange}
+                            />
+                        )}
                         
                         <Typography 
                             variant="body1" 
                             sx={{ 
                                 mb: 1.2, 
-                                mt: 4.5,
-                                textAlign: 'center', 
-
+                                mt: manualRtlSettings.manualRtlEnabled ? 4.5 : 1.2,
+                                textAlign: 'center',
                                 fontFamily: 'iranyekan',
                                 fontWeight: 600,
                                 color: isDarkMode ? '#ffffff' : '#1e293b'
@@ -903,12 +585,22 @@ function App() {
                                 manualRtlSettings={manualRtlSettings}
                                 onManualRtlSettingsChange={handleManualRtlSettingsChange}
                             />
-                            
                         </div>
-
+                        
+                        <div id="settings-section">
+                            <Settings
+                                rtlAlgorithm={rtlAlgorithm}
+                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                                supportHide={supportHide}
+                                onSupportChange={handleSupportChange}
+                                isDarkMode={isDarkMode}
+                                manualRtlSettings={manualRtlSettings}
+                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                            />
+                        </div>
                         
                         <div id="report-section">
-                               <Box sx={{ 
+                            <Box sx={{ 
                                 textAlign: 'center', 
                                 mt: 2, 
                                 p: 2, 
@@ -1083,10 +775,8 @@ function App() {
                                         </a>
                                     </Box>
                                 </Box>
-                                
                             </Box>
                         </div>
-                   
                 </Paper>
 
             </div>

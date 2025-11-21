@@ -270,7 +270,21 @@ function isValidHttpPage(url) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'openOptionsPage') {
         try {
-            chrome.runtime.openOptionsPage();
+            // Check if hash is provided in message, default to #manual-rtl
+            const hash = message.hash || '#manual-rtl';
+            const optionsUrl = chrome.runtime.getURL(`options.html${hash}`);
+            
+            // Open options page with hash
+            chrome.tabs.query({ url: chrome.runtime.getURL('options.html*') }, (tabs) => {
+                if (tabs && tabs.length > 0) {
+                    // If options page is already open, update it with hash
+                    chrome.tabs.update(tabs[0].id, { url: optionsUrl, active: true });
+                } else {
+                    // If not open, create new tab with hash
+                    chrome.tabs.create({ url: optionsUrl });
+                }
+            });
+            
             sendResponse({ success: true });
             return true;
         } catch (error) {

@@ -18,7 +18,6 @@ import {
     Typography,
     useTheme,
     SvgIcon,
-    Chip,
     Box,
     Paper,
 } from '@mui/material';
@@ -182,7 +181,6 @@ export default function ServiceList() {
                 chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
                     if (!isMounted) return;
                     if (chrome.runtime.lastError) {
-                        console.log('[ServiceList] getActiveTabInfo error:', chrome.runtime.lastError.message);
                         setActiveServiceKey(null);
                         return;
                     }
@@ -194,7 +192,6 @@ export default function ServiceList() {
                 });
             } catch (error) {
                 if (isMounted) {
-                    console.log('[ServiceList] getActiveTabInfo exception:', (error as Error)?.message);
                     setActiveServiceKey(null);
                 }
             }
@@ -225,7 +222,6 @@ export default function ServiceList() {
             );
         } catch (error) {
             // Extension context invalidated or other error - use default values
-            console.log('Chrome storage access failed, using default service states:', error);
             // If Edge, ensure Copilot is disabled
             if (isEdge) {
                 setChecked(prev => ({ ...prev, copilot: false }));
@@ -261,7 +257,6 @@ export default function ServiceList() {
                         return;
                     }
                 } catch (error) {
-                    console.error('Error checking permissions:', error);
                     alert(`خطا در بررسی مجوزها برای ${services.find(s => s.key === key)?.name}`);
                     return;
                 }
@@ -271,7 +266,7 @@ export default function ServiceList() {
         try {
             chrome.storage.sync.set({ [key]: checked });
         } catch (error) {
-            console.log('Failed to save service setting:', error);
+            // Silently handle save errors
         }
         setChecked(prev => ({ ...prev, [key]: checked }));
     };
@@ -583,29 +578,29 @@ export default function ServiceList() {
                                 }
                                 
                                 // Send message to background to request permissions and enable service
-                                chrome.runtime.sendMessage({
-                                    action: 'requestPermissionsAndEnableService',
-                                    serviceKey: key
-                                }, (response) => {
-                                    if (chrome.runtime.lastError) {
-                                        console.error('Error sending message:', chrome.runtime.lastError);
-                                        alert('خطا در ارتباط با background script. لطفاً دوباره تلاش کنید.');
-                                        return;
-                                    }
-                                    
-                                    if (response?.success) {
-                                        // Update UI
-                                        setChecked(prev => ({ ...prev, [key]: true }));
-                                        setPermissionModalOpen(false);
-                                        console.log(`[Service] ${serviceInfo.name} enabled successfully`);
-                                    } else if (response?.granted === false) {
-                                        alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
-                                    } else {
-                                        alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
-                                    }
-                                });
+                                try {
+                                    chrome.runtime.sendMessage({
+                                        action: 'requestPermissionsAndEnableService',
+                                        serviceKey: key
+                                    }, (response) => {
+                                        if (chrome.runtime.lastError) {
+                                            // Silently handle connection errors
+                                            return;
+                                        }
+                                        
+                                        if (response?.success) {
+                                            setChecked(prev => ({ ...prev, [key]: true }));
+                                            setPermissionModalOpen(false);
+                                        } else if (response?.granted === false) {
+                                            alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
+                                        } else {
+                                            alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                                        }
+                                    });
+                                } catch (error) {
+                                    // Silently handle connection errors
+                                }
                             } catch (error) {
-                                console.error('Error requesting permissions:', error);
                                 alert('خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
                             }
                         }}

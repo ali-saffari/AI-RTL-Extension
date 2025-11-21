@@ -175,11 +175,16 @@ export function showPopupMenu(range, element, options = {}) {
         event.stopImmediatePropagation();
 
         if (chrome.runtime && chrome.runtime.sendMessage) {
-            chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error('[RTL Text Selector] Error opening options page:', chrome.runtime.lastError);
-                }
-            });
+            try {
+                chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        // Silently handle connection errors
+                        return;
+                    }
+                });
+            } catch (error) {
+                // Silently handle connection errors
+            }
         }
 
         updateElementHighlight(null, false);

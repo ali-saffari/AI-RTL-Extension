@@ -70,10 +70,9 @@ const Settings: React.FC<SettingsProps> = ({
             try {
                 const hasPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
                 setHasTabsPermission(hasPermission);
-            } catch (error) {
-                console.log('[Settings] Error checking tabs permission:', error);
-                setHasTabsPermission(false);
-            }
+        } catch (error) {
+            setHasTabsPermission(false);
+        }
         };
         checkTabsPermission();
     }, []);
@@ -523,6 +522,43 @@ const Settings: React.FC<SettingsProps> = ({
                         }}>
                             تنظیمات چینش دستی
                         </Typography>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'row', 
+                            gap: 0.5,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 1
+                        }}>
+                            <Box component="span" sx={{ 
+                                px: 1, 
+                                py: 0.3, 
+                                bgcolor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(255, 152, 0, 0.2)' 
+                                    : 'rgba(255, 152, 0, 0.15)',
+                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 152, 0, 0.5)' : 'rgba(255, 152, 0, 0.4)'}`,
+                                color: theme.palette.mode === 'dark' ? '#ff9800' : '#f57c00', 
+                                borderRadius: 1, 
+                                fontSize: '0.7rem',
+                                fontWeight: 600
+                            }}>
+                                آزمایشی
+                            </Box>
+                            <Box component="span" sx={{ 
+                                px: 1, 
+                                py: 0.3, 
+                                bgcolor: theme.palette.mode === 'dark' 
+                                    ? 'rgb(33, 46, 65)' 
+                                    : 'rgba(30, 64, 175, 0.1)',
+                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                color: theme.palette.primary.main, 
+                                borderRadius: 1, 
+                                fontSize: '0.7rem',
+                                fontWeight: 600
+                            }}>
+                                جدید
+                            </Box>
+                        </Box>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
                             fontSize: '0.75rem',
