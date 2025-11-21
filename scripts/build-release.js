@@ -7,7 +7,7 @@ const archiver = require('archiver');
 const manifestPath = path.join(__dirname, '../public/manifest.json');
 const packagePath = path.join(__dirname, '../package.json');
 const distPath = path.join(__dirname, '../dist');
-const outputPath = path.join(__dirname, '../');
+const outputPath = path.join(__dirname, '../releases');
 
 // Colors for console output
 const colors = {
@@ -95,6 +95,13 @@ async function main() {
         
         // Step 5: Create zip file
         logStep('6', 'Creating zip file...');
+        
+        // Ensure output directory exists
+        if (!fs.existsSync(outputPath)) {
+            fs.mkdirSync(outputPath, { recursive: true });
+            logSuccess('Created releases directory');
+        }
+        
         const zipFileName = `chrome-extension-v${newVersion}.zip`;
         const zipFilePath = path.join(outputPath, zipFileName);
         
