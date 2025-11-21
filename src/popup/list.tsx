@@ -115,6 +115,7 @@ export default function ServiceList() {
     const [permissionModalOpen, setPermissionModalOpen] = useState(false);
     const [permissionServiceName, setPermissionServiceName] = useState<string>('');
     const [permissionServiceKey, setPermissionServiceKey] = useState<string>('');
+    const [activeServiceKey, setActiveServiceKey] = useState<string | null>(null);
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -134,6 +135,79 @@ export default function ServiceList() {
     };
     
     const allowButtonText = getAllowButtonText();
+
+    // Check current tab and find matching service using the same method as ManualRtlBanner
+    useEffect(() => {
+        let isMounted = true;
+
+        const handleActiveTabUpdate = (message: any) => {
+            if (!isMounted || !message) return;
+            if (message.action === 'activeTabInfoUpdated') {
+                const tabInfo = message.payload;
+                if (tabInfo?.hostname) {
+                    findMatchingService(tabInfo.hostname);
+                } else {
+                    setActiveServiceKey(null);
+                }
+            }
+        };
+
+        const findMatchingService = (hostname: string) => {
+            // Normalize hostname (remove www. prefix if present)
+            const normalizedHostname = hostname.replace(/^www\./, '').toLowerCase();
+            
+            // Find matching service
+            for (const service of services) {
+                try {
+                    const serviceUrlObj = new URL(service.url);
+                    const serviceHostname = serviceUrlObj.hostname.replace(/^www\./, '').toLowerCase();
+                    
+                    // Check if hostname matches
+                    if (normalizedHostname === serviceHostname || 
+                        normalizedHostname.endsWith('.' + serviceHostname) ||
+                        serviceHostname.endsWith('.' + normalizedHostname)) {
+                        setActiveServiceKey(service.key);
+                        return;
+                    }
+                } catch (e) {
+                    // Skip invalid service URLs
+                    continue;
+                }
+            }
+            setActiveServiceKey(null);
+        };
+
+        const fetchActiveTabInfo = () => {
+            try {
+                chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
+                    if (!isMounted) return;
+                    if (chrome.runtime.lastError) {
+                        console.log('[ServiceList] getActiveTabInfo error:', chrome.runtime.lastError.message);
+                        setActiveServiceKey(null);
+                        return;
+                    }
+                    if (response?.success && response?.tabInfo?.hostname) {
+                        findMatchingService(response.tabInfo.hostname);
+                    } else {
+                        setActiveServiceKey(null);
+                    }
+                });
+            } catch (error) {
+                if (isMounted) {
+                    console.log('[ServiceList] getActiveTabInfo exception:', (error as Error)?.message);
+                    setActiveServiceKey(null);
+                }
+            }
+        };
+
+        fetchActiveTabInfo();
+        chrome.runtime.onMessage.addListener(handleActiveTabUpdate);
+
+        return () => {
+            isMounted = false;
+            chrome.runtime.onMessage.removeListener(handleActiveTabUpdate);
+        };
+    }, []);
 
     useEffect(() => {
         try {
@@ -203,6 +277,16 @@ export default function ServiceList() {
     };
 
 
+    // Sort services: active service first, then others
+    const sortedServices = React.useMemo(() => {
+        if (!activeServiceKey) {
+            return services;
+        }
+        const activeService = services.find(s => s.key === activeServiceKey);
+        const otherServices = services.filter(s => s.key !== activeServiceKey);
+        return activeService ? [activeService, ...otherServices] : services;
+    }, [activeServiceKey]);
+
     // default: '#1a1a2e',
     // paper: '#2f2f41',
     return (
@@ -222,11 +306,13 @@ export default function ServiceList() {
                         }}
                         style={{ direction: 'ltr' }}
                     >
-                        {Object.values(checked).filter(Boolean).length} فعال
+                        تعداد کل: {services.length} | تعداد فعال: {Object.values(checked).filter(Boolean).length}
                     </ListSubheader>
                 }
             >
-                {services.map((service, index) => (
+                {sortedServices.map((service, index) => {
+                    const isActive = service.key === activeServiceKey;
+                    return (
                     <React.Fragment key={service.key}>
                             <ListItem disablePadding style={{ direction: 'ltr' }}>
                                 <ListItemButton style={{ direction: 'ltr' }}>
@@ -253,32 +339,50 @@ export default function ServiceList() {
                                                         {service.name}
                                                     </Typography>
                                                 </a>
-                                                <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                                                    <IconButton 
-                                                        size="small" 
-                                                        sx={{ 
-                                                            p: 0.5,
-                                                            color: 'text.primary',
-                                                            opacity: 0.4,
-                                                            transition: 'all 0.2s ease',
-                                                            '&:hover': {
-                                                                opacity: 1,
-                                                                transform: 'scale(1.1)',
-                                                                '& .MuiSvgIcon-root': {
-                                                                    color: '#ffffff'
+                                                {!isActive && (
+                                                    <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                                        <IconButton 
+                                                            size="small" 
+                                                            sx={{ 
+                                                                p: 0.5,
+                                                                color: 'text.primary',
+                                                                opacity: 0.4,
+                                                                transition: 'all 0.2s ease',
+                                                                '&:hover': {
+                                                                    opacity: 1,
+                                                                    transform: 'scale(1.1)',
+                                                                    '& .MuiSvgIcon-root': {
+                                                                        color: '#ffffff'
+                                                                    }
                                                                 }
-                                                            }
-                                                        }}
-                                                    >
-                                                        <SvgIcon sx={{ 
-                                                            fontSize: '1.15rem',
-                                                            color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
-                                                            transition: 'all 0.2s ease'
-                                                        }}>
-                                                            <path d={mdiOpenInNew} />
-                                                        </SvgIcon>
-                                                    </IconButton>
-                                                </a>
+                                                            }}
+                                                        >
+                                                            <SvgIcon sx={{ 
+                                                                fontSize: '1.15rem',
+                                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                                                                transition: 'all 0.2s ease'
+                                                            }}>
+                                                                <path d={mdiOpenInNew} />
+                                                            </SvgIcon>
+                                                        </IconButton>
+                                                    </a>
+                                                )}
+                                                {isActive && (
+                                                    <Box component="span" sx={{ 
+                                                        px: 1, 
+                                                        py: 0.3, 
+                                                        bgcolor: isDarkMode 
+                                                            ? 'rgba(76, 175, 80, 0.2)' 
+                                                            : 'rgba(76, 175, 80, 0.15)',
+                                                        border: `1px solid ${isDarkMode ? 'rgba(76, 175, 80, 0.5)' : 'rgba(76, 175, 80, 0.4)'}`,
+                                                        color: isDarkMode ? '#4caf50' : '#2e7d32', 
+                                                        borderRadius: 1, 
+                                                        fontSize: '0.6rem',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        در حال استفاده
+                                                    </Box>
+                                                )}
                                                 {service.new && (
                                                     <Box component="span" sx={{ 
                                                         px: 1, 
@@ -289,7 +393,7 @@ export default function ServiceList() {
                                                         border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
                                                         color: isDarkMode ? '#00e9ff' : '#1c39bb', 
                                                         borderRadius: 1, 
-                                                        fontSize: '0.7rem',
+                                                        fontSize: '0.6rem',
                                                         fontWeight: 600
                                                     }}>
                                                         جدید
@@ -378,9 +482,10 @@ export default function ServiceList() {
                                 </Paper>
                             </Box>
                         )}
-                        {index < services.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
+                        {index < sortedServices.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
-                ))}
+                    );
+                })}
             </List>
 
 

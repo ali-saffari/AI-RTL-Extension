@@ -253,7 +253,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 >
                     <Tab label="الگوریتم" />
                     <Tab label="راستچین دستی" />
-                    <Tab label="سایر تنظیمات" />
+                    <Tab label="تنظیمات عمومی" />
                     
                    
                 </Tabs>

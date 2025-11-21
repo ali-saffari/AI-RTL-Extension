@@ -404,9 +404,10 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             </Typography>
                             <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',
-                                fontSize: '0.85rem'
+                                fontSize: '0.75rem',
+                                lineHeight: 1.6
                             }}>
-                                تنظیمات مربوط به قابلیت تغییر چینش متن به صورت دستی
+                                این قابلیت به شما امکان می‌دهد تا به صورت دستی متن‌های مورد نظر خود را در هر سایتی راست چین یا چپ چین کنید.
                             </Typography>
                         </Box>
 
@@ -1077,7 +1078,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="permission-dialog-description" sx={{ fontFamily: 'iranyekan' }}>
-                    افزونه برای تشخیص تب فعلی و اعمال راست‌چین روی سایت‌های پشتیبانی‌شده به پرمیشن Tabs نیاز دارد.
+                    افزونه برای تشخیص تب فعلی و اعمال راست‌چین روی سایت‌ مشخص شده به پرمیشن Tabs نیاز دارد.
                     <br /><br />
                     افزونه فقط دامنه و آیکن تب فعلی را دریافت می‌کند. هیچ URL کامل، محتوای صفحه یا داده شخصی خوانده نمی‌شود.
                 </DialogContentText>

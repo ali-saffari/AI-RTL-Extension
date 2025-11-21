@@ -58,10 +58,25 @@ const Settings: React.FC<SettingsProps> = ({
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
+    const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     
     React.useEffect(() => {
         setSelectedValue(rtlAlgorithm);
     }, [rtlAlgorithm]);
+
+    // Check tabs permission
+    React.useEffect(() => {
+        const checkTabsPermission = async () => {
+            try {
+                const hasPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
+                setHasTabsPermission(hasPermission);
+            } catch (error) {
+                console.log('[Settings] Error checking tabs permission:', error);
+                setHasTabsPermission(false);
+            }
+        };
+        checkTabsPermission();
+    }, []);
 
     const algorithmDescriptions = {
         'advanced_section': {
@@ -510,24 +525,27 @@ const Settings: React.FC<SettingsProps> = ({
                         </Typography>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
-                            fontSize: '0.8rem'
+                            fontSize: '0.75rem',
+                            lineHeight: 1.6
                         }}>
-                            تنظیمات مربوط به قابلیت تغییر چینش متن به صورت دستی
+                            این قابلیت به شما امکان می‌دهد تا به صورت دستی متن‌های مورد نظر خود را در هر سایتی راست چین یا چپ چین کنید.
                         </Typography>
                     </Box>
 
                     {/* فعال/غیرفعال بودن - Toggle ساده */}
                     <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
                         p: 2,
                         borderRadius: 2,
                         bgcolor: theme.palette.background.paper,
                         border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
                         mb: 2
                     }}>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            mb: hasTabsPermission === false ? 1 : 0
+                        }}>
                             <Typography variant="body1" sx={{ 
                                 fontWeight: 500, 
                                 fontSize: '0.95rem',
@@ -535,31 +553,59 @@ const Settings: React.FC<SettingsProps> = ({
                             }}>
                                 راست‌چین دستی
                             </Typography>
-                            <Typography variant="body2" sx={{ 
-                                color: 'text.secondary',
-                                fontSize: '0.8rem',
-                                mt: 0.5
-                            }}>
-                                {!manualRtlSettings.manualRtlEnabled ? 'غیرفعال' : 'فعال'}
-                            </Typography>
+                            {hasTabsPermission === true ? (
+                                <Switch
+                                    checked={manualRtlSettings.manualRtlEnabled !== false}
+                                    onChange={(e) => {
+                                        onManualRtlSettingsChange?.({
+                                            ...manualRtlSettings,
+                                            manualRtlEnabled: e.target.checked
+                                        });
+                                    }}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        },
+                                    }}
+                                />
+                            ) : (
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => {
+                                        chrome.tabs.create({ url: chrome.runtime.getURL('options.html#manual-rtl') });
+                                    }}
+                                    sx={{
+                                        fontSize: '0.75rem',
+                                        fontFamily: 'iranyekan',
+                                        textTransform: 'none',
+                                        borderRadius: '6px',
+                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(30, 64, 175, 0.5)',
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        '&:hover': {
+                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    برو به تنظیمات
+                                </Button>
+                            )}
                         </Box>
-                        <Switch
-                            checked={manualRtlSettings.manualRtlEnabled !== false}
-                            onChange={(e) => {
-                                onManualRtlSettingsChange?.({
-                                    ...manualRtlSettings,
-                                    manualRtlEnabled: e.target.checked
-                                });
-                            }}
-                            sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                            }}
-                        />
+                        {hasTabsPermission === false && (
+                            <Typography variant="body2" sx={{ 
+                                fontSize: '0.75rem',
+                                color: 'text.secondary',
+                                fontFamily: 'iranyekan',
+                                width: '100%',
+                                display: 'block'
+                            }}>
+                                برای اولین بار باید از طریق تنظیمات فعال شود
+                            </Typography>
+                        )}
                     </Box>
 
                     {/* لینک به تنظیمات پیشرفته */}

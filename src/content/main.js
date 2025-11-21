@@ -320,6 +320,38 @@ async function initializeAllServices() {
 // Make initializeAllServices available globally for scripting injection
 window.initializeAllServices = initializeAllServices;
 
+// Listen for messages from background script to get page info
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'getPageInfo') {
+        try {
+            const url = window.location.href;
+            const hostname = window.location.hostname;
+            const favicon = document.querySelector('link[rel*="icon"]')?.href || '';
+            
+            // Only return if it's http/https
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                sendResponse({
+                    success: true,
+                    hostname: hostname,
+                    favicon: favicon,
+                    url: url
+                });
+            } else {
+                sendResponse({
+                    success: false,
+                    error: 'Not an http/https page'
+                });
+            }
+        } catch (e) {
+            sendResponse({
+                success: false,
+                error: e.message
+            });
+        }
+        return true; // Keep channel open for async response
+    }
+});
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {

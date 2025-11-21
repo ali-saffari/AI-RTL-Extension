@@ -282,12 +282,15 @@ function App() {
         logoDisplay: 'always',
         applyFont: true
     });
+    const [isLoading, setIsLoading] = React.useState<boolean>(true);
+    const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
+    const [activeSitesCount, setActiveSitesCount] = React.useState<number>(0);
  
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings'], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -312,10 +315,31 @@ function App() {
                         ...settings
                     });
                 }
+                // Load manualRtlInfoDismissed
+                if (result.manualRtlInfoDismissed === true) {
+                    setManualRtlInfoDismissed(true);
+                }
+                // Calculate active sites count
+                // Detect Edge browser
+                const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+                const activeCount = services.filter(service => {
+                    // Copilot is always disabled in Edge
+                    if (service.key === 'copilot' && isEdge) {
+                        return false;
+                    }
+                    const value = result[service.key];
+                    // If value is explicitly true, it's active
+                    // If value is undefined, it defaults to true (based on ServiceList defaults)
+                    // If value is explicitly false, it's inactive
+                    return value === true || value === undefined;
+                }).length;
+                setActiveSitesCount(activeCount);
+                setIsLoading(false);
             });
         } catch (error) {
             // Extension context invalidated or other error - use default values
             console.log('Chrome storage access failed, using default values:', error);
+            setIsLoading(false);
         }
     }, []);
 
@@ -349,6 +373,27 @@ function App() {
                             ...newSettings
                         });
                     }
+                }
+                // Update active sites count if any service state changed
+                const serviceKeys = services.map(s => s.key);
+                const hasServiceChange = Object.keys(changes).some(key => serviceKeys.includes(key));
+                if (hasServiceChange) {
+                    // Detect Edge browser
+                    const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+                    chrome.storage.sync.get(serviceKeys, (result) => {
+                        const activeCount = services.filter(service => {
+                            // Copilot is always disabled in Edge
+                            if (service.key === 'copilot' && isEdge) {
+                                return false;
+                            }
+                            const value = result[service.key];
+                            // If value is explicitly true, it's active
+                            // If value is undefined, it defaults to true (based on ServiceList defaults)
+                            // If value is explicitly false, it's inactive
+                            return value === true || value === undefined;
+                        }).length;
+                        setActiveSitesCount(activeCount);
+                    });
                 }
             }
         };
@@ -639,6 +684,46 @@ function App() {
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
+    // Handle manualRtlInfoDismissed change
+    const handleManualRtlInfoDismissedChange = React.useCallback((dismissed: boolean) => {
+        setManualRtlInfoDismissed(dismissed);
+        try {
+            chrome.storage.sync.set({ manualRtlInfoDismissed: dismissed });
+        } catch (error) {
+            console.log('Failed to save manualRtlInfoDismissed:', error);
+        }
+    }, []);
+
+    // Show loading screen while data is being loaded
+    if (isLoading) {
+        return (
+            <CacheProvider value={cacheRtl}>
+                <ThemeProvider theme={currentTheme}>
+                    <CssBaseline />
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '400px',
+                            width: '100%'
+                        }}
+                    >
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                fontFamily: 'iranyekan',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                            }}
+                        >
+                            در حال بارگذاری...
+                        </Typography>
+                    </Box>
+                </ThemeProvider>
+            </CacheProvider>
+        );
+    }
+
     return (
         <CacheProvider value={cacheRtl}>
             <ThemeProvider theme={currentTheme}>
@@ -780,6 +865,8 @@ function App() {
                             isDarkMode={isDarkMode}
                             manualRtlSettings={manualRtlSettings}
                             onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                            manualRtlInfoDismissed={manualRtlInfoDismissed}
+                            onManualRtlInfoDismissedChange={handleManualRtlInfoDismissedChange}
                         />
                         
                        
@@ -796,9 +883,8 @@ function App() {
                                 color: isDarkMode ? '#ffffff' : '#1e293b'
                             }}
                         >
-                              هوش مصنوعی‌هایی که
-                              <br />
-                               الگوریتم هوشمند پشتیبانی میشود:
+                              سایت هایی که
+                               راست چین هوشمند پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
                             <Box sx={{ p: 2 }}>

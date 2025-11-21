@@ -382,6 +382,77 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     } else if (message.action === 'getActiveTabInfo' || message.action === 'getActiveSessionInfo') {
         const snapshot = getActiveTabSnapshot();
+        
+        // If we don't have hostname, try to get it from content script
+        if (!snapshot || !snapshot.hostname) {
+            (async () => {
+                try {
+                    // Try to get active tab ID
+                    let activeTabId = null;
+                    try {
+                        const hasTabsPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
+                        if (hasTabsPermission && chrome?.tabs?.query) {
+                            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+                            if (tabs && tabs.length > 0) {
+                                activeTabId = tabs[0].id;
+                            }
+                        } else if (activeTabInfo?.tabId) {
+                            // Use cached tab ID if available
+                            activeTabId = activeTabInfo.tabId;
+                        }
+                    } catch (e) {
+                        // If tabs permission not available, try to use cached tab ID
+                        if (activeTabInfo?.tabId) {
+                            activeTabId = activeTabInfo.tabId;
+                        }
+                    }
+
+                    // If we have tab ID, try to get info from content script via message
+                    if (activeTabId && chrome?.tabs?.sendMessage) {
+                        try {
+                            const pageInfo = await chrome.tabs.sendMessage(activeTabId, { action: 'getPageInfo' });
+
+                            if (pageInfo && pageInfo.success && pageInfo.hostname) {
+                                const enhancedSnapshot = {
+                                    tabId: activeTabId,
+                                    hostname: pageInfo.hostname || '',
+                                    favicon: pageInfo.favicon || '',
+                                    hasHostname: Boolean(pageInfo.hostname),
+                                    activatedAt: activeTabInfo?.activatedAt || Date.now(),
+                                    lastUpdatedAt: Date.now()
+                                };
+                                
+                                // Update activeTabInfo cache
+                                activeTabInfo = enhancedSnapshot;
+                                
+                                sendResponse?.({
+                                    success: true,
+                                    tabInfo: enhancedSnapshot,
+                                    tabHostname: enhancedSnapshot.hostname || '',
+                                    session: null
+                                });
+                                return;
+                            }
+                        } catch (e) {
+                            // If content script message fails, fall back to snapshot
+                            console.log('[ActiveTab] Failed to get info from content script:', e.message);
+                        }
+                    }
+                } catch (error) {
+                    console.log('[ActiveTab] Error getting info from content script:', error.message);
+                }
+                
+                // Fall back to original snapshot
+                sendResponse?.({
+                    success: true,
+                    tabInfo: snapshot,
+                    tabHostname: snapshot?.hostname || '',
+                    session: null
+                });
+            })();
+            return true; // Keep channel open for async response
+        }
+        
         sendResponse?.({
             success: true,
             tabInfo: snapshot,

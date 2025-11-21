@@ -14,36 +14,27 @@ interface ManualRtlBannerProps {
     isDarkMode: boolean;
     manualRtlSettings: ManualRtlSettings;
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
+    manualRtlInfoDismissed: boolean;
+    onManualRtlInfoDismissedChange: (dismissed: boolean) => void;
 }
 
 const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     isDarkMode,
     manualRtlSettings,
-    onManualRtlSettingsChange
+    onManualRtlSettingsChange,
+    manualRtlInfoDismissed,
+    onManualRtlInfoDismissedChange
 }) => {
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
     const [isValidHttpPage, setIsValidHttpPage] = React.useState<boolean | null>(null);
     const [showInfoText, setShowInfoText] = React.useState<boolean>(false);
-    const [isAnimating, setIsAnimating] = React.useState<boolean>(false);
 
-    // Load showInfoText state from storage and show with animation if not dismissed
+    // Show if not dismissed
     React.useEffect(() => {
-        try {
-            chrome.storage.sync.get(['manualRtlInfoDismissed'], (result) => {
-                if (result.manualRtlInfoDismissed !== true) {
-                    // Show with animation after a small delay
-                    setTimeout(() => {
-                        setIsAnimating(true);
-                        setTimeout(() => {
-                            setShowInfoText(true);
-                        }, 50);
-                    }, 100);
-                }
-            });
-        } catch (error) {
-            console.log('[ManualRtlBanner] Error loading info dismissed state:', error);
+        if (!manualRtlInfoDismissed) {
+            setShowInfoText(true);
         }
-    }, []);
+    }, [manualRtlInfoDismissed]);
 
     // Check if current tab is http/https
     React.useEffect(() => {
@@ -144,7 +135,8 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
             case 'ai_sites':
                 return 'فعال برای سایت‌های هوش مصنوعی';
             case 'allowed_sites':
-                return 'فعال برای سایت‌های مجاز';
+                // return 'فعال برای سایت‌های مجاز';
+                return 'فعال';
             case 'ai_and_allowed':
                 return (
                     <>
@@ -191,41 +183,95 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             height: 20
                         }}
                     />
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            fontSize: '0.7rem',
-                            fontWeight: 400,
-                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                            fontFamily: 'iranyekan'
-                        }}
-                    >
-                        راست چین دستی
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: '0.7rem',
+                                fontWeight: 400,
+                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                fontFamily: 'iranyekan'
+                            }}
+                        >
+                            راست چین دستی
+                        </Typography>
+                        <Typography
+                            component="span"
+                            sx={{
+                                fontSize: '0.55rem',
+                                fontWeight: 400,
+                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                fontFamily: 'iranyekan',
+                                opacity: 0.8
+                            }}
+                        >
+                              (همه سایت ها)
+                        </Typography>
+                    </Box>
+                    <Box component="span" sx={{ 
+                        px: 1, 
+                        py: 0.3, 
+                        bgcolor: isDarkMode 
+                            ? 'rgba(255, 152, 0, 0.2)' 
+                            : 'rgba(255, 152, 0, 0.15)',
+                        border: `1px solid ${isDarkMode ? 'rgba(255, 152, 0, 0.5)' : 'rgba(255, 152, 0, 0.4)'}`,
+                        color: isDarkMode ? '#ff9800' : '#f57c00', 
+                        borderRadius: 1, 
+                        fontSize: '0.6rem',
+                        fontWeight: 600
+                    }}>
+                        جدید
+                    </Box>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            fontSize: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
-                                ? '0.55rem'
-                                : '0.65rem',
-                            fontWeight: 400,
-                            color: !manualRtlSettings.manualRtlEnabled
-                                ? (isDarkMode ? '#f44336' : '#d32f2f')
-                                : (isDarkMode ? '#4caf50' : '#2e7d32'),
-                            fontFamily: 'iranyekan',
-                            lineHeight: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
-                                ? 1.3
-                                : 1.5,
-                            whiteSpace: manualRtlSettings.manualRtlEnabled && manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
-                                ? 'normal'
-                                : 'nowrap'
-                        }}
-                    >
-                        {statusText}
-                    </Typography>
+                    {!manualRtlSettings.manualRtlEnabled ? (
+                        <a
+                            href={chrome.runtime.getURL('options.html#manual-rtl')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                textDecoration: 'none'
+                            }}
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontSize: '0.65rem',
+                                    fontWeight: 400,
+                                    color: isDarkMode ? '#f44336' : '#d32f2f',
+                                    fontFamily: 'iranyekan',
+                                    lineHeight: 1.5,
+                                    whiteSpace: 'nowrap',
+                                    '&:hover': {
+                                        textDecoration: 'underline'
+                                    }
+                                }}
+                            >
+                                {statusText}
+                            </Typography>
+                        </a>
+                    ) : (
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                    ? '0.55rem'
+                                    : '0.65rem',
+                                fontWeight: 400,
+                                color: isDarkMode ? '#4caf50' : '#2e7d32',
+                                fontFamily: 'iranyekan',
+                                lineHeight: manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                    ? 1.3
+                                    : 1.5,
+                                whiteSpace: manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed'
+                                    ? 'normal'
+                                    : 'nowrap'
+                            }}
+                        >
+                            {statusText}
+                        </Typography>
+                    )}
                     <a
                         href={chrome.runtime.getURL('options.html#manual-rtl')}
                         target="_blank"
@@ -302,10 +348,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                     mx: 2, 
                     mt: 1,
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    opacity: isAnimating ? 1 : 0,
-                    transform: isAnimating ? 'translateY(0)' : 'translateY(-10px)',
-                    transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out'
+                    justifyContent: 'space-between'
                 }}>
                     <Typography
                         variant="body2"
@@ -325,11 +368,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         size="small"
                         onClick={() => {
                             setShowInfoText(false);
-                            try {
-                                chrome.storage.sync.set({ manualRtlInfoDismissed: true });
-                            } catch (error) {
-                                console.log('[ManualRtlBanner] Error saving info dismissed state:', error);
-                            }
+                            onManualRtlInfoDismissedChange(true);
                         }}
                         sx={{
                             fontSize: '0.7rem',
@@ -354,9 +393,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         mt: 1,
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.2)'
-                            : '1px solid rgba(30, 64, 175, 0.15)',
-                        opacity: isAnimating ? 1 : 0,
-                        transition: 'opacity 0.3s ease-in-out'
+                            : '1px solid rgba(30, 64, 175, 0.15)'
                     }}
                 />
             </>
