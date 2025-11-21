@@ -35,10 +35,10 @@ const STYLE_CONTENT = `
     }
     .rtl-text-selector-menu.minimized .rtl-text-selector-menu-header {
         border-bottom: none;
-        padding: 6px;
+        padding: 3px;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 25px;
+        height: 25px;
         border-radius: 6px;
     }
     .rtl-text-selector-menu-header:hover {

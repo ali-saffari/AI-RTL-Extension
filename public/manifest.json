@@ -18,7 +18,7 @@
     ],
     "host_permissions": [
         "https://chatgpt-rtl.ir/*",
-        "https://api.chatgpt-rtl.ir/*"
+        "https://*.chatgpt-rtl.ir/*"
     ],
     "optional_host_permissions": [
         "<all_urls>"
@@ -71,11 +71,17 @@
                 "https://openrouter.ai/*",
                 "https://agent.minimax.io/*",
                 "https://jules.google.com/*",
+                "https://chatgpt-rtl.ir/*",
+                "https://*.chatgpt-rtl.ir/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
                 "https://digen.ai/*",
-                "https://chatgpt-rtl.ir/*",
-                "https://api.chatgpt-rtl.ir/*"
+                "https://lovable.dev/*",
+                "https://www.lovable.dev/*",
+                "https://ernie.baidu.com/*",
+                "https://www.ernie.baidu.com/*",
+                "https://app.writesonic.com/*",
+                "https://www.app.writesonic.com/*"
             ]
         }
     ],

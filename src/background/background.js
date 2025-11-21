@@ -10,7 +10,7 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true
+    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true
 };
 
 
@@ -193,6 +193,12 @@ function broadcastActiveTabInfo(reason = 'unknown') {
         chrome.runtime.sendMessage({
             action: 'activeTabInfoUpdated',
             payload: snapshot
+        }, (response) => {
+            // Check for errors silently
+            if (chrome.runtime.lastError) {
+                // Receiving end does not exist - this is normal when no listeners are available
+                return;
+            }
         });
     } catch (error) {
         // Ignore broadcast errors
@@ -346,8 +352,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                                 return;
                             }
                         } catch (e) {
-                            // If content script message fails, fall back to snapshot
-                            console.log('[ActiveTab] Failed to get info from content script:', e.message);
+                            // If content script message fails (e.g., receiving end does not exist), fall back to snapshot
+                            // This is normal when content script is not injected or not ready
+                            if (e.message && !e.message.includes('Receiving end does not exist')) {
+                                console.log('[ActiveTab] Failed to get info from content script:', e.message);
+                            }
                         }
                     }
                 } catch (error) {
