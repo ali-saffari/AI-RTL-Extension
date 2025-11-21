@@ -253,14 +253,6 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
             const updatedSites = activeSites.filter(site => site.hostname !== hostname);
             await chrome.storage.sync.set({ manualRtlActiveSites: updatedSites });
             
-            // Also update manualRtlSettings.activeSites
-            const updatedSettings = {
-                ...manualRtlSettings,
-                activeSites: updatedSites
-            };
-            await chrome.storage.sync.set({ manualRtlSettings: updatedSettings });
-            onManualRtlSettingsChange(updatedSettings);
-            
             setActiveSites(updatedSites);
         } catch (error) {
             console.error('[ManualRTLTab] Error removing site:', error);
@@ -272,14 +264,6 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         try {
             const emptySites: ManualRtlActiveSite[] = [];
             await chrome.storage.sync.set({ manualRtlActiveSites: emptySites });
-            
-            // Also update manualRtlSettings.activeSites
-            const updatedSettings = {
-                ...manualRtlSettings,
-                activeSites: emptySites
-            };
-            await chrome.storage.sync.set({ manualRtlSettings: updatedSettings });
-            onManualRtlSettingsChange(updatedSettings);
             
             setActiveSites(emptySites);
         } catch (error) {
@@ -1215,7 +1199,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                     </Accordion>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ fontFamily: 'iranyekan', direction: 'rtl' }}>
+            <DialogActions sx={{ fontFamily: 'iranyekan', direction: 'rtl', flexDirection: 'row-reverse' }}>
                 <Button onClick={() => setPermissionDialogOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
                     انصراف
                 </Button>

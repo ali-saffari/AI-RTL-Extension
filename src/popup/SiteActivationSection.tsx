@@ -46,6 +46,39 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
     const [isLoading, setIsLoading] = React.useState(true);
     const [permissionModalOpen, setPermissionModalOpen] = React.useState(false);
     const [hasPermission, setHasPermission] = React.useState(false);
+    const [isUnsupportedSite, setIsUnsupportedSite] = React.useState(false);
+    
+    // Get browser language and determine "Allow" button text
+    const getAllowButtonText = React.useMemo(() => {
+        const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+        const langCode = browserLang.split('-')[0].toLowerCase();
+        
+        if (langCode === 'fa') {
+            return 'اجازه دادن';
+        } else if (langCode === 'ar') {
+            return 'السماح';
+        } else {
+            return 'Allow';
+        }
+    }, []);
+    
+    // Function to check permission (can be called from anywhere)
+    const checkPermission = React.useCallback(async () => {
+        if (!activeHostname) {
+            setHasPermission(false);
+            return;
+        }
+
+        try {
+            const origins = [`*://${activeHostname}/*`];
+            const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+            const hasOrigin = await chrome.permissions.contains({ origins: origins });
+            setHasPermission(hasScripting && hasOrigin);
+        } catch (error) {
+            console.error('[SiteActivationSection] Error checking permission:', error);
+            setHasPermission(false);
+        }
+    }, [activeHostname]);
 
     // Load active sites list and check permissions
     React.useEffect(() => {
@@ -59,25 +92,21 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
 
         loadActiveSites();
 
-        // Check permission for current site
-        const checkPermission = async () => {
+
+        // Check if site is unsupported (e.g., extensions gallery)
+        const checkUnsupportedSite = () => {
             if (!activeHostname) {
-                setHasPermission(false);
+                setIsUnsupportedSite(false);
                 return;
             }
-
-            try {
-                const origins = [`*://${activeHostname}/*`];
-                const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-                const hasOrigin = await chrome.permissions.contains({ origins: origins });
-                setHasPermission(hasScripting && hasOrigin);
-            } catch (error) {
-                console.error('[SiteActivationSection] Error checking permission:', error);
-                setHasPermission(false);
-            }
+            chrome.storage.local.get(['manualRtlUnsupportedSites'], (result) => {
+                const unsupportedSites = result.manualRtlUnsupportedSites || [];
+                setIsUnsupportedSite(unsupportedSites.includes(activeHostname));
+            });
         };
 
         checkPermission();
+        checkUnsupportedSite();
 
         // Listen for storage changes
         const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
@@ -85,13 +114,17 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                 const sites = changes.manualRtlActiveSites.newValue || [];
                 setActiveSites(sites);
             }
+            if (changes.manualRtlUnsupportedSites && activeHostname) {
+                const unsupportedSites = changes.manualRtlUnsupportedSites.newValue || [];
+                setIsUnsupportedSite(unsupportedSites.includes(activeHostname));
+            }
         };
 
         chrome.storage.onChanged.addListener(handleStorageChange);
         return () => {
             chrome.storage.onChanged.removeListener(handleStorageChange);
         };
-    }, [activeHostname]);
+    }, [activeHostname, checkPermission]);
 
     // Check if current site is in active list and has permission
     const isSiteActive = React.useMemo(() => {
@@ -123,16 +156,15 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                 }
                 
                 // Permission exists, proceed with adding site
-                chrome.storage.sync.get(['manualRtlActiveSites', 'manualRtlSettings'], async (result) => {
+                chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
                     try {
-                        const manualRtlSettings = result.manualRtlSettings || {};
-                        const currentSites = manualRtlSettings.activeSites || result.manualRtlActiveSites || [];
+                        const currentSites = result.manualRtlActiveSites || [];
                         
                         const siteExists = currentSites.some((site: ManualRtlActiveSite) => site.hostname === activeHostname);
                         if (siteExists) {
                             // Site already in list and has permission, just update state
                             setActiveSites(currentSites);
-                            setHasPermission(true);
+                            await checkPermission();
                             return;
                         }
                         
@@ -144,18 +176,12 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                         };
                         const updatedSites = [...currentSites, newSite];
                         
-                        const updatedSettings = {
-                            ...manualRtlSettings,
-                            activeSites: updatedSites
-                        };
-                        
                         await chrome.storage.sync.set({ 
-                            manualRtlActiveSites: updatedSites,
-                            manualRtlSettings: updatedSettings
+                            manualRtlActiveSites: updatedSites
                         });
                         
                         setActiveSites(updatedSites);
-                        setHasPermission(true);
+                        await checkPermission();
                     } catch (error) {
                         console.error('[SiteActivationSection] Error adding site:', error);
                     }
@@ -168,22 +194,14 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
         } else {
             // Remove site directly from popup (no permission needed, no background call)
             try {
-                chrome.storage.sync.get(['manualRtlActiveSites', 'manualRtlSettings'], async (result) => {
-                    const manualRtlSettings = result.manualRtlSettings || {};
-                    const currentSites = manualRtlSettings.activeSites || result.manualRtlActiveSites || [];
+                chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
+                    const currentSites = result.manualRtlActiveSites || [];
                     
                     // Remove site from list
                     const updatedSites = currentSites.filter((site: ManualRtlActiveSite) => site.hostname !== activeHostname);
                     
-                    // Update both manualRtlActiveSites and manualRtlSettings.activeSites
-                    const updatedSettings = {
-                        ...manualRtlSettings,
-                        activeSites: updatedSites
-                    };
-                    
                     await chrome.storage.sync.set({ 
-                        manualRtlActiveSites: updatedSites,
-                        manualRtlSettings: updatedSettings
+                        manualRtlActiveSites: updatedSites
                     });
                     
                     // Update local state
@@ -207,92 +225,119 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
         >
             {activeHostname ? (
                 <>
-                    <FormControlLabel
-                        sx={{
-                            pt: 1.5,
-                            pb: 0,
-                            m: 0,
-                            display: 'flex',
-                            flexDirection: 'row-reverse',
-                            justifyContent: 'space-between',
-                            '& .MuiFormControlLabel-label': {
-                                userSelect: 'none'
-                            }
-                        }}
-                        control={
-                            <Checkbox
-                                checked={isSiteActive}
-                                onChange={handleToggleSite}
-                                disabled={isLoading}
-                                sx={{
-                                    p: 0,
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                    '&.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                    }
-                                }}
-                            />
-                        }
-                        label={
+                    {isUnsupportedSite ? (
+                        <Box
+                            sx={{
+                                pt: 1.6,
+                                pb: 0.2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 0.3,
+                                textAlign: 'center'
+                            }}
+                        >
                             <Typography
                                 variant="body2"
-                                component="div"
                                 sx={{
                                     fontSize: '0.7rem',
                                     fontWeight: 500,
                                     color: isDarkMode ? '#ffffff' : '#1e293b',
-                                    fontFamily: 'iranyekan',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5
+                                    fontFamily: 'iranyekan'
                                 }}
                             >
-                                <span>برای</span>
-                                <Box
-                                    component="span"
+                                برای این سایت امکان فعال‌سازی وجود ندارد
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <FormControlLabel
+                            sx={{
+                                pt: 1.5,
+                                pb: 0,
+                                m: 0,
+                                display: 'flex',
+                                flexDirection: 'row-reverse',
+                                justifyContent: 'space-between',
+                                '& .MuiFormControlLabel-label': {
+                                    userSelect: 'none'
+                                }
+                            }}
+                            control={
+                                <Checkbox
+                                    checked={isSiteActive}
+                                    onChange={handleToggleSite}
+                                    disabled={isLoading}
                                     sx={{
-                                        display: 'inline-flex',
+                                        p: 0,
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        '&.Mui-checked': {
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                        }
+                                    }}
+                                />
+                            }
+                            label={
+                                <Typography
+                                    variant="body2"
+                                    component="div"
+                                    sx={{
+                                        fontSize: '0.7rem',
+                                        fontWeight: 500,
+                                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                                        fontFamily: 'iranyekan',
+                                        display: 'flex',
                                         alignItems: 'center',
-                                        gap: 0.4,
-                                        px: 0.8,
-                                        py: 0.2,
-                                        borderRadius: 1,
-                                        backgroundColor: isDarkMode
-                                            ? 'rgba(0, 233, 255, 0.08)'
-                                            : 'rgba(30, 64, 175, 0.08)'
+                                        flexWrap: 'wrap',
+                                        gap: 0.5
                                     }}
                                 >
-                                    {hasSiteDetails ? (
-                                        <img
-                                            src={faviconSrc}
-                                            alt={activeHostname}
-                                            style={{
-                                                width: 14,
-                                                height: 14,
-                                                borderRadius: 3,
-                                                border: isDarkMode
-                                                    ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                    : '1px solid rgba(30, 64, 175, 0.2)'
-                                            }}
-                                        />
-                                    ) : (
-                                        <SvgIcon
-                                            sx={{
-                                                fontSize: '0.85rem',
-                                                color: isDarkMode ? '#00e9ff' : '#1c39bb'
-                                            }}
-                                        >
-                                            <path d={mdiWeb} />
-                                        </SvgIcon>
-                                    )}
-                                    <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
-                                </Box>
-                                <span>راست چین دستی فعال شود؟</span>
-                            </Typography>
-                        }
-                        labelPlacement="start"
-                    />
+                                    <span>برای</span>
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 0.4,
+                                            px: 0.8,
+                                            py: 0.2,
+                                            borderRadius: 1,
+                                            backgroundColor: isDarkMode
+                                                ? 'rgba(0, 233, 255, 0.08)'
+                                                : 'rgba(30, 64, 175, 0.08)'
+                                        }}
+                                    >
+                                        {hasSiteDetails ? (
+                                            <img
+                                                src={faviconSrc}
+                                                alt={activeHostname}
+                                                style={{
+                                                    width: 14,
+                                                    height: 14,
+                                                    borderRadius: 3,
+                                                    border: isDarkMode
+                                                        ? '1px solid rgba(255, 255, 255, 0.2)'
+                                                        : '1px solid rgba(30, 64, 175, 0.2)'
+                                                }}
+                                            />
+                                        ) : (
+                                            <SvgIcon
+                                                sx={{
+                                                    fontSize: '0.85rem',
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                                }}
+                                            >
+                                                <path d={mdiWeb} />
+                                            </SvgIcon>
+                                        )}
+                                        <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
+                                    </Box>
+                                    <span>راست چین دستی فعال شود؟</span>
+                                </Typography>
+                            }
+                            labelPlacement="start"
+                        />
+                    )}
                 
                 </>
             ) : activeTabInfo?.tabId != null ? (
@@ -385,10 +430,25 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    افزونه برای اعمال راست‌چین دستی روی این سایت به مجوز Scripting نیاز دارد. این مجوز فقط برای اعمال تغییرات روی صفحه استفاده می‌شود و هیچ داده‌ای جمع‌آوری نمی‌شود.
+                    برای دریافت مجوز، روی دکمه <strong>دریافت مجوز</strong> کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{getAllowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
+                </Typography>
+                <Typography 
+                    variant="body1" 
+                    paragraph 
+                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                >
+                    این مجوز فقط برای اعمال تغییرات روی صفحه استفاده می‌شود و هیچ داده‌ای جمع‌آوری نمی‌شود.
                 </Typography>
             </DialogContent>
-            <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+            <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' , flexDirection: 'row-reverse' }} >
+                <Button 
+                    onClick={() => setPermissionModalOpen(false)}
+                    variant="text"
+                    color="primary"
+                    sx={{ fontFamily: 'iranyekan' }}
+                >
+                    بستن
+                </Button>
                 <Button 
                     onClick={async () => {
                         try {
@@ -397,67 +457,44 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                 return;
                             }
                             
-                            console.log('[SiteActivationSection] Requesting permission for:', activeHostname);
+                            console.log('[SiteActivationSection] Requesting permission via background for:', activeHostname);
                             
-                            // Request permission directly in popup (user gesture context)
-                            const origins = [`*://${activeHostname}/*`];
-                            const permissions = ['scripting'];
-                            
+                            // Request permission through background script
                             try {
-                                const granted = await chrome.permissions.request({ permissions, origins });
-                                console.log('[SiteActivationSection] Permission request result:', granted);
+                                const response = await chrome.runtime.sendMessage({
+                                    action: 'toggleManualRtlSite',
+                                    hostname: activeHostname,
+                                    favicon: faviconSrc || undefined
+                                });
                                 
-                                if (!granted) {
-                                    console.log('[SiteActivationSection] Permission denied by user');
+                                console.log('[SiteActivationSection] Background response:', response);
+                                
+                                if (!response || !response.success) {
+                                    console.log('[SiteActivationSection] Permission denied or error:', response?.error);
                                     setPermissionModalOpen(false);
                                     return;
                                 }
                                 
-                                // Permission granted, add site to list
-                                chrome.storage.sync.get(['manualRtlActiveSites', 'manualRtlSettings'], async (result) => {
-                                    try {
-                                        const manualRtlSettings = result.manualRtlSettings || {};
-                                        const currentSites = manualRtlSettings.activeSites || result.manualRtlActiveSites || [];
-                                        
-                                        const siteExists = currentSites.some((site: ManualRtlActiveSite) => site.hostname === activeHostname);
-                                        if (siteExists) {
-                                            // Site already in list, just update state
-                                            console.log('[SiteActivationSection] Site already in list');
-                                            setActiveSites(currentSites);
-                                            setHasPermission(true);
-                                            setPermissionModalOpen(false);
-                                            return;
-                                        }
-                                        
-                                        // Add site to list
-                                        const newSite: ManualRtlActiveSite = {
-                                            hostname: activeHostname,
-                                            favicon: faviconSrc || undefined,
-                                            addedAt: Date.now()
-                                        };
-                                        const updatedSites = [...currentSites, newSite];
-                                        
-                                        const updatedSettings = {
-                                            ...manualRtlSettings,
-                                            activeSites: updatedSites
-                                        };
-                                        
-                                        await chrome.storage.sync.set({ 
-                                            manualRtlActiveSites: updatedSites,
-                                            manualRtlSettings: updatedSettings
-                                        });
-                                        
-                                        console.log('[SiteActivationSection] Site added to list');
-                                        setActiveSites(updatedSites);
-                                        setHasPermission(true);
-                                        setPermissionModalOpen(false);
-                                    } catch (error) {
-                                        console.error('[SiteActivationSection] Error adding site:', error);
-                                        setPermissionModalOpen(false);
-                                    }
-                                });
+                                if (response.alreadyExists) {
+                                    // Site already in list, just update state
+                                    console.log('[SiteActivationSection] Site already in list');
+                                    chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
+                                        const currentSites = result.manualRtlActiveSites || [];
+                                        setActiveSites(currentSites);
+                                        await checkPermission();
+                                    });
+                                } else {
+                                    // Site was added, update state
+                                    chrome.storage.sync.get(['manualRtlActiveSites'], async (result) => {
+                                        const currentSites = result.manualRtlActiveSites || [];
+                                        setActiveSites(currentSites);
+                                        await checkPermission();
+                                    });
+                                }
+                                
+                                setPermissionModalOpen(false);
                             } catch (error) {
-                                console.error('[SiteActivationSection] Error requesting permission:', error);
+                                console.error('[SiteActivationSection] Error requesting permission via background:', error);
                                 setPermissionModalOpen(false);
                             }
                         } catch (error) {
@@ -470,14 +507,6 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     sx={{ fontFamily: 'iranyekan' }}
                 >
                     دریافت مجوز
-                </Button>
-                <Button 
-                    onClick={() => setPermissionModalOpen(false)}
-                    variant="text"
-                    color="primary"
-                    sx={{ fontFamily: 'iranyekan' }}
-                >
-                    بستن
                 </Button>
             </DialogActions>
         </Dialog>

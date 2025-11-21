@@ -45,11 +45,11 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         if (AQ('.AsBox').length === 0) {
             const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(extensionIconPath) : extensionIconPath;
             
-            $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle}">
+            $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle} ">
 
                     <a href="${saffariLink}" target="_blank">
 
-                  <img src="${alisaffari}" alt="ali saffari"></a>
+                  <img src="${alisaffari}" style="float: right;" alt="ali saffari"></a>
 
 
 

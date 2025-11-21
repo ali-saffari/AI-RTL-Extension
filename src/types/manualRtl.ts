@@ -7,7 +7,6 @@ export interface ManualRtlSettings {
     manualRtlSiteMode?: 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed';
     menuDisplayMode?: 'logo_first' | 'menu_direct';
     applyFont?: boolean;
-    activeSites?: ManualRtlActiveSite[];
 }
 
 export interface ManualRtlActiveSite {
@@ -24,7 +23,6 @@ export const DEFAULT_MANUAL_RTL_SETTINGS: ManualRtlSettings = {
     highlightColor: '#ff0000',
     highlightOpacity: 0.3,
     logoDisplay: 'always',
-    applyFont: true,
-    activeSites: []
+    applyFont: true
 };
 

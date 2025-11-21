@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Paper,
     Box,
     Typography,
     Switch,
@@ -12,12 +11,13 @@ import {
     ListItemText,
     ListItemSecondaryAction,
     Divider,
-    Tooltip,
-    IconButton,
     SvgIcon,
-    Grid
+    Grid,
+    Button,
+    Alert,
+    Snackbar
 } from '@mui/material';
-import { mdiInformationOutline } from '@mdi/js';
+import { mdiDownload, mdiUpload } from '@mdi/js';
 
 interface OtherSettingsTabProps {
     supportHide: boolean;
@@ -37,8 +37,151 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     const theme = useTheme();
     const manifest = chrome.runtime.getManifest();
     const author = typeof manifest.author === 'string' ? manifest.author : (manifest.author?.email || '');
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+    const [snackbarMessage, setSnackbarMessage] = React.useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
+
+    // Export settings
+    const handleExportSettings = async () => {
+        try {
+            const allSettings = await chrome.storage.sync.get(null);
+            
+            // Create export object with only relevant settings
+            const exportData = {
+                version: manifest.version,
+                exportDate: new Date().toISOString(),
+                settings: {
+                    rtlAlgorithmMode: allSettings.rtlAlgorithmMode,
+                    supportHide: allSettings.supportHide,
+                    manualRtlSettings: allSettings.manualRtlSettings,
+                    manualRtlActiveSites: allSettings.manualRtlActiveSites,
+                    analytics: allSettings.analytics,
+                    previewEnabled: allSettings.previewEnabled,
+                    // Export all service flags
+                    ...Object.keys(allSettings).reduce((acc, key) => {
+                        // Include service flags (check if it's a boolean service flag)
+                        if (key !== 'rtlAlgorithmMode' && 
+                            key !== 'supportHide' && 
+                            key !== 'manualRtlSettings' && 
+                            key !== 'manualRtlActiveSites' && 
+                            key !== 'analytics' && 
+                            key !== 'previewEnabled' &&
+                            typeof allSettings[key] === 'boolean') {
+                            acc[key] = allSettings[key];
+                        }
+                        return acc;
+                    }, {} as { [key: string]: any })
+                }
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatgpt-rtl-settings-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setSnackbarMessage('تنظیمات با موفقیت ذخیره شد');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error('[OtherSettingsTab] Error exporting settings:', error);
+            setSnackbarMessage('خطا در ذخیره تنظیمات');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        }
+    };
+
+    // Import settings
+    const handleImportSettings = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const importData = JSON.parse(text);
+
+            // Validate import data
+            if (!importData.settings) {
+                throw new Error('فرمت فایل نامعتبر است');
+            }
+
+            // Confirm import
+            const confirmed = window.confirm(
+                'آیا مطمئن هستید که می‌خواهید تنظیمات را وارد کنید؟ این کار تنظیمات فعلی را جایگزین می‌کند.'
+            );
+
+            if (!confirmed) {
+                // Reset file input
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+                return;
+            }
+
+            // Import settings
+            const settingsToImport: { [key: string]: any } = {};
+            
+            if (importData.settings.rtlAlgorithmMode !== undefined) {
+                settingsToImport.rtlAlgorithmMode = importData.settings.rtlAlgorithmMode;
+            }
+            if (importData.settings.supportHide !== undefined) {
+                settingsToImport.supportHide = importData.settings.supportHide;
+            }
+            if (importData.settings.manualRtlSettings !== undefined) {
+                settingsToImport.manualRtlSettings = importData.settings.manualRtlSettings;
+            }
+            if (importData.settings.manualRtlActiveSites !== undefined) {
+                settingsToImport.manualRtlActiveSites = importData.settings.manualRtlActiveSites;
+            }
+            if (importData.settings.analytics !== undefined) {
+                settingsToImport.analytics = importData.settings.analytics;
+            }
+            if (importData.settings.previewEnabled !== undefined) {
+                settingsToImport.previewEnabled = importData.settings.previewEnabled;
+            }
+
+            // Import service flags
+            Object.keys(importData.settings).forEach(key => {
+                if (key !== 'rtlAlgorithmMode' && 
+                    key !== 'supportHide' && 
+                    key !== 'manualRtlSettings' && 
+                    key !== 'manualRtlActiveSites' && 
+                    key !== 'analytics' && 
+                    key !== 'previewEnabled' &&
+                    typeof importData.settings[key] === 'boolean') {
+                    settingsToImport[key] = importData.settings[key];
+                }
+            });
+
+            await chrome.storage.sync.set(settingsToImport);
+
+            // Reload page to apply settings
+            window.location.reload();
+
+            setSnackbarMessage('تنظیمات با موفقیت وارد شد');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error('[OtherSettingsTab] Error importing settings:', error);
+            setSnackbarMessage('خطا در وارد کردن تنظیمات: ' + (error instanceof Error ? error.message : 'فرمت فایل نامعتبر است'));
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        } finally {
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
 
     return (
+        <>
         <Grid container spacing={3}>
             {/* تنظیمات عمومی */}
             <Grid item xs={12} sm={6}>
@@ -73,6 +216,72 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             },
                                         }}
                                     />
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText 
+                                    primary="خروجی گرفتن از تنظیمات"
+                                    secondary="ذخیره تمام تنظیمات در یک فایل JSON"
+                                />
+                                <ListItemSecondaryAction>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={
+                                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                <path d={mdiDownload} />
+                                            </SvgIcon>
+                                        }
+                                        onClick={handleExportSettings}
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            '&:hover': {
+                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                            },
+                                        }}
+                                    >
+                                        خروجی
+                                    </Button>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText 
+                                    primary="وارد کردن تنظیمات"
+                                    secondary="بازیابی تنظیمات از فایل JSON"
+                                />
+                                <ListItemSecondaryAction>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept=".json"
+                                        style={{ display: 'none' }}
+                                        onChange={handleImportSettings}
+                                    />
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={
+                                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                <path d={mdiUpload} />
+                                            </SvgIcon>
+                                        }
+                                        onClick={() => fileInputRef.current?.click()}
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            '&:hover': {
+                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                            },
+                                        }}
+                                    >
+                                        وارد کردن
+                                    </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
                         </List>
@@ -226,6 +435,21 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 </Card>
             </Grid>
         </Grid>
+        <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={4000}
+            onClose={() => setSnackbarOpen(false)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+            <Alert 
+                onClose={() => setSnackbarOpen(false)} 
+                severity={snackbarSeverity}
+                sx={{ fontFamily: 'iranyekan' }}
+            >
+                {snackbarMessage}
+            </Alert>
+        </Snackbar>
+    </>
     );
 };
 

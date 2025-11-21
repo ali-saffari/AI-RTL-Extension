@@ -56,10 +56,9 @@ function isAISite() {
 }
 
 function isAllowedSite(callback) {
-    chrome.storage.sync.get(['manualRtlSettings', 'manualRtlActiveSites'], (result) => {
+    chrome.storage.sync.get(['manualRtlActiveSites'], (result) => {
         const hostname = window.location.hostname;
-        const manualRtlSettings = result.manualRtlSettings || {};
-        const activeSites = manualRtlSettings.activeSites || result.manualRtlActiveSites || [];
+        const activeSites = result.manualRtlActiveSites || [];
         
         const isAllowed = activeSites.some(site => 
             site.hostname === hostname || hostname.endsWith('.' + site.hostname)

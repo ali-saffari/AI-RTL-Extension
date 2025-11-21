@@ -71,8 +71,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         highlightColor: '#ff0000',
         highlightOpacity: 0.3,
         logoDisplay: 'always',
-        applyFont: true,
-        activeSites: []
+        applyFont: true
     };
     
     if (details.reason === 'install') {
@@ -519,10 +518,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 if (granted) {
                     // Get current active sites
-                    const storage = await chrome.storage.sync.get(['manualRtlActiveSites', 'manualRtlSettings']);
-                    const manualRtlSettings = storage.manualRtlSettings || {};
-                    // Use activeSites from manualRtlSettings if available, otherwise from manualRtlActiveSites
-                    const currentSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+                    const storage = await chrome.storage.sync.get(['manualRtlActiveSites']);
+                    const currentSites = storage.manualRtlActiveSites || [];
 
                     // Check if site already exists
                     const siteExists = currentSites.some(site => site.hostname === hostname);
@@ -540,14 +537,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     };
                     const updatedSites = [...currentSites, newSite];
 
-                    // Update both manualRtlActiveSites and manualRtlSettings.activeSites
-                    const updatedSettings = {
-                        ...manualRtlSettings,
-                        activeSites: updatedSites
-                    };
                     await chrome.storage.sync.set({ 
-                        manualRtlActiveSites: updatedSites,
-                        manualRtlSettings: updatedSettings
+                        manualRtlActiveSites: updatedSites
                     });
 
                     console.log(`[Background] Site ${hostname} added to manual RTL active sites`);
@@ -610,7 +601,7 @@ async function shouldEnableManualRtlForSite(hostname) {
         }
         
         if (siteMode === 'allowed_sites') {
-            const activeSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+            const activeSites = storage.manualRtlActiveSites || [];
             return activeSites.some(site => site.hostname === hostname);
         }
         
@@ -618,7 +609,7 @@ async function shouldEnableManualRtlForSite(hostname) {
             if (isAISite(hostname)) {
                 return true;
             }
-            const activeSites = manualRtlSettings.activeSites || storage.manualRtlActiveSites || [];
+            const activeSites = storage.manualRtlActiveSites || [];
             return activeSites.some(site => site.hostname === hostname);
         }
         
@@ -680,6 +671,16 @@ async function activateManualRtlForSite(tabId) {
             // Ignore errors for error pages or invalid tabs
             if (injectError.message && injectError.message.includes('error page')) {
                 console.log('[Background] Tab is showing error page, skipping manual RTL injection');
+            } else if (injectError.message && injectError.message.includes('extensions gallery cannot be scripted')) {
+                // Store error for this hostname so popup can display appropriate message
+                // console.error('[Background] Error injecting manual RTL: The extensions gallery cannot be scripted');
+                chrome.storage.local.get(['manualRtlUnsupportedSites'], (result) => {
+                    const unsupportedSites = result.manualRtlUnsupportedSites || [];
+                    if (!unsupportedSites.includes(hostname)) {
+                        unsupportedSites.push(hostname);
+                        chrome.storage.local.set({ manualRtlUnsupportedSites: unsupportedSites });
+                    }
+                });
             } else {
                 console.error('[Background] Error injecting manual RTL:', injectError);
             }

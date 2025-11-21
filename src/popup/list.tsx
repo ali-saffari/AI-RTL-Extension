@@ -512,7 +512,7 @@ export default function ServiceList() {
                         dangerouslySetInnerHTML={{ __html: selectedService?.helpText || '' }}
                     />
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', flexDirection: 'row-reverse' }}>
                     <Button 
                         onClick={() => setHelpModalOpen(false)}
                         variant="contained"
@@ -553,8 +553,23 @@ export default function ServiceList() {
                     >
                         برای دریافت مجوز، روی لینک زیر کلیک کنید تا سایت باز شود. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سرویس به صورت خودکار فعال می‌شود.
                     </Typography>
+                    <Typography 
+                    variant="body1" 
+                    paragraph 
+                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                >
+                    این مجوز فقط برای اعمال تغییرات روی صفحه استفاده می‌شود و هیچ داده‌ای جمع‌آوری نمی‌شود.
+                </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <Button 
+                        onClick={() => setPermissionModalOpen(false)}
+                        variant="text"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan' }}
+                    >
+                        بستن
+                    </Button>
                     <Button 
                         onClick={async () => {
                             try {
@@ -600,14 +615,7 @@ export default function ServiceList() {
                     >
                         دریافت مجوز
                     </Button>
-                    <Button 
-                        onClick={() => setPermissionModalOpen(false)}
-                        variant="text"
-                        color="primary"
-                        sx={{ fontFamily: 'iranyekan' }}
-                    >
-                        بستن
-                    </Button>
+                
                 </DialogActions>
             </Dialog>
         </>
