@@ -93,7 +93,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
         <Grid container spacing={3}>
             {/* Settings Section */}
             <Grid item xs={12} md={ 6 }>
-                <Card elevation={2} sx={{ height: '100%' }}>
+                <Card elevation={2}>
                     <CardContent style={{ direction: 'ltr' }}>
                         <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                             <Typography variant="h6" sx={{ 
@@ -234,7 +234,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
 
             {/* Preview Section */}
             <Grid item xs={12} md={6}>
-                    <Card elevation={2} sx={{ height: '100%' }}>
+                    <Card elevation={2}>
                         <CardContent>
                             <Box sx={{ textAlign: 'center', mb: 2 }}>
                                 <Typography variant="h6" sx={{ 

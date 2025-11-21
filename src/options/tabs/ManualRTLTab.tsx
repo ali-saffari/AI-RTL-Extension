@@ -495,7 +495,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     sx={{
                                         py: 1,
                                         px: 2,
-                                        color: 'text.primary',
+                                        color: 'primary.main',
                                         fontWeight: 500,
                                         fontFamily: 'iranyekan',
                                         fontSize: '0.875rem',

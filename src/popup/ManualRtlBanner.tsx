@@ -114,8 +114,8 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     const shouldShowCheckbox = Boolean(activeHostname);
     const displayHostname = React.useMemo(() => {
         if (!activeHostname) return '';
-        if (activeHostname.length <= 20) return activeHostname;
-        return `${activeHostname.slice(0, 20)}...`;
+        if (activeHostname.length <= 17) return activeHostname;
+        return `${activeHostname.slice(0, 17)}...`;
     }, [activeHostname]);
     
     // Show site activation section only when enabled and mode is allowed_sites or ai_and_allowed
