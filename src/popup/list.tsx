@@ -546,7 +546,7 @@ export default function ServiceList() {
                         paragraph 
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        برای دریافت مجوز، روی لینک زیر کلیک کنید تا سایت باز شود. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سرویس به صورت خودکار فعال می‌شود.
+                        روی دکمه دریافت مجوز کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
                     </Typography>
                     <Typography 
                     variant="body1" 

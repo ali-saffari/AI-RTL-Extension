@@ -216,7 +216,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         fontSize: '0.6rem',
                         fontWeight: 600
                     }}>
-                        جدید
+                        آزمایشی
                     </Box>
                 </Box>
 
