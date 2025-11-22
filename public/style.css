@@ -2,6 +2,9 @@
     background: red !important;
 }
 
+.FontSet pre {
+    direction: ltr;
+}
 
 .FontSet {
     font-family: iranyekan, sans-serif !important;
