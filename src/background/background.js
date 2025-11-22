@@ -87,6 +87,22 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             rtlAlgorithmMode: 'advanced_full',
             manualRtlSettings: defaultManualRtlSettings
         });
+        
+        // Open activation guide page in new tab after installation
+        try {
+            // Get user ID and add to URL
+            const uidResult = await chrome.storage.sync.get(['uid']);
+            const uid = uidResult.uid || '';
+            const activateUrl = uid 
+                ? `https://chatgpt-rtl.ir/activate?uid=${uid}`
+                : 'https://chatgpt-rtl.ir/activate';
+            
+            chrome.tabs.create({
+                url: activateUrl
+            });
+        } catch (error) {
+            console.error('[Background] Error opening activation guide page:', error);
+        }
     } else if (details.reason === 'update') {
         try {
             chrome.storage.sync.get((storedData) => {

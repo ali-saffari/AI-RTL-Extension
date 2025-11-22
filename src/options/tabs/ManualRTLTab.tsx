@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import { mdiChevronDown, mdiDelete, mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../../types/manualRtl';
+import { ManualRTLGuide } from './ManualRTLGuide';
 
 interface ManualRTLTabProps {
     manualRtlSettings: ManualRtlSettings;
@@ -216,11 +217,21 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     const [permissionDialogOpen, setPermissionDialogOpen] = React.useState(false);
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
     const [showAdvancedSettings, setShowAdvancedSettings] = React.useState(false);
+    const [hasTabsPermission, setHasTabsPermission] = React.useState(false);
     
     // وقتی menuDisplayMode تغییر می‌کند، state را به‌روزرسانی کن
     React.useEffect(() => {
         setMenuExpanded(manualRtlSettings.menuDisplayMode === 'menu_direct');
     }, [manualRtlSettings.menuDisplayMode]);
+
+    // بررسی وضعیت permission
+    React.useEffect(() => {
+        const checkPermission = async () => {
+            const hasPermission = await checkTabsPermission();
+            setHasTabsPermission(hasPermission);
+        };
+        checkPermission();
+    }, []);
 
     // Load active sites list
     React.useEffect(() => {
@@ -316,6 +327,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     const handleRequestPermission = async () => {
         const granted = await requestTabsPermission();
         if (granted) {
+            setHasTabsPermission(true);
             setPermissionDialogOpen(false);
             // حالا می‌توانیم راست چین دستی را فعال کنیم
             onManualRtlSettingsChange({
@@ -359,142 +371,6 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         ? (manualRtlSettings.menuDisplayMode === 'menu_direct' || menuExpanded)
         : false;
 
-    // راهنمای کامل استفاده - بخش اول (قبل از فعال‌سازی)
-    const guidePart1 = `📖 راهنمای کامل استفاده از قابلیت راست‌چین دستی
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎯 معرفی قابلیت
-
-قابلیت «راست‌چین دستی» به شما امکان می‌دهد تا به صورت دستی و دقیق، متن‌های مورد نظر خود را در هر سایتی راست‌چین یا چپ‌چین کنید. این قابلیت برای مواقعی که الگوریتم هوشمند خودکار به درستی کار نمی‌کند یا شما می‌خواهید کنترل بیشتری روی جهت متن داشته باشید، بسیار مفید است.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ نحوه فعال‌سازی
-
-1. ابتدا مطمئن شوید که قابلیت «راست‌چین دستی» در حالت فعال قرار دارد (Switch را روشن کنید)
-2. در اولین بار استفاده، مرورگر از شما مجوز دسترسی به تب‌ها را درخواست می‌کند
-3. روی دکمه «اعطای دسترسی» کلیک کنید تا قابلیت فعال شود`;
-
-    // راهنمای کامل استفاده - بخش میانی (بعد از GIF اول)
-    const guidePart1b = `4. برای فعال کردن قابلیت روی هر سایت، باید از طریق پاپ‌آپ (Popup) افزونه اقدام کنید:
-   • روی آیکون افزونه در نوار ابزار مرورگر کلیک کنید
-   • در پاپ‌آپ باز شده، بخش «راست‌چین دستی» را پیدا کنید
-   • Switch مربوط به «راست‌چین دستی» را برای سایت فعلی فعال کنید
-   • این کار باید برای هر سایت به صورت جداگانه انجام شود
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📌 روش فعال کردن این قابلیت برای هر سایت (برای مثال برای سایت chatgpt-rtl.ir فعال می‌کنیم)`;
-
-    // راهنمای کامل استفاده - بخش دوم (بعد از فعال‌سازی)
-    const guidePart2 = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🚀 نحوه استفاده (مراحل ساده)
-
-مرحله ۱: انتخاب متن
-   • متن مورد نظر خود را در صفحه انتخاب کنید (مثل انتخاب متن در مرورگر)
-   • می‌توانید یک کلمه، جمله، پاراگراف یا هر بخشی از متن را انتخاب کنید
-
-مرحله ۲: نمایش منو
-   • بعد از انتخاب متن، یک منوی کوچک در کنار متن انتخاب شده ظاهر می‌شود
-   • این منو شامل دو گزینه است: «راست چین» و «چپ چین»
-
-مرحله ۳: انتخاب جهت
-   • روی گزینه «راست چین» کلیک کنید تا متن به راست چین شود
-   • یا روی گزینه «چپ چین» کلیک کنید تا متن به چپ چین شود
-   • تغییر جهت به صورت فوری و خودکار اعمال می‌شود
-
-مرحله ۴: تکرار (در صورت نیاز)
-   • می‌توانید این فرآیند را برای بخش‌های دیگر متن نیز تکرار کنید
-   • هر بخش به صورت مستقل قابل تغییر جهت است`;
-
-    // راهنمای کامل استفاده - بخش سوم (بعد از GIF استفاده)
-    const guidePart2b = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⚙️ حالت‌های نمایش منو
-
-این قابلیت دو حالت نمایش منو دارد که می‌توانید از تنظیمات پیشرفته انتخاب کنید:
-
-📌 حالت ۱: ابتدا لوگو نمایش داده شود (دو مرحله‌ای)
-   • در این حالت، ابتدا یک لوگوی کوچک در کنار متن انتخاب شده ظاهر می‌شود
-   • با کلیک روی لوگو، منوی کامل با گزینه‌های «راست چین» و «چپ چین» باز می‌شود
-   • این حالت برای صفحات شلوغ و جلوگیری از مزاحمت بصری مناسب است
-
-📌 حالت ۲: مستقیم منو نمایش داده شود (تک مرحله‌ای)
-   • در این حالت، منوی کامل به صورت مستقیم و بدون نیاز به کلیک روی لوگو ظاهر می‌شود
-   • این حالت برای دسترسی سریع‌تر مناسب است
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎨 حالت‌های نمایش Highlight (رنگ‌آمیزی)
-
-برای اینکه بدانید کدام بخش‌ها تغییر جهت داده‌اند، می‌توانید از حالت‌های مختلف Highlight استفاده کنید:
-
-🔹 غیرفعال
-   • هیچ رنگ‌آمیزی نمایش داده نمی‌شود
-   • برای صفحاتی که می‌خواهید ظاهر تمیز و بدون علامت داشته باشند
-
-🔹 زمان انتخاب متن
-   • Highlight فقط در زمان انتخاب متن نمایش داده می‌شود
-   • بعد از انتخاب جهت، Highlight از بین می‌رود
-
-🔹 زمان باز شدن منو تنظیم جهت
-   • Highlight فقط زمانی نمایش داده می‌شود که منو باز باشد
-   • در حالت «مستقیم منو»، Highlight همیشه نمایش داده می‌شود
-   • در حالت «ابتدا لوگو»، Highlight فقط بعد از کلیک روی لوگو و باز شدن منو نمایش داده می‌شود
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎨 تنظیمات رنگ و شدت Highlight
-
-• می‌توانید رنگ Highlight را از بین رنگ‌های پیش‌فرض انتخاب کنید
-• همچنین می‌توانید شدت رنگ (Opacity) را با استفاده از اسلایدر تنظیم کنید
-• این تنظیمات به شما امکان شخصی‌سازی تجربه کاربری را می‌دهد
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💡 نکات مهم و کاربردی
-
-✓ این قابلیت کاملاً مستقل از الگوریتم هوشمند خودکار است
-✓ می‌توانید همزمان از هر دو قابلیت استفاده کنید
-✓ تغییرات فقط روی متن‌های انتخاب شده اعمال می‌شود
-✓ می‌توانید برای هر بخش از صفحه، جهت متفاوتی انتخاب کنید
-✓ تغییرات تا زمان بستن صفحه یا رفرش مرورگر باقی می‌ماند
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📝 مثال‌های کاربردی
-
-مثال ۱: متن چندزبانه
-   • اگر صفحه شما شامل متن فارسی و انگلیسی است
-   • می‌توانید بخش فارسی را راست‌چین و بخش انگلیسی را چپ‌چین کنید
-
-مثال ۲: تصحیح الگوریتم
-   • اگر الگوریتم خودکار یک بخش را اشتباه تشخیص داده
-   • می‌توانید به صورت دستی جهت صحیح را اعمال کنید
-
-مثال ۳: کنترل دقیق
-   • برای صفحات پیچیده که نیاز به کنترل دقیق دارید
-   • می‌توانید هر بخش را به صورت جداگانه و دستی تنظیم کنید
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-❓ سوالات متداول
-
-سوال: آیا این قابلیت روی همه سایت‌ها کار می‌کند؟
-پاسخ: این قابلیت روی سایت‌هایی که امکان فعال‌سازی وجود داشته باشد کار می‌کند و ممکن است برای بعضی سایت‌ها کار نکند.
-
-سوال: آیا تغییرات ذخیره می‌شوند؟
-پاسخ: تغییرات تا زمان بستن صفحه یا رفرش مرورگر باقی می‌مانند. برای تغییرات دائمی، باید از تنظیمات سایت استفاده کنید.
-
-سوال: آیا می‌توانم چند بخش را همزمان تغییر جهت دهم؟
-پاسخ: بله، می‌توانید هر بخش را به صورت جداگانه انتخاب کرده و جهت مورد نظر را اعمال کنید.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-
-    // راهنمای کامل استفاده (ترکیب شده)
-    const templateExample = guidePart1 + '\n\n' + guidePart2;
 
     return (
         <>
@@ -1143,99 +1019,11 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             lineHeight: 1.8,
                             color: theme.palette.text.primary
                         }}>
-                            <Box sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
-                                {guidePart1}
-                            </Box>
-                            
-                            {/* عکس مجوز دسترسی به تب‌ها */}
-                            <Box sx={{ 
-                                mt: 2, 
-                                mb: 2,
-                                textAlign: 'center'
-                            }}>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        borderRadius: 2,
-                                        overflow: 'hidden',
-                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                                    }}
-                                >
-                                    <img 
-                                        src={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 1.gif') : '/images/gif/ChatGPT RTL 1.gif'}
-                                        alt="درخواست مجوز دسترسی به تب‌ها"
-                                        style={{
-                                            width: '100%',
-                                            height: 'auto',
-                                            display: 'block'
-                                        }}
-                                    />
-                                </Box>
-                            </Box>
-
-                            <Box sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
-                                {guidePart1b}
-                            </Box>
-
-                            {/* عکس فعال‌سازی از طریق پاپ‌آپ */}
-                            <Box sx={{ 
-                                mt: 2, 
-                                mb: 2,
-                                textAlign: 'center'
-                            }}>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        borderRadius: 2,
-                                        overflow: 'hidden',
-                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                                    }}
-                                >
-                                    <img 
-                                        src={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 2.gif') : '/images/gif/ChatGPT RTL 2.gif'}
-                                        alt="فعال‌سازی راست‌چین دستی از طریق پاپ‌آپ"
-                                        style={{
-                                            width: '100%',
-                                            height: 'auto',
-                                            display: 'block'
-                                        }}
-                                    />
-                                </Box>
-                            </Box>
-                     
-                            <Box sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
-                                {guidePart2}
-                            </Box>
-
-                            {/* عکس نحوه استفاده */}
-                            <Box sx={{ 
-                                mt: 2, 
-                                mb: 2,
-                                textAlign: 'center'
-                            }}>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        borderRadius: 2,
-                                        overflow: 'hidden',
-                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                                    }}
-                                >
-                                    <img 
-                                        src={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 3.gif') : '/images/gif/ChatGPT RTL 3.gif'}
-                                        alt="نحوه استفاده از راست‌چین دستی"
-                                        style={{
-                                            width: '100%',
-                                            height: 'auto',
-                                            display: 'block'
-                                        }}
-                                    />
-                                </Box>
-                            </Box>
-
-                            <Box sx={{ whiteSpace: 'pre-wrap' }}>
-                                {guidePart2b}
-                            </Box>
+                            <ManualRTLGuide 
+                                image1Url={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 1.gif') : '/images/gif/ChatGPT RTL 1.gif'}
+                                image2Url={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 2.gif') : '/images/gif/ChatGPT RTL 2.gif'}
+                                image3Url={chrome.runtime?.getURL ? chrome.runtime.getURL('images/gif/ChatGPT RTL 3.gif') : '/images/gif/ChatGPT RTL 3.gif'}
+                            />
                         </Box>
 
                         <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)' }}>
