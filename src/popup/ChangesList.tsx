@@ -14,12 +14,13 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
-        version: "1404/09/25",
+        version: "1404/09/1",
         changes: [
-            { id: "1", text: "افزودن Lovable" },
-            { id: "2", text: "افزودن Synaps" },
-            { id: "3", text: "افزودن Writesonic (Chatsonic)" },
-            { id: "4", text: "افزودن Ernie (Baidu)" },
+            { id: "1", text: "افزودن قابلیت راست چین دستی برای همه سایت ها (آزمایشی)" },
+            { id: "2", text: "افزودن Lovable" },
+            { id: "3", text: "افزودن Gamma" },
+            { id: "4", text: "افزودن Writesonic (Chatsonic)" },
+            { id: "5", text: "افزودن Ernie (Baidu)" },
         ]
     },
     {

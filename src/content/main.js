@@ -33,6 +33,7 @@ import { activateChatsonic } from './services/chatsonic.js';
 // Make activateChatsonic available globally for scripting injection
 window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
+import { activateGamma } from './services/gamma.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -191,6 +192,10 @@ const serviceConfig = {
     ernie: {
         urls: ["ernie.baidu.com", "www.ernie.baidu.com"],
         activate: activateErnie
+    },
+    gamma: {
+        urls: ["gamma.app", "www.gamma.app"],
+        activate: activateGamma
     }
 };
 

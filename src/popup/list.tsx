@@ -62,12 +62,14 @@ const services: Service[] = [
     { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
     { key: 'blackbox', name: 'Black Box', icon: '/images/blackbox.png', url: 'https://www.blackbox.ai/' },
     { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/' },
-    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', new: true },
-    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', new: true },
-    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true, helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' },
+    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/' },
+    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/' },
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
     { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true },
-    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true }
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true },
+    { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/', new: true },
+    // { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true, helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' }
+  
     
 ];
 
@@ -107,6 +109,7 @@ export default function ServiceList() {
         synaps: true,
         writesonic: true,
         ernie: true,
+        gamma: true,
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
@@ -272,14 +275,17 @@ export default function ServiceList() {
     };
 
 
-    // Sort services: active service first, then others
+    // Keep services in original order, just mark active one
     const sortedServices = React.useMemo(() => {
+        return services;
+    }, []);
+
+    // Get active service for display at top
+    const activeService = React.useMemo(() => {
         if (!activeServiceKey) {
-            return services;
+            return null;
         }
-        const activeService = services.find(s => s.key === activeServiceKey);
-        const otherServices = services.filter(s => s.key !== activeServiceKey);
-        return activeService ? [activeService, ...otherServices] : services;
+        return services.find(s => s.key === activeServiceKey) || null;
     }, [activeServiceKey]);
 
     // default: '#1a1a2e',
