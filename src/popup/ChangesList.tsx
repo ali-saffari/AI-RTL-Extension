@@ -21,6 +21,7 @@ const changesData: VersionChanges[] = [
             { id: "3", text: "افزودن Gamma" },
             { id: "4", text: "افزودن Writesonic (Chatsonic)" },
             { id: "5", text: "افزودن Ernie (Baidu)" },
+            { id: "6", text: "اپدیت NotebookLM" },
         ]
     },
     {

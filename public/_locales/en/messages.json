@@ -1,6 +1,6 @@
 {
   "extension_name": {
-    "message": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Claude + 20 AI Chat",
+    "message": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Copilot +30 AI Chat",
     "description": "Full extension name"
   },
   "extension_short_name": {
@@ -8,7 +8,7 @@
     "description": "Short extension name"
   },
   "extension_description": {
-    "message": "RTL extension for ChatGPT and 20+ AI tools: Persian RTL alignment, Farsi font support, RTL optimization for ChatGPT, DeepSeek, Claude, Copilot, Gemini, Perplexity, Grok and other AI chatbots",
+    "message": "RTL extension for ChatGPT and 30+ AI tools: Persian RTL alignment, Farsi font support, RTL optimization for ChatGPT, DeepSeek, Claude, Copilot, Gemini, Perplexity, Grok and other AI chatbots",
     "description": "Extension description"
   },
   "extension_action_title": {
