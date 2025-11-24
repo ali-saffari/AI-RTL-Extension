@@ -22,7 +22,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
         }
     });
 
-    // Process group/title elements
+    // عنوان های چت
     AQ(".group\\/title").each(function (each) {
         const parentGroup = AQ(this).closest('.group');
         if (parentGroup.length > 0 && !parentGroup.hasClass("AsRtl")) {
@@ -50,6 +50,76 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
             });
         }
     });
+
+
+        // چت ها
+        AQ('.prose').each(function (each) {
+            processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet',
+                processedClass: 'AsOk',
+                isContainer: true,
+                setTextAlign: true
+            });
+        });
+
+
+
+
+        AQ('.not-prose').each(function (each) {
+       
+            
+
+            const notProse = this;
+
+            // Find all elements inside .not-prose (including itself)
+     
+            // Find elements with data-testid="code-language-indicator" inside .not-prose
+            AQ(this).find('[data-testid="code-language-indicator"]').each(function() {
+                const element = this;
+                const textContent = AQ(element).text().trim();
+                
+
+                console.log(textContent);
+                // If textContent equals "text", apply RTL algorithm on code element
+                if (textContent === 'text') {
+                    // Find code element inside .not-prose
+                    const codeElement = AQ(notProse).find('code').first()[0];
+                    if (codeElement) {
+               
+                        AQ(codeElement).find('span').each(function() {
+                            const spanElement = this;
+                            if (!AQ(spanElement).hasClass('AsOk')) {
+                                setTextDirectionAndFontByRtlAlgorithm(spanElement, rtlAlgorithm, {
+                                    fontClass: 'FontSet',
+                                    processedClass: 'AsOk',
+                                    setTextAlign: true
+                                });
+                            }
+                        });
+
+                    }
+
+                } else {
+                    AQ(notProse).find('*').addBack().each(function() {
+                        const element = this;
+                        const computedStyle = window.getComputedStyle(element);
+                        const textAlign = computedStyle.textAlign;
+                        
+                        // Check if text-align is right
+                        if (textAlign === 'right') {
+                            AQ(element).css('text-align', 'left');
+                        }
+                    });
+                    
+                }
+            });
+            
+       
+        });
+
+        
+
+
 
     // Process noopener links (site cards)
     AQ('a[rel="noopener"]').each(function (each) {
@@ -89,7 +159,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process Related list items
-    AQ(".group.flex.cursor-pointer.items-center.justify-between.py-sm").each(function (each) {
+    AQ(".group.flex.interactable.py-sm").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
@@ -104,15 +174,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    // Process markdown content elements
-    AQ('.prose.text-pretty').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
-            processedClass: 'AsOk',
-            isContainer: true,
-            setTextAlign: true
-        });
-    });
+
 }
 
 
@@ -131,10 +193,19 @@ export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
 
     // Additional processing for specific elements
     setInterval(() => {
-        AQ('[role="textbox"]').each(function (each) {
+        // AQ('[role="textbox"]').each(function (each) {
+        //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        //         fontClass: 'FontSet',
+        //         processedClass: 'AsRtl'
+        //     });
+        // });
+
+        AQ('[role="textbox"] p').each(function (each) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                processedClass: 'AsRtl'
+                processedClass: 'AsRtl',
+                setTextAlign: true
+
             });
         });
 
