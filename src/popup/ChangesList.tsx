@@ -14,6 +14,16 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/09/11",
+        changes: [
+            { id: "1", text: "افزودن Business Gemini" },
+            { id: "2", text: "افزودن synapse" },
+            { id: "3", text: "افزودن notion" },
+            { id: "4", text: "اپدیت perplexity" },
+            { id: "5", text: "اپدیت google ai studio" },
+        ]
+    },
+    {
         version: "1404/09/1",
         changes: [
             { id: "1", text: "افزودن قابلیت راست چین دستی برای همه سایت ها (آزمایشی)" },
