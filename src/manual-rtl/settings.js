@@ -23,6 +23,7 @@ function getAISitesList() {
         'poe.com',
         'monica.im',
         'gemini.google.com',
+        'business.gemini.google',
         'grok.com',
         'chat.mistral.ai',
         'manus.im',

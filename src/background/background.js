@@ -492,6 +492,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })();
         return true; // Keep message channel open for async response
     }
+    // Analytics messages are handled in analytics.js
     return false;
 });
 
@@ -505,7 +506,7 @@ const AI_SITES = [
     'chatgpt.com', 'claude.ai', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
     'github.com', 'perplexity.ai', 'www.perplexity.ai', 'duckduckgo.com',
     'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
-    'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'grok.com',
+    'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
     'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'www.blackbox.ai',
     'notebooklm.google.com', 'chat.z.ai', 'lmarena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
@@ -813,6 +814,7 @@ function setupEventListeners() {
 
     chrome.runtime.onSuspend.addListener(async () => {
         console.log('[Events] Runtime suspending');
+        // Analytics cleanup is handled in analytics.js
     });
 }
 
@@ -831,4 +833,5 @@ setupEventListeners();
     } catch (error) {
         console.error('[Background] Error activating manual RTL on startup:', error);
     }
-})();
+})();// Analytics initialization is handled in analytics.js
+

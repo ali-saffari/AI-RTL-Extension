@@ -1157,6 +1157,23 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
 }
 
 /**
+ * Detect text direction based on RTL algorithm
+ * @param {string} text - Text to analyze
+ * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
+ * @returns {string} - Detected direction ('rtl' or 'ltr')
+ */
+function detectDirectionByAlgorithm(text, rtlAlgorithm) {
+    if (!text || !text.trim()) return 'ltr';
+    
+    if (rtlAlgorithm === 'first_word') {
+        return analyzeTextDirectionFirstWord(text);
+    } else {
+        // For 'advanced_section' and 'advanced_full', use detectTextDirection
+        return detectTextDirection(text);
+    }
+}
+
+/**
  * Set text direction and font based on RTL algorithm
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
@@ -1249,6 +1266,7 @@ export {
         processTextElementsAdvanced,
         getAttributeTextElements,
         processTextElementsByRtlAlgorithm,
-        setTextDirectionAndFontByRtlAlgorithm
+        setTextDirectionAndFontByRtlAlgorithm,
+        detectDirectionByAlgorithm
     };
 

@@ -17,12 +17,11 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     
 
 
-    let foTest = ".relative.flex.h-full.overflow-hidden .relative.w-full.px-2.text-center"
 
     if (chrome.runtime?.id) {
-        AQ(fo).each(function (each) {
-                addCopyright(AQ(this).parent(), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
-        })
+        // AQ(fo).each(function (each) {
+                addCopyright(AQ('#thread-bottom-container'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
+        // })
     }
 
     AQ('.hljs-comment').each(function (each) {

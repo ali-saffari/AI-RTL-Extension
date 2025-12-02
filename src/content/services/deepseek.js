@@ -8,7 +8,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         let fo2 = `._871cbca`
         
         // Add copyright using utility function
-        addCopyright(AQ(fo2), 'AsBoxDuckduckgo');
+        addCopyright(AQ(fo2), 'AsBoxDuckduckgo AsBoxB');
     }
 
     // Process textarea elements for text direction detection

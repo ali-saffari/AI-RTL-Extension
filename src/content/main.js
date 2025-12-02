@@ -10,6 +10,7 @@ import { activateManus } from './services/manus.js';
 import { activateMistral } from './services/mistral.js';
 import { activateGrok } from './services/grok.js';
 import { activateGemini } from './services/gemini.js';
+import { activateBusinessGemini } from './services/business-gemini.js';
 import { activateMonica } from './services/monica.js';
 import { activatePoe } from './services/poe.js';
 import { activatePerplexity } from './services/perplexity.js';
@@ -34,6 +35,7 @@ import { activateChatsonic } from './services/chatsonic.js';
 window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
 import { activateGamma } from './services/gamma.js';
+import { activateNotion } from './services/notion.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -125,6 +127,10 @@ const serviceConfig = {
         urls: ["gemini.google.com"],
         activate: activateGemini
     },
+    businessGemini: {
+        urls: ["business.gemini.google"],
+        activate: activateBusinessGemini
+    },
     grok: {
         urls: ["grok.com"],
         activate: activateGrok
@@ -196,6 +202,10 @@ const serviceConfig = {
     gamma: {
         urls: ["gamma.app", "www.gamma.app"],
         activate: activateGamma
+    },
+    notion: {
+        urls: ["notion.so", "www.notion.so"],
+        activate: activateNotion
     }
 };
 
