@@ -88,6 +88,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             manualRtlSettings: defaultManualRtlSettings
         });
         
+        // Set update modal storage key to current version for new installations
+        // This prevents the update modal from showing on first install
+        const currentVersion = chrome.runtime.getManifest().version;
+        chrome.storage.local.set({ updateModalClosedVersion: currentVersion }, () => {
+            console.log('[Background] Set updateModalClosedVersion to', currentVersion, 'for new installation');
+        });
+        
         // Open activation guide page in new tab after installation
         try {
             // Get user ID and add to URL
@@ -487,6 +494,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
             } catch (error) {
                 console.error('[Background] Error in toggleManualRtlSite:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true; // Keep message channel open for async response
+    } else if (message.action === 'closeUpdateModalInAllTabs') {
+        // Close update modal in all tabs
+        (async () => {
+            try {
+                const tabs = await chrome.tabs.query({});
+                const promises = tabs.map(tab => {
+                    if (tab.id && tab.url && (tab.url.startsWith('http://') || tab.url.startsWith('https://'))) {
+                        return chrome.tabs.sendMessage(tab.id, { action: 'closeUpdateModal' }).catch(() => {
+                            // Ignore errors (tab might not have content script)
+                        });
+                    }
+                });
+                await Promise.all(promises);
+                sendResponse?.({ success: true });
+            } catch (error) {
+                console.error('[Background] Error closing update modal in all tabs:', error);
                 sendResponse?.({ success: false, error: error.message });
             }
         })();

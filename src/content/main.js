@@ -36,6 +36,7 @@ window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
 import { activateGamma } from './services/gamma.js';
 import { activateNotion } from './services/notion.js';
+import { showUpdateModal } from './utils/updateModal.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -309,6 +310,10 @@ async function initializeAllServices() {
             if (typeof window.AQ !== 'undefined') {
                 config.activate(rtlAlgorithm);
                 // Add class to body to mark as active
+
+                setTimeout(() => {
+                    showUpdateModal();
+                }, 1000);
                 if (document.body) {
                     document.body.classList.add('rtl-algorithm-active');
                 }
@@ -322,6 +327,10 @@ async function initializeAllServices() {
     if (activeService && activeService !== lastTrackedService) {
         await sessionManager.start(activeService, site);
         lastTrackedService = activeService;
+        
+        // Show update modal if service is active
+        // Wait a bit to ensure DOM is ready
+     
     } else if (!activeService && lastTrackedService) {
         await sessionManager.stop();
         lastTrackedService = null;
@@ -364,6 +373,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         }
         return true; // Keep channel open for async response
+    } else if (message.action === 'closeUpdateModal') {
+        // Close update modal in this tab
+        const modal = document.getElementById('AsUpdateModal');
+        if (modal) {
+            modal.style.display = 'none';
+            setTimeout(() => {
+                if (modal && modal.parentNode) {
+                    modal.parentNode.removeChild(modal);
+                }
+            }, 300);
+        }
+        sendResponse({ success: true });
+        return true;
     }
 });
 
