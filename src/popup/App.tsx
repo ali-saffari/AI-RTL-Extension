@@ -575,17 +575,6 @@ function App() {
                             </div>
                         </div>
                         
-                        <div id="settings-section">
-                            <Settings
-                                rtlAlgorithm={rtlAlgorithm}
-                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
-                                supportHide={supportHide}
-                                onSupportChange={handleSupportChange}
-                                isDarkMode={isDarkMode}
-                                manualRtlSettings={manualRtlSettings}
-                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                            />
-                        </div>
                         
                         <div id="settings-section">
                             <Settings
