@@ -369,9 +369,43 @@ code.AsSetLtr , pre.AsSetLtr {
 }
 
 
+/* .AsRtlClaudeUser span.truncate {
+    direction: rtl !important;
+    text-align: right !important;
+    mask-size: 100% 100% !important;
+    mask-image: linear-gradient(to_left, hsl(var(--always-black)) 78%, transparent 95%) !important;
+}
+
+.AsRtlClaudeUser .group:hover span.truncate,
+.AsRtlClaudeUser .group:focus-within span.truncate {
+    mask-size: 100% 100% !important;
+    mask-image: linear-gradient(to_left, hsl(var(--always-black)) 78%, transparent 95%) !important;
+}
+ */
 
 
 
+
+
+/* 
+.AsRtlClaudeList {
+    direction: rtl;
+    flex-direction: row-reverse;
+} */
+/* 
+.AsRtlClaudeList .absolute.right-0 {
+  
+    left: 0;
+    right: initial;
+} */
+
+.AsRtlClaudeList .whitespace-nowrap {
+ 
+    direction: rtl;
+    text-align: left;
+    font-family: iranyekan, sans-serif;
+
+}
 
 
 .AsBox.AsBoxClaude {
