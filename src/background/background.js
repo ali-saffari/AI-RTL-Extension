@@ -1,5 +1,6 @@
 // Import dynamic services configuration
 import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
+import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
 
 // ============================================
 // CONFIGURATION
@@ -88,12 +89,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             manualRtlSettings: defaultManualRtlSettings
         });
         
-        // Set update modal storage key to current version for new installations
-        // This prevents the update modal from showing on first install
-        const currentVersion = chrome.runtime.getManifest().version;
-        chrome.storage.local.set({ updateModalClosedVersion: currentVersion }, () => {
-            console.log('[Background] Set updateModalClosedVersion to', currentVersion, 'for new installation');
-        });
+        // Prevent update modal from appearing right after fresh install
+        if (UPDATE_MODAL_ENABLED && UPDATE_MODAL_ID) {
+            chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: UPDATE_MODAL_ID }, () => {
+                console.log('[Background] Set update modal closed ID to', UPDATE_MODAL_ID, 'for new installation');
+            });
+        }
         
         // Open activation guide page in new tab after installation
         try {
