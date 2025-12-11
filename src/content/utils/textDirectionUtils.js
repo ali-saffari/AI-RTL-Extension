@@ -441,7 +441,8 @@ function processTextElementsAdvanced(container, options = {}) {
         skipTags = [],
         removeSkipTags = [],
         setTextAlign = false,
-        removeDirAuto = false
+        removeDirAuto = false,
+        endTyping = false
     } = options;
     // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
@@ -506,13 +507,24 @@ function processTextElementsAdvanced(container, options = {}) {
         // Get element tag name
         const tagName = this.tagName.toLowerCase();
         
+    
+        
         // Process header elements normally
         if ( ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+
+
+            if (!endTyping) {
+                return;
+            }
             // If not processed, process normally
             $element.addClass(processedClass);
 
             const textToUse = $element.text();
 
+
+            console.log('textToUse', textToUse);
+
+            
             const direction = detectTextDirection(textToUse);
 
     
@@ -535,12 +547,12 @@ function processTextElementsAdvanced(container, options = {}) {
 
         
         
-            // let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
+            // // let dir = setTextDirectionAndFont(this, { fontClass, setTextAlign });
 
             AQ(this).attr('data-org-dir', direction);
 
             // If this is a main container, check all similar header tags and set direction based on majority
-            if (mainContainer) {
+            if (mainContainer ) {
                 const allHeaders = mainContainer.find(tagName);
                 let rtlCount = 0;
                 let ltrCount = 0;
@@ -1081,14 +1093,17 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         return {
             shouldProcess,
-            currentTextLength
+            currentTextLength,
+            storedLength,
+            lengthDifference,
+            processedElementsCount
         };
     }
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
         
-        const { shouldProcess, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass);
+        const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
         
         if (shouldProcess) {
             // console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
@@ -1103,6 +1118,37 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             $element.attr('data-algorithm-rtl', 'advanced_section');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
+            // Reset skip log flag when processing happens
+            $element.removeAttr('data-skip-log-sent');
+        } else {
+            // Log when processing is skipped (only once)
+            const skipLogSent = $element.attr('data-skip-log-sent');
+            if (!skipLogSent) {
+                let reason = 'Unknown';
+                if (storedLength !== null && lengthDifference <= 3 && processedElementsCount >= 2) {
+                    reason = `Text length changed by ${lengthDifference} characters (threshold: 3), and ${processedElementsCount} elements already processed`;
+                } else if (storedLength === null) {
+                    reason = 'No stored length (should not happen)';
+                }
+                
+                console.log('processTextElementsByRtlAlgorithm advanced_section: Skipped processing', {
+                    element: $element[0],
+                    currentTextLength,
+                    storedLength,
+                    lengthDifference,
+                    processedElementsCount,
+                    reason
+                });
+                
+                // Mark that log has been sent
+                $element.attr('data-skip-log-sent', 'true');
+                
+                // Process headers only when typing ends
+                processTextElementsAdvanced($element, {
+                    ...mergedOptions,
+                    endTyping: true
+                });
+            }
         }
         
     } else if (rtlAlgorithm === 'advanced_full') {

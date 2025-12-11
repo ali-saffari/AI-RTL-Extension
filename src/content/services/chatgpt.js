@@ -36,7 +36,9 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
             isContainer: true,
-            siteConfig: 'chatgpt'
+            siteConfig: 'chatgpt',
+            setTextAlign: true
+
         });
     })
 
@@ -132,17 +134,17 @@ export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     // RTL algorithm is now available as parameter
     console.log('ChatGPT RTL activated with algorithm:', rtlAlgorithm);
     
-    // Wait for React to fully load before initializing
-    setTimeout(() => {
-        initializeChatGptElements(rtlAlgorithm);
-        initializeChatGptHistory();
-    }, 1000);
+    // // Wait for React to fully load before initializing
+    // setTimeout(() => {
+    //     initializeChatGptElements(rtlAlgorithm);
+    //     initializeChatGptHistory();
+    // }, 1000);
 
     // SetInterval for periodic updates
     setInterval(() => {
         initializeChatGptElements(rtlAlgorithm);
         initializeChatGptHistory();
-    }, 1000);
+    }, 800);
 }
 
 

@@ -158,7 +158,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
         }
     });
 
-    // Process Related list items
+    // // Process Related list items
     AQ(".group.flex.interactable.py-sm").each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
@@ -167,12 +167,23 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process typing suggestions
-    AQ(".grow.block .w-full").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSet FontSetImportant',
-            processedClass: 'AsRtl'
+    // AQ(".grow.block .w-full").each(function (each) {
+    //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //         fontClass: 'FontSet FontSetImportant',
+    //         processedClass: 'AsRtl'
+    //     });
+    // });
+
+
+            AQ('[role="textbox"] p').each(function (each) {
+
+                if (!AQ(this).hasClass("FontSet")) {
+                    AQ(this).addClass('FontSet');
+                }
+             
+        
         });
-    });
+
 
 
 }
@@ -193,27 +204,26 @@ export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
 
     // Additional processing for specific elements
     setInterval(() => {
-        // AQ('[role="textbox"]').each(function (each) {
+    //     // AQ('[role="textbox"]').each(function (each) {
+    //     //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //     //         fontClass: 'FontSet',
+    //     //         processedClass: 'AsRtl'
+    //     //     });
+    //     // });
+
+        // AQ('[role="textbox"] p').each(function (each) {
         //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
         //         fontClass: 'FontSet',
-        //         processedClass: 'AsRtl'
+        //         processedClass: 'AsOK'
+
         //     });
         // });
 
-        AQ('[role="textbox"] p').each(function (each) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
-                processedClass: 'AsRtl',
-                setTextAlign: true
-
-            });
-        });
-
-        AQ(".will-change-auto").each(function (each) {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                    fontClass: 'FontSet FontSetImportant',
-                    processedClass: 'AsRtl'
-                });
-        });
+    //     AQ(".will-change-auto").each(function (each) {
+    //             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //                 fontClass: 'FontSet FontSetImportant',
+    //                 processedClass: 'AsRtl'
+    //             });
+    //     });
     }, 300);
 }

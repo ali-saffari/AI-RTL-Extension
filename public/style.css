@@ -1,4 +1,4 @@
-.red {
+.AsRed {
     background: red !important;
 }
 
@@ -897,5 +897,62 @@ a.AsSBtn.AsDonate {
 
     padding-left: initial;
     padding-right: 2rem;
+}
+
+/* Preserve browser spell-check styling - ensure only underline is red, not entire text */
+/* This prevents the extension from interfering with native browser spell-check styling */
+::spelling-error,
+::grammar-error {
+    color: inherit !important;
+    background-color: transparent !important;
+    text-decoration: underline wavy !important;
+    text-decoration-color: rgb(255, 0, 0) !important;
+    text-decoration-thickness: 1px !important;
+    /* background-color: red !important; */
+}
+
+/* Ensure spell-check works correctly in input and textarea elements */
+input::spelling-error,
+textarea::spelling-error,
+[contenteditable]::spelling-error,
+input::grammar-error,
+textarea::grammar-error,
+[contenteditable]::grammar-error {
+    color: inherit !important;
+    background-color: transparent !important;
+    text-decoration: underline wavy !important;
+    text-decoration-color: rgb(255, 0, 0) !important;
+    text-decoration-thickness: 1px !important;
+    /* background-color: red !important; */
+}
+
+/* Preserve spell-check for elements with extension classes */
+.FontSet::spelling-error,
+.FontSet::grammar-error,
+.FontSetImportant::spelling-error,
+.FontSetImportant::grammar-error,
+textarea.FontSetImportant::spelling-error,
+textarea.FontSetImportant::grammar-error {
+    color: inherit !important;
+    background-color: transparent !important;
+    text-decoration: underline wavy !important;
+    text-decoration-color: rgb(255, 0, 0) !important;
+    text-decoration-thickness: 1px !important;
+    /* background-color: red !important; */
+}
+
+/* Prevent any CSS from setting text color to red for spell-check errors */
+input[spellcheck="true"],
+textarea[spellcheck="true"],
+[contenteditable][spellcheck="true"] {
+    /* background-color: red !important; */
+    color: inherit !important;
+}
+
+input[spellcheck="true"]::spelling-error,
+textarea[spellcheck="true"]::spelling-error,
+[contenteditable][spellcheck="true"]::spelling-error {
+    color: inherit !important;
+    /* background-color: red !important; */
 }
    
