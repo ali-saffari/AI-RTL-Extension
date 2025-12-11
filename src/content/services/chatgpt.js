@@ -1,7 +1,146 @@
 // ChatGPT service functions
-import { isRTL, detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
+import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processParagraphWithBreaks, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+
+let markdownObserver = null;
+// Track last processing time per markdown element to avoid spamming
+const markdownProcessTimes = new WeakMap();
+
+export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
+    // Clean up existing observer
+    if (markdownObserver) {
+        markdownObserver.disconnect();
+    }
+
+    // Helper function to process markdown elements
+    const processMarkdownElement = function(element) {
+
+        // let text = AQ(element).text();
+
+        console.log('processMarkdownElement');
+
+    
+        
+        // Throttle processing per element to avoid spamming
+        const now = Date.now();
+        const last = markdownProcessTimes.get(element) || 0;
+        if (now - last < 500) {
+            return;
+        }
+        markdownProcessTimes.set(element, now);
+
+        // Async to avoid layout thrash with rapid DOM updates
+        setTimeout(() => {
+
+            console.log('processMarkdownElement ');
+
+
+            AQ(element).addClass("AsSetAlgorithm")
+            processTextElementsByRtlAlgorithm(element, rtlAlgorithm, {
+                fontClass: 'FontSetImportantGPT',
+                processedClass: 'AsOkText',
+                isContainer: true,
+                siteConfig: 'chatgpt',
+                setTextAlign: true
+            });
+        }, 500);
+    };
+
+    // Create new observer
+    markdownObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if the added node is a .text-message .markdown element
+                        const markdownElements = AQ(node).find('.text-message .markdown').add(
+                            AQ(node).filter('.text-message .markdown')
+                        );
+                        
+                        markdownElements.each(function() {
+                            processMarkdownElement(this);
+                        });
+
+                        // Check if the added node is ul.divide-token-border-light or contains it
+                        const suggestionElements = AQ(node).find('ul.divide-token-border-light .whitespace-pre-wrap').add(
+                            AQ(node).filter('ul.divide-token-border-light .whitespace-pre-wrap')
+                        );
+                        
+                        // Also check if the added node itself is ul.divide-token-border-light
+                        if (AQ(node).is('ul.divide-token-border-light')) {
+                            AQ(node).find('.whitespace-pre-wrap').each(function() {
+                                if (!AQ(this).hasClass('AsOk')) {
+                                    setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                                        fontClass: 'FontSet',
+                                        processedClass: 'AsOk'
+                                    });
+                                }
+                            });
+                        }
+                        
+                        suggestionElements.each(function() {
+                            if (!AQ(this).hasClass('AsOk')) {
+                                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                                    fontClass: 'FontSet',
+                                    processedClass: 'AsOk'
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // If the mutation target is the suggestion list itself, re-process its items
+                if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE) {
+                    const $target = AQ(mutation.target);
+                    if ($target.is('ul.divide-token-border-light')) {
+                        $target.find('.whitespace-pre-wrap').each(function() {
+                            if (!AQ(this).hasClass('AsOk')) {
+                                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                                    fontClass: 'FontSet',
+                                    processedClass: 'AsOk'
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Handle content changes (characterData mutations and childList changes inside markdown)
+            if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                // Check if mutation target or its parent is .text-message .markdown
+                let targetElement = mutation.target;
+                
+                // If it's a text node, get its parent element
+                if (targetElement.nodeType === Node.TEXT_NODE) {
+                    targetElement = targetElement.parentElement;
+                }
+                
+                if (targetElement && targetElement.nodeType === Node.ELEMENT_NODE) {
+                    const $target = AQ(targetElement);
+                    
+                    // Check if target itself is .text-message .markdown
+                    if ($target.is('.text-message .markdown')) {
+                        processMarkdownElement(targetElement);
+                    } else {
+                        // Check if target is inside .text-message .markdown
+                        const markdownParent = $target.closest('.text-message .markdown');
+                        if (markdownParent.length > 0) {
+                            processMarkdownElement(markdownParent[0]);
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Start observing
+    markdownObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+}
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     // Check if React is still hydrating
@@ -9,20 +148,15 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         console.log('React is still hydrating, skipping...');
         return;
     }
-    
     let presentation = ".relative.flex.h-full "
-    let fo = presentation + " .isolate.w-full.basis-auto .justify-center.min-h-8.text-xs.text-token-text-secondary "
-
-    fo = presentation + " #thread-bottom "
-    
-
-
-
     if (chrome.runtime?.id) {
         // AQ(fo).each(function (each) {
                 addCopyright(AQ('#thread-bottom-container'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
         // })
     }
+
+
+
 
     AQ('.hljs-comment').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
@@ -31,16 +165,18 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    AQ('.text-message .markdown').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
-            processedClass: 'AsOkText',
-            isContainer: true,
-            siteConfig: 'chatgpt',
-            setTextAlign: true
+    // AQ('.text-message .markdown').each(function (each) {
+    
+    // AQ(element).addClass("AsSetAlgorithm")
+    //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+    //         fontClass: 'FontSetImportantGPT',
+    //         processedClass: 'AsOkText',
+    //         isContainer: true,
+    //         siteConfig: 'chatgpt',
+    //         setTextAlign: true
 
-        });
-    })
+    //     });
+    // })
 
     AQ(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
         if (!AQ(this).parent().hasClass("AsOk")) {
@@ -95,8 +231,20 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
                 });
             });
         });
-        
-        // Mark as processed to prevent duplicate listeners
+
+
+
+        // //پیشنهادات رو به زبان فارسی نشون بده
+        // AQ('ul.divide-token-border-light .whitespace-pre-wrap').each(function (each) {
+        //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        //         fontClass: 'FontSet',
+        //         processedClass: 'AsOk'
+        //     });
+        // })
+
+
+
+    
      
     })
 }
@@ -140,11 +288,18 @@ export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     //     initializeChatGptHistory();
     // }, 1000);
 
+    // Run once immediately on activation
+    initializeChatGptElements(rtlAlgorithm);
+    initializeChatGptHistory();
+
+    // Initialize MutationObserver for real-time markdown processing
+    initializeMarkdownObserver(rtlAlgorithm);
+
     // SetInterval for periodic updates
     setInterval(() => {
         initializeChatGptElements(rtlAlgorithm);
         initializeChatGptHistory();
-    }, 800);
+    }, 1000);
 }
 
 

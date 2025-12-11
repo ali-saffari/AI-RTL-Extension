@@ -513,21 +513,18 @@ function processTextElementsAdvanced(container, options = {}) {
         if ( ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
 
 
-            if (!endTyping) {
-                return;
-            }
             // If not processed, process normally
-            $element.addClass(processedClass);
+            // 
 
             const textToUse = $element.text();
 
 
-            console.log('textToUse', textToUse);
+         
 
             
             const direction = detectTextDirection(textToUse);
 
-    
+            console.log('textToUse', textToUse , 'direction', direction);
 
              $element.attr("dir", direction);
             if (fontClass) {
@@ -552,6 +549,13 @@ function processTextElementsAdvanced(container, options = {}) {
             AQ(this).attr('data-org-dir', direction);
 
             // If this is a main container, check all similar header tags and set direction based on majority
+
+            
+            // if (!endTyping) {
+            //     return;
+            // }
+            // $element.addClass(processedClass);
+
             if (mainContainer ) {
                 const allHeaders = mainContainer.find(tagName);
                 let rtlCount = 0;
@@ -584,11 +588,11 @@ function processTextElementsAdvanced(container, options = {}) {
                 mainContainer.find(tagName).each(function() {
                     AQ(this).attr('dir', majorityDir);
         
-                    // if (majorityDir === 'rtl') {
-                    //     AQ(this).css('text-align', 'right');
-                    // } else {
-                    //     AQ(this).css('text-align', 'left');
-                    // }
+                    if (majorityDir === 'rtl') {
+                        AQ(this).css('text-align', 'right');
+                    } else {
+                        AQ(this).css('text-align', 'left');
+                    }
                 });
                 
                 console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
@@ -1120,36 +1124,37 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             $element.attr('data-text-length', currentTextLength.toString());
             // Reset skip log flag when processing happens
             $element.removeAttr('data-skip-log-sent');
-        } else {
-            // Log when processing is skipped (only once)
-            const skipLogSent = $element.attr('data-skip-log-sent');
-            if (!skipLogSent) {
-                let reason = 'Unknown';
-                if (storedLength !== null && lengthDifference <= 3 && processedElementsCount >= 2) {
-                    reason = `Text length changed by ${lengthDifference} characters (threshold: 3), and ${processedElementsCount} elements already processed`;
-                } else if (storedLength === null) {
-                    reason = 'No stored length (should not happen)';
-                }
-                
-                console.log('processTextElementsByRtlAlgorithm advanced_section: Skipped processing', {
-                    element: $element[0],
-                    currentTextLength,
-                    storedLength,
-                    lengthDifference,
-                    processedElementsCount,
-                    reason
-                });
-                
-                // Mark that log has been sent
-                $element.attr('data-skip-log-sent', 'true');
-                
-                // Process headers only when typing ends
-                processTextElementsAdvanced($element, {
-                    ...mergedOptions,
-                    endTyping: true
-                });
-            }
         }
+        //  else {
+        //     // Log when processing is skipped (only once)
+        //     const skipLogSent = $element.attr('data-skip-log-sent');
+        //     if (!skipLogSent) {
+        //         let reason = 'Unknown';
+        //         if (storedLength !== null && lengthDifference <= 3 && processedElementsCount >= 2) {
+        //             reason = `Text length changed by ${lengthDifference} characters (threshold: 3), and ${processedElementsCount} elements already processed`;
+        //         } else if (storedLength === null) {
+        //             reason = 'No stored length (should not happen)';
+        //         }
+                
+        //         console.log('processTextElementsByRtlAlgorithm advanced_section: Skipped processing', {
+        //             element: $element[0],
+        //             currentTextLength,
+        //             storedLength,
+        //             lengthDifference,
+        //             processedElementsCount,
+        //             reason
+        //         });
+                
+        //         // Mark that log has been sent
+        //         $element.attr('data-skip-log-sent', 'true');
+                
+        //         // Process headers only when typing ends
+        //         processTextElementsAdvanced($element, {
+        //             ...mergedOptions,
+        //             endTyping: true
+        //         });
+        //     }
+        // }
         
     } else if (rtlAlgorithm === 'advanced_full') {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };

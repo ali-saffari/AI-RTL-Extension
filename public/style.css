@@ -331,6 +331,14 @@ code.AsSetLtr , pre.AsSetLtr {
 }
 
 
+.AsSetAlgorithm.markdown.streaming-animation h1,
+.AsSetAlgorithm.markdown.streaming-animation h2,
+.AsSetAlgorithm.markdown.streaming-animation h3, 
+.AsSetAlgorithm.markdown.streaming-animation h4, 
+.AsSetAlgorithm.markdown.streaming-animation h5,
+.AsSetAlgorithm.markdown.streaming-animation h6 {
+    width: 100%;
+}
 
 
 /*----------------claud----------------*/
