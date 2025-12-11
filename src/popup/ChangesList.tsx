@@ -19,8 +19,9 @@ const changesData: VersionChanges[] = [
             { id: "1", text: "افزودن Business Gemini" },
             { id: "2", text: "افزودن synapse" },
             { id: "3", text: "افزودن notion" },
-            { id: "4", text: "اپدیت perplexity" },
-            { id: "5", text: "اپدیت google ai studio" },
+            { id: "4", text: "افزودن Genspark" },
+            { id: "5", text: "اپدیت perplexity" },
+            { id: "6", text: "اپدیت google ai studio" },
         ]
     },
     {

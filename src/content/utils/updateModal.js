@@ -7,8 +7,9 @@ const latestChanges = [
     { id: "1", text: "افزودن Business Gemini", icon: "Gemini.png", type: "add" },
     { id: "2", text: "افزودن synapse", icon: "synaps.png", type: "add" },
     { id: "3", text: "افزودن notion", icon: "notion.png", type: "add" },
-    { id: "4", text: "اپدیت perplexity", icon: "White on Turquiose.png", type: "update" },
-    { id: "5", text: "اپدیت google ai studio", icon: "aistudio.png", type: "update" },
+    { id: "4", text: "افزودن Genspark", icon: "genspark.png", type: "add" },
+    { id: "5", text: "اپدیت perplexity", icon: "White on Turquiose.png", type: "update" },
+    { id: "6", text: "اپدیت google ai studio", icon: "aistudio.png", type: "update" },
 ];
 
 let isModalShowing = false;
