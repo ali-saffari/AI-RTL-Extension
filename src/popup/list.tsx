@@ -70,7 +70,8 @@ const services: Service[] = [
     { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true },
     { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/', new: true },
     { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true, helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' },
-    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/', new: true}
+    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/', new: true},
+    { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/', new: true }
 
     
 ];

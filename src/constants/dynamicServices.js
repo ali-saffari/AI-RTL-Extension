@@ -14,6 +14,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Business Gemini',
         origins: ['*://business.gemini.google/*'],
         hostnames: ['business.gemini.google']
+    },
+    genspark: {
+        name: 'Genspark',
+        origins: ['*://genspark.ai/*', '*://www.genspark.ai/*'],
+        hostnames: ['genspark.ai', 'www.genspark.ai']
     }
 };
 
