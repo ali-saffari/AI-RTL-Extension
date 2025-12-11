@@ -190,12 +190,121 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
 
 
 
+// Monitor changes to elements with data-type="portal"
+function observePortalElements(rtlAlgorithm) {
+    const portalProcessTimes = new WeakMap();
+
+    // Process portal element
+    const processPortalElement = function(portalElement) {
+        // Throttle processing per element to avoid spamming
+        const now = Date.now();
+        const last = portalProcessTimes.get(portalElement) || 0;
+        if (now - last < 500) {
+            return;
+        }
+        portalProcessTimes.set(portalElement, now);
+
+        // Async to avoid layout thrash with rapid DOM updates
+        
+        const portalText = portalElement.textContent || '';
+        const direction = (rtlAlgorithm === 'first_word') 
+            ? analyzeTextDirectionFirstWord(portalText)
+            : detectTextDirection(portalText);
+        
+        if (direction) {
+            portalElement.setAttribute('dir', direction);
+            if (direction === 'rtl') {
+                AQ(portalElement).addClass('AsRtlPerplexity');
+            } else {
+                AQ(portalElement).removeClass('AsRtlPerplexity');
+            }
+        }
+
+
+        setTimeout(() => {
+            const portalText = portalElement.textContent || '';
+            const direction = (rtlAlgorithm === 'first_word') 
+                ? analyzeTextDirectionFirstWord(portalText)
+                : detectTextDirection(portalText);
+            
+            if (direction) {
+                portalElement.setAttribute('dir', direction);
+                if (direction === 'rtl') {
+                    AQ(portalElement).addClass('AsRtlPerplexity');
+                } else {
+                    AQ(portalElement).removeClass('AsRtlPerplexity');
+                }
+            }
+        }, 500);
+    };
+
+    // Observer for portal changes
+    const portalObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if the added node is a portal or contains portals
+                        const portalElements = AQ(node).find('[data-type="portal"]').add(
+                            AQ(node).filter('[data-type="portal"]')
+                        );
+                        
+                        portalElements.each(function() {
+                            processPortalElement(this);
+                        });
+                    }
+                });
+            }
+
+            // Handle content changes (characterData mutations and childList changes inside portal)
+            if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                let targetElement = mutation.target;
+                
+                // If it's a text node, get its parent element
+                if (targetElement.nodeType === Node.TEXT_NODE) {
+                    targetElement = targetElement.parentElement;
+                }
+                
+                if (targetElement && targetElement.nodeType === Node.ELEMENT_NODE) {
+                    const $target = AQ(targetElement);
+                    
+                    // Check if target itself is portal
+                    if ($target.is('[data-type="portal"]')) {
+                        processPortalElement(targetElement);
+                    } else {
+                        // Check if target is inside a portal
+                        const portalParent = $target.closest('[data-type="portal"]');
+                        if (portalParent.length > 0) {
+                            processPortalElement(portalParent[0]);
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Observe document body for new portals
+    portalObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    // Process existing portals
+    AQ('[data-type="portal"]').each(function() {
+        processPortalElement(this);
+    });
+}
+
 // Main activation function for Perplexity
 export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
     console.log('Perplexity RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
     setPerplexity(rtlAlgorithm);
+    
+    // Monitor changes to elements with data-type="portal"
+    observePortalElements(rtlAlgorithm);
     
     // SetInterval for continuous processing
     let interval = setInterval(() => {

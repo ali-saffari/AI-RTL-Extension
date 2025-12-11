@@ -563,6 +563,22 @@ copilot
     transform: scale(0.7);
 }
 
+
+.AsRtlPerplexity svg.mr-2 {
+
+    margin-left: 0.5rem;
+    margin-right: initial;
+
+}
+
+
+
+/* Convert ml-auto to mr-auto for RTL in AsRtlPerplexity */
+.AsRtlPerplexity .ml-auto {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
 /*-----------------*/
 
 
