@@ -65,14 +65,14 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
     AQ('.mat-button-toggle-label-content , .mat-mdc-button , .extendable-label , .create-new-label , .project-table-title , .mat-mdc-cell , .mat-headline-medium  , .mat-label-small ,.mat-label-large ,.title-and-promo , .panel-header-content ,.panel-content-title ').each(function (each) {
 
-            if (!AQ(this).hasClass("FontSet")) {
+        if (!AQ(this).hasClass("FontSet") && !AQ(this).hasClass("mat-icon")) {
                 AQ(this).addClass('FontSet');
             }
     
     });
     AQ('.panel-header-content .mat-title-small ,.footer , .selected-num ,.notebook-title ,.dropzone__description ,.loading-message').each(function (each) {
 
-        if (!AQ(this).hasClass("FontSet")) {
+        if (!AQ(this).hasClass("FontSet") && !AQ(this).hasClass("mat-icon")) {
             AQ(this).addClass('FontSet');
         }
 
@@ -81,8 +81,8 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
      AQ('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger').each(function (each) {
 
-
-        if (!AQ(this).hasClass("FontSet")) {
+        
+        if (!AQ(this).hasClass("FontSet") && !AQ(this).hasClass("mat-icon")) {
             AQ(this).addClass('FontSet');
         }
 
