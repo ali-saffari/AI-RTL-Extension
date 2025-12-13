@@ -86,7 +86,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             ...SERVICE_FLAGS,
             ...dynamicServiceFlags,
             rtlAlgorithmMode: 'advanced_full',
-            manualRtlSettings: defaultManualRtlSettings
+            manualRtlSettings: defaultManualRtlSettings,
+            mixedTitleDisplayMode: 'unified'
         });
         
         // Prevent update modal from appearing right after fresh install
@@ -132,6 +133,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 
                 if (!storedData.hasOwnProperty('rtlAlgorithmMode')) {
                     updates.rtlAlgorithmMode = storedData.rtlAlgorithm === 'first_word' ? 'first_word' : 'advanced_full';
+                }
+                
+                // Check and initialize mixedTitleDisplayMode
+                if (!storedData.hasOwnProperty('mixedTitleDisplayMode')) {
+                    updates.mixedTitleDisplayMode = 'unified';
                 }
                 
                 // Check and initialize manual RTL settings

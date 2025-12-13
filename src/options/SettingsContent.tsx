@@ -46,6 +46,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [supportHide, setSupportHide] = React.useState(false);
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
+    const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: true,
@@ -66,7 +67,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'supportHide', 
                 'manualRtlSettings',
                 'analytics',
-                'previewEnabled'
+                'previewEnabled',
+                'mixedTitleDisplayMode'
             ], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
@@ -97,6 +99,11 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 } else {
                     setPreviewEnabled(true); // Default to enabled
                 }
+                if (result.mixedTitleDisplayMode) {
+                    setMixedTitleDisplayMode(result.mixedTitleDisplayMode);
+                } else {
+                    setMixedTitleDisplayMode('unified'); // Default to unified
+                }
             });
         } catch (error) {
             console.log('Failed to load settings:', error);
@@ -126,6 +133,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.previewEnabled) {
                     setPreviewEnabled(changes.previewEnabled.newValue);
+                }
+                if (changes.mixedTitleDisplayMode) {
+                    setMixedTitleDisplayMode(changes.mixedTitleDisplayMode.newValue);
                 }
             }
         };
@@ -215,6 +225,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
+    const handleMixedTitleDisplayModeChange = (value: string) => {
+        setMixedTitleDisplayMode(value);
+        try {
+            chrome.storage.sync.set({ mixedTitleDisplayMode: value });
+        } catch (error) {
+            console.log('Failed to save mixed title display mode setting:', error);
+        }
+    };
+
     return (
         <Box sx={{ width: '100%' }}>
             {/* Tabs */}
@@ -270,6 +289,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         isDarkMode={isDarkMode}
                         previewEnabled={previewEnabled}
                         onPreviewChange={handlePreviewChange}
+                        mixedTitleDisplayMode={mixedTitleDisplayMode}
+                        onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                     />
                 )}
                 {tabValue === 1 && (

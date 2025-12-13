@@ -21,7 +21,8 @@ import {
     InputLabel,
     Slider,
     Divider,
-    TextField
+    TextField,
+    Link
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
@@ -447,6 +448,35 @@ const Settings: React.FC<SettingsProps> = ({
                             />
                         </Paper>
                     </RadioGroup>
+                    
+                    {/* لینک به تنظیمات پیشرفته */}
+                    <Box sx={{ 
+                        textAlign: 'center',
+                        mt: 2,
+                        pt: 2,
+                        borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                    }}>
+                        <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => {
+                                chrome.tabs.create({ url: chrome.runtime.getURL('options.html#algorithm') });
+                            }}
+                            sx={{
+                                color: theme.palette.primary.main,
+                                textTransform: 'none',
+                                fontSize: '0.85rem',
+                                fontWeight: 500,
+                                fontFamily: 'iranyekan',
+                                '&:hover': {
+                                    textDecoration: 'underline',
+                                    backgroundColor: 'transparent'
+                                }
+                            }}
+                        >
+                            تنظیمات پیشرفته
+                        </Button>
+                    </Box>
                 </Paper>
 
                 {/* تنظیمات متن حمایت */}

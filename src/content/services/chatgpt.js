@@ -31,7 +31,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         markdownProcessTimes.set(element, now);
 
         // Async to avoid layout thrash with rapid DOM updates
-        setTimeout(() => {
+        // setTimeout(() => {
 
             console.log('processMarkdownElement ');
 
@@ -44,7 +44,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                 siteConfig: 'chatgpt',
                 setTextAlign: true
             });
-        }, 500);
+        // }, 500);
     };
 
     // Create new observer
@@ -54,8 +54,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         // Check if the added node is a .text-message .markdown element
-                        const markdownElements = AQ(node).find('.text-message .markdown').add(
-                            AQ(node).filter('.text-message .markdown')
+                        const markdownElements = AQ(node).find('.markdown').add(
+                            AQ(node).filter('.markdown')
                         );
                         
                         markdownElements.each(function() {
@@ -120,11 +120,11 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                     const $target = AQ(targetElement);
                     
                     // Check if target itself is .text-message .markdown
-                    if ($target.is('.text-message .markdown')) {
+                    if ($target.is('.markdown')) {
                         processMarkdownElement(targetElement);
                     } else {
                         // Check if target is inside .text-message .markdown
-                        const markdownParent = $target.closest('.text-message .markdown');
+                        const markdownParent = $target.closest(' .markdown');
                         if (markdownParent.length > 0) {
                             processMarkdownElement(markdownParent[0]);
                         }
@@ -165,7 +165,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    // AQ('.text-message .markdown').each(function (each) {
+    // AQ('.markdown').each(function (each) {
     
     // AQ(element).addClass("AsSetAlgorithm")
     //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
@@ -242,11 +242,22 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         //     });
         // })
 
+  
+
+
+     
+    })
 
 
     
-     
+    AQ('.text-token-text-secondary span').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
     })
+
+
 }
 
 export function initializeChatGptHistory() {

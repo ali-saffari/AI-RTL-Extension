@@ -6,7 +6,7 @@ import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElemen
 export function setGenspark(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         // Add copyright if needed
-        addCopyright(AQ(".j-input-wrapper-wrapper"), 'AsBoxGenspark AsBoxB', 'margin-top: 2px;');
+        addCopyright(AQ(".j-input-wrapper-wrapper"), 'AsBoxGenspark AsBoxB', 'margin-top: 7px;margin-bottom: -21px;');
     }
 
     // Process textareas and inputs

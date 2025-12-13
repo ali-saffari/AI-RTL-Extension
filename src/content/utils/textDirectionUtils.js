@@ -556,47 +556,54 @@ function processTextElementsAdvanced(container, options = {}) {
             // }
             // $element.addClass(processedClass);
 
-            if (mainContainer ) {
-                const allHeaders = mainContainer.find(tagName);
-                let rtlCount = 0;
-                let ltrCount = 0;
+            // Check mixedTitleDisplayMode setting
+            // Default to 'unified' if not set
+            chrome.storage.sync.get(['mixedTitleDisplayMode'], (result) => {
+                const mixedTitleMode = result.mixedTitleDisplayMode || 'unified';
                 
+                // If unified mode and mainContainer exists, apply majority direction
+                if (mixedTitleMode === 'unified' && mainContainer) {
+                    const allHeaders = mainContainer.find(tagName);
+                    let rtlCount = 0;
+                    let ltrCount = 0;
+                    
+                    // Count directions of all headers
+                    allHeaders.each(function() {
+                        const headerDir = AQ(this).attr('data-org-dir');
+                        if (headerDir === 'rtl') {
+                            rtlCount++;
+                        } else if (headerDir === 'ltr') {
+                            ltrCount++;
+                        }
+                    });
+                    
+                    // Determine majority direction
+                    let majorityDir;
+                    if (rtlCount >= ltrCount) {
+                        majorityDir = 'rtl';
+                    } else if (ltrCount > rtlCount) {
+                        majorityDir = 'ltr';
+                    } 
+                    
+                    // Apply majority direction to all headers if we have a majority
+                    if (majorityDir) {
+                        mainContainer.find(tagName).each(function() {
+                            AQ(this).attr('dir', majorityDir);
                 
-
-
-                // Count directions of all headers
-                allHeaders.each(function() {
-                    const headerDir = AQ(this).attr('data-org-dir');
-                    if (headerDir === 'rtl') {
-                        rtlCount++;
-                    } else if (headerDir === 'ltr') {
-                        ltrCount++;
+                            if (setTextAlign) {
+                                if (majorityDir === 'rtl') {
+                                    AQ(this).css('text-align', 'right');
+                                } else {
+                                    AQ(this).css('text-align', 'left');
+                                }
+                            }
+                        });
+                        
+                        console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount}) - Unified mode`);
                     }
-                });
-                
-                // Determine majority direction
-                let majorityDir;
-                if (rtlCount >= ltrCount) {
-                    majorityDir = 'rtl';
-                } else if (ltrCount > rtlCount) {
-                    majorityDir = 'ltr';
-                } 
-                
-                // Apply majority direction to all headers
-
-                
-                mainContainer.find(tagName).each(function() {
-                    AQ(this).attr('dir', majorityDir);
-        
-                    if (majorityDir === 'rtl') {
-                        AQ(this).css('text-align', 'right');
-                    } else {
-                        AQ(this).css('text-align', 'left');
-                    }
-                });
-                
-                console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount})`);
-            }
+                }
+                // In individual mode, each header keeps its own direction (already set above)
+            });
 
             setDebugAttr($element, 'data-debug-mode', 'header-processed');
             return;

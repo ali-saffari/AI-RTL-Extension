@@ -261,6 +261,15 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         return;
     }
 
+    if (changes.mixedTitleDisplayMode) {
+        // Remove class from body when mixed title display mode changes
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
+        location.reload();
+        return;
+    }
+
     if (changes.supportHide) {
         const hide = changes.supportHide.newValue === true;
         // Wait for AQ to be available
