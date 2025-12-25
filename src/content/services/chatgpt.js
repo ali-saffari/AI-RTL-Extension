@@ -44,6 +44,11 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                 siteConfig: 'chatgpt',
                 setTextAlign: true
             });
+
+            
+      
+
+
         // }, 500);
     };
 
@@ -189,6 +194,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
         }
     })
+
 
     AQ('body').each(function (each) {
         AQ(this).addClass('FontSet');

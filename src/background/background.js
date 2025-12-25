@@ -1,6 +1,7 @@
 // Import dynamic services configuration
 import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
+import { getSitesConfig } from '../constants/sitesConfig.js';
 
 // ============================================
 // CONFIGURATION
@@ -11,7 +12,8 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true, gamma: true
+    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, 
+    oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true, gamma: true
 };
 
 
@@ -59,6 +61,41 @@ async function initializeUserId() {
 // Initialize user ID and set uninstall URL when service worker starts
 initializeUserId();
 
+// Function to apply sites config from API
+async function applySitesConfig() {
+    try {
+        const sitesConfig = await getSitesConfig(true); // Force refresh
+        
+        // Save entire config to storage as onlineConfig
+        chrome.storage.sync.set({ onlineConfig: sitesConfig }, () => {
+            console.log('[Background] Online config saved to storage:', sitesConfig);
+        });
+        
+        // Update all services flags based on config
+        // sitesConfig structure: { "chatGpt": { "disabled": false }, "claude": { "disabled": false }, ... }
+        chrome.storage.sync.get(Object.keys(sitesConfig), (storedData) => {
+            const updates = {};
+            Object.keys(sitesConfig).forEach(key => {
+                const siteConfig = sitesConfig[key];
+                const enabled = siteConfig?.disabled === false; // disabled: false means enabled
+                // Only update if value changed or doesn't exist
+                if (storedData[key] === undefined || storedData[key] !== enabled) {
+                    updates[key] = enabled;
+                }
+            });
+            
+            if (Object.keys(updates).length > 0) {
+                chrome.storage.sync.set(updates, () => {
+                    console.log('[Background] Sites config updated from API:', updates);
+                });
+            }
+        });
+    } catch (error) {
+        console.error('[Background] Error applying sites config:', error);
+    }
+}
+
+// Apply config on install/update and every 6 hours
 chrome.runtime.onInstalled.addListener(async (details) => {
     // Initialize user ID and set uninstall URL with ID
     await initializeUserId();
@@ -76,20 +113,42 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     };
     
     if (details.reason === 'install') {
-        // Create default flags for dynamic services (all disabled by default)
-        const dynamicServiceFlags = {};
-        Object.keys(DYNAMIC_SERVICES).forEach(service => {
-            dynamicServiceFlags[service] = false;
+        // Get sites config from API
+        getSitesConfig().then(sitesConfig => {
+            // sitesConfig structure: { "chatGpt": { "disabled": false }, "claude": { "disabled": false }, ... }
+            // Convert to simple flags: { "chatGpt": true, "claude": true, ... }
+            // disabled: false means enabled, disabled: true means disabled
+            const configFlags = {};
+            Object.keys(sitesConfig).forEach(key => {
+                configFlags[key] = sitesConfig[key]?.disabled === false;
+            });
+            
+            // Merge with SERVICE_FLAGS (SERVICE_FLAGS takes precedence for non-dynamic services)
+            const allFlags = { ...SERVICE_FLAGS, ...configFlags };
+            
+            chrome.storage.sync.set({
+                ...allFlags,
+                rtlAlgorithmMode: 'advanced_full',
+                manualRtlSettings: defaultManualRtlSettings,
+                mixedTitleDisplayMode: 'unified'
+            });
+        }).catch(() => {
+            // Fallback: if API fails, use default SERVICE_FLAGS
+            chrome.storage.sync.set({
+                ...SERVICE_FLAGS,
+                rtlAlgorithmMode: 'advanced_full',
+                manualRtlSettings: defaultManualRtlSettings,
+                mixedTitleDisplayMode: 'unified'
+            });
         });
-        
-        chrome.storage.sync.set({
-            ...SERVICE_FLAGS,
-            ...dynamicServiceFlags,
-            rtlAlgorithmMode: 'advanced_full',
-            manualRtlSettings: defaultManualRtlSettings,
-            mixedTitleDisplayMode: 'unified'
-        });
-        
+    }
+    
+    // Apply config on install and update
+    if (details.reason === 'install' || details.reason === 'update') {
+        await applySitesConfig();
+    }
+    
+    if (details.reason === 'install') {
         // Prevent update modal from appearing right after fresh install
         if (UPDATE_MODAL_ENABLED && UPDATE_MODAL_ID) {
             chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: UPDATE_MODAL_ID }, () => {
@@ -541,6 +600,7 @@ const AI_SITES = [
     'github.com', 'perplexity.ai', 'www.perplexity.ai', 'duckduckgo.com',
     'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
+    'google.com', 'www.google.com',
     'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'www.blackbox.ai',
     'notebooklm.google.com', 'chat.z.ai', 'lmarena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',

@@ -1179,6 +1179,17 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
                     processedClass: mergedOptions.processedClass,
                     siteConfig: mergedOptions.siteConfig
                 });
+
+                // Set code and pre elements to LTR and left align
+                $element.find('code, pre').each(function() {
+                    const $codeElement = AQ(this);
+                    $codeElement.attr('dir', 'ltr');
+                    $codeElement.css('text-align', 'left');
+                    $codeElement.addClass('AsSetLtr');
+                    if (!$codeElement.hasClass('FontSetCode')) {
+                        $codeElement.addClass('FontSetCode');
+                    }
+                });
             }
             
             $element.attr('data-algorithm-rtl', 'advanced_full');
