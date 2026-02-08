@@ -1,4 +1,4 @@
-// LM Arena service functions
+// Arena (arena.ai) service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
@@ -19,7 +19,7 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
     return direction;
 }
 
-export function setLmarena(rtlAlgorithm = 'advanced_full') {
+export function setArena(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
                 
@@ -36,7 +36,6 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
 
 
    
-
 
 
 
@@ -95,15 +94,15 @@ export function setLmarena(rtlAlgorithm = 'advanced_full') {
     });
 }
 
-// Main activation function for LM Arena
-export function activateLmarena(rtlAlgorithm = 'advanced_full') {
-    console.log('LM Arena RTL activated with algorithm:', rtlAlgorithm);
+// Main activation function for Arena
+export function activateArena(rtlAlgorithm = 'advanced_full') {
+    console.log('Arena RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
-    setLmarena(rtlAlgorithm);
+    setArena(rtlAlgorithm);
     
     // SetInterval for continuous processing
     let interval = setInterval(() => {
-        setLmarena(rtlAlgorithm);
+        setArena(rtlAlgorithm);
     }, 500);
 }

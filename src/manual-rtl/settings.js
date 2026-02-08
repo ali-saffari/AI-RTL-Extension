@@ -31,7 +31,7 @@ function getAISitesList() {
         'www.blackbox.ai',
         'notebooklm.google.com',
         'chat.z.ai',
-        'lmarena.ai',
+        'arena.ai',
         'openrouter.ai',
         'agent.minimax.io',
         'jules.google.com',

@@ -21,7 +21,7 @@ import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
 import { activateNotebooklm } from './services/notebooklm.js';
 import { activateZai } from './services/zai.js';
-import { activateLmarena } from './services/lmarena.js';
+import { activateArena } from './services/arena.js';
 import { activateOpenRouter } from './services/openrouter.js';
 import { activateMinimax } from './services/minimax.js';
 import { activateJules } from './services/jules.js';
@@ -162,9 +162,9 @@ const serviceConfig = {
         urls: ["chat.z.ai"],
         activate: activateZai
     },
-    lmarena: {
-        urls: ["lmarena.ai"],
-        activate: activateLmarena
+    arena: {
+        urls: ["arena.ai"],
+        activate: activateArena
     },
     openrouter: {
         urls: ["openrouter.ai"],

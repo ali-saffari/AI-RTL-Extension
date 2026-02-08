@@ -14,6 +14,13 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1404/11/19",
+        changes: [
+            { id: "1", text: "تغییر LMArena به Arena" },
+            { id: "2", text: "افزودن Google AI Mode" },
+        ]
+    },
+    {
         version: "1404/09/11",
         changes: [
             { id: "1", text: "افزودن Business Gemini" },
@@ -87,7 +94,7 @@ const changesData: VersionChanges[] = [
             { id: "6", text: "حذف سایت‌های غیرفعال" },
             { id: "7", text: "افزودن NotebookLM" },
             { id: "8", text: "افزودن Z.ai" },
-            { id: "9", text: "افزودن LMArena" }
+            { id: "9", text: "افزودن Arena" }
         ]
     },
     {

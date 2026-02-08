@@ -24,6 +24,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Google',
         origins: ['*://google.com/*', '*://www.google.com/*'],
         hostnames: ['google.com', 'www.google.com']
+    },
+    arena: {
+        name: 'Arena',
+        origins: ['*://arena.ai/*'],
+        hostnames: ['arena.ai']
     }
 };
 

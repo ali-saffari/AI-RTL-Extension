@@ -12,7 +12,7 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebooklm: true, jules: true, zai: true, lmarena: true, openrouter: true, minimax: true, 
+    notebooklm: true, jules: true, zai: true, arena: false, openrouter: true, minimax: true, 
     oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true, gamma: true
 };
 
@@ -602,7 +602,7 @@ const AI_SITES = [
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
     'google.com', 'www.google.com',
     'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'www.blackbox.ai',
-    'notebooklm.google.com', 'chat.z.ai', 'lmarena.ai', 'openrouter.ai',
+    'notebooklm.google.com', 'chat.z.ai', 'arena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',

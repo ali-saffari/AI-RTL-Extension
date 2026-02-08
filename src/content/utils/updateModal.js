@@ -3,13 +3,10 @@ import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from 
 // Update modal for showing changelog
 // Latest version changes data
 const latestChanges = [
-    { id: "0", text: "بهبود نمایش پیام آپدیت", icon: "icon-128.png", type: "fix" },
-    { id: "1", text: "افزودن Business Gemini", icon: "Gemini.png", type: "add" },
-    { id: "2", text: "افزودن synapse", icon: "synaps.png", type: "add" },
-    { id: "3", text: "افزودن notion", icon: "notion.png", type: "add" },
-    { id: "4", text: "افزودن Genspark", icon: "genspark.png", type: "add" },
-    { id: "5", text: "اپدیت perplexity", icon: "White on Turquiose.png", type: "update" },
-    { id: "6", text: "اپدیت google ai studio", icon: "aistudio.png", type: "update" },
+    { id: "0", text: "تغییر LMArena به Arena", icon: "arena.png", type: "fix" },
+    { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
+    { id: "2", text: "بهبود عملکرد افزونه", icon: "icon-128.png", type: "fix" },
+
 ];
 
 let isModalShowing = false;
