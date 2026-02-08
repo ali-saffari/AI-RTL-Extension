@@ -4,7 +4,7 @@ import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from 
 // Latest version changes data
 const latestChanges = [
     { id: "0", text: "تغییر LMArena به Arena", icon: "arena.png", type: "fix" },
-    { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
+    // { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
     { id: "2", text: "بهبود عملکرد افزونه", icon: "icon-128.png", type: "fix" },
 
 ];

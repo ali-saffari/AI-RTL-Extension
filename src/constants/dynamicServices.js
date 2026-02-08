@@ -20,11 +20,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://genspark.ai/*', '*://www.genspark.ai/*'],
         hostnames: ['genspark.ai', 'www.genspark.ai']
     },
-    google: {
-        name: 'Google',
-        origins: ['*://google.com/*', '*://www.google.com/*'],
-        hostnames: ['google.com', 'www.google.com']
-    },
+    // google: {
+    //     name: 'Google',
+    //     origins: ['*://google.com/*', '*://www.google.com/*'],
+    //     hostnames: ['google.com', 'www.google.com']
+    // },
     arena: {
         name: 'Arena',
         origins: ['*://arena.ai/*'],

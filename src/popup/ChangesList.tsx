@@ -17,7 +17,7 @@ const changesData: VersionChanges[] = [
         version: "1404/11/19",
         changes: [
             { id: "1", text: "تغییر LMArena به Arena" },
-            { id: "2", text: "افزودن Google AI Mode" },
+            // { id: "2", text: "افزودن Google AI Mode" },
         ]
     },
     {

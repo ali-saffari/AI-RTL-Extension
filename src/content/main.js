@@ -37,7 +37,7 @@ import { activateErnie } from './services/ernie.js';
 import { activateGamma } from './services/gamma.js';
 import { activateNotion } from './services/notion.js';
 import { activateGenspark } from './services/genspark.js';
-import { activateGoogle } from './services/google.js';
+// import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 
 // Global variables
@@ -214,10 +214,10 @@ const serviceConfig = {
         urls: ["genspark.ai", "www.genspark.ai"],
         activate: activateGenspark
     },
-    google: {
-        urls: ["google.com", "www.google.com"],
-        activate: activateGoogle
-    }
+    // google: {
+    //     urls: ["google.com", "www.google.com"],
+    //     activate: activateGoogle
+    // }
 };
 
 // Check if current site matches service URLs
