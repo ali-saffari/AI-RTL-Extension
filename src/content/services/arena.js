@@ -27,12 +27,12 @@ export function setArena(rtlAlgorithm = 'advanced_full') {
         fo3.addClass('pb-12');
         fo3.removeClass('pb-6');
 
-        let fo4 = AQ('.bg-surface-primary .border-border-faint.bg-surface-primary.min-h-0.w-full.flex-none .absolute')
+        let fo4 = AQ('.bg-surface-primary .bg-surface-secondary .absolute')
         fo4.css('bottom', '-2.8rem');
         fo4.css('text-align', 'center');
 
 
-        addCopyright('.bg-surface-primary .border-border-faint.bg-surface-primary.min-h-0.w-full.flex-none .absolute  p');
+        addCopyright('.bg-surface-primary .bg-surface-secondary .absolute  p');
 
 
    
