@@ -14,6 +14,14 @@ interface VersionChanges {
 
 const changesData: VersionChanges[] = [
     {
+        version: "1405/02/20",
+        changes: [
+            { id: "1", text: "تغیر اسم پلاگین از ChatGPT RTL به AI RTL" },
+            { id: "1", text: "تغیر لوگو و آیکون‌ افزونه" },
+            // { id: "2", text: "افزودن Google AI Mode" },
+        ]
+    },
+    {
         version: "1404/11/19",
         changes: [
             { id: "1", text: "تغییر LMArena به Arena" },

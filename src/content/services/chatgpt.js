@@ -297,7 +297,7 @@ export function initializeChatGptHistory() {
 // Main activation function for ChatGPT
 export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     // RTL algorithm is now available as parameter
-    console.log('ChatGPT RTL activated with algorithm:', rtlAlgorithm);
+    console.log('AI RTL activated with algorithm:', rtlAlgorithm);
     
     // // Wait for React to fully load before initializing
     // setTimeout(() => {

@@ -1,15 +1,16 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
 
-// Update modal for showing changelog
-// Latest version changes data
+// ابزار نمایش لیست تغییرات نسخه جدید
+// آرایه فقط شامل تغییرات خطی و فنی نسخه جدید است
 const latestChanges = [
-    { id: "0", text: "تغییر LMArena به Arena", icon: "arena.png", type: "fix" },
     // { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
-    { id: "2", text: "بهبود عملکرد افزونه", icon: "icon-128.png", type: "fix" },
-
+    { id: "1", text: "تغییر لوگو و آیکون‌ افزونه", icon: "icon-128.png", type: "fix" },
+    { id: "2", text: "به‌روزرسانی سازگاری با ظاهر جدید سایت‌ها", icon: "icon-128.png", type: "fix" },
 ];
 
 let isModalShowing = false;
+
+
 
 export function showUpdateModal() {
     if (!UPDATE_MODAL_ENABLED || !UPDATE_MODAL_ID) {
@@ -49,11 +50,24 @@ export function showUpdateModal() {
     });
 }
 
+
 function createUpdateModalHTML() {
     const manifest = chrome.runtime.getManifest();
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
     const iconUrl = chrome.runtime.getURL('images/icon-128.png');
     const currentVersion = manifest.version;
+
+    // متن استاتیک اصلی که کاملاً از لیست جدا شده است
+    const staticAnnouncementHTML = `
+        <div class="As-special-announcement">
+            ما برگشتیم، اما با یک نام و نشان جدید! 🚀<br><br>
+            اگر متوجه غیبت کوتاه‌مدت ما شده بودید، دلیلش شکایت شرکت OpenAI روی نام ChatGPT بود. این موضوع ما را مجبور کرد تا نام و لوگوی افزونه را تغییر دهیم.<br><br>
+            راستش را بخواهید، این افزونه در ابتدا فقط برای راحتی کار با ChatGPT طراحی شده بود؛ اما به مرور زمان و به درخواست شما عزیزان، پشتیبانی از سایت‌های هوش مصنوعی دیگر را هم به آن اضافه کردیم. متأسفانه فراموش کرده بودیم اسم افزونه را به‌روزرسانی کنیم و فکرش را هم نمی‌کردیم با چنین مشکلی روبه‌رو شویم!<br><br>
+            خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
+            📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
+            🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
+        </div>
+    `;
 
     return `
         <div class="As-modal-backdrop FontSet" id="AsUpdateModal">
@@ -83,7 +97,7 @@ function createUpdateModalHTML() {
                 #AsUpdateModal .As-modal {
                     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                     max-height: 90vh;
-                    width: min(500px, 90vw);
+                    width: min(550px, 95vw);
                     display: flex;
                     flex-direction: column;
                     background: linear-gradient(135deg, #2f2f41 0%, #1a1a2e 100%);
@@ -106,7 +120,7 @@ function createUpdateModalHTML() {
                     overflow: hidden;
                 }
                 #AsUpdateModal .As-footer {
-                    padding: 0;
+                    padding: 15px 25px 25px 25px;
                     position: sticky;
                     bottom: 0;
                     background: transparent;
@@ -119,7 +133,7 @@ function createUpdateModalHTML() {
                     align-items: center;
                     justify-content: center;
                     gap: 14px;
-                    margin-bottom: 30px;
+                    margin-bottom: 25px;
                     padding-bottom: 20px;
                     border-bottom: 1px solid rgba(0, 234, 255, 0.2);
                     direction: rtl;
@@ -180,71 +194,86 @@ function createUpdateModalHTML() {
                     border-radius: 10px;
                     border: 2px solid rgba(255, 255, 255, 0.08);
                 }
-                #AsUpdateModal .As-section::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(135deg, #31f0ff 0%, #00b6e0 100%);
-                }
                 #AsUpdateModal .As-title {
-                    margin: 0 0 24px 0;
+                    margin: 0 0 20px 0;
                     color: #00e9ff;
-                    font-size: 20px;
+                    font-size: 19px;
                     font-weight: 700;
                     text-align: center;
                     text-shadow: 0 1px 8px rgba(0, 233, 255, 0.3);
                 }
                 #AsUpdateModal .As-changes {
-                    margin-bottom: 20px;
+                    margin-top: 20px;
+                    margin-bottom: 15px;
                     direction: rtl;
                     display: flex;
                     flex-direction: column;
                     gap: 12px;
-                    overflow: hidden;
                 }
                 #AsUpdateModal .As-changes-title {
-                    color: #00e9ff;
-                    font-size: 16px;
+                    color: rgba(0, 233, 255, 0.8);
+                    font-size: 14px;
                     font-weight: 700;
-                    text-align: center;
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    flex-shrink: 0;
+                    gap: 8px;
                 }
                 #AsUpdateModal .As-change-list {
                     display: flex;
                     flex-direction: column;
-                    gap: 0;
-                    background: rgba(0, 233, 255, 0.04);
-                    border-radius: 10px;
-                    padding: 16px;
-                    border: 1px solid rgba(0, 233, 255, 0.15);
-                    border-right: none;
-                    padding-right: 20px;
+                    gap: 10px;
                 }
+                
+                /* استایل باکس استاتیک اطلاعیه اصلی */
+                #AsUpdateModal .As-special-announcement {
+                    background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
+                    border: 1px dashed rgba(0, 233, 255, 0.35);
+                    border-radius: 12px;
+                    padding: 20px;
+                    color: rgba(255, 255, 255, 0.95);
+                    font-size: 14px;
+                    line-height: 1.8;
+                    text-align: justify;
+                    box-shadow: inset 0 0 15px rgba(0, 233, 255, 0.03);
+                    margin-bottom: 5px;
+                }
+                #AsUpdateModal .As-special-announcement a {
+                    color: #00e9ff !important;
+                    text-decoration: none;
+                    font-weight: bold;
+                    border-bottom: 1px dotted #00e9ff;
+                    transition: color 0.2s ease;
+                }
+                #AsUpdateModal .As-special-announcement a:hover {
+                    color: #fff !important;
+                    border-bottom-style: solid;
+                }
+
+                /* استایل لیست تغییرات کوچک فرعی */
                 #AsUpdateModal .As-change-item {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    padding: 14px 16px;
-                    border-radius: 8px;
-                    transition: all 0.2s ease;
-                    position: relative;
+                    padding: 12px 16px;
+                    border-radius: 10px;
                     direction: rtl;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                 }
                 #AsUpdateModal .As-change-icon-img {
-                    width: 32px;
-                    height: 32px;
-                    min-width: 32px;
-                    border-radius: 8px;
+                    width: 26px;
+                    height: 26px;
+                    min-width: 26px;
+                    border-radius: 6px;
                     flex-shrink: 0;
                     object-fit: contain;
                     background: rgba(255, 255, 255, 0.05);
                     padding: 4px;
                 }
                 #AsUpdateModal .As-change-text {
-                    color: rgba(255, 255, 255, 0.95);
-                    font-size: 14px;
-                    line-height: 1.7;
+                    color: rgba(255, 255, 255, 0.85);
+                    font-size: 13px;
+                    line-height: 1.6;
                     flex: 1;
                     font-weight: 500;
                     text-align: right;
@@ -254,23 +283,22 @@ function createUpdateModalHTML() {
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
-                    font-size: 24px;
+                    font-size: 18px;
                     font-weight: 700;
                     line-height: 1;
-                    width: 32px;
-                    height: 32px;
+                    width: 26px;
+                    height: 26px;
                 }
                 #AsUpdateModal .As-close-btn {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.15) 0%, rgba(0, 153, 204, 0.1) 100%);
                     color: #ffffff;
                     border: 2px solid rgba(0, 233, 255, 0.4);
-                    padding: 10px 18px;
-                    border-radius: 8px;
+                    padding: 12px 18px;
+                    border-radius: 10px;
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
                     width: 100%;
-                    min-width: 0;
                     font-family: iranyekan, sans-serif;
                     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
                     box-shadow: 0 2px 8px rgba(0, 233, 255, 0.2);
@@ -287,14 +315,12 @@ function createUpdateModalHTML() {
                 }
             </style>
             <div class="As-modal">
-                <!-- Content -->
                 <div class="As-content">
-                    <!-- Logo and Extension Info -->
                     <div class="As-header">
                         <img class="As-logo" src="${iconUrl}" alt="${extensionName}">
                         <div class="As-ext-info">
                             <h2 class="As-ext-name">
-                                ChatGPT RTL (Persian/Farsi)
+                                AI RTL (Persian/Farsi)
                             </h2>
                             <div class="As-version">
                                 نسخه ${currentVersion}
@@ -307,15 +333,16 @@ function createUpdateModalHTML() {
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
                         
-                        <!-- Changes List - Attractive Design -->
+                        ${staticAnnouncementHTML}
+                        
                         <div class="As-changes">
                             <div class="As-changes-title">
-                                تغییرات نسخه جدید
+                                <span>↻</span> سایر تغییرات این نسخه:
                             </div>
                             
                             <div class="As-change-list">
-                                ${latestChanges.map((change, index) => `
-                                    <div class="As-change-item" style="background: ${index % 2 === 0 ? 'rgba(0, 233, 255, 0.03)' : 'transparent'};">
+                                ${latestChanges.map((change) => `
+                                    <div class="As-change-item">
                                         <img class="As-change-icon-img" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="${change.text}" onerror="this.style.display='none'">
                                         <div class="As-change-text">
                                             ${change.text}
@@ -330,7 +357,7 @@ function createUpdateModalHTML() {
                     </div>
 
                     <div class="As-footer">
-                        <button class="As-close-btn" id="AsUpdateCloseBtn">بستن</button>
+                        <button class="As-close-btn" id="AsUpdateCloseBtn">متوجه شدم</button>
                     </div>
                 </div>
             </div>
@@ -346,15 +373,11 @@ function setupUpdateModalListeners(modalId) {
         return;
     }
 
-    // Close button click - only way to close the modal
     closeBtn.addEventListener('click', function() {
-        // Save closed modal ID to storage
         chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: modalId }, function() {
-            // Hide modal in this tab
             if (modal) {
                 isModalShowing = false;
                 modal.style.display = 'none';
-                // Remove modal after animation
                 setTimeout(() => {
                     if (modal && modal.parentNode) {
                         modal.parentNode.removeChild(modal);
@@ -362,7 +385,6 @@ function setupUpdateModalListeners(modalId) {
                 }, 300);
             }
             
-            // Send message to background script to close modal in all tabs
             chrome.runtime.sendMessage({ action: 'closeUpdateModalInAllTabs' }, (response) => {
                 if (chrome.runtime.lastError) {
                     console.log('[UpdateModal] Error sending close message:', chrome.runtime.lastError);
@@ -371,4 +393,3 @@ function setupUpdateModalListeners(modalId) {
         });
     });
 }
-

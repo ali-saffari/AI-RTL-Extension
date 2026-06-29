@@ -1,14 +1,14 @@
 {
   "extension_name": {
-    "message": "ChatGPT RTL (Persian/Farsi): ChatGPT,DeepSeek,Copilot +30 AI Chat",
+    "message": "AI RTL (Persian/Farsi): Right-to-Left Fix for +30 AI Chat",
     "description": "Full extension name"
   },
   "extension_short_name": {
-    "message": "RTL ChatGPT",
+    "message": "AI RTL",
     "description": "Short extension name"
   },
   "extension_description": {
-    "message": "RTL extension for ChatGPT and 30+ AI tools: Persian RTL alignment, Farsi font support, RTL optimization for ChatGPT, DeepSeek, Claude, Copilot, Gemini, Perplexity, Grok and other AI chatbots",
+    "message": "RTL extension for 30+ AI tools: Persian RTL alignment, Farsi font support, RTL optimization for Gemini, DeepSeek, Claude, Copilot, Perplexity, Grok and other AI chatbots",
     "description": "Extension description"
   },
   "extension_action_title": {

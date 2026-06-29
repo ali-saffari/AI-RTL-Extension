@@ -459,7 +459,7 @@ function App() {
                                     color: '#ffffff'
                                 }}
                             >
-                                ChatGPT RTL (Persian/Farsi)
+                                AI RTL (Persian/Farsi)
                             </Typography>
                             
                             <Chip 
@@ -702,7 +702,7 @@ function App() {
                                         lineHeight: 1.8, 
                                         textAlign: 'justify' 
                                     }}>
-                                        این افزونه‌ی ChatGPT RTL (Persian/Farsi) بیش از ۲ سال است که در کنار شماست و امروز با افتخار میزبان بیش از ۲۰ هزار کاربر فعال است.
+                                        این افزونه‌ی AI RTL (Persian/Farsi) بیش از ۲ سال است که در کنار شماست و امروز با افتخار میزبان بیش از ۲۰ هزار کاربر فعال است.
 در ابتدا صرفاً برای ChatGPT اصلی طراحی شد، اما به لطف استقبال گسترده و درخواست‌های مکرر کاربران، به‌مرور برای سایر وب‌سایت‌های هوش مصنوعی نیز توسعه پیدا کرده است.
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
