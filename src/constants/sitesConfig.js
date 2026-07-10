@@ -1,5 +1,5 @@
 // API endpoint for sites configuration
-// const API_BASE_URL = 'https://api.chatgpt-rtl.ir';
+// const API_BASE_URL = 'https://api.ai-rtl.ir';
 // const PRODUCTION_EXTENSION_ID = 'pjpmebofipgpjaincgoboibbmicccbne';
 
 // Cache

@@ -39,7 +39,7 @@ export function modalDonate() {
     
     
     <p>حمایت مالی شما به ما کمک می‌کنه تا امکانات جدید اضافه کنیم، مشکلات رو سریع‌تر برطرف کنیم و تجربه کاربری بهتری بسازیم. هر مبلغی که دوست داری، واقعاً تاثیرگذار و دلگرم‌کننده است!</p>
-    <a href="https://chatgpt-rtl.ir/supporters/?source=extension-modal-donito-financial" target="_blank" 
+    <a href="https://ai-rtl.ir/supporters/?source=extension-modal-donito-financial" target="_blank" 
       style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
 ">
       حمایت مالی
@@ -72,7 +72,7 @@ export function modalDonate() {
 <div class="As-modal-block">
     <h3 style="color:#9b59b6;">🏆 ۴. حمایت رسانه‌ای</h3>
     <p>اگر شما یا رسانه‌ای که در آن فعالیت می‌کنید (وبلاگ، کانال تلگرام، سایت، ویدیو، پادکست و...)، از این افزونه حمایت رسانه‌ای کرده‌اید، خیلی خوشحال می‌شوم که خبرش رو به من بدید تا در لیست حامیان رسانه‌ای قرار بگیرید. این کار هم به معرفی بیشتر افزونه کمک می‌کنه و هم قدردانی از شماست.</p>
-    <a href="https://chatgpt-rtl.ir/supporters/?source=extension-modal-supporters" target="_blank" 
+    <a href="https://ai-rtl.ir/supporters/?source=extension-modal-supporters" target="_blank" 
       style="display:inline-block; background:#9b59b6; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
 ">
       صفحه حامیان
@@ -95,5 +95,5 @@ export function modalDonate() {
 // }
 
 export function BtnDonate() {
-    return `<a href="https://chatgpt-rtl.ir/supporters/?source=extension-modal-donate-btn" target="_blank" class="AsSBtn AsDonate" style="z-index: 900; text-decoration: none; display: inline-block;">دوست داری ازش حمایت کنی ؟</a>`
+    return `<a href="https://ai-rtl.ir/supporters/?source=extension-modal-donate-btn" target="_blank" class="AsSBtn AsDonate" style="z-index: 900; text-decoration: none; display: inline-block;">دوست داری ازش حمایت کنی ؟</a>`
 }

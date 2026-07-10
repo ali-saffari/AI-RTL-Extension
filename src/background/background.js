@@ -46,11 +46,11 @@ async function initializeUserId() {
             await chrome.storage.sync.set({ uid });
         }
         
-        chrome.runtime.setUninstallURL(`https://chatgpt-rtl.ir/uninstall-feedback/?uid=${uid}&source=extension-uninstall`);
+        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?uid=${uid}&source=extension-uninstall`);
         return uid;
     } catch (error) {
         console.error('Error initializing user ID:', error);
-        chrome.runtime.setUninstallURL('https://chatgpt-rtl.ir/uninstall-feedback/?error=1&source=extension-uninstall');
+        chrome.runtime.setUninstallURL('https://ai-rtl.ir/uninstall-feedback/?error=1&source=extension-uninstall');
     }
 }
 
@@ -155,8 +155,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             const uidResult = await chrome.storage.sync.get(['uid']);
             const uid = uidResult.uid || '';
             const activateUrl = uid 
-                ? `https://chatgpt-rtl.ir/activate?uid=${uid}`
-                : 'https://chatgpt-rtl.ir/activate';
+                ? `https://ai-rtl.ir/activate?uid=${uid}`
+                : 'https://ai-rtl.ir/activate';
             
             chrome.tabs.create({
                 url: activateUrl
@@ -599,7 +599,7 @@ const AI_SITES = [
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
-    'gamma.app', 'www.gamma.app'
+    'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com'
 ];
 
 function isAISite(hostname) {

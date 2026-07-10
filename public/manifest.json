@@ -8,7 +8,7 @@
         "service_worker": "js/background.js"
     },
     "author": "alisaffaridev@gmail.com",
-    "homepage_url": "https://chatgpt-rtl.ir",
+    "homepage_url": "https://ai-rtl.ir",
     "permissions": [
         "storage"
     ],
@@ -17,6 +17,9 @@
         "scripting"
     ],
     "host_permissions": [
+        "https://ai-rtl.ir/*",
+        "https://shop.ai-rtl.ir/*",
+        "https://api.ai-rtl.ir/*",
         "https://chatgpt-rtl.ir/*",
         "https://shop.chatgpt-rtl.ir/*",
         "https://api.chatgpt-rtl.ir/*"
@@ -72,6 +75,9 @@
                 "https://openrouter.ai/*",
                 "https://agent.minimax.io/*",
                 "https://jules.google.com/*",
+                "https://ai-rtl.ir/*",
+                "https://api.ai-rtl.ir/*",
+                "https://shop.ai-rtl.ir/*",
                 "https://chatgpt-rtl.ir/*",
                 "https://api.chatgpt-rtl.ir/*",
                 "https://shop.chatgpt-rtl.ir/*",
