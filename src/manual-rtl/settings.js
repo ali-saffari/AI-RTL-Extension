@@ -44,7 +44,8 @@ function getAISitesList() {
         'www.synaps.app',
         'my.synaps.app',
         'app.writesonic.com',
-        'ernie.baidu.com'
+        'ernie.baidu.com',
+        'app.clickup.com'
     ];
 
     return manualRtlState.aiSitesList;

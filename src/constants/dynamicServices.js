@@ -35,6 +35,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Duck AI',
         origins: ['*://duck.ai/*'],
         hostnames: ['duck.ai']
+    },
+    clickup: {
+        name: 'ClickUp',
+        origins: ['*://app.clickup.com/*'],
+        hostnames: ['app.clickup.com']
     }
 };
 

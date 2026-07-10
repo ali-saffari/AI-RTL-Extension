@@ -43,6 +43,7 @@ import { activateGenspark } from './services/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { activateDuckai } from './services/duck-ai.js';
+import { activateClickup } from './services/clickup.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -221,6 +222,10 @@ const serviceConfig = {
     duckai: {
         urls: ["duck.ai"],
         activate: activateDuckai
+    },
+    clickup: {
+        urls: ["app.clickup.com"],
+        activate: activateClickup
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

@@ -74,7 +74,8 @@ const services: Service[] = [
     { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/'},
     { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/' },
     { key: 'arena', name: 'Arena', icon: '/images/arena.png', url: 'https://arena.ai/' },
-    { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/', new: true }
+    { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/', new: true },
+    { key: 'clickup', name: 'ClickUp', icon: '/images/clickup.png', url: 'https://app.clickup.com/', new: true }
 
     
     

@@ -15,6 +15,7 @@ interface VersionChanges {
 const versionChanges: ChangeItem[] = [
     { id: "1", text: "اپدیت Qwen" },
     { id: "2", text: "افزودن سایت Duck AI" },
+    { id: "3", text: "افزودن ClickUp" },
 ];
 
 const changesData: VersionChanges[] = [
