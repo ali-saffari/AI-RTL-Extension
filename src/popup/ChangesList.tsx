@@ -12,6 +12,11 @@ interface VersionChanges {
     changes: ChangeItem[];
 }
 
+const versionChanges: ChangeItem[] = [
+    { id: "1", text: "اپدیت Qwen" },
+    { id: "2", text: "افزودن سایت Duck AI" },
+];
+
 const changesData: VersionChanges[] = [
     {
         version: "1405/02/20",
@@ -301,6 +306,51 @@ const ChangesList: React.FC = () => {
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0 }}>
                 <Box sx={{ maxHeight: '200px', overflowY: 'auto', pr: 1 }}>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ 
+                            color: isDarkMode ? '#4CAF50' : '#2E7D32', 
+                            fontWeight: 700, 
+                            mb: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5
+                        }}>
+                            <SvgIcon sx={{ 
+                                fontSize: '1rem',
+                                color: isDarkMode ? '#4CAF50' : '#2E7D32'
+                            }}>
+                                <path d={mdiArrowUp} />
+                            </SvgIcon>
+                            تغییرات این نسخه
+                        </Typography>
+                        <Box sx={{ pl: 2 }}>
+                            {versionChanges.map((change, changeIndex) => (
+                                <Typography key={`version-${changeIndex}-${change.id}`} variant="body2" sx={{ 
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.9)', 
+                                    mb: 0.5,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    fontWeight: 600
+                                }}>
+                                    <SvgIcon sx={{ 
+                                        fontSize: '0.9rem',
+                                        color: isDarkMode ? '#4CAF50' : '#2E7D32'
+                                    }}>
+                                        <path d={mdiCheck} />
+                                    </SvgIcon>
+                                    {change.text}
+                                </Typography>
+                            ))}
+                        </Box>
+                        <Typography variant="body2" sx={{ 
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)', 
+                            textAlign: 'center', 
+                            my: 1 
+                        }}>
+                            -------
+                        </Typography>
+                    </Box>
                     {changesData.map((versionData, index) => (
                         <Box key={versionData.version} sx={{ mb: 2 }}>
                             <Typography variant="body2" sx={{ 

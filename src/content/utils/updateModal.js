@@ -1,14 +1,31 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
 
-// ابزار نمایش لیست تغییرات نسخه جدید
-// آرایه فقط شامل تغییرات خطی و فنی نسخه جدید است
+// تغییرات این نسخه
+const versionChanges = [
+    { id: "1", text: "اپدیت Qwen", icon: "qwen.png", type: "fix" },
+    { id: "2", text: "افزودن سایت Duck AI", icon: "duckduckgo.png", type: "add" },
+];
+
+// تغییرات اضافی موقت فقط برای نسخه جاری
 const latestChanges = [
     // { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
-    { id: "1", text: "تغییر لوگو و آیکون‌ افزونه", icon: "icon-128.png", type: "fix" },
-    { id: "2", text: "به‌روزرسانی سازگاری با ظاهر جدید سایت‌ها", icon: "icon-128.png", type: "fix" },
 ];
 
 let isModalShowing = false;
+
+function renderChangeItems(changes) {
+    return changes.map((change) => `
+        <div class="As-change-item">
+            <img class="As-change-icon-img" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="${change.text}" onerror="this.style.display='none'">
+            <div class="As-change-text">
+                ${change.text}
+            </div>
+            <div class="As-change-type" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
+                ${change.type === 'add' ? '+' : '↻'}
+            </div>
+        </div>
+    `).join('');
+}
 
 
 
@@ -50,6 +67,45 @@ export function showUpdateModal() {
     });
 }
 
+function setupStoryCapsuleAnimation() {
+    const capsule = document.getElementById('AsStoryCapsule');
+    const toggle = document.getElementById('AsStoryToggle');
+    const panel = document.getElementById('AsStoryPanel');
+
+    if (!capsule || !toggle || !panel) {
+        return;
+    }
+
+    toggle.addEventListener('click', function() {
+        const isOpen = capsule.classList.contains('is-open');
+
+        if (isOpen) {
+            panel.style.maxHeight = panel.scrollHeight + 'px';
+            panel.offsetHeight;
+            capsule.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            panel.style.maxHeight = '0px';
+            panel.style.opacity = '0';
+            return;
+        }
+
+        capsule.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        panel.style.opacity = '1';
+
+        const onTransitionEnd = function(event) {
+            if (event.propertyName !== 'max-height' || !capsule.classList.contains('is-open')) {
+                return;
+            }
+            panel.style.maxHeight = 'none';
+            panel.removeEventListener('transitionend', onTransitionEnd);
+        };
+
+        panel.addEventListener('transitionend', onTransitionEnd);
+    });
+}
+
 
 function createUpdateModalHTML() {
     const manifest = chrome.runtime.getManifest();
@@ -59,13 +115,21 @@ function createUpdateModalHTML() {
 
     // متن استاتیک اصلی که کاملاً از لیست جدا شده است
     const staticAnnouncementHTML = `
-        <div class="As-special-announcement">
-            ما برگشتیم، اما با یک نام و نشان جدید! 🚀<br><br>
-            اگر متوجه غیبت کوتاه‌مدت ما شده بودید، دلیلش شکایت شرکت OpenAI روی نام ChatGPT بود. این موضوع ما را مجبور کرد تا نام و لوگوی افزونه را تغییر دهیم.<br><br>
-            راستش را بخواهید، این افزونه در ابتدا فقط برای راحتی کار با ChatGPT طراحی شده بود؛ اما به مرور زمان و به درخواست شما عزیزان، پشتیبانی از سایت‌های هوش مصنوعی دیگر را هم به آن اضافه کردیم. متأسفانه فراموش کرده بودیم اسم افزونه را به‌روزرسانی کنیم و فکرش را هم نمی‌کردیم با چنین مشکلی روبه‌رو شویم!<br><br>
-            خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
-            📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
-            🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
+        <div class="As-story-capsule" id="AsStoryCapsule">
+            <button class="As-story-summary" id="AsStoryToggle" type="button" aria-expanded="false">
+                <span class="As-story-summary-text">چرا اسم اکستشن تغییر کرده؟</span>
+                <span class="As-story-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div class="As-story-panel" id="AsStoryPanel">
+                <div class="As-special-announcement As-story-content">
+                    ما برگشتیم، اما با یک نام و نشان جدید! 🚀<br><br>
+                    اگر متوجه غیبت کوتاه‌مدت ما شده بودید، دلیلش شکایت شرکت OpenAI روی نام ChatGPT بود. این موضوع ما را مجبور کرد تا نام و لوگوی افزونه را تغییر دهیم.<br><br>
+                    راستش را بخواهید، این افزونه در ابتدا فقط برای راحتی کار با ChatGPT طراحی شده بود؛ اما به مرور زمان و به درخواست شما عزیزان، پشتیبانی از سایت‌های هوش مصنوعی دیگر را هم به آن اضافه کردیم. متأسفانه فراموش کرده بودیم اسم افزونه را به‌روزرسانی کنیم و فکرش را هم نمی‌کردیم با چنین مشکلی روبه‌رو شویم!<br><br>
+                    خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
+                    📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
+                    🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
+                </div>
+            </div>
         </div>
     `;
 
@@ -218,12 +282,81 @@ function createUpdateModalHTML() {
                     align-items: center;
                     gap: 8px;
                 }
+                #AsUpdateModal .As-version-changes {
+                    margin-top: 0;
+                }
                 #AsUpdateModal .As-change-list {
                     display: flex;
                     flex-direction: column;
                     gap: 10px;
                 }
                 
+                #AsUpdateModal .As-story-capsule {
+                    background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
+                    border: 1px dashed rgba(0, 233, 255, 0.35);
+                    border-radius: 16px;
+                    margin-top: 20px;
+                    margin-bottom: 5px;
+                    overflow: hidden;
+                    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+                    box-shadow: inset 0 0 15px rgba(0, 233, 255, 0.03);
+                }
+                #AsUpdateModal .As-story-capsule.is-open {
+                    border-color: rgba(0, 233, 255, 0.5);
+                    box-shadow: 0 4px 16px rgba(0, 233, 255, 0.08), inset 0 0 15px rgba(0, 233, 255, 0.03);
+                }
+                #AsUpdateModal .As-story-summary {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    width: 100%;
+                    padding: 14px 18px;
+                    cursor: pointer;
+                    border: none;
+                    background: transparent;
+                    color: #00e9ff;
+                    font-size: 13px;
+                    font-weight: 700;
+                    user-select: none;
+                    direction: rtl;
+                    font-family: iranyekan, sans-serif;
+                    text-align: right;
+                }
+                #AsUpdateModal .As-story-summary-text {
+                    flex: 1;
+                    text-align: right;
+                    line-height: 1.6;
+                }
+                #AsUpdateModal .As-story-arrow {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 22px;
+                    height: 22px;
+                    font-size: 11px;
+                    color: #00e9ff;
+                    transition: transform 0.35s ease;
+                    flex-shrink: 0;
+                }
+                #AsUpdateModal .As-story-capsule.is-open .As-story-arrow {
+                    transform: rotate(180deg);
+                }
+                #AsUpdateModal .As-story-panel {
+                    max-height: 0;
+                    opacity: 0;
+                    overflow: hidden;
+                    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+                    will-change: max-height, opacity;
+                }
+                #AsUpdateModal .As-story-content {
+                    border: none;
+                    border-top: 1px dashed rgba(0, 233, 255, 0.2);
+                    border-radius: 0;
+                    margin: 0;
+                    box-shadow: none;
+                }
+
                 /* استایل باکس استاتیک اطلاعیه اصلی */
                 #AsUpdateModal .As-special-announcement {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
@@ -333,27 +466,16 @@ function createUpdateModalHTML() {
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
                         
-                        ${staticAnnouncementHTML}
-                        
-                        <div class="As-changes">
+                        <div class="As-changes As-version-changes">
                             <div class="As-changes-title">
-                                <span>↻</span> سایر تغییرات این نسخه:
+                                <span>↻</span> تغییرات این نسخه:
                             </div>
-                            
                             <div class="As-change-list">
-                                ${latestChanges.map((change) => `
-                                    <div class="As-change-item">
-                                        <img class="As-change-icon-img" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="${change.text}" onerror="this.style.display='none'">
-                                        <div class="As-change-text">
-                                            ${change.text}
-                                        </div>
-                                        <div class="As-change-type" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
-                                            ${change.type === 'add' ? '+' : '↻'}
-                                        </div>
-                                    </div>
-                                `).join('')}
+                                ${renderChangeItems([...versionChanges, ...latestChanges])}
                             </div>
                         </div>
+
+                        ${staticAnnouncementHTML}
                     </div>
 
                     <div class="As-footer">
@@ -372,6 +494,8 @@ function setupUpdateModalListeners(modalId) {
     if (!modal || !closeBtn) {
         return;
     }
+
+    setupStoryCapsuleAnimation();
 
     closeBtn.addEventListener('click', function() {
         chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: modalId }, function() {

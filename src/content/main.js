@@ -31,6 +31,9 @@ import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';
 import { activateChatsonic } from './services/chatsonic.js';
 
+
+
+
 // Make activateChatsonic available globally for scripting injection
 window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
@@ -39,6 +42,7 @@ import { activateNotion } from './services/notion.js';
 import { activateGenspark } from './services/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
+import { activateDuckai } from './services/duck-ai.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -213,6 +217,10 @@ const serviceConfig = {
     genspark: {
         urls: ["genspark.ai", "www.genspark.ai"],
         activate: activateGenspark
+    },
+    duckai: {
+        urls: ["duck.ai"],
+        activate: activateDuckai
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

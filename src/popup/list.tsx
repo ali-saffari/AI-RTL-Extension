@@ -45,7 +45,7 @@ const services: Service[] = [
     { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
     { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
     // { key: 'google', name: 'Google AI Mode', icon: '/images/google.png', url: 'https://google.com/', new: true },
-    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/Gemini.png', url: 'https://business.gemini.google/', new: true, helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.' },
+    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/Gemini.png', url: 'https://business.gemini.google/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'notebooklm', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebooklm.google.com/?hl=fa' },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
@@ -53,7 +53,6 @@ const services: Service[] = [
     { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/' },
     { key: 'perplexity', name: 'perplexity AI', icon: '/images/White on Turquiose.png', url: 'https://perplexity.ai' },
-    { key: 'arena', name: 'Arena', icon: '/images/arena.png', url: 'https://arena.ai/', new: true },
     { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot' },
     { key: 'minimax', name: 'Minimax', icon: '/images/minimax.png', url: 'https://agent.minimax.io/' },
@@ -67,14 +66,17 @@ const services: Service[] = [
     { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/' },
     { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/' },
     { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/' },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', new: true },
-    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', new: true },
-    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', new: true },
-    { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/', new: true },
-    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', new: true, helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' },
-    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/', new: true},
-    { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/', new: true }
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/' },
+    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/' },
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/' },
+    { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/' },
+    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' },
+    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/'},
+    { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/' },
+    { key: 'arena', name: 'Arena', icon: '/images/arena.png', url: 'https://arena.ai/' },
+    { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/', new: true }
 
+    
     
 ];
 

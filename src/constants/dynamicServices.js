@@ -29,8 +29,17 @@ export const DYNAMIC_SERVICES = {
         name: 'Arena',
         origins: ['*://arena.ai/*'],
         hostnames: ['arena.ai']
+    },
+
+    duckai: {
+        name: 'Duck AI',
+        origins: ['*://duck.ai/*'],
+        hostnames: ['duck.ai']
     }
 };
+
+
+
 
 
 
