@@ -13,27 +13,62 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     }
 
     // Process chat messages and input elements
-    AQ(".chat-assistant , .user-message , #chat-input").each(function (each) {
+    AQ(".chat-assistant , .user-message , #chat-input ").each(function (each) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                processedClass: 'AsRtl'
+                processedClass: 'AsOK',
+                setTextAlign: true
             });
         
     });
+    
+    
+    AQ('textarea').each(function (each) {
+        if (AQ(this).data('rtl-listener-added')) {
+            return;
+        }
+        AQ(this).data('rtl-listener-added', true);
+
+        
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            rtlClass: 'rtlEelemt'
+        });
+        
+        // Add event listener for real-time text direction detection
+        AQ(this).on('input keyup', function() {
+            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                fontClass: 'FontSet',
+                setTextAlign: true,
+                rtlClass: 'rtlEelemt'
+            });
+        });
+    });
+
 
     // Process chat item drag elements
-    AQ(".chat-item-drag").each(function (each) {
+    AQ(".chat-item-drag , .chat-item-drag-link ").each(function (each) {
 
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                processedClass: 'AsRtl'
+                processedClass: 'AsOK'
             });
         
     });
     
 
+    
+    AQ(".chat-user-message").each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true
+        });
+    });
+
     // Process markdown prose elements
-    AQ(".response-message-body .markdown-prose").each(function (each) {
+    AQ(".qwen-markdown").each(function (each) {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
