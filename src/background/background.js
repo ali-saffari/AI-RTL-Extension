@@ -600,7 +600,8 @@ const AI_SITES = [
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
     'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
-    't3.chat', 'www.t3.chat'
+    't3.chat', 'www.t3.chat',
+    'vivado.amd.com'
 ];
 
 function isAISite(hostname) {

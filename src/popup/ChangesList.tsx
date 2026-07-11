@@ -17,6 +17,7 @@ const versionChanges: ChangeItem[] = [
     { id: "2", text: "افزودن سایت Duck AI" },
     { id: "3", text: "افزودن ClickUp" },
     { id: "4", text: "افزودن T3 Chat" },
+    { id: "5", text: "افزودن Vivado Doc Search" },
 ];
 
 const changesData: VersionChanges[] = [

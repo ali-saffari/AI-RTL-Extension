@@ -45,6 +45,7 @@ import { showUpdateModal } from './utils/updateModal.js';
 import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
+import { activateVivado } from './services/vivado.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -231,6 +232,10 @@ const serviceConfig = {
     t3chat: {
         urls: ["t3.chat", "www.t3.chat"],
         activate: activateT3chat
+    },
+    vivado: {
+        urls: ["vivado.amd.com"],
+        activate: activateVivado
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

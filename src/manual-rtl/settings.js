@@ -47,7 +47,8 @@ function getAISitesList() {
         'ernie.baidu.com',
         'app.clickup.com',
         't3.chat',
-        'www.t3.chat'
+        'www.t3.chat',
+        'vivado.amd.com'
     ];
 
     return manualRtlState.aiSitesList;

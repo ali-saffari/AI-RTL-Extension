@@ -45,6 +45,11 @@ export const DYNAMIC_SERVICES = {
         name: 'T3 Chat',
         origins: ['*://t3.chat/*', '*://www.t3.chat/*'],
         hostnames: ['t3.chat', 'www.t3.chat']
+    },
+    vivado: {
+        name: 'Vivado Doc Search',
+        origins: ['*://vivado.amd.com/*'],
+        hostnames: ['vivado.amd.com']
     }
 };
 

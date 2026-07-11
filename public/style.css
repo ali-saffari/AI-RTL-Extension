@@ -989,3 +989,18 @@ textarea[spellcheck="true"]::spelling-error,
     /* background-color: red !important; */
 }
    
+/*--------Vivado-------------*/
+
+.FontSetVivadoInput {
+    font-family: iranyekan, sans-serif !important;
+    font-size: 10px;
+
+}
+
+
+.FontSetVivado {
+    font-family: iranyekan, sans-serif !important;
+    font-size: 10px !important;
+    line-height: 30px !important;
+}
+
