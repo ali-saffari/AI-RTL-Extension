@@ -45,7 +45,9 @@ function getAISitesList() {
         'my.synaps.app',
         'app.writesonic.com',
         'ernie.baidu.com',
-        'app.clickup.com'
+        'app.clickup.com',
+        't3.chat',
+        'www.t3.chat'
     ];
 
     return manualRtlState.aiSitesList;

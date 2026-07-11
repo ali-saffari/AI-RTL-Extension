@@ -40,6 +40,11 @@ export const DYNAMIC_SERVICES = {
         name: 'ClickUp',
         origins: ['*://app.clickup.com/*'],
         hostnames: ['app.clickup.com']
+    },
+    t3chat: {
+        name: 'T3 Chat',
+        origins: ['*://t3.chat/*', '*://www.t3.chat/*'],
+        hostnames: ['t3.chat', 'www.t3.chat']
     }
 };
 

@@ -44,6 +44,7 @@ import { activateGenspark } from './services/genspark.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
+import { activateT3chat } from './services/t3chat.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -226,6 +227,10 @@ const serviceConfig = {
     clickup: {
         urls: ["app.clickup.com"],
         activate: activateClickup
+    },
+    t3chat: {
+        urls: ["t3.chat", "www.t3.chat"],
+        activate: activateT3chat
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

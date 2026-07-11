@@ -599,7 +599,8 @@ const AI_SITES = [
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
-    'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com'
+    'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
+    't3.chat', 'www.t3.chat'
 ];
 
 function isAISite(hostname) {
