@@ -31,11 +31,11 @@ export function setT3chat(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    AQ('.chat-markdown, [class*="prose"], .whitespace-pre-wrap').each(function () {
+    AQ('.chat-markdown , .wrap-break-word').each(function () {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
-            isContainer: true,
+            // isContainer: true,
             setTextAlign: true
         });
     });
