@@ -10,7 +10,7 @@ export function setManus(rtlAlgorithm = 'advanced_full') {
     }
 
     // Process textarea elements with RTL algorithm
-    AQ("body textarea").each(function (each) {
+    AQ("body textarea , .tiptap.ProseMirror").each(function (each) {
         if (AQ(this).data('rtl-listener-added')) {
             return;
         }
@@ -31,6 +31,16 @@ export function setManus(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+
+
+
+
+    AQ('.ProseMirror p , .whitespace-nowrap').each(function (each) {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOkText',
+        });
+    });
 
 
     // Process manus-markdown elements using RTL algorithm
