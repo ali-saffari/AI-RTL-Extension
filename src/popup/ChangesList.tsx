@@ -14,7 +14,7 @@ interface VersionChanges {
 
 const versionChanges: ChangeItem[] = [
     { id: "1", text: "آپدیت Qwen" },
-    { id: "2", text: "افزودن سایت Duck AI" },
+    { id: "2", text: "افزودن Duck AI" },
     { id: "3", text: "افزودن ClickUp" },
     { id: "4", text: "افزودن T3 Chat" },
     { id: "5", text: "افزودن Vivado AMD" },

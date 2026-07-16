@@ -53,7 +53,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
 
     // Process input elements with RTL algorithm
-    AQ('.projects-header , .mat-title-large , .mat-body-medium , [class*="project-button-"]').each(function (each) {
+    AQ('.projects-header , .mat-title-large , .mat-body-medium , [class*="project-button-"] ').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
@@ -79,7 +79,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     });
   
 
-     AQ('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger').each(function (each) {
+     AQ('[class*="note-header"] , [class*="mindmap"] , .source-title-column ,.mat-mdc-tooltip-trigger , .card-text').each(function (each) {
 
         
         if (!AQ(this).hasClass("FontSet") && !AQ(this).hasClass("mat-icon")) {
