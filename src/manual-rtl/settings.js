@@ -30,6 +30,7 @@ function getAISitesList() {
         'www.kimi.com',
         'www.blackbox.ai',
         'notebooklm.google.com',
+        'notebook.google.com',
         'chat.z.ai',
         'arena.ai',
         'openrouter.ai',

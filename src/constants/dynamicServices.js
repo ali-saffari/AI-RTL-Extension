@@ -50,6 +50,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Vivado Doc Search',
         origins: ['*://vivado.amd.com/*'],
         hostnames: ['vivado.amd.com']
+    },
+    notebook: {
+        name: 'NotebookLM',
+        origins: ['*://notebook.google.com/*'],
+        hostnames: ['notebook.google.com']
     }
 };
 
