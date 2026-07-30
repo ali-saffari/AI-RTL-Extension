@@ -49,6 +49,7 @@ import { activateVivado } from './services/vivado.js';
 import { activateAtxp } from './services/atxp.js';
 import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
+import { activateChatboxai } from './services/chatboxai.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -251,6 +252,10 @@ const serviceConfig = {
     scispace: {
         urls: ["scispace.com", "www.scispace.com"],
         activate: activateScispace
+    },
+    chatboxai: {
+        urls: ["web.chatboxai.app"],
+        activate: activateChatboxai
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

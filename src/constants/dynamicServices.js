@@ -70,6 +70,11 @@ export const DYNAMIC_SERVICES = {
         name: 'SciSpace',
         origins: ['*://scispace.com/*', '*://www.scispace.com/*'],
         hostnames: ['scispace.com', 'www.scispace.com']
+    },
+    chatboxai: {
+        name: 'Chatbox AI',
+        origins: ['*://web.chatboxai.app/*'],
+        hostnames: ['web.chatboxai.app']
     }
 };
 

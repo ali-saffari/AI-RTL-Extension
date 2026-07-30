@@ -604,7 +604,8 @@ const AI_SITES = [
     'vivado.amd.com',
     'chat.atxp.ai',
     'consensus.app', 'www.consensus.app',
-    'scispace.com', 'www.scispace.com'
+    'scispace.com', 'www.scispace.com',
+    'web.chatboxai.app'
 ];
 
 function isAISite(hostname) {

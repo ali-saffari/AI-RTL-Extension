@@ -54,7 +54,8 @@ function getAISitesList() {
         'consensus.app',
         'www.consensus.app',
         'scispace.com',
-        'www.scispace.com'
+        'www.scispace.com',
+        'web.chatboxai.app'
     ];
 
     return manualRtlState.aiSitesList;

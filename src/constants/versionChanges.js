@@ -4,9 +4,10 @@ export const versionChanges = [
     { id: '1', text: 'افزودن سایت ATXP Chat', icon: 'atxp.png', type: 'add' },
     { id: '2', text: 'افزودن سایت Consensus', icon: 'consensus.png', type: 'add' },
     { id: '3', text: 'افزودن سایت SciSpace', icon: 'scispace.png', type: 'add' },
-    { id: '4', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
-    { id: '5', text: 'آپدیت Claude', icon: 'claude-icon.png', type: 'fix' },
-    { id: '6', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
+    { id: '4', text: 'افزودن سایت Chatbox AI', icon: 'chatboxai.png', type: 'add' },
+    { id: '5', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
+    { id: '6', text: 'آپدیت Claude', icon: 'claude-icon.png', type: 'fix' },
+    { id: '7', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
 ];
 
 // تغییرات اضافی موقت فقط برای نسخه جاری

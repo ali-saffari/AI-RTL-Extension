@@ -80,7 +80,8 @@ const services: Service[] = [
     { key: 'vivado', name: 'Vivado AMD', icon: '/images/vivado.png', url: 'https://vivado.amd.com/chat', new: true },
     { key: 'atxp', name: 'ATXP Chat', icon: '/images/atxp.png', url: 'https://chat.atxp.ai/', new: true },
     { key: 'consensus', name: 'Consensus', icon: '/images/consensus.png', url: 'https://consensus.app/', new: true },
-    { key: 'scispace', name: 'SciSpace', icon: '/images/scispace.png', url: 'https://scispace.com/', new: true }
+    { key: 'scispace', name: 'SciSpace', icon: '/images/scispace.png', url: 'https://scispace.com/', new: true },
+    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/chatboxai.png', url: 'https://web.chatboxai.app/', new: true }
 ];
 
 
