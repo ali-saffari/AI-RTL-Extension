@@ -283,12 +283,53 @@ function createUpdateModalHTML() {
                     border: 2px solid rgba(255, 255, 255, 0.08);
                 }
                 #AsUpdateModal .As-title {
-                    margin: 0 0 20px 0;
+                    margin: 0 0 12px 0;
                     color: #00e9ff;
                     font-size: 19px;
                     font-weight: 700;
                     text-align: center;
                     text-shadow: 0 1px 8px rgba(0, 233, 255, 0.3);
+                }
+                #AsUpdateModal .As-sites-note {
+                    margin: 0 0 20px 0;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 11px 13px;
+                    direction: rtl;
+                    text-align: right;
+                    background: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(255, 120, 120, 0.28);
+                    border-radius: 12px;
+                }
+                #AsUpdateModal .As-sites-note-icon {
+                    flex-shrink: 0;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(255, 120, 120, 0.12);
+                    border: 1px solid rgba(255, 120, 120, 0.3);
+                    color: rgba(255, 150, 150, 0.9);
+                    font-size: 13px;
+                    font-weight: 800;
+                    line-height: 1;
+                    margin-top: 1px;
+                }
+                #AsUpdateModal .As-sites-note-text {
+                    margin: 0;
+                    flex: 1;
+                    min-width: 0;
+                    color: rgba(255, 190, 190, 0.85);
+                    font-size: 12.5px;
+                    font-weight: 600;
+                    line-height: 1.75;
+                }
+                #AsUpdateModal .As-sites-note-text strong {
+                    color: rgba(255, 160, 160, 0.95);
+                    font-weight: 800;
                 }
                 #AsUpdateModal .As-changes {
                     margin-top: 20px;
@@ -525,6 +566,12 @@ function createUpdateModalHTML() {
                         <h3 class="As-title">
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
+                        <div class="As-sites-note">
+                            <span class="As-sites-note-icon">!</span>
+                            <p class="As-sites-note-text">
+                                <strong>توجه:</strong> سایت‌های جدید به‌صورت پیش‌فرض غیرفعال هستند و باید از طریق منوی اکستنشن فعال کنید
+                            </p>
+                        </div>
                         
                         <div class="As-changes As-version-changes">
                             <div class="As-changes-title">
