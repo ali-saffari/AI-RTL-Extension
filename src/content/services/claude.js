@@ -62,7 +62,12 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     });
 
 
-    AQ('.mb-1.mt-1 .group').each(function (each) {
+
+    
+
+
+
+    AQ('.mb-1 .group').each(function (each) {
 
         if (AQ(this).data('rtl-listener-added')) {
             return;
@@ -80,6 +85,35 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
             AQ(this).find('.break-words').addClass('AsRtl');
         }
+    });
+
+
+    AQ(' .contents .truncate').each(function (each) {
+        // AQ(this).addClass('AsOk FontSet FontClaude');
+        
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontClaude',
+            processedClass: 'AsOkText',
+            isContainer: false
+        });
+    });
+
+    AQ('[data-ask-user-input-banner="true"] , [data-testid="ask-user-answers-card"] ').each(function () {
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontClaude',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
+
+
+    AQ(' .contents span , [data-orientation="horizontal"] button').each(function () {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontClaude',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
     });
 
     

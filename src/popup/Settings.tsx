@@ -744,12 +744,13 @@ const Settings: React.FC<SettingsProps> = ({
                                 color: theme.palette.text.primary, 
                                 mb: 3,
                                 lineHeight: 1.6,
-                                fontSize: '0.95rem'
+                                fontSize: '0.95rem',
+                                direction: 'ltr'
                             }}>
                                 {algorithmDescriptions[selectedAlgorithm as keyof typeof algorithmDescriptions]?.description}
                             </Typography>
                             
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mb: 2 ,  direction: 'ltr'}}>
                                 <Typography variant="h6" sx={{ 
                                     color: theme.palette.primary.main, 
                                     mb: 2,

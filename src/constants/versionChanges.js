@@ -1,8 +1,10 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
-    { id: '3', text: 'افزودن سایت ATXP Chat', icon: 'atxp.png', type: 'add' },
+    { id: '1', text: 'افزودن سایت ATXP Chat', icon: 'atxp.png', type: 'add' },
+    { id: '2', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
+    { id: '3', text: 'آپدیت Claude', icon: 'claude-icon.png', type: 'fix' },
+    { id: '4', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
 ];
 
 // تغییرات اضافی موقت فقط برای نسخه جاری

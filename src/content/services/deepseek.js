@@ -34,26 +34,39 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
 
 
     // Process ds-message elements (messages in chat)
-    AQ('.ds-message').each(function (each) {
-        if (AQ(this).find('.ds-markdown').length > 0) {
-            // If ds-markdown exists inside, use advanced function for complex messages
-            processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
-                processedClass: 'AsOk',
-                isContainer: true
-            });
-        } else {
-            // Otherwise, style the div inside ds-message for simple messages
-            AQ(this).find('div').each(function() {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                    fontClass: 'FontSet',
-                    processedClass: 'AsOk'
-                });
-            });
-        }
-    });
+    // AQ('.ds-markdown').each(function (each) {
+    //     if (AQ(this).find('.ds-markdown').length > 0) {
+    //         // If ds-markdown exists inside, use advanced function for complex messages
+    //         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+    //             fontClass: 'FontSet',
+    //             processedClass: 'AsOk',
+    //             isContainer: true
+    //         });
+    //     } else {
+    //         // Otherwise, style the div inside ds-message for simple messages
+    //         AQ(this).find('div').each(function() {
+    //             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //                 fontClass: 'FontSet',
+    //                 processedClass: 'AsOk'
+    //             });
+    //         });
+    //     }
+    // });
 
     // Process _546d736 elements for text direction detection (history items)
+
+    AQ(' .ds-markdown ').each(function (each) {
+        // AQ(this).addClass('AsOk FontSet FontClaude');
+        
+        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontClaude',
+            processedClass: 'AsOkText',
+            isContainer: true
+        });
+    });
+
+
+
     AQ('._546d736 , .afa34042').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
