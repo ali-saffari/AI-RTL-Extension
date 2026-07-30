@@ -1,6 +1,6 @@
 {
   "extension_name": {
-    "message": "AI RTL (فارسی) | راست‌چین و بهینه‌سازی بیش از ۳۰ هوش مصنوعی",
+    "message": "AI RTL (فارسی) | راست‌چین و بهینه‌سازی بیش از ۴۰ هوش مصنوعی",
     "description": "نام کامل افزونه"
   },
   "extension_short_name": {
@@ -8,7 +8,7 @@
     "description": "نام کوتاه افزونه"
   },
   "extension_description": {
-    "message": "راست‌چین فارسی و فونت بهینه برای DeepSeek، Claude، Copilot، Gemini و ۳۰+ ابزار AI. بهینه‌سازی RTL خودکار",
+    "message": "راست‌چین فارسی و فونت بهینه برای DeepSeek، Claude، Copilot، Gemini و ۴۰+ ابزار AI. بهینه‌سازی RTL خودکار",
     "description": "توضیحات افزونه"
   },
   "extension_action_title": {
