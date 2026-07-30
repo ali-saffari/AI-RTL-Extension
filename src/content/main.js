@@ -46,6 +46,7 @@ import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
 import { activateVivado } from './services/vivado.js';
+import { activateAtxp } from './services/atxp.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -236,6 +237,10 @@ const serviceConfig = {
     vivado: {
         urls: ["vivado.amd.com"],
         activate: activateVivado
+    },
+    atxp: {
+        urls: ["chat.atxp.ai"],
+        activate: activateAtxp
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

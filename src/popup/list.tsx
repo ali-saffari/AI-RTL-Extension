@@ -77,10 +77,8 @@ const services: Service[] = [
     { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/', new: true },
     { key: 'clickup', name: 'ClickUp', icon: '/images/clickup.png', url: 'https://app.clickup.com/', new: true },
     { key: 't3chat', name: 'T3 Chat', icon: '/images/t3-chat.png', url: 'https://t3.chat/', new: true },
-    { key: 'vivado', name: 'Vivado AMD', icon: '/images/vivado.png', url: 'https://vivado.amd.com/chat', new: true }
-
-    
-    
+    { key: 'vivado', name: 'Vivado AMD', icon: '/images/vivado.png', url: 'https://vivado.amd.com/chat', new: true },
+    { key: 'atxp', name: 'ATXP Chat', icon: '/images/atxp.png', url: 'https://chat.atxp.ai/', new: true }
 ];
 
 

@@ -49,7 +49,8 @@ function getAISitesList() {
         'app.clickup.com',
         't3.chat',
         'www.t3.chat',
-        'vivado.amd.com'
+        'vivado.amd.com',
+        'chat.atxp.ai'
     ];
 
     return manualRtlState.aiSitesList;

@@ -1,15 +1,5 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-
-// تغییرات این نسخه
-const versionChanges = [
-    { id: "1", text: "اپدیت Qwen", icon: "qwen.png", type: "fix" },
-    { id: "2", text: "افزودن سایت Duck AI", icon: "duckduckgo.png", type: "add" },
-];
-
-// تغییرات اضافی موقت فقط برای نسخه جاری
-const latestChanges = [
-    // { id: "1", text: "افزودن Google AI Mode", icon: "google.png", type: "add" },
-];
+import { versionChanges, latestChanges, previousChanges } from '../../constants/versionChanges.js';
 
 let isModalShowing = false;
 
@@ -23,6 +13,20 @@ function renderChangeItems(changes) {
             <div class="As-change-type" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
                 ${change.type === 'add' ? '+' : '↻'}
             </div>
+        </div>
+    `).join('');
+}
+
+function renderPreviousChanges(changes) {
+    return changes.map((versionData, index) => `
+        <div class="As-prev-version">
+            <div class="As-prev-version-title">${versionData.version}</div>
+            <div class="As-prev-version-list">
+                ${versionData.changes.map((change) => `
+                    <div class="As-prev-change-item">✓ ${change.text}</div>
+                `).join('')}
+            </div>
+            ${index < changes.length - 1 ? '<div class="As-prev-divider"></div>' : ''}
         </div>
     `).join('');
 }
@@ -67,10 +71,10 @@ export function showUpdateModal() {
     });
 }
 
-function setupStoryCapsuleAnimation() {
-    const capsule = document.getElementById('AsStoryCapsule');
-    const toggle = document.getElementById('AsStoryToggle');
-    const panel = document.getElementById('AsStoryPanel');
+function setupCapsuleAnimation(capsuleId, toggleId, panelId) {
+    const capsule = document.getElementById(capsuleId);
+    const toggle = document.getElementById(toggleId);
+    const panel = document.getElementById(panelId);
 
     if (!capsule || !toggle || !panel) {
         return;
@@ -106,6 +110,11 @@ function setupStoryCapsuleAnimation() {
     });
 }
 
+function setupStoryCapsuleAnimation() {
+    setupCapsuleAnimation('AsStoryCapsule', 'AsStoryToggle', 'AsStoryPanel');
+    setupCapsuleAnimation('AsPrevChangesCapsule', 'AsPrevChangesToggle', 'AsPrevChangesPanel');
+}
+
 
 function createUpdateModalHTML() {
     const manifest = chrome.runtime.getManifest();
@@ -128,6 +137,21 @@ function createUpdateModalHTML() {
                     خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
                     📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
                     🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // باکس بازشو برای تغییرات نسخه‌های قبلی
+    const previousChangesHTML = `
+        <div class="As-story-capsule" id="AsPrevChangesCapsule">
+            <button class="As-story-summary" id="AsPrevChangesToggle" type="button" aria-expanded="false">
+                <span class="As-story-summary-text">تغییرات قبلی</span>
+                <span class="As-story-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div class="As-story-panel" id="AsPrevChangesPanel">
+                <div class="As-prev-changes As-story-content">
+                    ${renderPreviousChanges(previousChanges)}
                 </div>
             </div>
         </div>
@@ -357,6 +381,38 @@ function createUpdateModalHTML() {
                     box-shadow: none;
                 }
 
+                #AsUpdateModal .As-prev-changes {
+                    padding: 12px 16px 16px;
+                    max-height: 220px;
+                    overflow-y: auto;
+                    direction: rtl;
+                }
+                #AsUpdateModal .As-prev-version {
+                    margin-bottom: 4px;
+                }
+                #AsUpdateModal .As-prev-version-title {
+                    color: #00e9ff;
+                    font-size: 13px;
+                    font-weight: 700;
+                    margin-bottom: 8px;
+                }
+                #AsUpdateModal .As-prev-version-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    padding-right: 8px;
+                }
+                #AsUpdateModal .As-prev-change-item {
+                    color: rgba(255, 255, 255, 0.9);
+                    font-size: 12px;
+                    line-height: 1.6;
+                }
+                #AsUpdateModal .As-prev-divider {
+                    height: 1px;
+                    margin: 12px 0;
+                    background: rgba(0, 233, 255, 0.15);
+                }
+
                 /* استایل باکس استاتیک اطلاعیه اصلی */
                 #AsUpdateModal .As-special-announcement {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
@@ -387,11 +443,15 @@ function createUpdateModalHTML() {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    padding: 12px 16px;
-                    border-radius: 10px;
+                    padding: 12px 4px;
+                    border-radius: 0;
                     direction: rtl;
-                    background: rgba(255, 255, 255, 0.03);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    background: transparent;
+                    border: none;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                #AsUpdateModal .As-change-item:last-child {
+                    border-bottom: none;
                 }
                 #AsUpdateModal .As-change-icon-img {
                     width: 26px;
@@ -476,6 +536,7 @@ function createUpdateModalHTML() {
                         </div>
 
                         ${staticAnnouncementHTML}
+                        ${previousChangesHTML}
                     </div>
 
                     <div class="As-footer">

@@ -51,6 +51,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://vivado.amd.com/*'],
         hostnames: ['vivado.amd.com']
     },
+    atxp: {
+        name: 'ATXP Chat',
+        origins: ['*://chat.atxp.ai/*'],
+        hostnames: ['chat.atxp.ai']
+    },
     notebook: {
         name: 'NotebookLM',
         origins: ['*://notebook.google.com/*'],

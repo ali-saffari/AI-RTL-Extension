@@ -601,7 +601,8 @@ const AI_SITES = [
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
     'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
     't3.chat', 'www.t3.chat',
-    'vivado.amd.com'
+    'vivado.amd.com',
+    'chat.atxp.ai'
 ];
 
 function isAISite(hostname) {
