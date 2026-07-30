@@ -602,7 +602,8 @@ const AI_SITES = [
     'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
     't3.chat', 'www.t3.chat',
     'vivado.amd.com',
-    'chat.atxp.ai'
+    'chat.atxp.ai',
+    'consensus.app', 'www.consensus.app'
 ];
 
 function isAISite(hostname) {

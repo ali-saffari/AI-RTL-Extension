@@ -1012,3 +1012,17 @@ textarea[spellcheck="true"]::spelling-error,
 .rtl-algorithm-active [role="contentinfo"] span {
     display: none;
 }
+
+
+
+
+
+/*--------Consensus-------------*/
+
+
+.rtl-algorithm-active .AsOkCON [dir="rtl"].markdown-ul li:before {
+    content: "•";
+    top: calc(var(--spacing) * 0);
+    right: -9px;
+    left: initial;
+}

@@ -50,7 +50,9 @@ function getAISitesList() {
         't3.chat',
         'www.t3.chat',
         'vivado.amd.com',
-        'chat.atxp.ai'
+        'chat.atxp.ai',
+        'consensus.app',
+        'www.consensus.app'
     ];
 
     return manualRtlState.aiSitesList;

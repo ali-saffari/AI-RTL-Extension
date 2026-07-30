@@ -60,6 +60,11 @@ export const DYNAMIC_SERVICES = {
         name: 'NotebookLM',
         origins: ['*://notebook.google.com/*'],
         hostnames: ['notebook.google.com']
+    },
+    consensus: {
+        name: 'Consensus',
+        origins: ['*://consensus.app/*', '*://www.consensus.app/*'],
+        hostnames: ['consensus.app', 'www.consensus.app']
     }
 };
 

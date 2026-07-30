@@ -47,6 +47,7 @@ import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
 import { activateVivado } from './services/vivado.js';
 import { activateAtxp } from './services/atxp.js';
+import { activateConsensus } from './services/consensus.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -241,6 +242,10 @@ const serviceConfig = {
     atxp: {
         urls: ["chat.atxp.ai"],
         activate: activateAtxp
+    },
+    consensus: {
+        urls: ["consensus.app", "www.consensus.app"],
+        activate: activateConsensus
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],
