@@ -65,6 +65,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Consensus',
         origins: ['*://consensus.app/*', '*://www.consensus.app/*'],
         hostnames: ['consensus.app', 'www.consensus.app']
+    },
+    scispace: {
+        name: 'SciSpace',
+        origins: ['*://scispace.com/*', '*://www.scispace.com/*'],
+        hostnames: ['scispace.com', 'www.scispace.com']
     }
 };
 

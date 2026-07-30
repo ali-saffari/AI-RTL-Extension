@@ -52,7 +52,9 @@ function getAISitesList() {
         'vivado.amd.com',
         'chat.atxp.ai',
         'consensus.app',
-        'www.consensus.app'
+        'www.consensus.app',
+        'scispace.com',
+        'www.scispace.com'
     ];
 
     return manualRtlState.aiSitesList;

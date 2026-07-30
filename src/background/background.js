@@ -603,7 +603,8 @@ const AI_SITES = [
     't3.chat', 'www.t3.chat',
     'vivado.amd.com',
     'chat.atxp.ai',
-    'consensus.app', 'www.consensus.app'
+    'consensus.app', 'www.consensus.app',
+    'scispace.com', 'www.scispace.com'
 ];
 
 function isAISite(hostname) {

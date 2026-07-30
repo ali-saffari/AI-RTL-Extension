@@ -48,6 +48,7 @@ import { activateT3chat } from './services/t3chat.js';
 import { activateVivado } from './services/vivado.js';
 import { activateAtxp } from './services/atxp.js';
 import { activateConsensus } from './services/consensus.js';
+import { activateScispace } from './services/scispace.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -246,6 +247,10 @@ const serviceConfig = {
     consensus: {
         urls: ["consensus.app", "www.consensus.app"],
         activate: activateConsensus
+    },
+    scispace: {
+        urls: ["scispace.com", "www.scispace.com"],
+        activate: activateScispace
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],
