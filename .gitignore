@@ -9,6 +9,7 @@ yarn-error.log*
 
 # Build outputs
 dist/
+dist-firefox/
 build/
 releases/
 *.min.js

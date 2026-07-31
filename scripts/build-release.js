@@ -5,6 +5,7 @@ const archiver = require('archiver');
 
 // Paths
 const manifestPath = path.join(__dirname, '../public/manifest.json');
+const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
 const packagePath = path.join(__dirname, '../package.json');
 const distPath = path.join(__dirname, '../dist');
 const outputPath = path.join(__dirname, '../releases');
@@ -64,12 +65,19 @@ async function main() {
         // Update manifest.json
         manifest.version = newVersion;
         fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 4));
+
+        // Keep Firefox manifest version in sync (Chrome release does not build Firefox)
+        if (fs.existsSync(firefoxManifestPath)) {
+            const firefoxManifest = JSON.parse(fs.readFileSync(firefoxManifestPath, 'utf8'));
+            firefoxManifest.version = newVersion;
+            fs.writeFileSync(firefoxManifestPath, JSON.stringify(firefoxManifest, null, 4));
+        }
         
         // Update package.json
         packageJson.version = newVersion;
         fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
         
-        logSuccess(`Version updated to ${newVersion} in both manifest.json and package.json`);
+        logSuccess(`Version updated to ${newVersion} in Chrome/Firefox manifests and package.json`);
         
         // Step 3: Clean dist directory
         logStep('4', 'Cleaning dist directory...');

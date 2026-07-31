@@ -10,10 +10,13 @@ import AlgorithmTab from './tabs/AlgorithmTab';
 import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
+import { isFirefoxRuntime } from '../utils/isFirefox';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
 }
+
+const firefoxDefaults = isFirefoxRuntime();
 
 const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const theme = useTheme();
@@ -49,8 +52,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
-        manualRtlEnabled: true,
-        manualRtlSiteMode: 'allowed_sites',
+        manualRtlEnabled: firefoxDefaults ? false : true,
+        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
         menuDisplayMode: 'logo_first',
         highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
@@ -80,15 +83,16 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 const settings = result.manualRtlSettings;
                 if (settings) {
                     setManualRtlSettings({
-                        manualRtlEnabled: true,
-                        manualRtlSiteMode: 'allowed_sites',
+                        manualRtlEnabled: firefoxDefaults ? false : true,
+                        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
                         menuDisplayMode: 'logo_first',
                         highlightMode: 'on_direction_change',
                         highlightColor: '#ff0000',
                         highlightOpacity: 0.3,
                         logoDisplay: 'always',
                         applyFont: true,
-                        ...settings
+                        ...settings,
+                        ...(firefoxDefaults ? { manualRtlSiteMode: 'all' as const } : {})
                     });
                 }
                 if (result.analytics !== undefined) {

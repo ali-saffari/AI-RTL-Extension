@@ -97,7 +97,12 @@ export function shouldEnableTextSelector(callback) {
             return;
         }
 
-        const siteMode = settings.manualRtlSiteMode || 'allowed_sites';
+        const siteMode = (typeof chrome !== 'undefined'
+            && chrome.runtime
+            && chrome.runtime.getURL
+            && chrome.runtime.getURL('').startsWith('moz-extension:'))
+            ? 'all'
+            : (settings.manualRtlSiteMode || 'allowed_sites');
         const hostname = window.location.hostname;
         console.log('[RTL Text Selector] Checking site:', hostname, 'mode:', siteMode);
 

@@ -9,6 +9,7 @@ import {
 import { mdiCog } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import SiteActivationSection, { ActiveTabInfoSnapshot } from './SiteActivationSection';
+import { isFirefoxRuntime } from '../utils/isFirefox';
 
 interface ManualRtlBannerProps {
     isDarkMode: boolean;
@@ -114,8 +115,9 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
         return `${activeHostname.slice(0, 17)}...`;
     }, [activeHostname]);
     
-    // Show site activation section only when enabled and mode is allowed_sites or ai_and_allowed
+    // Firefox: all-sites access, no allowlist UI
     const shouldShowSiteSection = React.useMemo(() => {
+        if (isFirefoxRuntime()) return false;
         return manualRtlSettings.manualRtlEnabled && 
                (manualRtlSettings.manualRtlSiteMode === 'allowed_sites' || 
                 manualRtlSettings.manualRtlSiteMode === 'ai_and_allowed');
@@ -124,6 +126,9 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     const statusText = React.useMemo(() => {
         if (!manualRtlSettings.manualRtlEnabled) {
             return 'غیرفعال';
+        }
+        if (isFirefoxRuntime()) {
+            return 'فعال برای همه سایت‌ها';
         }
         switch (manualRtlSettings.manualRtlSiteMode) {
             case 'all':

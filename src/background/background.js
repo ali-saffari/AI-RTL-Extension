@@ -101,16 +101,25 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await initializeUserId();
     
     // Default manual RTL settings
-    const defaultManualRtlSettings = {
-        manualRtlEnabled: false,
-        manualRtlSiteMode: 'allowed_sites',
-        menuDisplayMode: 'logo_first',
-        highlightMode: 'on_direction_change',
-        highlightColor: '#ff0000',
-        highlightOpacity: 0.3,
-        logoDisplay: 'always',
-        applyFont: true
-    };
+    const defaultManualRtlSettings = getDefaultManualRtlSettings();
+
+    // Firefox: migrate existing profiles to all-sites mode (no allowlist)
+    if (isFirefoxRuntime()) {
+        try {
+            const stored = await chrome.storage.sync.get(['manualRtlSettings']);
+            const current = stored.manualRtlSettings || {};
+            await chrome.storage.sync.set({
+                manualRtlSettings: {
+                    ...defaultManualRtlSettings,
+                    ...current,
+                    manualRtlSiteMode: 'all',
+                    manualRtlEnabled: current.manualRtlEnabled === true
+                }
+            });
+        } catch (e) {
+            console.error('[Background] Firefox manual RTL migrate failed:', e);
+        }
+    }
     
     if (details.reason === 'install') {
         // Get sites config from API (sites-config commented out – use SERVICE_FLAGS only)
@@ -341,6 +350,44 @@ function resetActiveTabInfo(tabId) {
 
 
 /**
+ * True when this background is running inside Firefox.
+ */
+function isFirefoxRuntime() {
+    try {
+        return chrome.runtime.getURL('').startsWith('moz-extension:');
+    } catch {
+        return false;
+    }
+}
+
+function getDefaultManualRtlSettings() {
+    // Firefox: all-sites mode available, Manual RTL off by default (no allowlist UI)
+    if (isFirefoxRuntime()) {
+        return {
+            manualRtlEnabled: false,
+            manualRtlSiteMode: 'all',
+            menuDisplayMode: 'logo_first',
+            highlightMode: 'on_direction_change',
+            highlightColor: '#ff0000',
+            highlightOpacity: 0.3,
+            logoDisplay: 'always',
+            applyFont: true
+        };
+    }
+
+    return {
+        manualRtlEnabled: false,
+        manualRtlSiteMode: 'allowed_sites',
+        menuDisplayMode: 'logo_first',
+        highlightMode: 'on_direction_change',
+        highlightColor: '#ff0000',
+        highlightOpacity: 0.3,
+        logoDisplay: 'always',
+        applyFont: true
+    };
+}
+
+/**
  * Check if URL is valid http/https page (not extension or chrome://)
  */
 function isValidHttpPage(url) {
@@ -351,6 +398,20 @@ function isValidHttpPage(url) {
     } catch {
         return false;
     }
+}
+
+/**
+ * Restricted browser pages that cannot be scripted (Chrome + Firefox)
+ */
+function isRestrictedBrowserUrl(url) {
+    if (!url) return true;
+    return (
+        url.startsWith('chrome://') ||
+        url.startsWith('chrome-extension://') ||
+        url.startsWith('moz-extension://') ||
+        url.startsWith('about:') ||
+        url.startsWith('resource://')
+    );
 }
 
 
@@ -622,7 +683,10 @@ async function shouldEnableManualRtlForSite(hostname) {
             return false;
         }
         
-        const siteMode = manualRtlSettings.manualRtlSiteMode || 'allowed_sites';
+        // Firefox: always treat as all-sites mode (no allowlist)
+        const siteMode = isFirefoxRuntime()
+            ? 'all'
+            : (manualRtlSettings.manualRtlSiteMode || 'allowed_sites');
         
         // Check site mode
         if (siteMode === 'all') {
@@ -661,10 +725,7 @@ async function activateManualRtlForSite(tabId) {
         if (!tab.url) return;
         
         // Check if tab is in a valid state
-        if (tab.url.startsWith('chrome://') || 
-            tab.url.startsWith('chrome-extension://') || 
-            tab.url.startsWith('about:') ||
-            tab.status !== 'complete') {
+        if (isRestrictedBrowserUrl(tab.url) || tab.status !== 'complete') {
             return;
         }
         
@@ -736,11 +797,8 @@ async function activateContentScriptForDynamicSites(tabId) {
         console.log('[Background] tab', tab);
         if (!tab.url) return;
         
-        // Check if tab is in a valid state (not error page, not chrome:// pages)
-        if (tab.url.startsWith('chrome://') || 
-            tab.url.startsWith('chrome-extension://') || 
-            tab.url.startsWith('about:') ||
-            tab.status !== 'complete') {
+        // Check if tab is in a valid state (not error page, not browser internal pages)
+        if (isRestrictedBrowserUrl(tab.url) || tab.status !== 'complete') {
             return;
         }
         
@@ -790,16 +848,31 @@ async function activateContentScriptForDynamicSites(tabId) {
                 // Inject all files together (CSS and JavaScript in parallel)
                 console.log('[Background] inject all files together (CSS and JavaScript in parallel)');
                 try {
-                    await Promise.all([
-                        chrome.scripting.insertCSS({
-                            target: { tabId: tabId },
-                            files: ['css/fontiran-iranyekan.css', 'style.css']
-                        }),
-                        chrome.scripting.executeScript({
-                            target: { tabId: tabId },
-                            files: ['js/myJquery-3.7.1.js', 'js/content.js']
-                        })
-                    ]);
+                    if (isFirefoxRuntime()) {
+                        // Firefox: avoid moz-extension @font-face (blocked by page CSP).
+                        // Keep same idle timing as Chrome; fonts load via FontFace API.
+                        await Promise.all([
+                            chrome.scripting.insertCSS({
+                                target: { tabId: tabId },
+                                files: ['style.css']
+                            }),
+                            chrome.scripting.executeScript({
+                                target: { tabId: tabId },
+                                files: ['js/inject-fonts.js', 'js/myJquery-3.7.1.js', 'js/content.js']
+                            })
+                        ]);
+                    } else {
+                        await Promise.all([
+                            chrome.scripting.insertCSS({
+                                target: { tabId: tabId },
+                                files: ['css/fontiran-iranyekan.css', 'style.css']
+                            }),
+                            chrome.scripting.executeScript({
+                                target: { tabId: tabId },
+                                files: ['js/myJquery-3.7.1.js', 'js/content.js']
+                            })
+                        ]);
+                    }
                     console.log(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
                 } catch (injectError) {
                     // Ignore errors for error pages or invalid tabs
@@ -895,7 +968,7 @@ function setupEventListeners() {
                 // Get all tabs and update manual RTL for each
                 const tabs = await chrome.tabs.query({});
                 for (const tab of tabs) {
-                    if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+                    if (tab.id && tab.url && !isRestrictedBrowserUrl(tab.url)) {
                         await activateManualRtlForSite(tab.id);
                     }
                 }
@@ -919,7 +992,7 @@ setupEventListeners();
     try {
         const tabs = await chrome.tabs.query({});
         for (const tab of tabs) {
-            if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+            if (tab.id && tab.url && !isRestrictedBrowserUrl(tab.url)) {
                 await activateManualRtlForSite(tab.id);
             }
         }

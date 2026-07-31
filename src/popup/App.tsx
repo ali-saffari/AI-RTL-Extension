@@ -25,8 +25,11 @@ import Settings from './Settings';
 import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
+import { isFirefoxRuntime } from '../utils/isFirefox';
 import './App.css';
 import manifest from '../../public/manifest.json';
+
+const firefoxDefaults = isFirefoxRuntime();
 
 // Create rtl cache
 const cacheRtl = createCache({
@@ -180,8 +183,8 @@ function App() {
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
-        manualRtlEnabled: true,
-        manualRtlSiteMode: 'allowed_sites',
+        manualRtlEnabled: firefoxDefaults ? false : true,
+        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
         menuDisplayMode: 'logo_first',
         highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
@@ -210,7 +213,8 @@ function App() {
                 if (settings) {
                     setManualRtlSettings({
                         ...manualRtlSettings,
-                        ...settings
+                        ...settings,
+                        ...(firefoxDefaults ? { manualRtlSiteMode: 'all' as const } : {})
                     });
                 }
                 // Load manualRtlInfoDismissed

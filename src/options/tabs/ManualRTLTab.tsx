@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import { mdiChevronDown, mdiDelete, mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../../types/manualRtl';
+import { isFirefoxRuntime } from '../../utils/isFirefox';
 import { ManualRTLGuide } from './ManualRTLGuide';
 
 interface ManualRTLTabProps {
@@ -853,7 +854,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                 </Card>
 
                 {/* لیست سایت‌های فعال - زیر تنظیمات چینش دستی */}
-                {manualRtlSettings.manualRtlEnabled && (
+                {manualRtlSettings.manualRtlEnabled && !isFirefoxRuntime() && (
                     <Card elevation={2} sx={{ mt: 3 }}>
                         <CardContent>
                             <Box sx={{ mb: 2, textAlign: 'center' }}>
