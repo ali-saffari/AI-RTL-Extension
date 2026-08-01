@@ -290,12 +290,32 @@ function analyzeTextDirection(text) {
         return result;
     }
 
+    // Leading/trailing markers that should not decide direction
+    // e.g. -, *, #, •, —, list numbers like "1." / "۲."
+    const neutralTokenPattern = /^[\d\s\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+$/;
+    const listMarkerPattern = /^[\d\u06F0-\u06F9]+[.\-)]$/;
+    const leadingNeutralChars = /^[\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+/;
+
+    function isNeutralToken(word) {
+        if (!word) return true;
+        return neutralTokenPattern.test(word) || listMarkerPattern.test(word);
+    }
+
+    function stripLeadingNeutralChars(word) {
+        if (!word) return word;
+        return word.replace(leadingNeutralChars, '');
+    }
+
     const normalizedText = removeBracketsAndQuotes(removeAllEmojis(text)).trim();
-    const words = normalizedText.split(/\s+/).filter(w => w.length > 0);
+    const words = normalizedText
+        .split(/\s+/)
+        .map(stripLeadingNeutralChars)
+        .filter(w => w.length > 0 && !isNeutralToken(w));
     if (words.length === 0) return 'ltr';
 
 
     // بررسی اولویت‌های خاص برای تشخیص جهت
+    // (کلمات خنثی ابتدای متن مثل -، *، # و ایموجی از قبل حذف شده‌اند)
     
     // اگر شروع و پایان متن با فارسی بود، RTL است
     if (words.length >= 2) {
@@ -310,12 +330,12 @@ function analyzeTextDirection(text) {
         
         // اگر متن با انگلیسی شروع و با انگلیسی تمام شود
         if (!firstWordIsRTL && !lastWordIsRTL) {
-            // برای متن‌های خیلی کوتاه (2-3 کلمه)، همیشه LTR
-            if (words.length <= 3) {
+            // فقط وقتی هیچ کلمه RTLای در متن نیست، برای متن کوتاه LTR برگردان
+            const hasAnyRTLWord = words.some(word => [...word].some(isRTLChar));
+            if (!hasAnyRTLWord && words.length <= 3) {
                 return 'ltr';
             }
-            // برای متن‌های طولانی‌تر، بررسی اکثریت کلمات
-            // این قسمت در ادامه الگوریتم بررسی می‌شود
+            // اگر کلمه RTL در وسط هست، به ادامه الگوریتم برو
         }
     }
 
@@ -323,15 +343,13 @@ function analyzeTextDirection(text) {
     function isRealWord(word) {
         // اعداد فارسی (۰-۹)
         const persianNumbers = /^[\u06F0-\u06F9]+$/;
-        // کلمات خنثی: فقط اعداد انگلیسی، علائم، یا ترکیبی از آنها
-        const neutralPattern = /^[\d\s\-\.\,\!\?\:\;\(\)\[\]\{\}\"\'«»]+$/;
         
         // اگر فقط اعداد فارسی است، آن را کلمه واقعی در نظر بگیر
         if (persianNumbers.test(word)) {
             return true;
         }
         
-        return !neutralPattern.test(word) && word.length > 0;
+        return !isNeutralToken(word) && word.length > 0;
     }
 
     // فیلتر کردن کلمات واقعی
