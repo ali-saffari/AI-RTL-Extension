@@ -156,7 +156,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     let presentation = ".relative.flex.h-full "
     if (chrome.runtime?.id) {
         // AQ(fo).each(function (each) {
-                addCopyright(AQ('#thread-bottom-container'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 1px');
+                addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 9px; margin-bottom: -11px;');
         // })
     }
 
