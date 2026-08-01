@@ -27,7 +27,7 @@ import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import './App.css';
-import manifest from '../../public/manifest.json';
+import manifest from '../../public/manifest.chrome.json';
 
 const firefoxDefaults = isFirefoxRuntime();
 

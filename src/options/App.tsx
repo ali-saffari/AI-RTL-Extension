@@ -21,7 +21,7 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import CssBaseline from '@mui/material/CssBaseline';
 import { mdiWeatherSunny, mdiWeatherNight } from '@mdi/js';
 import SettingsContent from './SettingsContent';
-import manifest from '../../public/manifest.json';
+import manifest from '../../public/manifest.chrome.json';
 
 // Create rtl cache
 const cacheRtl = createCache({

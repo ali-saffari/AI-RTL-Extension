@@ -1,4 +1,4 @@
-// Services that are not in manifest.json (dynamically injected)
+// Services that are not in the browser manifests (dynamically injected)
 export const DYNAMIC_SERVICES = {
     synaps: {
         name: 'Synaps',

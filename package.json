@@ -1,6 +1,6 @@
 {
   "name": "react-chrome-ext",
-  "version": "3.2.55",
+  "version": "3.2.56",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -29,15 +29,17 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --config webpack.config.js",
-    "build:dev": "cross-env NODE_ENV=development webpack --config webpack.config.js",
-    "build:release": "node scripts/build-release.js",
+    "build:chrome": "cross-env NODE_ENV=production webpack --config webpack.config.chrome.js",
+    "build:chrome:dev": "cross-env NODE_ENV=development webpack --config webpack.config.chrome.js",
+    "build:chrome:release": "node scripts/build-chrome.js",
     "build:firefox": "node scripts/build-firefox.js",
+    "build-for-amo": "npm run build:firefox",
     "firefox": "node scripts/run-firefox.js",
     "firefox:lint": "web-ext lint --source-dir dist-firefox",
     "firefox:dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.firefox.js",
-    "watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.js",
-    "dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.js",
+    "chrome:dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
+    "chrome:watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
+    "watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
     "version:bump": "node scripts/version-bump.js"
   },
   "cursor": {

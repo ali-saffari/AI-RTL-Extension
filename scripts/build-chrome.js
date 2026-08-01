@@ -4,7 +4,7 @@ const { execSync } = require('child_process');
 const archiver = require('archiver');
 
 // Paths
-const manifestPath = path.join(__dirname, '../public/manifest.json');
+const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json');
 const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
 const packagePath = path.join(__dirname, '../package.json');
 const distPath = path.join(__dirname, '../dist');
@@ -48,10 +48,10 @@ async function main() {
         
         // Step 1: Read current version
         logStep('2', 'Reading current version...');
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        const chromeManifest = JSON.parse(fs.readFileSync(chromeManifestPath, 'utf8'));
         const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
         
-        const currentVersion = manifest.version;
+        const currentVersion = chromeManifest.version;
         log(`Current version: ${currentVersion}`, 'cyan');
         
         // Step 2: Increment version
@@ -62,9 +62,9 @@ async function main() {
         
         log(`New version: ${newVersion}`, 'cyan');
         
-        // Update manifest.json
-        manifest.version = newVersion;
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 4));
+        // Update manifest.chrome.json
+        chromeManifest.version = newVersion;
+        fs.writeFileSync(chromeManifestPath, JSON.stringify(chromeManifest, null, 4));
 
         // Keep Firefox manifest version in sync (Chrome release does not build Firefox)
         if (fs.existsSync(firefoxManifestPath)) {
@@ -91,7 +91,7 @@ async function main() {
         log('Running webpack build...', 'yellow');
         
         try {
-            execSync('npm run build:dev', { 
+            execSync('npm run build:chrome:dev', { 
                 stdio: 'inherit',
                 cwd: path.join(__dirname, '..')
             });

@@ -78,7 +78,7 @@ module.exports = {
                         // Never copy Chrome or Firefox source manifests as-is;
                         // font CSS is transformed separately for moz-extension://
                         ignore: [
-                            '**/manifest.json',
+                            '**/manifest.chrome.json',
                             '**/manifest.firefox.json',
                             '**/css/fontiran-iranyekan.css',
                         ],

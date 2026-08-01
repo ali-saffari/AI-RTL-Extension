@@ -74,11 +74,23 @@ module.exports = {
     plugins: [
         new CopyPlugin({
             patterns: [
-                { from: 'public', to: '..' },
+                {
+                    from: 'public',
+                    to: '..',
+                    globOptions: {
+                        ignore: [
+                            '**/manifest.chrome.json',
+                            '**/manifest.firefox.json',
+                        ],
+                    },
+                },
+                {
+                    from: 'public/manifest.chrome.json',
+                    to: '../manifest.json',
+                },
             ],
         }),
         new BundleBackgroundPlugin(),
-
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
