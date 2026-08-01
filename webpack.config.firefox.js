@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -9,6 +10,19 @@ class BundleBackgroundPlugin {
     apply(compiler) {
         compiler.hooks.afterEmit.tap('BundleBackgroundPlugin', () => {
             console.log('✅ Firefox background script bundled');
+        });
+    }
+}
+
+// webpack clean only clears dist-firefox/js; strip Chrome-only leftovers from package root
+class RemoveChromeManifestPlugin {
+    apply(compiler) {
+        compiler.hooks.afterEmit.tap('RemoveChromeManifestPlugin', () => {
+            const chromeManifest = path.join(__dirname, 'dist-firefox', 'manifest.chrome.json');
+            if (fs.existsSync(chromeManifest)) {
+                fs.unlinkSync(chromeManifest);
+                console.log('🗑️ Removed leftover manifest.chrome.json from dist-firefox');
+            }
         });
     }
 }
@@ -80,6 +94,7 @@ module.exports = {
                         ignore: [
                             '**/manifest.chrome.json',
                             '**/manifest.firefox.json',
+                            '**/manifest.json',
                             '**/css/fontiran-iranyekan.css',
                         ],
                     },
@@ -105,6 +120,7 @@ module.exports = {
             ],
         }),
         new BundleBackgroundPlugin(),
+        new RemoveChromeManifestPlugin(),
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],

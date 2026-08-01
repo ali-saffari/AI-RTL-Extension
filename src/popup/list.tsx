@@ -81,7 +81,8 @@ const services: Service[] = [
     { key: 'atxp', name: 'ATXP Chat', icon: '/images/atxp.png', url: 'https://chat.atxp.ai/', new: true },
     { key: 'consensus', name: 'Consensus', icon: '/images/consensus.png', url: 'https://consensus.app/', new: true },
     { key: 'scispace', name: 'SciSpace', icon: '/images/scispace.png', url: 'https://scispace.com/', new: true },
-    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/chatboxai.png', url: 'https://web.chatboxai.app/', new: true }
+    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/chatboxai.png', url: 'https://web.chatboxai.app/', new: true },
+    { key: 'lumo', name: 'Lumo', icon: '/images/lumo-proton.png', url: 'https://lumo.proton.me/', new: true }
 ];
 
 

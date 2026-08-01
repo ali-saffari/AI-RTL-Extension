@@ -666,7 +666,8 @@ const AI_SITES = [
     'chat.atxp.ai',
     'consensus.app', 'www.consensus.app',
     'scispace.com', 'www.scispace.com',
-    'web.chatboxai.app'
+    'web.chatboxai.app',
+    'lumo.proton.me'
 ];
 
 function isAISite(hostname) {

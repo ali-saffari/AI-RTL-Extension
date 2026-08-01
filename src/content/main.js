@@ -50,6 +50,7 @@ import { activateAtxp } from './services/atxp.js';
 import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
 import { activateChatboxai } from './services/chatboxai.js';
+import { activateLumo } from './services/lumo.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -256,6 +257,10 @@ const serviceConfig = {
     chatboxai: {
         urls: ["web.chatboxai.app"],
         activate: activateChatboxai
+    },
+    lumo: {
+        urls: ["lumo.proton.me"],
+        activate: activateLumo
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

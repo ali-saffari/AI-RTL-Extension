@@ -75,6 +75,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Chatbox AI',
         origins: ['*://web.chatboxai.app/*'],
         hostnames: ['web.chatboxai.app']
+    },
+    lumo: {
+        name: 'Lumo',
+        origins: ['*://lumo.proton.me/*'],
+        hostnames: ['lumo.proton.me']
     }
 };
 
