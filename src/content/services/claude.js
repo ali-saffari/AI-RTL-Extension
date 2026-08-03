@@ -108,7 +108,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
 
 
-    AQ(' .contents span , [data-orientation="horizontal"] button').each(function () {
+    AQ(' .contents .font-base-bold , [data-orientation="horizontal"] button').each(function () {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',

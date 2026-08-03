@@ -1,4 +1,4 @@
 export const UPDATE_MODAL_ENABLED = true; // Set to false to skip showing modal for this release
-export const UPDATE_MODAL_ID = '2026-07-30';
+export const UPDATE_MODAL_ID = '2026-08-03';
 export const UPDATE_MODAL_STORAGE_KEY = 'updateModalClosedId';
 

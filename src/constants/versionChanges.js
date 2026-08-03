@@ -1,29 +1,31 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'آپدیت ChatGPT', icon: 'openAi-icon.png', type: 'fix' },
-    { id: '2', text: 'افزودن سایت Lumo', icon: 'lumo-proton.png', type: 'add' },
-];
-
-// تغییرات اضافی موقت فقط برای نسخه جاری
-export const latestChanges = [
-    // { id: '1', text: 'افزودن Google AI Mode', icon: 'google.png', type: 'add' },
+    { id: '1', text: 'آپدیت Claude', icon: 'claude-icon.png', type: 'fix' },
+    { id: '2', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
+    { id: '3', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
+    { id: '4', text: 'آپدیت ChatGPT', icon: 'openAi-icon.png', type: 'fix' },
+    { id: '5', text: 'افزودن سایت Lumo', icon: 'lumo-proton.png', type: 'add' },
+    { id: '6', text: 'افزودن سایت ATXP Chat', icon: 'atxp.png', type: 'add' },
+    { id: '7', text: 'افزودن سایت Consensus', icon: 'consensus.png', type: 'add' },
+    { id: '8', text: 'افزودن سایت SciSpace', icon: 'scispace.png', type: 'add' },
+    { id: '9', text: 'افزودن سایت Chatbox AI', icon: 'chatboxai.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی
 export const previousChanges = [
-    {
-        version: '1405/05/09',
-        changes: [
-            { id: '1', text: 'افزودن سایت ATXP Chat' },
-            { id: '2', text: 'افزودن سایت Consensus' },
-            { id: '3', text: 'افزودن سایت SciSpace' },
-            { id: '4', text: 'افزودن سایت Chatbox AI' },
-            { id: '5', text: 'آپدیت Google Notebook' },
-            { id: '6', text: 'آپدیت Claude' },
-            { id: '7', text: 'آپدیت DeepSeek' },
-        ]
-    },
+//     {
+//         version: '1405/05/09',
+//         changes: [
+//             { id: '1', text: 'افزودن سایت ATXP Chat' },
+//             { id: '2', text: 'افزودن سایت Consensus' },
+//             { id: '3', text: 'افزودن سایت SciSpace' },
+//             { id: '4', text: 'افزودن سایت Chatbox AI' },
+//             { id: '5', text: 'آپدیت Google Notebook' },
+//             { id: '6', text: 'آپدیت Claude' },
+//             { id: '7', text: 'آپدیت DeepSeek' },
+//         ]
+//     },
     {
         version: '1405/04/20',
         changes: [

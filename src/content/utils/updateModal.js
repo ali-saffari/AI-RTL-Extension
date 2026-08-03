@@ -1,5 +1,5 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-import { versionChanges, latestChanges, previousChanges } from '../../constants/versionChanges.js';
+import { versionChanges, previousChanges } from '../../constants/versionChanges.js';
 
 let isModalShowing = false;
 
@@ -578,7 +578,7 @@ function createUpdateModalHTML() {
                                 <span>↻</span> تغییرات این نسخه:
                             </div>
                             <div class="As-change-list">
-                                ${renderChangeItems([...versionChanges, ...latestChanges])}
+                                ${renderChangeItems(versionChanges)}
                             </div>
                         </div>
 
