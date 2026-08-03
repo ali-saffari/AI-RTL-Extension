@@ -206,231 +206,388 @@ function isCode(text) {
 }
 
 
+const NEUTRAL_TOKEN_PATTERN = /^[\d\s\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+$/;
+const LIST_MARKER_PATTERN = /^[\d\u06F0-\u06F9]+[.\-)]$/;
+const SHORT_TECH_ACRONYMS = new Set([
+    'js', 'ts', 'jsx', 'tsx', 'css', 'html', 'sql', 'xml', 'json', 'yaml', 'yml',
+    'npm', 'git', 'api', 'ui', 'ux', 'db', 'orm', 'cli', 'ide', 'cpu', 'gpu',
+    'ram', 'http', 'https', 'url', 'cdn', 'jwt', 'dom', 'node', 'vue', 'php',
+    'ios', 'sdk', 'ssh', 'tcp', 'udp', 'ip', 'dns', 'ssl', 'tls', 'aws', 'gcp'
+]);
+
+// Char-code lookup for brackets/quotes (BMP). 1 = remove.
+const BRACKET_CODE_LOOKUP = new Uint8Array(0x3000);
+[
+    0x28, 0x29, 0x5B, 0x5D, 0x7B, 0x7D, 0x3C, 0x3E, // ()[]{}<>
+    0x22, 0x27, // " '
+    0xAB, 0xBB, // « »
+    0x201C, 0x201D, 0x201E, 0x201F, // “ ” „ ‟
+    0x2032, 0x2033, // ′ ″
+    0x2018, 0x2019, // ‘ ’
+    0x2039, 0x203A // ‹ ›
+].forEach((code) => {
+    if (code < BRACKET_CODE_LOOKUP.length) BRACKET_CODE_LOOKUP[code] = 1;
+});
+
+// Precompiled technical / markdown patterns
+const RE_URL = /^(https?:\/\/|www\.)/i;
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RE_PATH_SAFE = /^[\w./\\:@%+=~-]+$/;
+const RE_FILE_EXT = /\.([a-zA-Z0-9]{1,5})$/;
+const RE_FILE_SAFE = /^[\w.-]+$/;
+const RE_VERSION = /^v?\d+(\.\d+){1,3}(-[\w.]+)?$/i;
+const RE_FENCE = /```[\s\S]*?```/g;
+const RE_INLINE_CODE = /`[^`]+`/g;
+const RE_MD_IMAGE = /!\[[^\]]*\]\([^)]*\)/g;
+const RE_MD_LINK = /\[([^\]]+)\]\([^)]*\)/g;
+const RE_MD_HEADING = /^#{1,6}\s+/gm;
+const RE_MD_BOLD = /(\*\*|__)(.*?)\1/g;
+const RE_MD_ITALIC = /(\*|_)([^*\n]+?)\1/g;
+const RE_WHITESPACE = /\s+/;
+
+function isRTLCharCode(code) {
+    if (code >= 0x0600 && code <= 0x06FF) return true;
+    if (code >= 0x0590 && code <= 0x05FF) return true;
+    if (code >= 0x0750 && code <= 0x077F) return true;
+    if (code >= 0x08A0 && code <= 0x08FF) return true;
+    if (code >= 0xFB50 && code <= 0xFDFF) return true;
+    if (code >= 0xFE70 && code <= 0xFEFF) return true;
+    return false;
+}
+
+function isLatinLetterCode(code) {
+    return (code >= 0x41 && code <= 0x5A) || (code >= 0x61 && code <= 0x7A);
+}
+
+function wordHasRTL(word) {
+    for (let i = 0; i < word.length; i++) {
+        if (isRTLCharCode(word.charCodeAt(i))) return true;
+    }
+    return false;
+}
+
+function isEmojiCodePoint(codePoint) {
+    return (
+        (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) ||
+        (codePoint >= 0x1F600 && codePoint <= 0x1F64F) ||
+        (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) ||
+        (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) ||
+        (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) ||
+        (codePoint >= 0x2600 && codePoint <= 0x26FF) ||
+        (codePoint >= 0x2700 && codePoint <= 0x27BF) ||
+        (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
+        (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
+        codePoint === 0x200D ||
+        (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||
+        codePoint === 0x20E3 ||
+        (codePoint >= 0xE0020 && codePoint <= 0xE007F)
+    );
+}
+
+function hasMarkdownMarkers(input) {
+    return (
+        input.indexOf('`') !== -1 ||
+        input.indexOf('*') !== -1 ||
+        input.indexOf('#') !== -1 ||
+        input.indexOf('[') !== -1
+    );
+}
+
+function stripMarkdown(input) {
+    if (!input || !hasMarkdownMarkers(input)) return input;
+    RE_FENCE.lastIndex = 0;
+    RE_INLINE_CODE.lastIndex = 0;
+    RE_MD_IMAGE.lastIndex = 0;
+    RE_MD_LINK.lastIndex = 0;
+    RE_MD_HEADING.lastIndex = 0;
+    RE_MD_BOLD.lastIndex = 0;
+    RE_MD_ITALIC.lastIndex = 0;
+    return input
+        .replace(RE_FENCE, ' ')
+        .replace(RE_INLINE_CODE, ' ')
+        .replace(RE_MD_IMAGE, ' ')
+        .replace(RE_MD_LINK, '$1')
+        .replace(RE_MD_HEADING, '')
+        .replace(RE_MD_BOLD, '$2')
+        .replace(RE_MD_ITALIC, '$2');
+}
+
+/**
+ * Fast script probe:
+ *  1 = only RTL letters (safe rtl)
+ * -1 = no RTL letters (safe ltr)
+ *  0 = mixed / needs full tokenization
+ */
+function quickScriptProbe(text) {
+    let hasRTL = false;
+    let hasLatin = false;
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        if (isRTLCharCode(code)) {
+            hasRTL = true;
+            if (hasLatin) return 0;
+        } else if (isLatinLetterCode(code)) {
+            hasLatin = true;
+            if (hasRTL) return 0;
+        }
+    }
+    if (hasRTL) return 1;
+    return -1;
+}
+
+/**
+ * Single-pass removal of brackets/quotes and emojis.
+ * Skips allocation when nothing needs removing.
+ */
+function sanitizeBracketsAndEmojis(input) {
+    if (!input) return input;
+
+    let needsWork = false;
+    for (let i = 0; i < input.length;) {
+        const code = input.charCodeAt(i);
+        if (code >= 0xD800 && code <= 0xDBFF) {
+            needsWork = true;
+            break;
+        }
+        if (
+            (code < BRACKET_CODE_LOOKUP.length && BRACKET_CODE_LOOKUP[code]) ||
+            isEmojiCodePoint(code)
+        ) {
+            needsWork = true;
+            break;
+        }
+        i++;
+    }
+    if (!needsWork) return input;
+
+    let result = '';
+    for (let i = 0; i < input.length;) {
+        const codePoint = input.codePointAt(i);
+        const charLen = codePoint > 0xFFFF ? 2 : 1;
+        if (codePoint < BRACKET_CODE_LOOKUP.length && BRACKET_CODE_LOOKUP[codePoint]) {
+            i += charLen;
+            continue;
+        }
+        if (isEmojiCodePoint(codePoint)) {
+            i += charLen;
+            continue;
+        }
+        result += charLen === 2 ? input[i] + input[i + 1] : input[i];
+        i += charLen;
+    }
+    return result;
+}
+
+function isAllCapsWord(word, len) {
+    if (len < 2 || len > 5) return false;
+    for (let i = 0; i < len; i++) {
+        const c = word.charCodeAt(i);
+        if (c < 0x41 || c > 0x5A) return false;
+    }
+    return true;
+}
+
+function isTechnicalNeutral(word) {
+    if (!word) return false;
+
+    const len = word.length;
+
+    if (isAllCapsWord(word, len)) return true;
+
+    if (len <= 5 && SHORT_TECH_ACRONYMS.has(word.toLowerCase())) return true;
+
+    const c0 = word.charCodeAt(0);
+    if (len > 4 && (c0 === 0x68 || c0 === 0x48 || c0 === 0x77 || c0 === 0x57)) {
+        if (RE_URL.test(word)) return true;
+    }
+    if (word.indexOf('@') !== -1 && RE_EMAIL.test(word)) return true;
+
+    const slash = word.indexOf('/') !== -1 || word.indexOf('\\') !== -1;
+    if (slash || ((c0 === 0x2E) && (word.charCodeAt(1) === 0x2F || word.charCodeAt(1) === 0x5C || word.charCodeAt(1) === 0x2E))) {
+        if (RE_PATH_SAFE.test(word)) return true;
+    }
+
+    if (word.indexOf('.') !== -1) {
+        if (RE_FILE_EXT.test(word) && RE_FILE_SAFE.test(word)) return true;
+        if (RE_VERSION.test(word)) return true;
+    }
+
+    return false;
+}
+
+function isLeadingNeutralCharCode(code) {
+    // ASCII fast set: - _ * # + = ~ ` | \ / . , ! ? : ;
+    if (
+        code === 0x2D || code === 0x5F || code === 0x2A || code === 0x23 ||
+        code === 0x2B || code === 0x3D || code === 0x7E || code === 0x60 ||
+        code === 0x7C || code === 0x5C || code === 0x2F || code === 0x2E ||
+        code === 0x2C || code === 0x21 || code === 0x3F || code === 0x3A ||
+        code === 0x3B || code === 0x40
+    ) return true;
+    // common unicode bullets/dashes
+    return (
+        code === 0x2013 || code === 0x2014 || code === 0x2022 ||
+        code === 0x00B7 || code === 0x2023 || code === 0x25AA ||
+        code === 0x25E6 || code === 0x25CB || code === 0x25CF ||
+        code === 0x25A1 || code === 0x25A0 || code === 0x25C6 ||
+        code === 0x25C7 || code === 0x2606 || code === 0x2605 ||
+        code === 0x2026
+    );
+}
+
+function cleanWordToken(word) {
+    if (!word) return word;
+    let start = 0;
+    let end = word.length;
+    while (start < end && isLeadingNeutralCharCode(word.charCodeAt(start))) start++;
+    while (end > start) {
+        const c = word.charCodeAt(end - 1);
+        // trailing , : ; ! ? …
+        if (c === 0x2C || c === 0x3A || c === 0x3B || c === 0x21 || c === 0x3F || c === 0x2026) {
+            end--;
+            continue;
+        }
+        break;
+    }
+    if (start === 0 && end === word.length) return word;
+    if (start >= end) return '';
+    return word.slice(start, end);
+}
+
+/**
+ * Normalize and tokenize text into direction-significant words
+ * @returns {{ words: string[], rtlFlags: boolean[] }}
+ */
+function tokenizeForDirection(text) {
+    if (!text || typeof text !== 'string') return { words: [], rtlFlags: [] };
+
+    const normalizedText = sanitizeBracketsAndEmojis(stripMarkdown(text)).trim();
+    if (!normalizedText) return { words: [], rtlFlags: [] };
+
+    const rawWords = normalizedText.split(RE_WHITESPACE);
+    const words = [];
+    const rtlFlags = [];
+    for (let i = 0; i < rawWords.length; i++) {
+        const cleaned = cleanWordToken(rawWords[i]);
+        if (!cleaned) continue;
+
+        const hasRTL = wordHasRTL(cleaned);
+        if (hasRTL) {
+            words.push(cleaned);
+            rtlFlags.push(true);
+            continue;
+        }
+
+        if (
+            NEUTRAL_TOKEN_PATTERN.test(cleaned) ||
+            LIST_MARKER_PATTERN.test(cleaned) ||
+            isTechnicalNeutral(cleaned)
+        ) {
+            continue;
+        }
+
+        words.push(cleaned);
+        rtlFlags.push(false);
+    }
+    return { words, rtlFlags };
+}
+
 /**
  * MAIN DECISION FUNCTION - Single source of truth
- * Analyzes sentence and returns direction based on word analysis
- * @param {string} text - Text to analyze
+ * @param {string} text
  * @returns {string} - "rtl" or "ltr"
  */
 function analyzeTextDirection(text) {
-    
-    const rtlCharRanges = [
-        [0x0590, 0x05FF], // عبری
-        [0x0600, 0x06FF], // عربی و فارسی
-        [0x0750, 0x077F], // عربی افزوده
-        [0x08A0, 0x08FF], // عربی اضافی
-        [0xFB50, 0xFDFF], // عربی نمایشی
-        [0xFE70, 0xFEFF], // عربی نمایشی
-    ];
+    if (!text || typeof text !== 'string') return 'ltr';
 
-    function isRTLChar(char) {
-        const code = char.charCodeAt(0);
-        return rtlCharRanges.some(([start, end]) => code >= start && code <= end);
-    }
-
-    // Emoji-aware normalization: remove all emojis before analysis
-    function isEmoji(char) {
-        const codePoint = char.codePointAt(0);
-        return (
-            (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) ||
-            (codePoint >= 0x1F600 && codePoint <= 0x1F64F) ||
-            (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) ||
-            (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) ||
-            (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) ||
-            (codePoint >= 0x2600 && codePoint <= 0x26FF) ||
-            (codePoint >= 0x2700 && codePoint <= 0x27BF) ||
-            (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
-            (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
-            codePoint === 0x200D ||
-            (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||
-            codePoint === 0x20E3 ||
-            (codePoint >= 0xE0020 && codePoint <= 0xE007F)
-        );
-    }
-
-    function removeAllEmojis(input) {
-        if (!input) return input;
-        let result = '';
-        for (let i = 0; i < input.length;) {
-            const codePoint = input.codePointAt(i);
-            const char = String.fromCodePoint(codePoint);
-            const isEmojiComponent = (
-                (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
-                (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
-                (codePoint >= 0xFE00 && codePoint <= 0xFE0F) ||
-                codePoint === 0x200D ||
-                codePoint === 0x20E3 ||
-                (codePoint >= 0xE0020 && codePoint <= 0xE007F)
-            );
-            if (!isEmoji(char) && !isEmojiComponent) {
-                result += char;
-            }
-            i += char.length;
-        }
-        return result;
-    }
-
-    // Remove brackets/parentheses/quotes to avoid direction bias
-    function removeBracketsAndQuotes(input) {
-        if (!input) return input;
-        const charsToRemove = new Set([
-            '(', ')', '[', ']', '{', '}', '<', '>',
-            '«', '»', '“', '”', '„', '‟', '′', '″',
-            '‘', '’', '‹', '›', '"', "'"
-        ]);
-        let result = '';
-        for (let i = 0; i < input.length;) {
-            const codePoint = input.codePointAt(i);
-            const char = String.fromCodePoint(codePoint);
-            if (!charsToRemove.has(char)) {
-                result += char;
-            }
-            i += char.length;
-        }
-        return result;
-    }
-
-    // Leading/trailing markers that should not decide direction
-    // e.g. -, *, #, •, —, list numbers like "1." / "۲."
-    const neutralTokenPattern = /^[\d\s\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+$/;
-    const listMarkerPattern = /^[\d\u06F0-\u06F9]+[.\-)]$/;
-    const leadingNeutralChars = /^[\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+/;
-
-    function isNeutralToken(word) {
-        if (!word) return true;
-        return neutralTokenPattern.test(word) || listMarkerPattern.test(word);
-    }
-
-    function stripLeadingNeutralChars(word) {
-        if (!word) return word;
-        return word.replace(leadingNeutralChars, '');
-    }
-
-    const normalizedText = removeBracketsAndQuotes(removeAllEmojis(text)).trim();
-    const words = normalizedText
-        .split(/\s+/)
-        .map(stripLeadingNeutralChars)
-        .filter(w => w.length > 0 && !isNeutralToken(w));
-    if (words.length === 0) return 'ltr';
-
-
-    // بررسی اولویت‌های خاص برای تشخیص جهت
-    // (کلمات خنثی ابتدای متن مثل -، *، # و ایموجی از قبل حذف شده‌اند)
-    
-    // اگر شروع و پایان متن با فارسی بود، RTL است
-    if (words.length >= 2) {
-        const firstWord = words[0];
-        const lastWord = words[words.length - 1];
-        const firstWordIsRTL = [...firstWord].some(isRTLChar);
-        const lastWordIsRTL = [...lastWord].some(isRTLChar);
-        
-        if (firstWordIsRTL && lastWordIsRTL) {
-            return 'rtl';
-        }
-        
-        // اگر متن با انگلیسی شروع و با انگلیسی تمام شود
-        if (!firstWordIsRTL && !lastWordIsRTL) {
-            // فقط وقتی هیچ کلمه RTLای در متن نیست، برای متن کوتاه LTR برگردان
-            const hasAnyRTLWord = words.some(word => [...word].some(isRTLChar));
-            if (!hasAnyRTLWord && words.length <= 3) {
-                return 'ltr';
-            }
-            // اگر کلمه RTL در وسط هست، به ادامه الگوریتم برو
-        }
-    }
-
-    // تابع برای تشخیص کلمات واقعی (غیر از اعداد انگلیسی و علائم)
-    function isRealWord(word) {
-        // اعداد فارسی (۰-۹)
-        const persianNumbers = /^[\u06F0-\u06F9]+$/;
-        
-        // اگر فقط اعداد فارسی است، آن را کلمه واقعی در نظر بگیر
-        if (persianNumbers.test(word)) {
-            return true;
-        }
-        
-        return !isNeutralToken(word) && word.length > 0;
-    }
-
-    // فیلتر کردن کلمات واقعی
-    const realWords = words.filter(isRealWord);
-    
-    // اگر کلمه واقعی نداریم، LTR برگردان
-    if (realWords.length === 0) return 'ltr';
-
-    // برای متن‌های کوتاه (کمتر از 5 کلمه واقعی)، کل متن را بررسی کن
-    if (realWords.length < 5) {
-        let rtlWordsCount = 0;
-        for (const word of realWords) {
-            if ([...word].some(isRTLChar)) rtlWordsCount++;
-        }
-        return rtlWordsCount > 0 ? 'rtl' : 'ltr';
-    }
-
-    // برای متن‌های متوسط (5-10 کلمه واقعی)، 50% اول را بررسی کن
-    if (realWords.length <= 10) {
-        let checkWordsCount = Math.ceil(realWords.length * 0.5);
-        const wordsToCheck = realWords.slice(0, checkWordsCount);
-        
-        let rtlWordsCount = 0;
-        for (const word of wordsToCheck) {
-            if ([...word].some(isRTLChar)) rtlWordsCount++;
-        }
-        
-        if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
-        if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
-        
-        // اگر مساوی، کل متن را بررسی کن
-        let totalRTLWords = 0;
-        for (const word of realWords) {
-            if ([...word].some(isRTLChar)) totalRTLWords++;
-        }
-        return totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
-    }
-
-    // برای متن‌های طولانی، ابتدا کل متن را بررسی کن
-    let totalRTLWords = 0;
-    for (const word of realWords) {
-        if ([...word].some(isRTLChar)) totalRTLWords++;
-    }
-
-    const firstWord = realWords[0];
-    const lastWord = realWords[realWords.length - 1];
-    const firstWordIsRTL = [...firstWord].some(isRTLChar);
-    const lastWordIsRTL = [...lastWord].some(isRTLChar);
-    
-    
-    // اگر هر دو ابتدا و انتها RTL باشند، RTL
-    if (firstWordIsRTL && lastWordIsRTL) return 'rtl';
-    // اگر هر دو ابتدا و انتها LTR باشند، LTR
-    if (!firstWordIsRTL && !lastWordIsRTL) return 'ltr';
-
-    // اگر ابتدا و انتها متفاوت هستند، بررسی کن که آیا تفاوت زیاد است
-    const difference = Math.abs(totalRTLWords - (realWords.length - totalRTLWords));
-    const rtlPercentage = (totalRTLWords / realWords.length) * 100;
-    
-    
-    // اگر اکثریت قوی وجود دارد (بیش از 70%)، اولویت با اکثریت
-    if (rtlPercentage >= 70 || rtlPercentage <= 30) {
-        const result = totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
-        
-        
-        return result;
-    }
-    
-    // اگر تفاوت کم است (کمتر یا مساوی 10)، اولویت با ابتدا و انتها
-    if (difference <= 10) {
-        // اگر ابتدا RTL است، RTL
-        if (firstWordIsRTL) return 'rtl';
-        // اگر ابتدا LTR است، LTR
+    // Fast path for pure RTL or pure non-RTL texts (no mixed Latin+RTL)
+    const probe = quickScriptProbe(text);
+    if (probe === 1) return 'rtl';
+    if (probe === -1) {
+        // May still include only digits/symbols/latin — ltr
+        // But markdown-only latin is ltr anyway.
+        // Exception: texts with only neutrals/latin → ltr (matches previous behavior)
         return 'ltr';
     }
 
-    // اگر تفاوت زیاد است، بر اساس اکثریت تصمیم بگیر
-    const result = totalRTLWords > realWords.length / 2 ? 'rtl' : 'ltr';
-    
-    
-    return result;
+    const { words, rtlFlags } = tokenizeForDirection(text);
+    const wordCount = words.length;
+    if (wordCount === 0) return 'ltr';
+
+    if (wordCount >= 2) {
+        const firstWordIsRTL = rtlFlags[0];
+        const lastWordIsRTL = rtlFlags[wordCount - 1];
+
+        if (firstWordIsRTL && lastWordIsRTL) {
+            return 'rtl';
+        }
+
+        if (!firstWordIsRTL && !lastWordIsRTL && wordCount <= 3) {
+            let hasAnyRTLWord = false;
+            for (let i = 0; i < wordCount; i++) {
+                if (rtlFlags[i]) {
+                    hasAnyRTLWord = true;
+                    break;
+                }
+            }
+            if (!hasAnyRTLWord) return 'ltr';
+        }
+    }
+
+    if (wordCount < 5) {
+        let rtlWordsCount = 0;
+        let ltrWordsCount = 0;
+        for (let i = 0; i < wordCount; i++) {
+            if (rtlFlags[i]) rtlWordsCount++;
+            else ltrWordsCount++;
+        }
+        if (rtlWordsCount === 0) return 'ltr';
+        if (rtlFlags[0]) return 'rtl';
+        if (ltrWordsCount === 0) return 'rtl';
+        return rtlWordsCount >= ltrWordsCount ? 'rtl' : 'ltr';
+    }
+
+    if (wordCount <= 10) {
+        const checkWordsCount = (wordCount + 1) >> 1; // ceil(n/2)
+        let rtlWordsCount = 0;
+        for (let i = 0; i < checkWordsCount; i++) {
+            if (rtlFlags[i]) rtlWordsCount++;
+        }
+
+        if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
+        if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
+
+        let totalRTLWords = 0;
+        for (let i = 0; i < wordCount; i++) {
+            if (rtlFlags[i]) totalRTLWords++;
+        }
+        return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
+    }
+
+    let totalRTLWords = 0;
+    for (let i = 0; i < wordCount; i++) {
+        if (rtlFlags[i]) totalRTLWords++;
+    }
+
+    const firstWordIsRTL = rtlFlags[0];
+    const lastWordIsRTL = rtlFlags[wordCount - 1];
+
+    if (firstWordIsRTL && lastWordIsRTL) return 'rtl';
+    if (!firstWordIsRTL && !lastWordIsRTL) return 'ltr';
+
+    const ltrWords = wordCount - totalRTLWords;
+    const difference = totalRTLWords > ltrWords ? totalRTLWords - ltrWords : ltrWords - totalRTLWords;
+    const rtlPercentage = (totalRTLWords / wordCount) * 100;
+
+    if (rtlPercentage >= 70 || rtlPercentage <= 30) {
+        return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
+    }
+
+    if (difference <= 10) {
+        return firstWordIsRTL ? 'rtl' : 'ltr';
+    }
+
+    return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
 }
 
 
@@ -455,50 +612,22 @@ function isRTL(text) {
 
 /**
  * Analyze text direction for first_word algorithm
- * This function uses a simplified approach focusing on the first significant word
+ * Uses the same tokenization so leading neutrals / tech tokens are skipped
  * @param {string} text - Text to analyze
  * @returns {string} - Detected direction ('rtl' or 'ltr')
  */
 function analyzeTextDirectionFirstWord(text) {
-    if (!text || !text.trim()) return 'ltr';
-    
-    // Clean the text
-    const cleanText = text.trim();
-    
-    // Split into words and find the first significant word
-    const words = cleanText.split(/\s+/);
-    let firstSignificantWord = '';
-    
-    // Find the first word that contains letters (not just numbers/symbols)
-    for (const word of words) {
-        if (word && /[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(word)) {
-            firstSignificantWord = word;
-            break;
-        }
+    const { words } = tokenizeForDirection(text);
+    if (words.length === 0) return 'ltr';
+
+    const firstSignificantWord = words[0];
+
+    for (let i = 0; i < firstSignificantWord.length; i++) {
+        const char = firstSignificantWord[i];
+        if (isRTLCharacter(char)) return 'rtl';
+        if (isLTRCharacter(char)) return 'ltr';
     }
-    
-    // If no significant word found, use the first word
-    if (!firstSignificantWord && words.length > 0) {
-        firstSignificantWord = words[0];
-    }
-    
-    // If still no word, return ltr
-    if (!firstSignificantWord) return 'ltr';
-    
-    // Analyze the first significant word
-    const firstChar = firstSignificantWord.charAt(0);
-    
-    // Check if first character is RTL
-    if (isRTLCharacter(firstChar)) {
-        return 'rtl';
-    }
-    
-    // Check if first character is LTR
-    if (isLTRCharacter(firstChar)) {
-        return 'ltr';
-    }
-    
-    // If first character is neutral, check the whole first word
+
     return analyzeFirstWordDirection(firstSignificantWord);
 }
 
