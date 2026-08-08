@@ -18,6 +18,11 @@ import {
     Snackbar
 } from '@mui/material';
 import { mdiDownload, mdiUpload } from '@mdi/js';
+import {
+    getExtensionStoreUrl,
+    getOfficialStoreLabel,
+    getViewInStoreText,
+} from '../../utils/storeLinks';
 
 interface OtherSettingsTabProps {
     supportHide: boolean;
@@ -357,16 +362,16 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 </Grid>
                             )}
                             
-                            {/* صفحه رسمی افزونه در کروم استور */}
+                            {/* صفحه رسمی افزونه در استور */}
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        صفحه رسمی افزونه در کروم استور:
+                                        {getOfficialStoreLabel()}
                                     </Typography>
                                     <Typography 
                                         variant="body2" 
                                         component="a"
-                                        href="https://chromewebstore.google.com/detail/chatgpt-rtl-%D9%81%D8%A7%D8%B1%D8%B3%DB%8C-%D8%B1%D8%A7%D8%B3%D8%AA%E2%80%8C%DA%86%DB%8C/pjpmebofipgpjaincgoboibbmicccbne"
+                                        href={getExtensionStoreUrl()}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         sx={{ 
@@ -379,7 +384,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             }
                                         }}
                                     >
-                                        مشاهده در Chrome Web Store
+                                        {getViewInStoreText()}
                                     </Typography>
                                 </Box>
                             </Grid>

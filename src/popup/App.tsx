@@ -26,10 +26,18 @@ import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import {
+    getExtensionStoreUrl,
+    getRateLinkText,
+    getStorePageLinkText,
+} from '../utils/storeLinks';
 import './App.css';
 import manifest from '../../public/manifest.chrome.json';
 
 const firefoxDefaults = isFirefoxRuntime();
+const extensionStoreUrl = getExtensionStoreUrl();
+const storePageLinkText = getStorePageLinkText();
+const rateLinkText = getRateLinkText();
 
 // Create rtl cache
 const cacheRtl = createCache({
@@ -717,7 +725,7 @@ function App() {
                                         هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                                        <a href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                        <a href={extensionStoreUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                 '&:hover': { textDecoration: 'underline' }, 
@@ -734,7 +742,7 @@ function App() {
                                                 }}>
                                                     <path d={mdiStar} />
                                                 </SvgIcon>
-                                                صفحه افزونه در Chrome Store
+                                                {storePageLinkText}
                                             </Typography>
                                         </a>
                                     </Box>
@@ -790,12 +798,12 @@ function App() {
                         <span className="footer-separator">|</span>
                         
                         <a 
-                            href="https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne" 
+                            href={extensionStoreUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="footer-link"
                         >
-                            امتیازدهی در Chrome Store
+                            {rateLinkText}
                         </a>
                         
                         <span className="footer-separator">|</span>
