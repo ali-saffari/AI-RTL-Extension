@@ -306,7 +306,7 @@ export default function ServiceList() {
     return (
         <>
             <List
-                sx={{ width: '100%', maxWidth: 360, backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
+                sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
                 style={{ direction: 'ltr' }}
                 subheader={
                     <ListSubheader 

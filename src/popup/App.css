@@ -4,11 +4,15 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
-    direction: rtl;
+    direction: ltr;
     scroll-behavior: smooth;
     position: relative;
 }
 
+html {
+    direction: rtl;
+    width: 380px;
+}
 /* اسکرول برای تمام عناصر */
 ::-webkit-scrollbar {
     width: 8px;
@@ -128,7 +132,7 @@ a:hover {
 
 /* استایل‌های اضافی برای بهبود ظاهر */
 .MuiList-root {
-    margin: 8px;
+    margin: 8px 0;
 }
 
 .MuiListItem-root {
