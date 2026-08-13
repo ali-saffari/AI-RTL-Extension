@@ -18,8 +18,8 @@ export function getStorePageLinkText() {
 
 export function getRateLinkText() {
     return isFirefoxRuntime()
-        ? 'امتیازدهی در Firefox Add-ons'
-        : 'امتیازدهی در Chrome Store';
+        ? 'امتیاز دهی در فایرفاکس'
+        : 'امتیاز دهی در کروم';
 }
 
 export function getOfficialStoreLabel() {

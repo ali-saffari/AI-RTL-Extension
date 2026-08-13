@@ -209,7 +209,6 @@ function App() {
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
     const POPUP_MAIN_WIDTH = 380;
     const SIDE_COLLAPSED_WIDTH = 44;
-    const SIDE_HOVER_WIDTH = 228;
     const SIDE_SETTINGS_WIDTH = 380;
 
     // Load settings from storage on component mount
@@ -437,9 +436,7 @@ function App() {
         root.classList.toggle('popup-settings-open', settingsOpen);
         root.classList.toggle('popup-side-expanded', sideExpanded);
 
-        const sideTo = settingsOpen
-            ? SIDE_SETTINGS_WIDTH
-            : (sideExpanded ? SIDE_HOVER_WIDTH : SIDE_COLLAPSED_WIDTH);
+        const sideTo = settingsOpen ? SIDE_SETTINGS_WIDTH : SIDE_COLLAPSED_WIDTH;
         const popupTo = POPUP_MAIN_WIDTH + sideTo;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -657,7 +654,8 @@ function App() {
                         position="sticky"
                         sx={{
                             backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
-                            color: '#ffffff'
+                            color: '#ffffff',
+                            zIndex: 2,
                         }}
                     >
                         <Tabs
@@ -972,11 +970,16 @@ function App() {
                 </Paper>
                 </div>
                 </div>
+                <div className="popup-side-slot">
                 <aside
                     className="popup-side-menu"
                     dir="rtl"
                     aria-label="تنظیمات افزونه"
-                    onMouseEnter={() => setSideMenuHovered(true)}
+                    onMouseEnter={() => {
+                        if (!settingsOpen) {
+                            setSideMenuHovered(true);
+                        }
+                    }}
                     onMouseLeave={() => setSideMenuHovered(false)}
                 >
                     <div className="popup-settings-toggle-wrap">
@@ -999,14 +1002,14 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-rate"
-                            aria-label="امتیاز دهی به اکستشن"
+                            aria-label={rateLinkText}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>
                                     <path d={mdiStarOutline} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">امتیاز دهی به اکستشن</span>
+                            <span className="popup-side-item-label">{rateLinkText}</span>
                         </a>
                         <a
                             href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
@@ -1086,6 +1089,7 @@ function App() {
                         onClose={() => handleSettingsOpenChange(false)}
                     />
                 </aside>
+                </div>
                 </div>
 
             {/* فوتر ساده */}
