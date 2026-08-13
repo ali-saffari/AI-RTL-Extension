@@ -41,7 +41,7 @@ export function modalDonate() {
     
     
     <p>حمایت مالی شما به ما کمک می‌کنه تا امکانات جدید اضافه کنیم، مشکلات رو سریع‌تر برطرف کنیم و تجربه کاربری بهتری بسازیم. هر مبلغی که دوست داری، واقعاً تاثیرگذار و دلگرم‌کننده است!</p>
-    <a href="https://ai-rtl.ir/supporters/?source=extension-modal-donito-financial" target="_blank" 
+    <a href="https://donate.sudoshz.ir/u/ai-rtl" target="_blank" 
       style="display:inline-block; background:#27ae60; color:#fff; padding:5px 13px; border-radius:5px; text-decoration:none; font-weight:bold;        margin-top: 11px;
 ">
       حمایت مالی
@@ -97,5 +97,5 @@ export function modalDonate() {
 // }
 
 export function BtnDonate() {
-    return `<a href="https://ai-rtl.ir/supporters/?source=extension-modal-donate-btn" target="_blank" class="AsSBtn AsDonate" style="z-index: 900; text-decoration: none; display: inline-block;">دوست داری ازش حمایت کنی ؟</a>`
+    return `<a href="https://donate.sudoshz.ir/u/ai-rtl" target="_blank" class="AsSBtn AsDonate" style="z-index: 900; text-decoration: none; display: inline-block;">دوست داری ازش حمایت کنی ؟</a>`
 }

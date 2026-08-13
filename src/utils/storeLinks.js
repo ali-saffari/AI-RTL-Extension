@@ -1,7 +1,7 @@
 import { isFirefoxRuntime } from './isFirefox.js';
 
 export const CHROME_STORE_URL =
-    'https://chromewebstore.google.com/detail/pjpmebofipgpjaincgoboibbmicccbne';
+    'https://chromewebstore.google.com/detail/ai-rtl-farsi/pjpmebofipgpjaincgoboibbmicccbne';
 
 export const FIREFOX_STORE_URL =
     'https://addons.mozilla.org/en-US/firefox/addon/ai-rtl-persian-farsi/';
