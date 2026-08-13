@@ -21,7 +21,7 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
-import Settings from './Settings';
+import QuickSettings from './QuickSettings';
 import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
@@ -202,6 +202,7 @@ function App() {
     });
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
+    const mainScrollRef = React.useRef<HTMLDivElement>(null);
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
@@ -313,66 +314,73 @@ function App() {
         }
     };
 
+    const getSectionOffset = (element: HTMLElement, container: HTMLElement) => {
+        return element.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+    };
+
     // اسکرول دستی - فعال کردن تب بر اساس موقعیت اسکرول
     React.useEffect(() => {
+        if (isLoading) {
+            return;
+        }
+
+        const container = mainScrollRef.current;
+        if (!container) {
+            return;
+        }
+
         let scrollTimeout: number;
         
         const handleScroll = () => {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollTop = container.scrollTop;
                 
                 // محاسبه موقعیت هر بخش
                 const sitesSection = document.getElementById('sites-section');
-                const settingsSection = document.getElementById('settings-section');
                 const notesSection = document.getElementById('notes-section');
                 const reportSection = document.getElementById('report-section');
                 
-                if (sitesSection && settingsSection && notesSection && reportSection) {
-                    const sitesTop = sitesSection.offsetTop;
-                    const settingsTop = settingsSection.offsetTop;
-                    const notesTop = notesSection.offsetTop;
-                    const reportTop = reportSection.offsetTop;
+                if (sitesSection && notesSection && reportSection) {
+                    const notesTop = getSectionOffset(notesSection, container);
+                    const reportTop = getSectionOffset(reportSection, container);
                     
                     // تعیین تب فعال بر اساس موقعیت اسکرول
-                    if (scrollTop < settingsTop - 60) {
+                    if (scrollTop < reportTop - 60) {
                         if (tabValue !== 0) setTabValue(0);
-                    } else if (scrollTop < reportTop - 60) {
-                        if (tabValue !== 1) setTabValue(1);
                     } else if (scrollTop < notesTop - 60) {
-                        if (tabValue !== 2) setTabValue(2);
+                        if (tabValue !== 1) setTabValue(1);
                     } else {
-                        if (tabValue !== 3) setTabValue(3);
+                        if (tabValue !== 2) setTabValue(2);
                     }
                 }
             }, 100);
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('scroll', handleScroll, { passive: true });
         
         return () => {
-            window.removeEventListener('scroll', handleScroll);
+            container.removeEventListener('scroll', handleScroll);
             clearTimeout(scrollTimeout);
         };
-    }, [tabValue]);
+    }, [tabValue, isLoading]);
 
     // کلیک روی تب - اسکرول به بخش مربوطه
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
         
-        const sectionIds = ['sites-section', 'settings-section', 'report-section', 'notes-section'];
+        const sectionIds = ['sites-section', 'report-section', 'notes-section'];
         const sectionId = sectionIds[newValue];
         
         if (sectionId) {
             setTimeout(() => {
                 const element = document.getElementById(sectionId);
-                if (element) {
+                const container = mainScrollRef.current;
+                if (element && container) {
                     const headerOffset = 60;
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const offsetPosition = elementPosition + currentScrollTop - headerOffset;
+                    const offsetPosition = getSectionOffset(element, container) - headerOffset;
                     
-                    window.scrollTo({
+                    container.scrollTo({
                         top: offsetPosition,
                         behavior: "smooth"
                     });
@@ -409,7 +417,7 @@ function App() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            minHeight: '400px',
+                            height: '100%',
                             width: '100%'
                         }}
                     >
@@ -434,6 +442,7 @@ function App() {
                 <CssBaseline />
                 <div className="App" dir="rtl" >
                 <Paper 
+                    className="popup-header"
                     elevation={0} 
                     sx={{ 
                         p: 2,
@@ -513,6 +522,9 @@ function App() {
                     </Box>
                 </Paper>
 
+                <div className="popup-columns">
+                <div className="popup-main" ref={mainScrollRef}>
+                <div className="popup-main-inner">
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#b3d1e4' }}>
@@ -563,7 +575,6 @@ function App() {
                             } : undefined}
                         >
                             <Tab label="سایت‌ها" />
-                            <Tab label="تنظیمات" />
                             <Tab label="گزارش مشکل" />
                             <Tab label="درباره افزونه" />
                         </Tabs>
@@ -599,19 +610,6 @@ function App() {
                                 <ServiceList />
                                 </Box>
                             </div>
-                        </div>
-                        
-                        
-                        <div id="settings-section">
-                            <Settings
-                                rtlAlgorithm={rtlAlgorithm}
-                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
-                                supportHide={supportHide}
-                                onSupportChange={handleSupportChange}
-                                isDarkMode={isDarkMode}
-                                manualRtlSettings={manualRtlSettings}
-                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                            />
                         </div>
                         
                         <div id="report-section">
@@ -700,7 +698,7 @@ function App() {
                             </Box>
                         </div>
                         
-                        <div id="notes-section" style={{ paddingBottom: '85px' }}>
+                        <div id="notes-section" style={{ paddingBottom: '20px' }}>
                             <Box sx={{ 
                                 textAlign: 'center', 
                                 mt: 2, 
@@ -793,8 +791,20 @@ function App() {
                             </Box>
                         </div>
                 </Paper>
-
-            </div>
+                </div>
+                </div>
+                <aside className="popup-side-menu" dir="rtl" aria-label="تنظیمات افزونه">
+                    <QuickSettings
+                        rtlAlgorithm={rtlAlgorithm}
+                        onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                        supportHide={supportHide}
+                        onSupportChange={handleSupportChange}
+                        isDarkMode={isDarkMode}
+                        manualRtlSettings={manualRtlSettings}
+                        onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                    />
+                </aside>
+                </div>
 
             {/* فوتر ساده */}
             <div className="sticky-footer">
@@ -832,6 +842,7 @@ function App() {
                         </a>
                     </div>
                 </div>
+            </div>
             </div>
         </ThemeProvider>
         </CacheProvider>

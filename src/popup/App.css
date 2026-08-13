@@ -1,17 +1,24 @@
+html {
+    direction: rtl;
+    width: 760px;
+    height: 600px;
+}
+
 body {
-    width: 380px;
+    width: 760px;
+    height: 600px;
     max-height: 600px;
-    overflow-y: auto;
+    overflow: hidden;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
     direction: ltr;
     scroll-behavior: smooth;
     position: relative;
+    margin: 0;
 }
 
-html {
-    direction: rtl;
-    width: 380px;
+body > div {
+    height: 100%;
 }
 /* اسکرول برای تمام عناصر */
 ::-webkit-scrollbar {
@@ -46,6 +53,142 @@ html {
     font-family: iranyekan, sans-serif;
     padding: 0;
     direction: rtl;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.popup-header {
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+}
+
+.popup-columns {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.popup-main {
+    width: 380px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    direction: ltr;
+    scrollbar-width: thin;
+    scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+.popup-main-inner {
+    direction: rtl;
+}
+
+.popup-side-menu {
+    width: 380px;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    direction: rtl;
+    text-align: right;
+    border-right: 1px solid rgba(0, 233, 255, 0.2);
+    box-sizing: border-box;
+    background: rgba(0, 233, 255, 0.03);
+}
+
+body[data-theme="light"] .popup-side-menu {
+    border-right-color: rgba(30, 64, 175, 0.2);
+    background: #f4f8fb;
+}
+
+.quick-settings {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.quick-settings-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0, 233, 255, 0.14);
+}
+
+body[data-theme="light"] .quick-settings-header {
+    border-bottom-color: rgba(30, 64, 175, 0.12);
+}
+
+.quick-settings-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+.quick-settings-card {
+    border: 1px solid;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-settings-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.quick-settings-label {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0;
+}
+
+body[data-theme="dark"] .quick-settings-label {
+    color: #ffffff !important;
+}
+
+body[data-theme="light"] .quick-settings-label {
+    color: #1e293b !important;
+}
+
+.quick-settings-select .MuiSelect-select {
+    direction: rtl !important;
+    text-align: right !important;
+    padding-right: 14px !important;
+    padding-left: 32px !important;
+}
+
+.quick-settings-select .MuiSelect-icon {
+    left: 7px !important;
+    right: auto !important;
+}
+
+.quick-settings-select-menu {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.quick-settings-select-menu .MuiMenuItem-root {
+    direction: rtl !important;
+    text-align: right !important;
+    justify-content: space-between !important;
 }
 
 /* اسکرول برای لیست سایت‌ها - LTR */
@@ -172,10 +315,7 @@ a:hover {
 
 /* فوتر ساده */
 .sticky-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    flex-shrink: 0;
     background: #1a1a2e;
     border-top: 1px solid rgba(0, 233, 255, 0.3);
     padding: 8px 16px;
@@ -195,7 +335,7 @@ body[data-theme="light"] .sticky-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 400px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -248,10 +388,6 @@ body[data-theme="light"] .footer-separator {
     color: #94a3b8;
 }
 
-/* اسکرول برای محتوا */
-body {
-    padding-bottom: 50px;
-}
 
 /* استایل‌های هدر - حالا در sx prop تعریف شده */
 
