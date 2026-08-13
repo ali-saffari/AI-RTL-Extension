@@ -8,8 +8,10 @@ import {
     Select,
     MenuItem,
     FormControl,
+    IconButton,
+    Tooltip,
 } from '@mui/material';
-import { mdiCog, mdiOpenInNew } from '@mdi/js';
+import { mdiCog, mdiOpenInNew, mdiClose } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 
 interface QuickSettingsProps {
@@ -20,6 +22,7 @@ interface QuickSettingsProps {
     isDarkMode: boolean;
     manualRtlSettings: ManualRtlSettings;
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
+    onClose?: () => void;
 }
 
 const ALGORITHMS = [
@@ -51,6 +54,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     isDarkMode,
     manualRtlSettings,
     onManualRtlSettingsChange,
+    onClose,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
 
@@ -101,33 +105,56 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         تنظیمات
                     </Typography>
                 </Box>
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => openOptions()}
-                    endIcon={
-                        <SvgIcon sx={{ fontSize: '0.85rem !important' }}>
-                            <path d={mdiOpenInNew} />
-                        </SvgIcon>
-                    }
-                    sx={{
-                        minWidth: 0,
-                        px: 0.75,
-                        py: 0.25,
-                        color: accent,
-                        textTransform: 'none',
-                        fontFamily: 'iranyekan',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        flexShrink: 0,
-                        '&:hover': {
-                            backgroundColor: selectedBg,
-                            transform: 'none',
-                        },
-                    }}
-                >
-                    تنظیمات پیشرفته
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
+                    <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => openOptions()}
+                        endIcon={
+                            <SvgIcon sx={{ fontSize: '0.85rem !important' }}>
+                                <path d={mdiOpenInNew} />
+                            </SvgIcon>
+                        }
+                        sx={{
+                            minWidth: 0,
+                            px: 0.75,
+                            py: 0.25,
+                            color: accent,
+                            textTransform: 'none',
+                            fontFamily: 'iranyekan',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            flexShrink: 0,
+                            '&:hover': {
+                                backgroundColor: selectedBg,
+                                transform: 'none',
+                            },
+                        }}
+                    >
+                        تنظیمات پیشرفته
+                    </Button>
+                    {onClose ? (
+                        <Tooltip title="بستن تنظیمات">
+                            <IconButton
+                                size="small"
+                                onClick={onClose}
+                                aria-label="بستن تنظیمات"
+                                sx={{
+                                    p: 0.5,
+                                    color: muted,
+                                    '&:hover': {
+                                        backgroundColor: selectedBg,
+                                        color: accent,
+                                    },
+                                }}
+                            >
+                                <SvgIcon sx={{ fontSize: '1.05rem' }}>
+                                    <path d={mdiClose} />
+                                </SvgIcon>
+                            </IconButton>
+                        </Tooltip>
+                    ) : null}
+                </Box>
             </Box>
 
             <Box className="quick-settings-body">

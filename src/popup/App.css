@@ -1,12 +1,12 @@
 html {
     direction: rtl;
-    width: 760px;
+    width: 424px;
     height: 600px;
     overflow: hidden;
 }
 
 body {
-    width: 760px;
+    width: 424px;
     height: 600px;
     max-height: 600px;
     overflow: hidden;
@@ -89,11 +89,13 @@ body > div {
 }
 
 .popup-side-menu {
-    width: 380px;
+    position: relative;
+    display: flex;
+    width: var(--settings-width, 44px);
     flex-shrink: 0;
     overflow: hidden;
-    display: flex;
     flex-direction: column;
+    align-items: stretch;
     direction: rtl;
     text-align: right;
     border-right: 1px solid rgba(0, 233, 255, 0.2);
@@ -106,11 +108,94 @@ body[data-theme="light"] .popup-side-menu {
     background: #f4f8fb;
 }
 
-.quick-settings {
+.popup-settings-toggle-wrap {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.18s ease 0.14s;
+}
+
+html.popup-settings-open .popup-settings-toggle-wrap {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.popup-settings-toggle {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 8px 0 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #00e9ff;
+}
+
+.popup-settings-toggle:hover {
+    background: rgba(0, 233, 255, 0.12);
+}
+
+body[data-theme="light"] .popup-settings-toggle {
+    color: #1e40af;
+}
+
+body[data-theme="light"] .popup-settings-toggle:hover {
+    background: rgba(30, 64, 175, 0.1);
+}
+
+.popup-settings-toggle-label {
+    display: inline-block;
+    font-family: iranyekan, sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: #ffffff;
+}
+
+.quick-settings {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    min-width: 380px;
     height: 100%;
     min-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+html.popup-settings-open .quick-settings {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.22s ease 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html,
+    body,
+    .popup-side-menu,
+    .quick-settings,
+    .popup-settings-toggle-wrap {
+        transition: none !important;
+    }
 }
 
 .quick-settings-header {

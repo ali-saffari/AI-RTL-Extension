@@ -35,6 +35,7 @@ interface SettingsProps {
     isDarkMode: boolean;
     manualRtlSettings?: ManualRtlSettings;
     onManualRtlSettingsChange?: (settings: ManualRtlSettings) => void;
+    hideTitle?: boolean;
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -53,7 +54,8 @@ const Settings: React.FC<SettingsProps> = ({
         logoDisplay: 'always',
         applyFont: true
     },
-    onManualRtlSettingsChange
+    onManualRtlSettingsChange,
+    hideTitle = false,
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -123,6 +125,7 @@ const Settings: React.FC<SettingsProps> = ({
     
     return (
         <Box sx={{ p: 0 }}>
+            {!hideTitle && (
             <Box sx={{ 
                 textAlign: 'center', 
                 mt: 2, 
@@ -143,6 +146,7 @@ const Settings: React.FC<SettingsProps> = ({
                 </Typography>
          
             </Box>
+            )}
             
             <Box sx={{ 
                 display: 'flex', 

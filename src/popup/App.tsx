@@ -12,16 +12,18 @@ import {
     AppBar,
     IconButton,
     Tooltip,
-    SvgIcon
+    SvgIcon,
+    Button
 } from '@mui/material';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiInformationOutline } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
+import Settings from './Settings';
 import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
@@ -202,12 +204,14 @@ function App() {
     });
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
+    const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const skipSettingsAnimation = React.useRef(true);
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -216,6 +220,9 @@ function App() {
                 }
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
+                }
+                if (result.popupSettingsOpen === true) {
+                    setSettingsOpen(true);
                 }
                 // Use manualRtlSettings
                 const settings = result.manualRtlSettings;
@@ -261,6 +268,9 @@ function App() {
                             ...newSettings
                         });
                     }
+                }
+                if (changes.popupSettingsOpen) {
+                    setSettingsOpen(changes.popupSettingsOpen.newValue === true);
                 }
             }
         };
@@ -314,11 +324,21 @@ function App() {
         }
     };
 
+    const handleSettingsOpenChange = React.useCallback((open: boolean) => {
+        setSettingsOpen(open);
+        try {
+            chrome.storage.sync.set({ popupSettingsOpen: open });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    }, []);
+
+    const isTabScrolling = React.useRef(false);
+
     const getSectionOffset = (element: HTMLElement, container: HTMLElement) => {
         return element.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
     };
 
-    // اسکرول دستی - فعال کردن تب بر اساس موقعیت اسکرول
     React.useEffect(() => {
         if (isLoading) {
             return;
@@ -330,63 +350,69 @@ function App() {
         }
 
         let scrollTimeout: number;
-        
+
         const handleScroll = () => {
+            if (isTabScrolling.current) {
+                return;
+            }
+
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
+            scrollTimeout = window.setTimeout(() => {
+                if (isTabScrolling.current) {
+                    return;
+                }
+
                 const scrollTop = container.scrollTop;
-                
-                // محاسبه موقعیت هر بخش
-                const sitesSection = document.getElementById('sites-section');
+                const settingsSection = document.getElementById('settings-section');
                 const notesSection = document.getElementById('notes-section');
                 const reportSection = document.getElementById('report-section');
-                
-                if (sitesSection && notesSection && reportSection) {
+
+                if (settingsSection && notesSection && reportSection) {
+                    const settingsTop = getSectionOffset(settingsSection, container);
                     const notesTop = getSectionOffset(notesSection, container);
                     const reportTop = getSectionOffset(reportSection, container);
-                    
-                    // تعیین تب فعال بر اساس موقعیت اسکرول
-                    if (scrollTop < reportTop - 60) {
+
+                    if (scrollTop < settingsTop - 60) {
                         if (tabValue !== 0) setTabValue(0);
-                    } else if (scrollTop < notesTop - 60) {
+                    } else if (scrollTop < reportTop - 60) {
                         if (tabValue !== 1) setTabValue(1);
-                    } else {
+                    } else if (scrollTop < notesTop - 60) {
                         if (tabValue !== 2) setTabValue(2);
+                    } else if (tabValue !== 3) {
+                        setTabValue(3);
                     }
                 }
             }, 100);
         };
 
         container.addEventListener('scroll', handleScroll, { passive: true });
-        
+
         return () => {
             container.removeEventListener('scroll', handleScroll);
             clearTimeout(scrollTimeout);
         };
     }, [tabValue, isLoading]);
 
-    // کلیک روی تب - اسکرول به بخش مربوطه
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
-        
-        const sectionIds = ['sites-section', 'report-section', 'notes-section'];
+        isTabScrolling.current = true;
+
+        const sectionIds = ['sites-section', 'settings-section', 'report-section', 'notes-section'];
         const sectionId = sectionIds[newValue];
-        
-        if (sectionId) {
-            setTimeout(() => {
-                const element = document.getElementById(sectionId);
-                const container = mainScrollRef.current;
-                if (element && container) {
-                    const headerOffset = 60;
-                    const offsetPosition = getSectionOffset(element, container) - headerOffset;
-                    
-                    container.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-                }
-            }, 100);
+        const element = document.getElementById(sectionId);
+        const container = mainScrollRef.current;
+
+        if (element && container) {
+            const offsetPosition = Math.max(0, getSectionOffset(element, container) - 56 + 4);
+            container.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
         }
+
+        window.setTimeout(() => {
+            isTabScrolling.current = false;
+        }, 450);
     };
 
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
@@ -395,6 +421,64 @@ function App() {
     React.useEffect(() => {
         document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
+
+    React.useEffect(() => {
+        if (isLoading) {
+            return;
+        }
+
+        const root = document.documentElement;
+        const body = document.body;
+        root.classList.toggle('popup-settings-open', settingsOpen);
+
+        const popupTo = settingsOpen ? 760 : 424;
+        const sideTo = settingsOpen ? 380 : 44;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const applyWidth = (popupWidth: number, sideWidth: number) => {
+            const popupPx = `${popupWidth}px`;
+            const sidePx = `${sideWidth}px`;
+            root.style.width = popupPx;
+            body.style.width = popupPx;
+            root.style.setProperty('--settings-width', sidePx);
+        };
+
+        if (skipSettingsAnimation.current || reducedMotion) {
+            skipSettingsAnimation.current = false;
+            applyWidth(popupTo, sideTo);
+            return;
+        }
+
+        const popupFrom = parseFloat(getComputedStyle(root).width) || 424;
+        const sideParsed = parseFloat(getComputedStyle(root).getPropertyValue('--settings-width'));
+        const sideFrom = Number.isFinite(sideParsed) ? sideParsed : 44;
+
+        if (Math.abs(popupFrom - popupTo) < 0.5 && Math.abs(sideFrom - sideTo) < 0.5) {
+            applyWidth(popupTo, sideTo);
+            return;
+        }
+        const duration = 380;
+        const start = performance.now();
+        let frame = 0;
+
+        const tick = (now: number) => {
+            const progress = Math.min(1, (now - start) / duration);
+            const eased = 1 - (1 - progress) ** 3;
+            applyWidth(
+                popupFrom + (popupTo - popupFrom) * eased,
+                sideFrom + (sideTo - sideFrom) * eased
+            );
+            if (progress < 1) {
+                frame = requestAnimationFrame(tick);
+            }
+        };
+
+        frame = requestAnimationFrame(tick);
+
+        return () => {
+            cancelAnimationFrame(frame);
+        };
+    }, [settingsOpen, isLoading]);
 
     // Handle manualRtlInfoDismissed change
     const handleManualRtlInfoDismissedChange = React.useCallback((dismissed: boolean) => {
@@ -479,7 +563,9 @@ function App() {
                                     fontSize: '0.9rem',
                                     lineHeight: 1.2,
                                     color: '#ffffff',
-                                    whiteSpace: 'nowrap'
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
                                 }}
                             >
                                 AI RTL (Persian/Farsi)
@@ -569,25 +655,36 @@ function App() {
                             value={tabValue}
                             onChange={handleTabChange}
                             textColor={isDarkMode ? 'primary' : 'inherit'}
+                            variant="fullWidth"
                             style={{ 
                                 direction: 'rtl',
                                 boxShadow: 'none'
                             }}
-                            sx={!isDarkMode ? {
+                            sx={{
                                 '& .MuiTab-root': {
-                                    color: 'rgba(255, 255, 255, 0.75)',
-                                    opacity: 1,
-                                    '&.Mui-selected': {
-                                        color: '#ffffff',
+                                    whiteSpace: 'nowrap',
+                                    minWidth: 0,
+                                    minHeight: 48,
+                                    px: 0.5,
+                                    fontSize: '0.78rem',
+                                    ...(!isDarkMode ? {
+                                        color: 'rgba(255, 255, 255, 0.75)',
                                         opacity: 1,
+                                        '&.Mui-selected': {
+                                            color: '#ffffff',
+                                            opacity: 1,
+                                        },
+                                    } : {}),
+                                },
+                                ...(!isDarkMode ? {
+                                    '& .MuiTabs-indicator': {
+                                        backgroundColor: '#ffffff',
                                     },
-                                },
-                                '& .MuiTabs-indicator': {
-                                    backgroundColor: '#ffffff',
-                                },
-                            } : undefined}
+                                } : {}),
+                            }}
                         >
                             <Tab label="سایت‌ها" />
+                            <Tab label="تنظیمات" />
                             <Tab label="گزارش مشکل" />
                             <Tab label="درباره افزونه" />
                         </Tabs>
@@ -623,6 +720,89 @@ function App() {
                                 <ServiceList />
                                 </Box>
                             </div>
+                        </div>
+
+                        <div id="settings-section">
+                            <Box sx={{ 
+                                textAlign: 'center', 
+                                mt: 2, 
+                                p: 2, 
+                                background: isDarkMode 
+                                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
+                                borderRadius: 0, 
+                                mb: 2,
+                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
+                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
+                            }}>
+                                <Typography variant="body1" sx={{ 
+                                    fontWeight: 600,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b'
+                                }}>
+                                    تنظیمات افزونه
+                                </Typography>
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    mx: 2,
+                                    mb: 2,
+                                    p: 2,
+                                    borderRadius: 1.5,
+                                    textAlign: 'center',
+                                    background: isDarkMode
+                                        ? 'rgba(0, 233, 255, 0.08)'
+                                        : 'rgba(30, 64, 175, 0.08)',
+                                    border: isDarkMode
+                                        ? '1px solid rgba(0, 233, 255, 0.28)'
+                                        : '1px solid rgba(30, 64, 175, 0.22)',
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, mb: 1 }}>
+                                    <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1e40af' }}>
+                                        <path d={mdiInformationOutline} />
+                                    </SvgIcon>
+                                    <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}>
+                                        تنظیمات جابه‌جا شد
+                                    </Typography>
+                                </Box>
+                                <Typography sx={{ fontSize: '0.78rem', lineHeight: 1.7, color: isDarkMode ? 'rgba(255,255,255,0.82)' : 'rgba(30,41,59,0.82)' }}>
+                                    برای راحتی استفاده، تنظیمات به سمت چپ منتقل شده است.
+                                </Typography>
+                                <Button
+                                    size="small"
+                                    onClick={() => handleSettingsOpenChange(true)}
+                                    startIcon={
+                                        <SvgIcon sx={{ fontSize: '1rem !important' }}>
+                                            <path d={mdiCog} />
+                                        </SvgIcon>
+                                    }
+                                    sx={{
+                                        mt: 1.25,
+                                        color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                        fontFamily: 'iranyekan',
+                                        fontWeight: 700,
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.08)',
+                                            transform: 'none',
+                                        },
+                                    }}
+                                >
+                                    باز کردن پنل سمت چپ
+                                </Button>
+                            </Box>
+
+                            <Settings
+                                rtlAlgorithm={rtlAlgorithm}
+                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                                supportHide={supportHide}
+                                onSupportChange={handleSupportChange}
+                                isDarkMode={isDarkMode}
+                                manualRtlSettings={manualRtlSettings}
+                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                                hideTitle
+                            />
                         </div>
                         
                         <div id="report-section">
@@ -807,6 +987,22 @@ function App() {
                 </div>
                 </div>
                 <aside className="popup-side-menu" dir="rtl" aria-label="تنظیمات افزونه">
+                    <Tooltip title="تنظیمات" placement="right">
+                        <span className="popup-settings-toggle-wrap">
+                            <button
+                                type="button"
+                                className="popup-settings-toggle"
+                                onClick={() => handleSettingsOpenChange(true)}
+                                aria-label="تنظیمات"
+                                aria-expanded={settingsOpen}
+                            >
+                                <SvgIcon sx={{ fontSize: '1.4rem' }}>
+                                    <path d={mdiCog} />
+                                </SvgIcon>
+                                <span className="popup-settings-toggle-label">تنـظیمـات</span>
+                            </button>
+                        </span>
+                    </Tooltip>
                     <QuickSettings
                         rtlAlgorithm={rtlAlgorithm}
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
@@ -815,6 +1011,7 @@ function App() {
                         isDarkMode={isDarkMode}
                         manualRtlSettings={manualRtlSettings}
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                        onClose={() => handleSettingsOpenChange(false)}
                     />
                 </aside>
                 </div>
