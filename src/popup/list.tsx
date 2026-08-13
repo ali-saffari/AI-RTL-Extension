@@ -471,28 +471,26 @@ export default function ServiceList() {
                                 </ListItemButton>
                             </ListItem>
                         {service.key === 'copilot' && isEdge && (
-                            <Box sx={{ px: 2, py: 1.5 }}>
+                            <Box sx={{ px: 2, py: 1.5 }} style={{ direction: 'rtl' }}>
                                 <Paper 
                                     elevation={0}
                                     dir="rtl"
+                                    style={{ direction: 'rtl', textAlign: 'right' }}
                                     sx={{
                                         backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
                                         border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
                                         borderRadius: 1,
                                         p: 1.5,
-                                        direction: 'rtl',
-                                        textAlign: 'start'
                                     }}
                                 >
                                     <Typography 
                                         dir="rtl"
+                                        style={{ direction: 'rtl', textAlign: 'right' }}
                                         sx={{ 
                                             fontSize: '0.80rem',
                                             color: isDarkMode ? '#ffcdd2' : '#c62828',
                                             fontWeight: 400,
                                             lineHeight: 1.6,
-                                            direction: 'rtl',
-                                            textAlign: 'start'
                                         }}
                                     >
                                         برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله Copilot) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
