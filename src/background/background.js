@@ -12,7 +12,7 @@ const SERVICE_FLAGS = {
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    notebook: true, jules: true, zai: true, arena: false, openrouter: true, minimax: true, 
+    googleNotebook: false, jules: true, zai: true, arena: false, openrouter: true, minimax: true, 
     oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true, gamma: true
 };
 
@@ -46,11 +46,13 @@ async function initializeUserId() {
             await chrome.storage.sync.set({ uid });
         }
         
-        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?uid=${uid}&source=extension-uninstall`);
+        const b = isFirefoxRuntime() ? 'f' : 'c';
+        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?uid=${uid}&b=${b}&source=extension-uninstall`);
         return uid;
     } catch (error) {
         console.error('Error initializing user ID:', error);
-        chrome.runtime.setUninstallURL('https://ai-rtl.ir/uninstall-feedback/?error=1&source=extension-uninstall');
+        const b = isFirefoxRuntime() ? 'f' : 'c';
+        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?error=1&b=${b}&source=extension-uninstall`);
     }
 }
 
