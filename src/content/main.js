@@ -166,7 +166,7 @@ const serviceConfig = {
         urls: ["www.blackbox.ai"],
         activate: activateBlackbox
     },
-    notebook: {
+    googleNotebook: {
         urls: ["notebooklm.google.com", "notebook.google.com"],
         activate: activateNotebooklm
     },

@@ -417,7 +417,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         <Typography 
                                             variant="body2" 
                                             component="a"
-                                            href="https://t.me/mrmaterial"
+                                            href="https://t.me/ai_rtl_support"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             sx={{ 

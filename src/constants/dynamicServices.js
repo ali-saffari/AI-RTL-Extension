@@ -56,8 +56,8 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://chat.atxp.ai/*'],
         hostnames: ['chat.atxp.ai']
     },
-    notebook: {
-        name: 'NotebookLM',
+    googleNotebook: {
+        name: 'Google Notebook',
         origins: ['*://notebook.google.com/*'],
         hostnames: ['notebook.google.com']
     },

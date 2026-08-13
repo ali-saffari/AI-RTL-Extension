@@ -48,7 +48,7 @@ const services: Service[] = [
     { key: 'businessGemini', name: 'Business Gemini', icon: '/images/Gemini.png', url: 'https://business.gemini.google/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'perplexity', name: 'Perplexity', icon: '/images/perplexity.png', url: 'https://perplexity.ai' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
-    { key: 'notebook', name: 'NotebookLM', icon: '/images/notebooklm.png', url: 'https://notebook.google.com/?hl=fa' },
+    { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/notebooklm.png', url: 'https://notebook.google.com/?hl=fa' },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
     { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },
     { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
@@ -110,7 +110,7 @@ export default function ServiceList() {
         manus: true,
         kimi: true,
         blackbox: true,
-        notebook: true,
+        googleNotebook: false,
         zai: true,
         arena: false,
         openrouter: true,
@@ -474,21 +474,25 @@ export default function ServiceList() {
                             <Box sx={{ px: 2, py: 1.5 }}>
                                 <Paper 
                                     elevation={0}
+                                    dir="rtl"
                                     sx={{
                                         backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
                                         border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
                                         borderRadius: 1,
                                         p: 1.5,
                                         direction: 'rtl',
-                                        textAlign: 'right'
+                                        textAlign: 'start'
                                     }}
                                 >
                                     <Typography 
+                                        dir="rtl"
                                         sx={{ 
                                             fontSize: '0.80rem',
                                             color: isDarkMode ? '#ffcdd2' : '#c62828',
                                             fontWeight: 400,
-                                            lineHeight: 1.6
+                                            lineHeight: 1.6,
+                                            direction: 'rtl',
+                                            textAlign: 'start'
                                         }}
                                     >
                                         برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله Copilot) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
