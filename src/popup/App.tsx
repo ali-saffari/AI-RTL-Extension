@@ -543,10 +543,24 @@ function App() {
                         <Tabs
                             value={tabValue}
                             onChange={handleTabChange}
+                            textColor={isDarkMode ? 'primary' : 'inherit'}
                             style={{ 
                                 direction: 'rtl',
                                 boxShadow: 'none'
                             }}
+                            sx={!isDarkMode ? {
+                                '& .MuiTab-root': {
+                                    color: 'rgba(255, 255, 255, 0.75)',
+                                    opacity: 1,
+                                    '&.Mui-selected': {
+                                        color: '#ffffff',
+                                        opacity: 1,
+                                    },
+                                },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: '#ffffff',
+                                },
+                            } : undefined}
                         >
                             <Tab label="سایت‌ها" />
                             <Tab label="تنظیمات" />
