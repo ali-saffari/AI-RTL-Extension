@@ -445,7 +445,8 @@ function App() {
                     className="popup-header"
                     elevation={0} 
                     sx={{ 
-                        p: 2,
+                        px: 1.75,
+                        py: 1.1,
                         borderRadius: 0,
                         background: isDarkMode 
                             ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)'
@@ -456,33 +457,33 @@ function App() {
                     }} 
                     dir="ltr"
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 60 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar
                             src="/images/myLogo.png"
                             alt="RTL Extension Logo"
                             sx={{ 
-                                width: 48, 
-                                height: 48, 
+                                width: 44, 
+                                height: 44, 
+                                ml: 0.5,
                                 borderRadius: 1.5,
                                 boxShadow: '0 2px 8px rgba(0, 233, 255, 0.2)'
                             }}
                         />
                         
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography 
                                 variant="h6" 
                                 component="h1" 
                                 sx={{ 
-                                    mb: 0.5, 
                                     fontWeight: 600, 
-                                    fontSize: '0.95rem',
+                                    fontSize: '0.9rem',
                                     lineHeight: 1.2,
-                                    color: '#ffffff'
+                                    color: '#ffffff',
+                                    whiteSpace: 'nowrap'
                                 }}
                             >
                                 AI RTL (Persian/Farsi)
                             </Typography>
-                            
                             <Chip 
                                 label={`نسخه ${manifest.version}`} 
                                 size="small" 
@@ -497,18 +498,30 @@ function App() {
                             />
                         </Box>
                         
-                        <Tooltip title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}>
+                        <Tooltip
+                            title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
+                            placement="bottom-end"
+                            disableInteractive
+                            PopperProps={{
+                                modifiers: [
+                                    {
+                                        name: 'preventOverflow',
+                                        options: {
+                                            altAxis: true,
+                                            padding: 8,
+                                        },
+                                    },
+                                ],
+                            }}
+                        >
                             <IconButton 
                                 onClick={handleThemeToggle}
                                 sx={{ 
                                     color: isDarkMode ? '#FFD700' : '#FF8F00',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold',
                                     '&:hover': {
                                         backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 143, 0, 0.1)',
-                                        transform: 'scale(1.1)'
                                     },
-                                    transition: 'all 0.3s ease'
+                                    transition: 'background-color 0.3s ease'
                                 }}
                             >
                                 <SvgIcon sx={{ 
@@ -537,7 +550,7 @@ function App() {
                             fontWeight: 400
                         }}
                     >
-                        این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد.
+                        این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد. امیدوارم از استفاده از این اکستشن لذت ببرید ❤️ و اگر دوست داشتید حمایت کنید
                     </Typography>
                 </Box>
 

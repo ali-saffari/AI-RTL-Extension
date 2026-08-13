@@ -2,6 +2,7 @@ html {
     direction: rtl;
     width: 760px;
     height: 600px;
+    overflow: hidden;
 }
 
 body {
