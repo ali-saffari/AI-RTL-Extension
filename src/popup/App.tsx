@@ -19,7 +19,7 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiInformationOutline, mdiClose } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiCogOutline, mdiStarOutline, mdiInformationOutline, mdiClose, mdiHelpCircleOutline, mdiHeadset, mdiShieldOutline } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
@@ -204,8 +204,13 @@ function App() {
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
     const skipSettingsAnimation = React.useRef(true);
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
+    const POPUP_MAIN_WIDTH = 380;
+    const SIDE_COLLAPSED_WIDTH = 44;
+    const SIDE_HOVER_WIDTH = 228;
+    const SIDE_SETTINGS_WIDTH = 380;
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
@@ -428,10 +433,14 @@ function App() {
 
         const root = document.documentElement;
         const body = document.body;
+        const sideExpanded = !settingsOpen && sideMenuHovered;
         root.classList.toggle('popup-settings-open', settingsOpen);
+        root.classList.toggle('popup-side-expanded', sideExpanded);
 
-        const popupTo = settingsOpen ? 760 : 424;
-        const sideTo = settingsOpen ? 380 : 44;
+        const sideTo = settingsOpen
+            ? SIDE_SETTINGS_WIDTH
+            : (sideExpanded ? SIDE_HOVER_WIDTH : SIDE_COLLAPSED_WIDTH);
+        const popupTo = POPUP_MAIN_WIDTH + sideTo;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const applyWidth = (popupWidth: number, sideWidth: number) => {
@@ -448,15 +457,16 @@ function App() {
             return;
         }
 
-        const popupFrom = parseFloat(getComputedStyle(root).width) || 424;
+        const popupFrom = parseFloat(getComputedStyle(root).width) || (POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH);
         const sideParsed = parseFloat(getComputedStyle(root).getPropertyValue('--settings-width'));
-        const sideFrom = Number.isFinite(sideParsed) ? sideParsed : 44;
+        const sideFrom = Number.isFinite(sideParsed) ? sideParsed : SIDE_COLLAPSED_WIDTH;
 
         if (Math.abs(popupFrom - popupTo) < 0.5 && Math.abs(sideFrom - sideTo) < 0.5) {
             applyWidth(popupTo, sideTo);
             return;
         }
-        const duration = 380;
+        const involvesSettings = settingsOpen || popupFrom >= 700 || popupTo >= 700;
+        const duration = involvesSettings ? 380 : 200;
         const start = performance.now();
         let frame = 0;
 
@@ -477,7 +487,7 @@ function App() {
         return () => {
             cancelAnimationFrame(frame);
         };
-    }, [settingsOpen, isLoading]);
+    }, [settingsOpen, sideMenuHovered, isLoading]);
 
     // Handle manualRtlInfoDismissed change
     const handleManualRtlInfoDismissedChange = React.useCallback((dismissed: boolean) => {
@@ -962,34 +972,108 @@ function App() {
                 </Paper>
                 </div>
                 </div>
-                <aside className="popup-side-menu" dir="rtl" aria-label="تنظیمات افزونه">
+                <aside
+                    className="popup-side-menu"
+                    dir="rtl"
+                    aria-label="تنظیمات افزونه"
+                    onMouseEnter={() => setSideMenuHovered(true)}
+                    onMouseLeave={() => setSideMenuHovered(false)}
+                >
                     <div className="popup-settings-toggle-wrap">
-                        <Tooltip title="تنظیمات" placement="right">
-                            <button
-                                type="button"
-                                className="popup-settings-toggle"
-                                onClick={() => handleSettingsOpenChange(true)}
-                                aria-label="تنظیمات"
-                                aria-expanded={settingsOpen}
-                            >
-                                <SvgIcon sx={{ fontSize: '1.4rem' }}>
-                                    <path d={mdiCog} />
+                        <button
+                            type="button"
+                            className="popup-side-item popup-side-item-settings"
+                            onClick={() => handleSettingsOpenChange(true)}
+                            aria-label="تنظیمات"
+                            aria-expanded={settingsOpen}
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiCogOutline} />
                                 </SvgIcon>
-                                <span className="popup-settings-toggle-label">تنـظیمـات</span>
-                            </button>
-                        </Tooltip>
-                        <Tooltip title="حمایت مالی" placement="right">
-                            <a
-                                href="https://donate.sudoshz.ir/u/ai-rtl"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="popup-donate-toggle"
-                                aria-label="حمایت مالی"
-                            >
+                            </span>
+                            <span className="popup-side-item-label">تنظیمات</span>
+                        </button>
+                        <a
+                            href={extensionStoreUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-rate"
+                            aria-label="امتیاز دهی به اکستشن"
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiStarOutline} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">امتیاز دهی به اکستشن</span>
+                        </a>
+                        <a
+                            href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-faq"
+                            aria-label="مشکلات متداول"
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiHelpCircleOutline} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">مشکلات متداول</span>
+                        </a>
+                        <a
+                            href="https://ai-rtl.ir/support/?source=extension-popup-side-support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-support"
+                            aria-label="پشتیبانی"
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiHeadset} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">پشتیبانی</span>
+                        </a>
+                        <a
+                            href="https://ai-rtl.ir/?source=extension-popup-side-site"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-site"
+                            aria-label="سایت رسمی"
+                        >
+                            <span className="popup-side-item-icon">
+                                <img src="/images/myLogo.png" alt="AI RTL" />
+                            </span>
+                            <span className="popup-side-item-label">سایت رسمی</span>
+                        </a>
+                        <a
+                            href="https://ai-rtl.ir/privacy-policy/?source=extension-popup-side-privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-privacy"
+                            aria-label="حریم خصوصی"
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiShieldOutline} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">حریم خصوصی</span>
+                        </a>
+                        <a
+                            href="https://donate.sudoshz.ir/u/ai-rtl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-donate"
+                            aria-label="حمایت مالی"
+                        >
+                            <span className="popup-side-item-icon">
                                 <img src="/images/sponsor/yavar.png" alt="یاور" />
-                                <span className="popup-settings-toggle-label">دونیت</span>
-                            </a>
-                        </Tooltip>
+                            </span>
+                            <span className="popup-side-item-label">دونیت</span>
+                        </a>
                     </div>
                     <QuickSettings
                         rtlAlgorithm={rtlAlgorithm}
