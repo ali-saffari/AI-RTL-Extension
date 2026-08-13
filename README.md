@@ -153,6 +153,14 @@ Updates:
 - Compare built `dist-firefox/` with the uploaded extension package.
 - No remote code is downloaded or executed at runtime.
 
+Source zip for AMO reviewers (excludes `node_modules`, `dist`, `releases`, etc.):
+
+```bash
+npm run zip:source
+```
+
+Output: `../ai-rtl-X.Y.Z.zip` (next to the project folder).
+
 ## License
 
 Private project. All rights reserved.

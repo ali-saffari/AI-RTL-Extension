@@ -34,6 +34,7 @@
     "build:chrome:release": "node scripts/build-chrome.js",
     "build:firefox": "node scripts/build-firefox.js",
     "build-for-amo": "npm run build:firefox",
+    "zip:source": "node scripts/zip-source.js",
     "firefox": "node scripts/run-firefox.js",
     "firefox:lint": "web-ext lint --source-dir dist-firefox",
     "firefox:dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.firefox.js",
