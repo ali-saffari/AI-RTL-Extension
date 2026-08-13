@@ -191,6 +191,7 @@ const lightTheme = createTheme({
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
+    const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
@@ -207,8 +208,11 @@ function App() {
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
     const [activationHintDismissed, setActivationHintDismissed] = React.useState<boolean>(true);
     const [troubleshootingHintDismissed, setTroubleshootingHintDismissed] = React.useState<boolean>(true);
+    const [algorithmHintDismissed, setAlgorithmHintDismissed] = React.useState<boolean>(true);
     const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [settingsHintActive, setSettingsHintActive] = React.useState(false);
+    const settingsHintTimer = React.useRef<number | null>(null);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
     const [hoverExpandLocked, setHoverExpandLocked] = React.useState(false);
     const skipSettingsAnimation = React.useRef(true);
@@ -220,9 +224,12 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
+                }
+                if (result.mixedTitleDisplayMode) {
+                    setMixedTitleDisplayMode(result.mixedTitleDisplayMode);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -253,6 +260,17 @@ function App() {
                 }
                 setNotebookNeedsReenable(result.notebookNeedsReenable === true);
                 setTroubleshootingHintDismissed(result.troubleshootingHintDismissed === true);
+                const currentAlgorithm = result.rtlAlgorithmMode || 'advanced_full';
+                if (currentAlgorithm !== 'advanced_full') {
+                    setAlgorithmHintDismissed(true);
+                    try {
+                        chrome.storage.sync.set({ algorithmHintDismissed: true });
+                    } catch (error) {
+                        // Silently handle save errors
+                    }
+                } else {
+                    setAlgorithmHintDismissed(result.algorithmHintDismissed === true);
+                }
                 setIsLoading(false);
             });
         } catch (error) {
@@ -269,6 +287,14 @@ function App() {
             if (areaName === 'sync') {
                 if (changes.rtlAlgorithmMode) {
                     setRtlAlgorithm(changes.rtlAlgorithmMode.newValue);
+                    if (changes.rtlAlgorithmMode.newValue && changes.rtlAlgorithmMode.newValue !== 'advanced_full') {
+                        setAlgorithmHintDismissed(true);
+                        try {
+                            chrome.storage.sync.set({ algorithmHintDismissed: true });
+                        } catch (error) {
+                            // Silently handle save errors
+                        }
+                    }
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
@@ -297,6 +323,12 @@ function App() {
                 if (changes.troubleshootingHintDismissed) {
                     setTroubleshootingHintDismissed(changes.troubleshootingHintDismissed.newValue === true);
                 }
+                if (changes.algorithmHintDismissed) {
+                    setAlgorithmHintDismissed(changes.algorithmHintDismissed.newValue === true);
+                }
+                if (changes.mixedTitleDisplayMode) {
+                    setMixedTitleDisplayMode(changes.mixedTitleDisplayMode.newValue || 'unified');
+                }
             }
         };
 
@@ -311,7 +343,21 @@ function App() {
     const handleRtlAlgorithmChange = (value: string) => {
         setRtlAlgorithm(value);
         try {
-            chrome.storage.sync.set({ rtlAlgorithmMode: value });
+            const storageUpdate: { rtlAlgorithmMode: string; algorithmHintDismissed?: boolean } = { rtlAlgorithmMode: value };
+            if (value !== 'advanced_full') {
+                setAlgorithmHintDismissed(true);
+                storageUpdate.algorithmHintDismissed = true;
+            }
+            chrome.storage.sync.set(storageUpdate);
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
+    const handleMixedTitleDisplayModeChange = (value: string) => {
+        setMixedTitleDisplayMode(value);
+        try {
+            chrome.storage.sync.set({ mixedTitleDisplayMode: value });
         } catch (error) {
             // Silently handle save errors
         }
@@ -348,6 +394,25 @@ function App() {
             // Silently handle save errors
         }
     };
+
+    const handleHighlightSettingsButton = React.useCallback(() => {
+        setSettingsHintActive(true);
+        if (settingsHintTimer.current) {
+            window.clearTimeout(settingsHintTimer.current);
+        }
+        settingsHintTimer.current = window.setTimeout(() => {
+            setSettingsHintActive(false);
+            settingsHintTimer.current = null;
+        }, 2800);
+    }, []);
+
+    React.useEffect(() => {
+        return () => {
+            if (settingsHintTimer.current) {
+                window.clearTimeout(settingsHintTimer.current);
+            }
+        };
+    }, []);
 
     const handleSettingsOpenChange = React.useCallback((open: boolean) => {
         setSideMenuHovered(false);
@@ -545,8 +610,12 @@ function App() {
 
     const handleActivationHintDismiss = React.useCallback(() => {
         setActivationHintDismissed(true);
+        setTroubleshootingHintDismissed(true);
         try {
-            chrome.storage.sync.set({ activationHintDismissed: true });
+            chrome.storage.sync.set({
+                activationHintDismissed: true,
+                troubleshootingHintDismissed: true
+            });
         } catch (error) {
             // Silently handle save errors
         }
@@ -556,6 +625,15 @@ function App() {
         setTroubleshootingHintDismissed(true);
         try {
             chrome.storage.sync.set({ troubleshootingHintDismissed: true });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    }, []);
+
+    const handleAlgorithmHintDismiss = React.useCallback(() => {
+        setAlgorithmHintDismissed(true);
+        try {
+            chrome.storage.sync.set({ algorithmHintDismissed: true });
         } catch (error) {
             // Silently handle save errors
         }
@@ -745,6 +823,20 @@ function App() {
                             variant="troubleshooting"
                             isDarkMode={isDarkMode}
                             onDismiss={handleTroubleshootingHintDismiss}
+                        />
+                    </Box>
+                )}
+
+                {!algorithmHintDismissed && rtlAlgorithm === 'advanced_full' && (
+                    <Box sx={{
+                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        pb: 1.5
+                    }}>
+                        <InstallHintBanner
+                            variant="algorithm"
+                            isDarkMode={isDarkMode}
+                            onDismiss={handleAlgorithmHintDismiss}
+                            onOpenSettings={handleHighlightSettingsButton}
                         />
                     </Box>
                 )}
@@ -1080,6 +1172,8 @@ function App() {
                     <QuickSettings
                         rtlAlgorithm={rtlAlgorithm}
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                        mixedTitleDisplayMode={mixedTitleDisplayMode}
+                        onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
                         isDarkMode={isDarkMode}
@@ -1090,7 +1184,7 @@ function App() {
                 </div>
                 <div className="popup-side-slot">
                 <aside
-                    className="popup-side-menu"
+                    className={`popup-side-menu${settingsHintActive ? ' popup-side-menu-hint' : ''}`}
                     dir="rtl"
                     aria-label="تنظیمات افزونه"
                     onMouseEnter={() => {
@@ -1104,7 +1198,7 @@ function App() {
                         <div className="popup-side-item-group">
                         <button
                             type="button"
-                            className="popup-side-item popup-side-item-settings"
+                            className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}`}
                             onClick={() => handleSettingsOpenChange(!settingsOpen)}
                             aria-label="تنظیمات"
                             aria-expanded={settingsOpen}

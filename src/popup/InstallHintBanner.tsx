@@ -10,12 +10,13 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
-import { mdiInformationOutline, mdiChevronDown } from '@mdi/js';
+import { mdiInformationOutline, mdiChevronDown, mdiOpenInNew } from '@mdi/js';
 
 interface InstallHintBannerProps {
     isDarkMode: boolean;
     onDismiss?: () => void;
-    variant: 'install' | 'troubleshooting' | 'notebook';
+    onOpenSettings?: () => void;
+    variant: 'install' | 'troubleshooting' | 'notebook' | 'algorithm';
 }
 
 const troubleshootingSteps = [
@@ -28,6 +29,7 @@ const troubleshootingSteps = [
 const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     isDarkMode,
     onDismiss,
+    onOpenSettings,
     variant
 }) => {
     const [expanded, setExpanded] = React.useState(false);
@@ -50,7 +52,9 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     );
     const collapsibleTitle = variant === 'install'
         ? 'تازه نصب کردید و اکستنشن فعال نمی‌شه؟'
-        : 'افزونه روی برخی سایت‌ها فعال نمی‌شه؟';
+        : variant === 'algorithm'
+            ? 'شخصی‌سازی الگوریتم راست‌چین'
+            : 'افزونه روی برخی سایت‌ها فعال نمی‌شه؟';
 
     return (
         <Box
@@ -178,6 +182,96 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                     >
                                         بعد از اینکه مطمئن شدید سایت توی لیست هست و فعال شده، صفحه همون سایت رو با Ctrl + F5 (در مک: Cmd + Shift + R) رفرش کنید تا افزونه روش اعمال بشه.
                                     </Typography>
+                                </>
+                            ) : variant === 'algorithm' ? (
+                                <>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '0.8rem',
+                                            fontWeight: 400,
+                                            fontFamily: 'iranyekan',
+                                            lineHeight: 1.7,
+                                            color: textColor,
+                                            mb: 0.8
+                                        }}
+                                    >
+                                        متن به‌صورت هوشمند بررسی می‌شه تا راست‌چین یا چپ‌چین بودنش تشخیص داده بشه. نسخه پیش‌فرض معمولاً برای بیشتر سایت‌ها خوب کار می‌کنه، ولی اگر متن‌های ترکیبی فارسی و انگلیسی، کد، یا پاسخ‌های چندزبانه درست نمایش داده نمی‌شن، می‌تونید الگوریتم دیگه‌ای رو تست کنید.
+                                    </Typography>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '0.8rem',
+                                            fontWeight: 400,
+                                            fontFamily: 'iranyekan',
+                                            lineHeight: 1.7,
+                                            color: textColor,
+                                            mb: 0.8
+                                        }}
+                                    >
+                                        از طریق{' '}
+                                        <Box
+                                            component="button"
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                onOpenSettings?.();
+                                            }}
+                                            sx={{
+                                                display: 'inline',
+                                                p: 0,
+                                                m: 0,
+                                                border: 0,
+                                                background: 'none',
+                                                cursor: 'pointer',
+                                                font: 'inherit',
+                                                fontWeight: 700,
+                                                color: accentColor,
+                                                textDecoration: 'underline',
+                                                textUnderlineOffset: '3px',
+                                                '&:hover': {
+                                                    color: isDarkMode ? '#4dd4ff' : '#3b82f6'
+                                                }
+                                            }}
+                                        >
+                                            تنظیمات
+                                        </Box>
+                                        {' '}می‌تونید بهترین گزینه رو برای خودتون انتخاب کنید. تنظیمات از منوی سمت چپ در دسترسه.
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                        <Button
+                                            size="small"
+                                            onClick={() => {
+                                                chrome.tabs.create({ url: chrome.runtime.getURL('options.html#algorithm') });
+                                            }}
+                                            endIcon={
+                                                <SvgIcon sx={{ fontSize: '0.85rem !important' }}>
+                                                    <path d={mdiOpenInNew} />
+                                                </SvgIcon>
+                                            }
+                                            sx={{
+                                                fontSize: '0.75rem',
+                                                fontFamily: 'iranyekan',
+                                                fontWeight: 700,
+                                                textTransform: 'none',
+                                                minWidth: 'auto',
+                                                px: 1.25,
+                                                py: 0.25,
+                                                borderRadius: '6px !important',
+                                                color: accentColor,
+                                                border: isDarkMode
+                                                    ? '1px solid rgba(0, 233, 255, 0.35)'
+                                                    : '1px solid rgba(30, 64, 175, 0.3)',
+                                                '&:hover': {
+                                                    color: isDarkMode ? '#4dd4ff' : '#3b82f6',
+                                                    backgroundColor: isDarkMode
+                                                        ? 'rgba(0, 233, 255, 0.1)'
+                                                        : 'rgba(30, 64, 175, 0.1)'
+                                                }
+                                            }}
+                                        >
+                                            صفحه تست الگوریتم
+                                        </Button>
+                                    </Box>
                                 </>
                             ) : (
                                 <>

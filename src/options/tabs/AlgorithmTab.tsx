@@ -93,6 +93,27 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
         setSelectedAlgorithm('');
     };
 
+    const previewFont = previewEnabled ? 'inherit' : 'monospace';
+    const getPreviewDir = (isRtl: boolean) => {
+        if (!previewEnabled) return 'ltr' as const;
+        return isRtl ? 'rtl' as const : 'ltr' as const;
+    };
+    const getTitleDir = (isRtl: boolean) => {
+        if (!previewEnabled) return 'ltr' as const;
+        if (mixedTitleDisplayMode === 'unified') return 'rtl' as const;
+        return isRtl ? 'rtl' as const : 'ltr' as const;
+    };
+    const dirStyle = (dir: 'rtl' | 'ltr') => ({
+        direction: dir,
+        textAlign: dir === 'rtl' ? 'right' as const : 'left' as const
+    });
+    const titleSx = {
+        fontWeight: 600,
+        mb: 1,
+        color: theme.palette.text.primary,
+        fontFamily: previewFont,
+        fontSize: '1.5rem'
+    };
 
     return (
         <Grid container spacing={3}>
@@ -417,7 +438,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             </Typography>
                         </Box>
                         
-                        <Box sx={{
+                        <Box
+                            dir="ltr"
+                            style={{ direction: 'ltr', textAlign: 'left' }}
+                            sx={{
                             p: 3,
                             borderRadius: 2,
                             bgcolor: theme.palette.background.paper,
@@ -427,127 +451,69 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             fontSize: '0.95rem',
                             lineHeight: 1.8,
                             color: theme.palette.text.primary,
-                            direction: previewEnabled ? 'rtl' : 'rtl',
-                            textAlign: previewEnabled ? 'right' : 'right',
                             mb: 2
                         }}>
                             {selectedValue === 'advanced_section' && (
                                 <>
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : (previewEnabled ? 'left' : 'right'),
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : (previewEnabled ? 'ltr' : 'rtl'),
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
                                             پاراگراف فارسی
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ fontFamily: previewFont }}>
                                             این یک پاراگراف فارسی است که شامل چند جمله می‌شود. هر بخش به صورت جداگانه بررسی می‌شود. این یعنی اگر شما یک پاراگراف طولانی انگلیسی داشته باشید و بعد یک پاراگراف فارسی، الگوریتم به درستی جهت هر کدام را به صورت مستقل تشخیص می‌دهد. سیستم هر بلوک متن را به عنوان یک واحد جداگانه پردازش می‌کند و با استفاده از algorithm و processing techniques، دقت بالایی در تشخیص جهت ارائه می‌دهد.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : 'right',
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : 'rtl',
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
                                             English Paragraph
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={{ fontFamily: previewFont }}>
                                             Hello world! This is an English sentence that demonstrates how the advanced section algorithm works. When you have multiple paragraphs with different languages, each section is analyzed independently to determine the correct text direction. The system uses sophisticated techniques to identify the dominant language and structure of each بخش separately.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : (previewEnabled ? 'left' : 'right'),
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : (previewEnabled ? 'ltr' : 'rtl'),
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
                                             پاراگراف ترکیبی (انگلیسی-فارسی)
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ fontFamily: previewFont }}>
                                             Advanced سیستم پیشرفته از الگوریتم‌های machine learning استفاده می‌کند تا جهت متن را به درستی تشخیص دهد. وقتی شما چندین پاراگراف با زبان‌های مختلف دارید، هر بخش به صورت مستقل بررسی می‌شود تا جهت مناسب متن تعیین شود. با استفاده از تکنیک‌های natural language processing و text analysis، سیستم می‌تواند بهترین جهت را برای هر بخش انتخاب کند.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : 'right',
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : 'rtl',
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
                                             Long English Paragraph
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={{ fontFamily: previewFont }}>
                                             Another English paragraph with multiple sentences. Each section is analyzed separately by the algorithm. This means that if you have a long English paragraph followed by a Persian paragraph, the algorithm will correctly identify the direction for each one independently. The system processes each block of text as a separate unit, ensuring accurate direction detection. This approach works well for mixed content that includes both English and فارسی words.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : 'right',
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : 'rtl',
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
                                             Mixed Content (English-Farsi)
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={{ fontFamily: previewFont }}>
                                             Mixed content: English and فارسی together in the same paragraph. This is a more complex scenario where the algorithm needs to analyze the content carefully to determine the overall direction of the paragraph based on the dominant language or the structure of the text.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : (previewEnabled ? 'left' : 'right'),
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : (previewEnabled ? 'ltr' : 'rtl'),
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
                                             محتوای ترکیبی (فارسی-انگلیسی)
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ fontFamily: previewFont }}>
                                             محتوای ترکیبی: انگلیسی و فارسی در یک پاراگراف. این یک سناریوی پیچیده‌تر است که الگوریتم باید محتوا را به دقت بررسی کند تا جهت کلی پاراگراف را بر اساس زبان غالب یا ساختار متن تعیین کند. این روش برای متون چندزبانه بسیار مناسب است.
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
-                                        <Typography variant="h3" sx={{ 
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            textAlign: mixedTitleDisplayMode === 'unified' ? 'left' : (previewEnabled ? 'left' : 'right'),
-                                            direction: mixedTitleDisplayMode === 'unified' ? 'ltr' : (previewEnabled ? 'ltr' : 'rtl'),
-                                            color: theme.palette.text.primary,
-                                            fontFamily: previewEnabled ? 'inherit' : 'monospace',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                        <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
                                             نتیجه
                                         </Typography>
-                                        <Typography paragraph sx={{ fontFamily: previewEnabled ? 'inherit' : 'monospace', direction: 'rtl', textAlign: 'right' }}>
+                                        <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ fontFamily: previewFont }}>
                                             نتیجه: الگوریتم هر بخش را به صورت مستقل پردازش می‌کند و جهت مناسب را برای هر بخش تعیین می‌نماید. این روش برای متون چندزبانه، مقالات علمی، و محتوای ترکیبی بسیار کارآمد است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.
                                         </Typography>
                                     </Box>
@@ -555,30 +521,24 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             )}
                             {selectedValue === 'advanced_full' && (
                                 <>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         Hello و خوش آمدید به این سیستم پیشرفته. این الگوریتم یکپارچه تمام متن را به عنوان یک واحد واحد پردازش می‌کند و با استفاده از تکنیک‌های machine learning و natural language processing، جهت مناسب را برای کل متن تعیین می‌نماید. این روش برای متون طولانی که شامل محتوای ترکیبی هستند بسیار مناسب است.
                                     </Typography>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         الگوریتم با بررسی کل ساختار متن، از جمله کلمه‌های کلیدی مانند algorithm، processing، و detection، بهترین جهت را انتخاب می‌کند. این approach باعث می‌شود که دقت بالایی در تشخیص جهت متن داشته باشیم و برای محتوای پیچیده‌تر مانند مقالات علمی، documentation، و technical content بسیار کارآمد باشد.
                                     </Typography>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         سیستم با تحلیل عمیق محتوا و در نظر گیری context و semantic structure، می‌تواند حتی در متون بسیار پیچیده که شامل کلمات انگلیسی و فارسی به صورت مخلوط هستند، بهترین تصمیم را بگیرد. این روش برای محتوای طولانی که نیاز به پردازش یکپارچه دارد، بسیار مناسب است و performance بهتری نسبت به روش‌های دیگر ارائه می‌دهد.
                                     </Typography>
@@ -586,39 +546,31 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             )}
                             {selectedValue === 'first_word' && (
                                 <>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         اتکا به کلمهٔ اول برای تشخیص راست‌چین بودن قابل‌اعتماد نیست، چون ممکن است آن کلمه نشانهٔ روشن زبانی نداشته باشد و سیستم را دچار اشتباه کند؛ بااین‌حال بسیاری از سایت‌ها به همین رفتار تکیه می‌کنند.
                                     </Typography>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         در متن‌های چندزبانه این روش مشکل‌ساز می‌شود، زیرا ممکن است صفحه با یک کلمهٔ انگلیسی شروع شود اما ادامهٔ متن فارسی باشد. با وجود این ضعف، اغلب سایت‌های راست‌چین همین شیوه را به‌کار می‌برند، چون مرورگر به‌صورت پیش‌فرض جهت متن را بر اساس اولین کاراکتر تعیین می‌کند.
                                     </Typography>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
-                                        lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right'
+                                        lineHeight: 1.8
                                     }}>
                                         همچنین اگر متن با اعداد یا علائم آغاز شود، تشخیص جهت دشوار می‌شود؛ اما باز هم بیشتر سایت‌هایی که از راست‌چین استفاده می‌کنند همین مکانیزم پیش‌فرض مرورگر را به‌عنوان روش اصلی تشخیص جهت متن می‌پذیرند.
                                     </Typography>
-                                    <Typography paragraph sx={{ 
-                                        fontFamily: previewEnabled ? 'inherit' : 'monospace',
+                                    <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={{ 
+                                        fontFamily: previewFont,
                                         fontSize: '0.95rem',
                                         lineHeight: 1.8,
-                                        direction: 'rtl',
-                                        textAlign: 'right',
                                         color: previewEnabled ? 'rgba(220, 38, 38, 0.75)' : 'inherit'
                                     }}>
                                         Example این متن با انگلیسی شروع شده و مرورگر به‌صورت پیش‌فرض آن را به‌عنوان متن چپ‌چین تشخیص می‌دهد، حتی اگر ادامهٔ متن فارسی باشد. این همان رفتاری است که در بسیاری از سایت‌های راست‌چین مشاهده می‌شود و دلیل استفاده از این روش ساده است.

@@ -10,13 +10,19 @@ import {
     FormControl,
     IconButton,
     Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from '@mui/material';
-import { mdiCog, mdiOpenInNew, mdiClose } from '@mdi/js';
+import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
     onRtlAlgorithmChange: (value: string) => void;
+    mixedTitleDisplayMode: string;
+    onMixedTitleDisplayModeChange: (value: string) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     isDarkMode: boolean;
@@ -29,26 +35,47 @@ const ALGORITHMS = [
     {
         id: 'advanced_section',
         title: 'تحلیل پیشرفته بخش‌ها',
-        hint: 'هر بخش جداگانه بررسی می‌شود',
+        hint: 'هر بخش، جمله و پاراگراف جداگانه بررسی می‌شود. برای متن‌های ترکیبی فارسی و انگلیسی دقت بالاتری دارد.',
         badge: 'جدید',
+        description: 'هر بخش، جمله و پاراگراف جداگانه توسط الگوریتم هوشمند بررسی شده و جهت همان قسمت تعیین می‌شود. این روش برای متون چندزبانه یا ترکیبی بسیار مناسب است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.',
+        extra: 'در این حالت تنظیمات عنوان هم فعال می‌شود: می‌توانید مشخص کنید عنوان چت‌های چندزبانه جداگانه بررسی شود یا همه در یک سمت قرار بگیرند.',
     },
     {
         id: 'advanced_full',
         title: 'تحلیل پیشرفته یکپارچه',
-        hint: 'کل متن یکجا پردازش می‌شود',
+        hint: 'کل متن یکجا پردازش می‌شود. ترکیب متعادلی از دقت و سرعت دارد و برای بیشتر گفتگوها مناسب است.',
         badge: 'پیش‌فرض',
+        description: 'کل متن پاسخ به‌عنوان یک ساختار واحد پردازش می‌شود و جهت مناسب برای کل پیام انتخاب می‌شود. این روش ترکیب متعادلی از دقت و کارایی ارائه می‌دهد و گزینه پیش‌فرض افزونه است.',
+        extra: '',
     },
     {
         id: 'first_word',
         title: 'تشخیص مبتنی بر واژه آغازین',
-        hint: 'سریع؛ مناسب سیستم‌های ضعیف',
+        hint: 'فقط اولین کلمه متن بررسی می‌شود. سریع است و برای سیستم‌های ضعیف یا وقتی سایت هنگ می‌کند مناسب‌تر است.',
         badge: '',
+        description: 'جهت متن تنها با بررسی اولین کلمه مشخص می‌شود. این روش برای سیستم‌هایی با توان پردازشی محدود مناسب است و در صورت هنگ و قفل شدن سایت توصیه می‌شود.',
+        extra: '',
+    },
+] as const;
+
+const TITLE_MODES = [
+    {
+        id: 'unified',
+        title: 'قرار دادن عنوان‌ها در یک سمت',
+        hint: 'همه عنوان‌ها بر اساس جهت اکثریت تنظیم می‌شوند',
+    },
+    {
+        id: 'individual',
+        title: 'تنظیم هر عنوان جداگانه',
+        hint: 'هر عنوان بر اساس زبان خودش پردازش می‌شود',
     },
 ] as const;
 
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
+    mixedTitleDisplayMode,
+    onMixedTitleDisplayModeChange,
     supportHide,
     onSupportChange,
     isDarkMode,
@@ -57,6 +84,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onClose,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
+    const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -71,6 +99,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     }, []);
 
     const selectedAlgo = ALGORITHMS.find((item) => item.id === rtlAlgorithm) ?? ALGORITHMS[1];
+    const selectedTitleMode = TITLE_MODES.find((item) => item.id === mixedTitleDisplayMode) ?? TITLE_MODES[0];
+    const infoAlgo = ALGORITHMS.find((item) => item.id === infoAlgoId) ?? null;
     const manualEnabled = manualRtlSettings.manualRtlEnabled !== false;
 
     const accent = isDarkMode ? '#00e9ff' : '#1e40af';
@@ -98,12 +128,39 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         <Box className="quick-settings" dir="rtl">
             <Box className="quick-settings-header">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
-                    <SvgIcon sx={{ fontSize: '1.1rem', color: accent }}>
-                        <path d={mdiCog} />
-                    </SvgIcon>
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}>
-                        تنظیمات
-                    </Typography>
+                    <Box
+                        component={onClose ? 'button' : 'div'}
+                        type={onClose ? 'button' : undefined}
+                        onClick={onClose}
+                        aria-label={onClose ? 'بستن تنظیمات' : undefined}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            minWidth: 0,
+                            p: 0,
+                            m: 0,
+                            border: 0,
+                            background: 'none',
+                            cursor: onClose ? 'pointer' : 'default',
+                            color: 'inherit',
+                            font: 'inherit',
+                            textAlign: 'right',
+                            '&:hover .quick-settings-title': onClose
+                                ? { color: accent }
+                                : undefined,
+                        }}
+                    >
+                        <SvgIcon sx={{ fontSize: '1.1rem', color: accent }}>
+                            <path d={mdiCog} />
+                        </SvgIcon>
+                        <Typography
+                            className="quick-settings-title"
+                            sx={{ fontWeight: 700, fontSize: '0.9rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}
+                        >
+                            تنظیمات
+                        </Typography>
+                    </Box>
                     {onClose ? (
                         <Tooltip title="بستن تنظیمات">
                             <IconButton
@@ -172,6 +229,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             variant="text"
                             size="small"
                             onClick={() => openOptions('algorithm')}
+                            endIcon={
+                                <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
+                                    <path d={mdiOpenInNew} />
+                                </SvgIcon>
+                            }
                             sx={{
                                 minWidth: 0,
                                 px: 0.5,
@@ -188,7 +250,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 },
                             }}
                         >
-                            چطور کار می‌کنه؟
+                            صفحه تست الگوریتم
                         </Button>
                     </Box>
 
@@ -250,6 +312,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         <Box
                                             component="span"
                                             sx={{
+                                                flexShrink: 0,
                                                 px: 0.7,
                                                 py: 0.1,
                                                 borderRadius: 1,
@@ -268,9 +331,96 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Select>
                     </FormControl>
 
-                    <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 1, lineHeight: 1.55 }}>
-                        {selectedAlgo.hint}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.4, mt: 1 }}>
+                        <IconButton
+                            size="small"
+                            aria-label={`توضیحات ${selectedAlgo.title}`}
+                            onClick={() => setInfoAlgoId(selectedAlgo.id)}
+                            sx={{
+                                p: 0.2,
+                                mt: '-1px',
+                                flexShrink: 0,
+                                color: accent,
+                                '&:hover': {
+                                    backgroundColor: selectedBg,
+                                },
+                            }}
+                        >
+                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                <path d={mdiInformationOutline} />
+                            </SvgIcon>
+                        </IconButton>
+                        <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55, flex: 1 }}>
+                            {selectedAlgo.hint}
+                        </Typography>
+                    </Box>
+
+                    {rtlAlgorithm === 'advanced_section' && (
+                        <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                            <Typography className="quick-settings-label" sx={{ mb: 1 }}>
+                                نحوه نمایش عنوان‌ها
+                            </Typography>
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    dir="rtl"
+                                    className="quick-settings-select"
+                                    value={mixedTitleDisplayMode}
+                                    renderValue={(value) => TITLE_MODES.find((item) => item.id === value)?.title ?? ''}
+                                    onChange={(event) => onMixedTitleDisplayModeChange(event.target.value)}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            className: 'quick-settings-select-menu',
+                                            sx: {
+                                                mt: 0.5,
+                                                backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                                backgroundImage: 'none',
+                                            },
+                                        },
+                                    }}
+                                    sx={{
+                                        fontFamily: 'iranyekan',
+                                        fontSize: '0.82rem',
+                                        backgroundColor: fieldBg,
+                                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                                        borderRadius: '10px',
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: cardBorder,
+                                        },
+                                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                                        },
+                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: accent,
+                                            borderWidth: '1px',
+                                        },
+                                        '& .MuiSelect-icon': {
+                                            color: muted,
+                                        },
+                                    }}
+                                >
+                                    {TITLE_MODES.map((mode) => (
+                                        <MenuItem
+                                            key={mode.id}
+                                            value={mode.id}
+                                            dir="rtl"
+                                            sx={{
+                                                fontFamily: 'iranyekan',
+                                                fontSize: '0.82rem',
+                                                py: 1,
+                                                textAlign: 'right',
+                                                direction: 'rtl',
+                                            }}
+                                        >
+                                            {mode.title}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 1, lineHeight: 1.55 }}>
+                                {selectedTitleMode.hint}
+                            </Typography>
+                        </Box>
+                    )}
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
@@ -399,6 +549,81 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     )}
                 </Box>
             </Box>
+            <Dialog
+                open={Boolean(infoAlgo)}
+                onClose={() => setInfoAlgoId(null)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    {infoAlgo?.title}
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    {infoAlgo ? (
+                        <>
+                            <Typography
+                                sx={{
+                                    fontSize: '0.85rem',
+                                    fontFamily: 'iranyekan',
+                                    lineHeight: 1.8,
+                                }}
+                            >
+                                {infoAlgo.description}
+                            </Typography>
+                            {infoAlgo.extra ? (
+                                <Typography
+                                    sx={{
+                                        fontSize: '0.8rem',
+                                        fontFamily: 'iranyekan',
+                                        lineHeight: 1.8,
+                                        mt: 1,
+                                        color: muted,
+                                    }}
+                                >
+                                    {infoAlgo.extra}
+                                </Typography>
+                            ) : null}
+                        </>
+                    ) : null}
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                    <Button
+                        onClick={() => setInfoAlgoId(null)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setInfoAlgoId(null);
+                            openOptions('algorithm');
+                        }}
+                        variant="text"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        صفحه تست الگوریتم
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

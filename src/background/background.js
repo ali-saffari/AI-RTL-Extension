@@ -143,7 +143,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             rtlAlgorithmMode: 'advanced_full',
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
-            activationHintDismissed: false
+            activationHintDismissed: false,
+            troubleshootingHintDismissed: true
         });
         // });
     }
@@ -234,6 +235,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                             updates.manualRtlSettings = mergedSettings;
                         }
                     }
+                }
+
+                if (storedData.activationHintDismissed === false) {
+                    updates.troubleshootingHintDismissed = true;
+                } else if (storedData.troubleshootingHintDismissed !== true) {
+                    updates.troubleshootingHintDismissed = false;
+                }
+
+                const currentAlgorithm = storedData.rtlAlgorithmMode
+                    || (storedData.rtlAlgorithm === 'first_word' ? 'first_word' : 'advanced_full');
+                if (currentAlgorithm !== 'advanced_full') {
+                    updates.algorithmHintDismissed = true;
                 }
 
                 try {
