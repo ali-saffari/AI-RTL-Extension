@@ -142,7 +142,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             ...SERVICE_FLAGS,
             rtlAlgorithmMode: 'advanced_full',
             manualRtlSettings: defaultManualRtlSettings,
-            mixedTitleDisplayMode: 'unified'
+            mixedTitleDisplayMode: 'unified',
+            activationHintDismissed: false
         });
         // });
     }
@@ -177,7 +178,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         }
     } else if (details.reason === 'update') {
         try {
-            chrome.storage.sync.get((storedData) => {
+            chrome.storage.sync.get(async (storedData) => {
                 const updates = {};
                 const allServices = Object.keys(SERVICE_FLAGS);
                 const allDynamicServices = Object.keys(DYNAMIC_SERVICES);
@@ -234,16 +235,54 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                         }
                     }
                 }
-                
+
+                try {
+                    const notebookOrigins = DYNAMIC_SERVICES.googleNotebook?.origins || ['*://notebook.google.com/*'];
+                    const granted = await chrome.permissions.getAll();
+                    const notebookGrantedOrigins = (granted.origins || []).filter((origin) =>
+                        origin.includes('notebook')
+                    );
+                    let hasNotebookOrigin = await chrome.permissions.contains({ origins: notebookOrigins });
+                    if (!hasNotebookOrigin) {
+                        hasNotebookOrigin = (granted.origins || []).some((origin) =>
+                            origin.includes('://notebook.google.com/')
+                        );
+                    }
+
+                    // Old storage key was `notebook`; `googleNotebook` is the new key
+                    const wasNotebookEnabled = storedData.notebook === true || storedData.googleNotebook === true;
+                    console.log('[Background] Notebook migration status', {
+                        hasNotebookOrigin,
+                        oldNotebookKey: storedData.notebook,
+                        newGoogleNotebookKey: storedData.googleNotebook,
+                        wasNotebookEnabled,
+                        notebookGrantedOrigins,
+                        requestedOrigins: notebookOrigins
+                    });
+                    if (wasNotebookEnabled) {
+                        if (hasNotebookOrigin) {
+                            updates.googleNotebook = true;
+                            updates.notebookNeedsReenable = false;
+                        } else {
+                            updates.googleNotebook = false;
+                            updates.notebookNeedsReenable = true;
+                        }
+                    }
+                    console.log('[Background] Notebook migration result', {
+                        googleNotebook: updates.googleNotebook,
+                        notebookNeedsReenable: updates.notebookNeedsReenable
+                    });
+                } catch (permissionError) {
+                    console.error('[Background] Notebook origin permission check failed:', permissionError);
+                }
+
                 if (Object.keys(updates).length > 0) {
                     chrome.storage.sync.set(updates, () => {
-                        // After migration, remove old textSelectorSettings if it exists
                         if (storedData.textSelectorSettings && !storedData.manualRtlSettings) {
                             chrome.storage.sync.remove('textSelectorSettings');
                         }
                     });
                 } else if (storedData.textSelectorSettings && !storedData.manualRtlSettings) {
-                    // If no other updates, just migrate and remove old key
                     chrome.storage.sync.set({
                         manualRtlSettings: {
                             ...defaultManualRtlSettings,
@@ -547,7 +586,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 
                 if (granted) {
                     // Enable the service
-                    await chrome.storage.sync.set({ [serviceKey]: true });
+                    const storageUpdate = { [serviceKey]: true };
+                    if (serviceKey === 'googleNotebook') {
+                        storageUpdate.notebookNeedsReenable = false;
+                    }
+                    await chrome.storage.sync.set(storageUpdate);
                     console.log(`[Background] Service ${serviceKey} enabled after permission grant`);
                     sendResponse?.({ success: true, granted: true });
                 } else {

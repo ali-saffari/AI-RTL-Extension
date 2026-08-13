@@ -280,7 +280,11 @@ export default function ServiceList() {
         }
         
         try {
-            chrome.storage.sync.set({ [key]: checked });
+            const storageUpdate = { [key]: checked };
+            if (key === 'googleNotebook' && checked) {
+                storageUpdate.notebookNeedsReenable = false;
+            }
+            chrome.storage.sync.set(storageUpdate);
         } catch (error) {
             // Silently handle save errors
         }

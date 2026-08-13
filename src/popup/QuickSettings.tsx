@@ -104,6 +104,27 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}>
                         تنظیمات
                     </Typography>
+                    {onClose ? (
+                        <Tooltip title="بستن تنظیمات">
+                            <IconButton
+                                size="small"
+                                onClick={onClose}
+                                aria-label="بستن تنظیمات"
+                                sx={{
+                                    p: 0.5,
+                                    color: muted,
+                                    '&:hover': {
+                                        backgroundColor: selectedBg,
+                                        color: accent,
+                                    },
+                                }}
+                            >
+                                <SvgIcon sx={{ fontSize: '1.05rem' }}>
+                                    <path d={mdiClose} />
+                                </SvgIcon>
+                            </IconButton>
+                        </Tooltip>
+                    ) : null}
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
                     <Button
@@ -133,27 +154,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     >
                         تنظیمات پیشرفته
                     </Button>
-                    {onClose ? (
-                        <Tooltip title="بستن تنظیمات">
-                            <IconButton
-                                size="small"
-                                onClick={onClose}
-                                aria-label="بستن تنظیمات"
-                                sx={{
-                                    p: 0.5,
-                                    color: muted,
-                                    '&:hover': {
-                                        backgroundColor: selectedBg,
-                                        color: accent,
-                                    },
-                                }}
-                            >
-                                <SvgIcon sx={{ fontSize: '1.05rem' }}>
-                                    <path d={mdiClose} />
-                                </SvgIcon>
-                            </IconButton>
-                        </Tooltip>
-                    ) : null}
                 </Box>
             </Box>
 

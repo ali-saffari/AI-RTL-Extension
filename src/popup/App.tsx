@@ -24,6 +24,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
 import ManualRtlBanner from './ManualRtlBanner';
+import InstallHintBanner from './InstallHintBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -39,6 +40,7 @@ const firefoxDefaults = isFirefoxRuntime();
 const extensionStoreUrl = getExtensionStoreUrl();
 const storePageLinkText = getStorePageLinkText();
 const rateLinkText = getRateLinkText();
+const TELEGRAM_ICON_PATH = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z';
 
 // Create rtl cache
 const cacheRtl = createCache({
@@ -203,18 +205,22 @@ function App() {
     });
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
+    const [activationHintDismissed, setActivationHintDismissed] = React.useState<boolean>(true);
+    const [troubleshootingHintDismissed, setTroubleshootingHintDismissed] = React.useState<boolean>(true);
+    const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
+    const [hoverExpandLocked, setHoverExpandLocked] = React.useState(false);
     const skipSettingsAnimation = React.useRef(true);
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
-    const POPUP_MAIN_WIDTH = 380;
+    const POPUP_MAIN_WIDTH = 378;
     const SIDE_COLLAPSED_WIDTH = 44;
-    const SIDE_SETTINGS_WIDTH = 380;
+    const SIDE_SETTINGS_WIDTH = 378;
 
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -240,6 +246,13 @@ function App() {
                 if (result.manualRtlInfoDismissed === true) {
                     setManualRtlInfoDismissed(true);
                 }
+                if (result.activationHintDismissed === false) {
+                    setActivationHintDismissed(false);
+                } else {
+                    setActivationHintDismissed(true);
+                }
+                setNotebookNeedsReenable(result.notebookNeedsReenable === true);
+                setTroubleshootingHintDismissed(result.troubleshootingHintDismissed === true);
                 setIsLoading(false);
             });
         } catch (error) {
@@ -274,6 +287,15 @@ function App() {
                 }
                 if (changes.popupSettingsOpen) {
                     setSettingsOpen(changes.popupSettingsOpen.newValue === true);
+                }
+                if (changes.activationHintDismissed) {
+                    setActivationHintDismissed(changes.activationHintDismissed.newValue !== false);
+                }
+                if (changes.notebookNeedsReenable) {
+                    setNotebookNeedsReenable(changes.notebookNeedsReenable.newValue === true);
+                }
+                if (changes.troubleshootingHintDismissed) {
+                    setTroubleshootingHintDismissed(changes.troubleshootingHintDismissed.newValue === true);
                 }
             }
         };
@@ -328,11 +350,19 @@ function App() {
     };
 
     const handleSettingsOpenChange = React.useCallback((open: boolean) => {
+        setSideMenuHovered(false);
         setSettingsOpen(open);
         try {
             chrome.storage.sync.set({ popupSettingsOpen: open });
         } catch (error) {
             // Silently handle save errors
+        }
+    }, []);
+
+    const unlockHoverExpand = React.useCallback(() => {
+        setHoverExpandLocked(false);
+        if (document.querySelector('.popup-side-menu')?.matches(':hover')) {
+            setSideMenuHovered(true);
         }
     }, []);
 
@@ -430,14 +460,23 @@ function App() {
             return;
         }
 
+        document.documentElement.classList.toggle(
+            'popup-side-expanded',
+            !hoverExpandLocked && sideMenuHovered
+        );
+    }, [hoverExpandLocked, sideMenuHovered, isLoading]);
+
+    React.useEffect(() => {
+        if (isLoading) {
+            return;
+        }
+
         const root = document.documentElement;
         const body = document.body;
-        const sideExpanded = !settingsOpen && sideMenuHovered;
         root.classList.toggle('popup-settings-open', settingsOpen);
-        root.classList.toggle('popup-side-expanded', sideExpanded);
 
-        const sideTo = settingsOpen ? SIDE_SETTINGS_WIDTH : SIDE_COLLAPSED_WIDTH;
-        const popupTo = POPUP_MAIN_WIDTH + sideTo;
+        const settingsTo = settingsOpen ? SIDE_SETTINGS_WIDTH : 0;
+        const popupTo = POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH + settingsTo;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const applyWidth = (popupWidth: number, sideWidth: number) => {
@@ -450,18 +489,24 @@ function App() {
 
         if (skipSettingsAnimation.current || reducedMotion) {
             skipSettingsAnimation.current = false;
-            applyWidth(popupTo, sideTo);
+            applyWidth(popupTo, settingsTo);
+            setHoverExpandLocked(false);
             return;
         }
 
         const popupFrom = parseFloat(getComputedStyle(root).width) || (POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH);
         const sideParsed = parseFloat(getComputedStyle(root).getPropertyValue('--settings-width'));
-        const sideFrom = Number.isFinite(sideParsed) ? sideParsed : SIDE_COLLAPSED_WIDTH;
+        const sideFrom = Number.isFinite(sideParsed) ? sideParsed : 0;
 
-        if (Math.abs(popupFrom - popupTo) < 0.5 && Math.abs(sideFrom - sideTo) < 0.5) {
-            applyWidth(popupTo, sideTo);
+        if (Math.abs(popupFrom - popupTo) < 0.5 && Math.abs(sideFrom - settingsTo) < 0.5) {
+            applyWidth(popupTo, settingsTo);
+            setHoverExpandLocked(false);
             return;
         }
+
+        setSideMenuHovered(false);
+        setHoverExpandLocked(true);
+
         const involvesSettings = settingsOpen || popupFrom >= 700 || popupTo >= 700;
         const duration = involvesSettings ? 380 : 200;
         const start = performance.now();
@@ -472,10 +517,12 @@ function App() {
             const eased = 1 - (1 - progress) ** 3;
             applyWidth(
                 popupFrom + (popupTo - popupFrom) * eased,
-                sideFrom + (sideTo - sideFrom) * eased
+                sideFrom + (settingsTo - sideFrom) * eased
             );
             if (progress < 1) {
                 frame = requestAnimationFrame(tick);
+            } else {
+                unlockHoverExpand();
             }
         };
 
@@ -484,13 +531,31 @@ function App() {
         return () => {
             cancelAnimationFrame(frame);
         };
-    }, [settingsOpen, sideMenuHovered, isLoading]);
+    }, [settingsOpen, isLoading, unlockHoverExpand]);
 
     // Handle manualRtlInfoDismissed change
     const handleManualRtlInfoDismissedChange = React.useCallback((dismissed: boolean) => {
         setManualRtlInfoDismissed(dismissed);
         try {
             chrome.storage.sync.set({ manualRtlInfoDismissed: dismissed });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    }, []);
+
+    const handleActivationHintDismiss = React.useCallback(() => {
+        setActivationHintDismissed(true);
+        try {
+            chrome.storage.sync.set({ activationHintDismissed: true });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    }, []);
+
+    const handleTroubleshootingHintDismiss = React.useCallback(() => {
+        setTroubleshootingHintDismissed(true);
+        try {
+            chrome.storage.sync.set({ troubleshootingHintDismissed: true });
         } catch (error) {
             // Silently handle save errors
         }
@@ -646,6 +711,44 @@ function App() {
                     </Typography>
                 </Box>
 
+                {notebookNeedsReenable && (
+                    <Box sx={{
+                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        pb: 1.5
+                    }}>
+                        <InstallHintBanner
+                            variant="notebook"
+                            isDarkMode={isDarkMode}
+                        />
+                    </Box>
+                )}
+
+                {!activationHintDismissed && (
+                    <Box sx={{
+                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        pb: 1.5
+                    }}>
+                        <InstallHintBanner
+                            variant="install"
+                            isDarkMode={isDarkMode}
+                            onDismiss={handleActivationHintDismiss}
+                        />
+                    </Box>
+                )}
+
+                {activationHintDismissed && !troubleshootingHintDismissed && (
+                    <Box sx={{
+                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        pb: 1.5
+                    }}>
+                        <InstallHintBanner
+                            variant="troubleshooting"
+                            isDarkMode={isDarkMode}
+                            onDismiss={handleTroubleshootingHintDismiss}
+                        />
+                    </Box>
+                )}
+
                 <Paper elevation={0} sx={{ 
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
@@ -757,7 +860,10 @@ function App() {
                                     تنظیمات جابه‌جا شد
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
-                                    برای راحتی استفاده، تنظیمات به سمت چپ منتقل شده است.
+                                    برای راحتی استفاده، تنظیمات به پنل جدا منتقل شده است.
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
+                                    از طریق منو چپ یا دکمه زیر پنل تنظیمات را باز کنید
                                 </Typography>
                                 <Button
                                     onClick={() => handleSettingsOpenChange(!settingsOpen)}
@@ -784,7 +890,7 @@ function App() {
                                         },
                                     }}
                                 >
-                                    {settingsOpen ? 'بستن پنل سمت چپ' : 'باز کردن پنل سمت چپ'}
+                                    {settingsOpen ? 'بستن پنل تنظیمات' : 'باز کردن پنل تنظیمات'}
                                 </Button>
                             </Box>
                         </div>
@@ -970,23 +1076,36 @@ function App() {
                 </Paper>
                 </div>
                 </div>
+                <div className="popup-settings-panel">
+                    <QuickSettings
+                        rtlAlgorithm={rtlAlgorithm}
+                        onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                        supportHide={supportHide}
+                        onSupportChange={handleSupportChange}
+                        isDarkMode={isDarkMode}
+                        manualRtlSettings={manualRtlSettings}
+                        onManualRtlSettingsChange={handleManualRtlSettingsChange}
+                        onClose={() => handleSettingsOpenChange(false)}
+                    />
+                </div>
                 <div className="popup-side-slot">
                 <aside
                     className="popup-side-menu"
                     dir="rtl"
                     aria-label="تنظیمات افزونه"
                     onMouseEnter={() => {
-                        if (!settingsOpen) {
+                        if (!hoverExpandLocked) {
                             setSideMenuHovered(true);
                         }
                     }}
                     onMouseLeave={() => setSideMenuHovered(false)}
                 >
                     <div className="popup-settings-toggle-wrap">
+                        <div className="popup-side-item-group">
                         <button
                             type="button"
                             className="popup-side-item popup-side-item-settings"
-                            onClick={() => handleSettingsOpenChange(true)}
+                            onClick={() => handleSettingsOpenChange(!settingsOpen)}
                             aria-label="تنظیمات"
                             aria-expanded={settingsOpen}
                         >
@@ -997,20 +1116,6 @@ function App() {
                             </span>
                             <span className="popup-side-item-label">تنظیمات</span>
                         </button>
-                        <a
-                            href={extensionStoreUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="popup-side-item popup-side-item-rate"
-                            aria-label={rateLinkText}
-                        >
-                            <span className="popup-side-item-icon">
-                                <SvgIcon>
-                                    <path d={mdiStarOutline} />
-                                </SvgIcon>
-                            </span>
-                            <span className="popup-side-item-label">{rateLinkText}</span>
-                        </a>
                         <a
                             href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
                             target="_blank"
@@ -1024,6 +1129,22 @@ function App() {
                                 </SvgIcon>
                             </span>
                             <span className="popup-side-item-label">مشکلات متداول</span>
+                        </a>
+
+
+                        <a
+                            href="https://t.me/AI_RTL_ir"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-channel"
+                            aria-label="کانال AI RTL"
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon viewBox="0 0 24 24">
+                                    <path d={TELEGRAM_ICON_PATH} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">کانال تلگرام AI RTL</span>
                         </a>
                         <a
                             href="https://ai-rtl.ir/support/?source=extension-popup-side-support"
@@ -1039,18 +1160,9 @@ function App() {
                             </span>
                             <span className="popup-side-item-label">پشتیبانی</span>
                         </a>
-                        <a
-                            href="https://ai-rtl.ir/?source=extension-popup-side-site"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="popup-side-item popup-side-item-site"
-                            aria-label="سایت رسمی"
-                        >
-                            <span className="popup-side-item-icon">
-                                <img src="/images/myLogo.png" alt="AI RTL" />
-                            </span>
-                            <span className="popup-side-item-label">سایت رسمی</span>
-                        </a>
+               
+                        </div>
+                        <div className="popup-side-item-group">
                         <a
                             href="https://ai-rtl.ir/privacy-policy/?source=extension-popup-side-privacy"
                             target="_blank"
@@ -1066,6 +1178,20 @@ function App() {
                             <span className="popup-side-item-label">حریم خصوصی</span>
                         </a>
                         <a
+                            href={extensionStoreUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-rate"
+                            aria-label={rateLinkText}
+                        >
+                            <span className="popup-side-item-icon">
+                                <SvgIcon>
+                                    <path d={mdiStarOutline} />
+                                </SvgIcon>
+                            </span>
+                            <span className="popup-side-item-label">{rateLinkText}</span>
+                        </a>
+                        <a
                             href="https://donate.sudoshz.ir/u/ai-rtl"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -1077,58 +1203,11 @@ function App() {
                             </span>
                             <span className="popup-side-item-label">دونیت</span>
                         </a>
+                        </div>
                     </div>
-                    <QuickSettings
-                        rtlAlgorithm={rtlAlgorithm}
-                        onRtlAlgorithmChange={handleRtlAlgorithmChange}
-                        supportHide={supportHide}
-                        onSupportChange={handleSupportChange}
-                        isDarkMode={isDarkMode}
-                        manualRtlSettings={manualRtlSettings}
-                        onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                        onClose={() => handleSettingsOpenChange(false)}
-                    />
                 </aside>
                 </div>
                 </div>
-
-            {/* فوتر ساده */}
-            <div className="sticky-footer">
-                <div className="sticky-footer-content">
-                    <div className="footer-links">
-                        <a 
-                            href="https://ai-rtl.ir/report/?source=extension-popup-footer-report" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="footer-link"
-                        >
-                            مشکلات متداول
-                        </a>
-                        
-                        <span className="footer-separator">|</span>
-                        
-                        <a 
-                            href={extensionStoreUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="footer-link"
-                        >
-                            {rateLinkText}
-                        </a>
-                        
-                        <span className="footer-separator">|</span>
-                        
-                        <a 
-                            href="https://donate.sudoshz.ir/u/ai-rtl" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="footer-link"
-                        >
-                            حمایت مالی
-                        </a>
-                    </div>
-                </div>
-            </div>
             </div>
         </ThemeProvider>
         </CacheProvider>
