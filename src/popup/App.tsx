@@ -775,7 +775,7 @@ function App() {
                 <div className="popup-main-inner">
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
-                            : '#b3d1e4' }}>
+                            : '#dae8f1' }}>
                     <Typography 
                         variant="body2" 
                         sx={{ 

@@ -145,11 +145,11 @@ html.popup-side-expanded .popup-side-menu {
 
 body[data-theme="light"] .popup-side-menu {
     border-right-color: rgba(30, 64, 175, 0.2);
-    background: #f4f8fb;
+    background: #e0f2fe;
 }
 
 html.popup-side-expanded body[data-theme="light"] .popup-side-menu {
-    background: #f4f8fb;
+    background: #e0f2fe;
     box-shadow: 8px 0 24px rgba(15, 23, 42, 0.18);
 }
 
@@ -451,7 +451,7 @@ body[data-theme="light"] .popup-side-item-label {
 }
 
 body[data-theme="light"] .quick-settings {
-    background: #f4f8fb;
+    background: #e0f2fe;
     border-right-color: rgba(30, 64, 175, 0.2);
 }
 
