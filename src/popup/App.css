@@ -115,7 +115,8 @@ body[data-theme="light"] .popup-side-menu {
     right: 0;
     z-index: 2;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     opacity: 1;
     transition: opacity 0.18s ease 0.14s;
 }
@@ -164,6 +165,28 @@ body[data-theme="light"] .popup-settings-toggle:hover {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     color: #ffffff;
+}
+
+.popup-donate-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 0 10px;
+    text-decoration: none;
+}
+
+.popup-donate-toggle img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.popup-donate-toggle:hover {
+    background: rgba(226, 91, 91, 0.16);
 }
 
 .quick-settings {

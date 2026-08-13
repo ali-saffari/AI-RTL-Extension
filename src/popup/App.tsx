@@ -19,11 +19,10 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiInformationOutline } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiInformationOutline, mdiClose } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
-import Settings from './Settings';
 import ManualRtlBanner from './ManualRtlBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
@@ -723,86 +722,63 @@ function App() {
                         </div>
 
                         <div id="settings-section">
-                            <Box sx={{ 
-                                textAlign: 'center', 
-                                mt: 2, 
-                                p: 2, 
-                                background: isDarkMode 
-                                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
-                                borderRadius: 0, 
-                                mb: 2,
-                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
-                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
-                            }}>
-                                <Typography variant="body1" sx={{ 
-                                    fontWeight: 600,
-                                    color: isDarkMode ? '#ffffff' : '#1e293b'
-                                }}>
-                                    تنظیمات افزونه
-                                </Typography>
-                            </Box>
-
                             <Box
                                 sx={{
-                                    mx: 2,
-                                    mb: 2,
-                                    p: 2,
-                                    borderRadius: 1.5,
+                                    minHeight: 280,
+                                    mx: 0,
+                                    mt: 2,
+                                    mb: 3,
+                                    px: 3,
+                                    py: 5,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     textAlign: 'center',
                                     background: isDarkMode
-                                        ? 'rgba(0, 233, 255, 0.08)'
-                                        : 'rgba(30, 64, 175, 0.08)',
-                                    border: isDarkMode
-                                        ? '1px solid rgba(0, 233, 255, 0.28)'
-                                        : '1px solid rgba(30, 64, 175, 0.22)',
+                                        ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.14) 0%, rgba(0, 233, 255, 0.05) 100%)'
+                                        : 'linear-gradient(135deg, rgba(30, 64, 175, 0.14) 0%, rgba(30, 64, 175, 0.05) 100%)',
+                                    borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
+                                    borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
                                 }}
                             >
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, mb: 1 }}>
-                                    <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1e40af' }}>
-                                        <path d={mdiInformationOutline} />
-                                    </SvgIcon>
-                                    <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}>
-                                        تنظیمات جابه‌جا شد
-                                    </Typography>
-                                </Box>
-                                <Typography sx={{ fontSize: '0.78rem', lineHeight: 1.7, color: isDarkMode ? 'rgba(255,255,255,0.82)' : 'rgba(30,41,59,0.82)' }}>
+                                <SvgIcon sx={{ fontSize: '2.4rem', mb: 1.5, color: isDarkMode ? '#00e9ff' : '#1e40af' }}>
+                                    <path d={mdiInformationOutline} />
+                                </SvgIcon>
+                                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', mb: 1.25, color: isDarkMode ? '#ffffff' : '#1e293b' }}>
+                                    تنظیمات جابه‌جا شد
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
                                     برای راحتی استفاده، تنظیمات به سمت چپ منتقل شده است.
                                 </Typography>
                                 <Button
-                                    size="small"
-                                    onClick={() => handleSettingsOpenChange(true)}
+                                    onClick={() => handleSettingsOpenChange(!settingsOpen)}
                                     startIcon={
-                                        <SvgIcon sx={{ fontSize: '1rem !important' }}>
-                                            <path d={mdiCog} />
+                                        <SvgIcon sx={{ fontSize: '1.15rem !important' }}>
+                                            <path d={settingsOpen ? mdiClose : mdiCog} />
                                         </SvgIcon>
                                     }
                                     sx={{
-                                        mt: 1.25,
+                                        mt: 2.5,
+                                        px: 2,
+                                        py: 0.75,
                                         color: isDarkMode ? '#00e9ff' : '#1e40af',
                                         fontFamily: 'iranyekan',
+                                        fontSize: '0.88rem',
                                         fontWeight: 700,
                                         textTransform: 'none',
+                                        border: isDarkMode
+                                            ? '1px solid rgba(0, 233, 255, 0.45)'
+                                            : '1px solid rgba(30, 64, 175, 0.4)',
                                         '&:hover': {
-                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.08)',
+                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.1)',
                                             transform: 'none',
                                         },
                                     }}
                                 >
-                                    باز کردن پنل سمت چپ
+                                    {settingsOpen ? 'بستن پنل سمت چپ' : 'باز کردن پنل سمت چپ'}
                                 </Button>
                             </Box>
-
-                            <Settings
-                                rtlAlgorithm={rtlAlgorithm}
-                                onRtlAlgorithmChange={handleRtlAlgorithmChange}
-                                supportHide={supportHide}
-                                onSupportChange={handleSupportChange}
-                                isDarkMode={isDarkMode}
-                                manualRtlSettings={manualRtlSettings}
-                                onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                                hideTitle
-                            />
                         </div>
                         
                         <div id="report-section">
@@ -987,8 +963,8 @@ function App() {
                 </div>
                 </div>
                 <aside className="popup-side-menu" dir="rtl" aria-label="تنظیمات افزونه">
-                    <Tooltip title="تنظیمات" placement="right">
-                        <span className="popup-settings-toggle-wrap">
+                    <div className="popup-settings-toggle-wrap">
+                        <Tooltip title="تنظیمات" placement="right">
                             <button
                                 type="button"
                                 className="popup-settings-toggle"
@@ -1001,8 +977,20 @@ function App() {
                                 </SvgIcon>
                                 <span className="popup-settings-toggle-label">تنـظیمـات</span>
                             </button>
-                        </span>
-                    </Tooltip>
+                        </Tooltip>
+                        <Tooltip title="حمایت مالی" placement="right">
+                            <a
+                                href="https://donate.sudoshz.ir/u/ai-rtl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="popup-donate-toggle"
+                                aria-label="حمایت مالی"
+                            >
+                                <img src="/images/sponsor/yavar.png" alt="یاور" />
+                                <span className="popup-settings-toggle-label">دونیت</span>
+                            </a>
+                        </Tooltip>
+                    </div>
                     <QuickSettings
                         rtlAlgorithm={rtlAlgorithm}
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
@@ -1026,7 +1014,7 @@ function App() {
                             rel="noopener noreferrer"
                             className="footer-link"
                         >
-                            گزارش مشکل
+                            مشکلات متداول
                         </a>
                         
                         <span className="footer-separator">|</span>
