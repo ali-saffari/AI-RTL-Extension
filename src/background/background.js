@@ -46,13 +46,17 @@ async function initializeUserId() {
             await chrome.storage.sync.set({ uid });
         }
         
-        const b = isFirefoxRuntime() ? 'f' : 'c';
-        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?uid=${uid}&b=${b}&source=extension-uninstall`);
+        chrome.runtime.setUninstallURL(buildExtensionSiteUrl('/uninstall-feedback/', {
+            uid,
+            source: 'extension-uninstall'
+        }));
         return uid;
     } catch (error) {
         console.error('Error initializing user ID:', error);
-        const b = isFirefoxRuntime() ? 'f' : 'c';
-        chrome.runtime.setUninstallURL(`https://ai-rtl.ir/uninstall-feedback/?error=1&b=${b}&source=extension-uninstall`);
+        chrome.runtime.setUninstallURL(buildExtensionSiteUrl('/uninstall-feedback/', {
+            error: '1',
+            source: 'extension-uninstall'
+        }));
     }
 }
 
@@ -164,15 +168,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         
         // Open activation guide page in new tab after installation
         try {
-            // Get user ID and add to URL
             const uidResult = await chrome.storage.sync.get(['uid']);
-            const uid = uidResult.uid || '';
-            const activateUrl = uid 
-                ? `https://ai-rtl.ir/activate?uid=${uid}`
-                : 'https://ai-rtl.ir/activate';
-            
             chrome.tabs.create({
-                url: activateUrl
+                url: buildExtensionSiteUrl('/activate', {
+                    uid: uidResult.uid || '',
+                    source: 'extension-install'
+                })
             });
         } catch (error) {
             console.error('[Background] Error opening activation guide page:', error);
@@ -412,6 +413,39 @@ function isFirefoxRuntime() {
     } catch {
         return false;
     }
+}
+
+function getExtensionVersion() {
+    try {
+        return chrome.runtime.getManifest()?.version || '';
+    } catch {
+        return '';
+    }
+}
+
+function getExtensionBrowserParam() {
+    return isFirefoxRuntime() ? 'f' : 'c';
+}
+
+function buildExtensionSiteUrl(path, extraParams = {}) {
+    const params = new URLSearchParams();
+
+    Object.entries(extraParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            params.set(key, String(value));
+        }
+    });
+
+    params.set('b', getExtensionBrowserParam());
+
+    const version = getExtensionVersion();
+    if (version) {
+        params.set('v', version);
+    }
+
+    const query = params.toString();
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `https://ai-rtl.ir${normalizedPath}${query ? `?${query}` : ''}`;
 }
 
 function getDefaultManualRtlSettings() {
@@ -725,7 +759,8 @@ const AI_SITES = [
     'consensus.app', 'www.consensus.app',
     'scispace.com', 'www.scispace.com',
     'web.chatboxai.app',
-    'lumo.proton.me'
+    'lumo.proton.me',
+    'meta.ai', 'www.meta.ai'
 ];
 
 function isAISite(hostname) {

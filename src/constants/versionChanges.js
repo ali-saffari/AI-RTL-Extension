@@ -10,6 +10,7 @@ export const versionChanges = [
     { id: '7', text: 'افزودن سایت Consensus', icon: 'consensus.png', type: 'add' },
     { id: '8', text: 'افزودن سایت SciSpace', icon: 'scispace.png', type: 'add' },
     { id: '9', text: 'افزودن سایت Chatbox AI', icon: 'chatboxai.png', type: 'add' },
+    { id: '10', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

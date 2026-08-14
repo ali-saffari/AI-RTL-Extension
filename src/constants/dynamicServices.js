@@ -80,6 +80,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Lumo',
         origins: ['*://lumo.proton.me/*'],
         hostnames: ['lumo.proton.me']
+    },
+    meta: {
+        name: 'Meta AI',
+        origins: ['*://meta.ai/*', '*://www.meta.ai/*'],
+        hostnames: ['meta.ai', 'www.meta.ai']
     }
 };
 

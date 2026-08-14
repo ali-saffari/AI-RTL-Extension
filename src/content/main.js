@@ -51,6 +51,7 @@ import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
 import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
+import { activateMeta } from './services/meta.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -261,6 +262,10 @@ const serviceConfig = {
     lumo: {
         urls: ["lumo.proton.me"],
         activate: activateLumo
+    },
+    meta: {
+        urls: ["meta.ai", "www.meta.ai"],
+        activate: activateMeta
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

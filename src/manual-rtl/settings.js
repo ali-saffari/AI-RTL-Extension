@@ -56,7 +56,9 @@ function getAISitesList() {
         'scispace.com',
         'www.scispace.com',
         'web.chatboxai.app',
-        'lumo.proton.me'
+        'lumo.proton.me',
+        'meta.ai',
+        'www.meta.ai'
     ];
 
     return manualRtlState.aiSitesList;
