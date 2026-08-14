@@ -967,7 +967,35 @@ function App() {
                                     برای راحتی استفاده، تنظیمات به پنل جدا منتقل شده است.
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
-                                    از طریق منو چپ یا دکمه زیر پنل تنظیمات را باز کنید
+                                    از طریق{' '}
+                                    <Box
+                                        component="button"
+                                        type="button"
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            handleHighlightSettingsButton();
+                                        }}
+                                        sx={{
+                                            display: 'inline',
+                                            p: 0,
+                                            m: 0,
+                                            border: 0,
+                                            background: 'none',
+                                            cursor: 'pointer',
+                                            font: 'inherit',
+                                            fontWeight: 700,
+                                            color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                            textDecoration: 'underline',
+                                            textUnderlineOffset: '3px',
+                                            '&:hover': {
+                                                color: isDarkMode ? '#4dd4ff' : '#3b82f6'
+                                            }
+                                        }}
+                                    >
+                                        تنظیمات
+                                    </Box>
+                                    {' '}در منوی سمت چپ یا دکمه زیر، پنل را باز کنید.
                                 </Typography>
                                 <Button
                                     onClick={() => handleSettingsOpenChange(!settingsOpen)}
