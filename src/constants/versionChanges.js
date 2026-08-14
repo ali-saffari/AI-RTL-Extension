@@ -7,6 +7,8 @@ export const versionChanges = [
     { id: '4', text: 'افزودن سایت fal.ai', icon: 'fal.png', type: 'add' },
     { id: '5', text: 'آپدیت Gemini', icon: 'Gemini.png', type: 'fix' },
     { id: '6', text: 'افزودن سایت Black Forest', icon: 'bfl.png', type: 'add' },
+    { id: '7', text: 'افزودن سایت Character.AI', icon: 'character-ai.png', type: 'add' },
+    { id: '8', text: 'افزودن سایت Pi', icon: 'pi.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

@@ -67,7 +67,11 @@ function getAISitesList() {
         'bfl.ai',
         'www.bfl.ai',
         'dashboard.bfl.ai',
-        'playground.bfl.ai'
+        'playground.bfl.ai',
+        'character.ai',
+        'www.character.ai',
+        'pi.ai',
+        'www.pi.ai'
     ];
 
     return manualRtlState.aiSitesList;

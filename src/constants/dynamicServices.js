@@ -105,6 +105,16 @@ export const DYNAMIC_SERVICES = {
         name: 'Black Forest',
         origins: ['*://bfl.ai/*', '*://*.bfl.ai/*'],
         hostnames: ['bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai']
+    },
+    characterAi: {
+        name: 'Character.AI',
+        origins: ['*://character.ai/*', '*://www.character.ai/*'],
+        hostnames: ['character.ai', 'www.character.ai']
+    },
+    pi: {
+        name: 'Pi',
+        origins: ['*://pi.ai/*', '*://www.pi.ai/*'],
+        hostnames: ['pi.ai', 'www.pi.ai']
     }
 };
 

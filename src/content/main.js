@@ -56,6 +56,8 @@ import { activateGoogleLabs } from './services/google-labs.js';
 import { activateVeo3 } from './services/veo3.js';
 import { activateFal } from './services/fal.js';
 import { activateBfl } from './services/bfl.js';
+import { activateCharacterAi } from './services/character-ai.js';
+import { activatePi } from './services/pi.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -286,6 +288,14 @@ const serviceConfig = {
     bfl: {
         urls: ["bfl.ai"],
         activate: activateBfl
+    },
+    characterAi: {
+        urls: ["character.ai", "www.character.ai"],
+        activate: activateCharacterAi
+    },
+    pi: {
+        urls: ["pi.ai", "www.pi.ai"],
+        activate: activatePi
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

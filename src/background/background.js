@@ -764,7 +764,9 @@ const AI_SITES = [
     'labs.google', 'www.labs.google',
     'www-veo3.com',
     'fal.ai', 'www.fal.ai',
-    'bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai'
+    'bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai',
+    'character.ai', 'www.character.ai',
+    'pi.ai', 'www.pi.ai'
 ];
 
 function isAISite(hostname) {

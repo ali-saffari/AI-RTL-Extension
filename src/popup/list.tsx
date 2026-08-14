@@ -87,7 +87,9 @@ const services: Service[] = [
     { key: 'lumo', name: 'Lumo', icon: '/images/lumo-proton.png', url: 'https://lumo.proton.me/', new: true },
     { key: 'veo3', name: 'Veo 3', icon: '/images/veo3.png', url: 'https://www-veo3.com/', new: true },
     { key: 'fal', name: 'fal.ai', icon: '/images/fal.png', url: 'https://fal.ai/', new: true, helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.' },
-    { key: 'bfl', name: 'Black Forest', icon: '/images/bfl.png', url: 'https://bfl.ai/', new: true }
+    { key: 'bfl', name: 'Black Forest', icon: '/images/bfl.png', url: 'https://bfl.ai/', new: true },
+    { key: 'characterAi', name: 'Character.AI', icon: '/images/character-ai.png', url: 'https://character.ai/', new: true },
+    { key: 'pi', name: 'Pi', icon: '/images/pi.png', url: 'https://pi.ai/', new: true }
 ];
 
 
