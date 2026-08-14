@@ -54,6 +54,7 @@ import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
 import { activateGoogleLabs } from './services/google-labs.js';
 import { activateVeo3 } from './services/veo3.js';
+import { activateFal } from './services/fal.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -276,6 +277,10 @@ const serviceConfig = {
     veo3: {
         urls: ["www-veo3.com"],
         activate: activateVeo3
+    },
+    fal: {
+        urls: ["fal.ai", "www.fal.ai"],
+        activate: activateFal
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

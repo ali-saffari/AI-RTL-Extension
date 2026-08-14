@@ -95,6 +95,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Veo 3',
         origins: ['*://www-veo3.com/*'],
         hostnames: ['www-veo3.com']
+    },
+    fal: {
+        name: 'fal.ai',
+        origins: ['*://fal.ai/*', '*://www.fal.ai/*'],
+        hostnames: ['fal.ai', 'www.fal.ai']
     }
 };
 

@@ -762,7 +762,8 @@ const AI_SITES = [
     'lumo.proton.me',
     'meta.ai', 'www.meta.ai',
     'labs.google', 'www.labs.google',
-    'www-veo3.com'
+    'www-veo3.com',
+    'fal.ai', 'www.fal.ai'
 ];
 
 function isAISite(hostname) {

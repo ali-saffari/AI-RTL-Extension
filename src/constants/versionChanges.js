@@ -13,6 +13,7 @@ export const versionChanges = [
     { id: '10', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
     { id: '11', text: 'افزودن سایت Google Labs', icon: 'labs-google.png', type: 'add' },
     { id: '12', text: 'افزودن سایت Veo 3', icon: 'veo3.png', type: 'add' },
+    { id: '13', text: 'افزودن سایت fal.ai', icon: 'fal.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی
