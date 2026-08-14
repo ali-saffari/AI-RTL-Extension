@@ -115,6 +115,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Pi',
         origins: ['*://pi.ai/*', '*://www.pi.ai/*'],
         hostnames: ['pi.ai', 'www.pi.ai']
+    },
+    cursor: {
+        name: 'Cursor',
+        origins: ['*://cursor.com/*', '*://*.cursor.com/*'],
+        hostnames: ['cursor.com', 'www.cursor.com', 'docs.cursor.com']
     }
 };
 

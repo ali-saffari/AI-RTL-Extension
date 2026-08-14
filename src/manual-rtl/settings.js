@@ -71,7 +71,10 @@ function getAISitesList() {
         'character.ai',
         'www.character.ai',
         'pi.ai',
-        'www.pi.ai'
+        'www.pi.ai',
+        'cursor.com',
+        'www.cursor.com',
+        'docs.cursor.com'
     ];
 
     return manualRtlState.aiSitesList;

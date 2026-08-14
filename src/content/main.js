@@ -58,6 +58,7 @@ import { activateFal } from './services/fal.js';
 import { activateBfl } from './services/bfl.js';
 import { activateCharacterAi } from './services/character-ai.js';
 import { activatePi } from './services/pi.js';
+import { activateCursor } from './services/cursor.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -296,6 +297,10 @@ const serviceConfig = {
     pi: {
         urls: ["pi.ai", "www.pi.ai"],
         activate: activatePi
+    },
+    cursor: {
+        urls: ["cursor.com"],
+        activate: activateCursor
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],
