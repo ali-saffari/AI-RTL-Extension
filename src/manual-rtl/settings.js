@@ -58,7 +58,9 @@ function getAISitesList() {
         'web.chatboxai.app',
         'lumo.proton.me',
         'meta.ai',
-        'www.meta.ai'
+        'www.meta.ai',
+        'labs.google',
+        'www.labs.google'
     ];
 
     return manualRtlState.aiSitesList;

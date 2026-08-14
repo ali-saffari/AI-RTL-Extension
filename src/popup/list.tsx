@@ -49,6 +49,7 @@ const services: Service[] = [
     { key: 'perplexity', name: 'Perplexity', icon: '/images/perplexity.png', url: 'https://perplexity.ai' },
     { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
     { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/notebooklm.png', url: 'https://notebook.google.com/?hl=fa' },
+    { key: 'googleLabs', name: 'Google Labs', icon: '/images/labs-google.png', url: 'https://labs.google/', new: true },
     { key: 'meta', name: 'Meta AI', icon: '/images/meta.png', url: 'https://www.meta.ai/', new: true },
     { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
     { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },

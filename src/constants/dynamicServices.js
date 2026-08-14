@@ -85,6 +85,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Meta AI',
         origins: ['*://meta.ai/*', '*://www.meta.ai/*'],
         hostnames: ['meta.ai', 'www.meta.ai']
+    },
+    googleLabs: {
+        name: 'Google Labs',
+        origins: ['*://labs.google/*', '*://www.labs.google/*'],
+        hostnames: ['labs.google', 'www.labs.google']
     }
 };
 

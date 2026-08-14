@@ -11,6 +11,7 @@ export const versionChanges = [
     { id: '8', text: 'افزودن سایت SciSpace', icon: 'scispace.png', type: 'add' },
     { id: '9', text: 'افزودن سایت Chatbox AI', icon: 'chatboxai.png', type: 'add' },
     { id: '10', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
+    { id: '11', text: 'افزودن سایت Google Labs', icon: 'labs-google.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

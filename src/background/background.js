@@ -760,7 +760,8 @@ const AI_SITES = [
     'scispace.com', 'www.scispace.com',
     'web.chatboxai.app',
     'lumo.proton.me',
-    'meta.ai', 'www.meta.ai'
+    'meta.ai', 'www.meta.ai',
+    'labs.google', 'www.labs.google'
 ];
 
 function isAISite(hostname) {

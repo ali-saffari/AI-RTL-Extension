@@ -52,6 +52,7 @@ import { activateScispace } from './services/scispace.js';
 import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
+import { activateGoogleLabs } from './services/google-labs.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -266,6 +267,10 @@ const serviceConfig = {
     meta: {
         urls: ["meta.ai", "www.meta.ai"],
         activate: activateMeta
+    },
+    googleLabs: {
+        urls: ["labs.google", "www.labs.google"],
+        activate: activateGoogleLabs
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],
