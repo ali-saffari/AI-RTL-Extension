@@ -1,35 +1,31 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'آپدیت Claude', icon: 'claude-icon.png', type: 'fix' },
-    { id: '2', text: 'آپدیت Google Notebook', icon: 'notebooklm.png', type: 'fix' },
-    { id: '3', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
-    { id: '4', text: 'آپدیت ChatGPT', icon: 'openAi-icon.png', type: 'fix' },
-    { id: '5', text: 'افزودن سایت Lumo', icon: 'lumo-proton.png', type: 'add' },
-    { id: '6', text: 'افزودن سایت ATXP Chat', icon: 'atxp.png', type: 'add' },
-    { id: '7', text: 'افزودن سایت Consensus', icon: 'consensus.png', type: 'add' },
-    { id: '8', text: 'افزودن سایت SciSpace', icon: 'scispace.png', type: 'add' },
-    { id: '9', text: 'افزودن سایت Chatbox AI', icon: 'chatboxai.png', type: 'add' },
-    { id: '10', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
-    { id: '11', text: 'افزودن سایت Google Labs', icon: 'labs-google.png', type: 'add' },
-    { id: '12', text: 'افزودن سایت Veo 3', icon: 'veo3.png', type: 'add' },
-    { id: '13', text: 'افزودن سایت fal.ai', icon: 'fal.png', type: 'add' },
+    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'myLogo.png', type: 'fix' },
+    { id: '2', text: 'افزودن سایت Google Labs (Flow)', icon: 'labs-google.png', type: 'add' },
+    { id: '3', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
+    { id: '4', text: 'افزودن سایت fal.ai', icon: 'fal.png', type: 'add' },
+    { id: '5', text: 'آپدیت Gemini', icon: 'Gemini.png', type: 'fix' },
+    { id: '6', text: 'افزودن سایت Black Forest', icon: 'bfl.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی
 export const previousChanges = [
-//     {
-//         version: '1405/05/09',
-//         changes: [
-//             { id: '1', text: 'افزودن سایت ATXP Chat' },
-//             { id: '2', text: 'افزودن سایت Consensus' },
-//             { id: '3', text: 'افزودن سایت SciSpace' },
-//             { id: '4', text: 'افزودن سایت Chatbox AI' },
-//             { id: '5', text: 'آپدیت Google Notebook' },
-//             { id: '6', text: 'آپدیت Claude' },
-//             { id: '7', text: 'آپدیت DeepSeek' },
-//         ]
-//     },
+    {
+        version: '1405/05/12',
+        changes: [
+            { id: '1', text: 'آپدیت Claude' },
+            { id: '2', text: 'آپدیت Google Notebook' },
+            { id: '3', text: 'آپدیت DeepSeek' },
+            { id: '4', text: 'آپدیت ChatGPT' },
+            { id: '5', text: 'افزودن سایت Lumo' },
+            { id: '6', text: 'افزودن سایت ATXP Chat' },
+            { id: '7', text: 'افزودن سایت Consensus' },
+            { id: '8', text: 'افزودن سایت SciSpace' },
+            { id: '9', text: 'افزودن سایت Chatbox AI' },
+            { id: '10', text: 'افزودن سایت Veo 3' },
+        ]
+    },
     {
         version: '1405/04/20',
         changes: [

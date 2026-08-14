@@ -63,7 +63,11 @@ function getAISitesList() {
         'www.labs.google',
         'www-veo3.com',
         'fal.ai',
-        'www.fal.ai'
+        'www.fal.ai',
+        'bfl.ai',
+        'www.bfl.ai',
+        'dashboard.bfl.ai',
+        'playground.bfl.ai'
     ];
 
     return manualRtlState.aiSitesList;

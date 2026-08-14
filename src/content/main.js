@@ -55,6 +55,7 @@ import { activateMeta } from './services/meta.js';
 import { activateGoogleLabs } from './services/google-labs.js';
 import { activateVeo3 } from './services/veo3.js';
 import { activateFal } from './services/fal.js';
+import { activateBfl } from './services/bfl.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -282,6 +283,10 @@ const serviceConfig = {
         urls: ["fal.ai", "www.fal.ai"],
         activate: activateFal
     },
+    bfl: {
+        urls: ["bfl.ai"],
+        activate: activateBfl
+    },
     // google: {
     //     urls: ["google.com", "www.google.com"],
     //     activate: activateGoogle
@@ -295,7 +300,7 @@ function isCurrentSite(urls) {
             if (url === "github.com") {
                 return site === "github.com" && window.location.pathname.startsWith('/copilot');
             }
-            return url === site;
+            return url === site || site.endsWith('.' + url);
         });
     }
     return urls === site;

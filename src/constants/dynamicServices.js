@@ -87,7 +87,7 @@ export const DYNAMIC_SERVICES = {
         hostnames: ['meta.ai', 'www.meta.ai']
     },
     googleLabs: {
-        name: 'Google Labs',
+        name: 'Google Labs (Flow)',
         origins: ['*://labs.google/*', '*://www.labs.google/*'],
         hostnames: ['labs.google', 'www.labs.google']
     },
@@ -100,6 +100,11 @@ export const DYNAMIC_SERVICES = {
         name: 'fal.ai',
         origins: ['*://fal.ai/*', '*://www.fal.ai/*'],
         hostnames: ['fal.ai', 'www.fal.ai']
+    },
+    bfl: {
+        name: 'Black Forest',
+        origins: ['*://bfl.ai/*', '*://*.bfl.ai/*'],
+        hostnames: ['bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai']
     }
 };
 
