@@ -761,7 +761,8 @@ const AI_SITES = [
     'web.chatboxai.app',
     'lumo.proton.me',
     'meta.ai', 'www.meta.ai',
-    'labs.google', 'www.labs.google'
+    'labs.google', 'www.labs.google',
+    'www-veo3.com'
 ];
 
 function isAISite(hostname) {

@@ -90,6 +90,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Google Labs',
         origins: ['*://labs.google/*', '*://www.labs.google/*'],
         hostnames: ['labs.google', 'www.labs.google']
+    },
+    veo3: {
+        name: 'Veo 3',
+        origins: ['*://www-veo3.com/*'],
+        hostnames: ['www-veo3.com']
     }
 };
 

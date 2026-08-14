@@ -53,6 +53,7 @@ import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
 import { activateGoogleLabs } from './services/google-labs.js';
+import { activateVeo3 } from './services/veo3.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -271,6 +272,10 @@ const serviceConfig = {
     googleLabs: {
         urls: ["labs.google", "www.labs.google"],
         activate: activateGoogleLabs
+    },
+    veo3: {
+        urls: ["www-veo3.com"],
+        activate: activateVeo3
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

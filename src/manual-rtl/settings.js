@@ -60,7 +60,8 @@ function getAISitesList() {
         'meta.ai',
         'www.meta.ai',
         'labs.google',
-        'www.labs.google'
+        'www.labs.google',
+        'www-veo3.com'
     ];
 
     return manualRtlState.aiSitesList;
