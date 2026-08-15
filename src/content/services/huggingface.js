@@ -5,7 +5,7 @@ import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorith
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"], .ProseMirror';
-const MARKDOWN_SELECTOR = '[class*="markdown"], [class*="prose"], [class*="message"], [class*="chat"], .msg-content';
+const MARKDOWN_SELECTOR = '[class*="markdown"], [class*="prose"], [class*="message"], [class*="chat"], .msg-content, [data-message-type="user"]';
 const COPYRIGHT_SELECTOR = 'form';
 
 const INPUT_OPTIONS = {
@@ -77,7 +77,7 @@ function processHuggingFaceCopyright(form) {
         return;
     }
 
-    const $form = AQ(form);
+    const $form = AQ(form).parent().parent();
     if (!$form.has('textarea, [contenteditable="true"], .ProseMirror').length) {
         return;
     }
@@ -85,7 +85,7 @@ function processHuggingFaceCopyright(form) {
     addCopyright(
         $form,
         'AsBoxGemini AsBoxB',
-        'margin-top: 4px; margin-bottom: 4px; font-size: 13px;'
+        'margin-top: -14px; margin-bottom: -12px; font-size: 13px;'
     );
 }
 
