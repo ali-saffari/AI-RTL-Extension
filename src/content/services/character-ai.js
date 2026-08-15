@@ -1,4 +1,4 @@
-// character-ai.js service functions (Character.AI - character.ai)
+// character-ai.js service functions (Character.AI - character.ai / c.ai)
 import { addCopyright } from '../utils/copyright.js';
 import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 

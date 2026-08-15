@@ -765,7 +765,7 @@ const AI_SITES = [
     'www-veo3.com',
     'fal.ai', 'www.fal.ai',
     'bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai',
-    'character.ai', 'www.character.ai',
+    'character.ai', 'www.character.ai', 'c.ai', 'www.c.ai',
     'pi.ai', 'www.pi.ai',
     'cursor.com', 'www.cursor.com', 'docs.cursor.com',
     'typingmind.com', 'www.typingmind.com',

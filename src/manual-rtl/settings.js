@@ -70,6 +70,8 @@ function getAISitesList() {
         'playground.bfl.ai',
         'character.ai',
         'www.character.ai',
+        'c.ai',
+        'www.c.ai',
         'pi.ai',
         'www.pi.ai',
         'cursor.com',

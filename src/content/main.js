@@ -294,7 +294,7 @@ const serviceConfig = {
         activate: activateBfl
     },
     characterAi: {
-        urls: ["character.ai", "www.character.ai"],
+        urls: ["character.ai", "www.character.ai", "c.ai", "www.c.ai"],
         activate: activateCharacterAi
     },
     pi: {

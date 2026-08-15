@@ -108,8 +108,8 @@ export const DYNAMIC_SERVICES = {
     },
     characterAi: {
         name: 'Character.AI',
-        origins: ['*://character.ai/*', '*://www.character.ai/*'],
-        hostnames: ['character.ai', 'www.character.ai']
+        origins: ['*://character.ai/*', '*://www.character.ai/*', '*://c.ai/*', '*://www.c.ai/*'],
+        hostnames: ['character.ai', 'www.character.ai', 'c.ai', 'www.c.ai']
     },
     pi: {
         name: 'Pi',
