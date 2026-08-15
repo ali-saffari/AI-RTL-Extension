@@ -55,7 +55,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
 
     // Process _546d736 elements for text direction detection (history items)
 
-    AQ(' .ds-markdown ').each(function (each) {
+    AQ(' .ds-markdown , .ds-message div').each(function (each) {
         // AQ(this).addClass('AsOk FontSet FontClaude');
         
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
