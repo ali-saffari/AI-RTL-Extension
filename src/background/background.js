@@ -767,7 +767,8 @@ const AI_SITES = [
     'bfl.ai', 'www.bfl.ai', 'dashboard.bfl.ai', 'playground.bfl.ai',
     'character.ai', 'www.character.ai',
     'pi.ai', 'www.pi.ai',
-    'cursor.com', 'www.cursor.com', 'docs.cursor.com'
+    'cursor.com', 'www.cursor.com', 'docs.cursor.com',
+    'typingmind.com', 'www.typingmind.com'
 ];
 
 function isAISite(hostname) {

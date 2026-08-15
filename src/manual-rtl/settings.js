@@ -74,7 +74,9 @@ function getAISitesList() {
         'www.pi.ai',
         'cursor.com',
         'www.cursor.com',
-        'docs.cursor.com'
+        'docs.cursor.com',
+        'typingmind.com',
+        'www.typingmind.com'
     ];
 
     return manualRtlState.aiSitesList;

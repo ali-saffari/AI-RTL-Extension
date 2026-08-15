@@ -59,6 +59,7 @@ import { activateBfl } from './services/bfl.js';
 import { activateCharacterAi } from './services/character-ai.js';
 import { activatePi } from './services/pi.js';
 import { activateCursor } from './services/cursor.js';
+import { activateTypingMind } from './services/typingmind.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -301,6 +302,10 @@ const serviceConfig = {
     cursor: {
         urls: ["cursor.com"],
         activate: activateCursor
+    },
+    typingmind: {
+        urls: ["typingmind.com", "www.typingmind.com"],
+        activate: activateTypingMind
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

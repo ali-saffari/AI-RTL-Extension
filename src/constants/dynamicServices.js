@@ -120,6 +120,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Cursor',
         origins: ['*://cursor.com/*', '*://www.cursor.com/*', '*://docs.cursor.com/*'],
         hostnames: ['cursor.com', 'www.cursor.com', 'docs.cursor.com']
+    },
+    typingmind: {
+        name: 'TypingMind',
+        origins: ['*://typingmind.com/*', '*://www.typingmind.com/*'],
+        hostnames: ['typingmind.com', 'www.typingmind.com']
     }
 };
 
