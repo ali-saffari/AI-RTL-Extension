@@ -61,6 +61,7 @@ import { activatePi } from './services/pi.js';
 import { activateCursor } from './services/cursor.js';
 import { activateTypingMind } from './services/typingmind.js';
 import { activateHuggingFace } from './services/huggingface.js';
+import { activateDash0 } from './services/dash0.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -311,6 +312,10 @@ const serviceConfig = {
     huggingface: {
         urls: ["huggingface.co", "www.huggingface.co", "hf.co", "www.hf.co"],
         activate: activateHuggingFace
+    },
+    dash0: {
+        urls: ["dash0.com", "www.dash0.com", "app.dash0.com"],
+        activate: activateDash0
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

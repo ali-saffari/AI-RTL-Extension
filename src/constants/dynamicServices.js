@@ -130,6 +130,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Hugging Face',
         origins: ['*://huggingface.co/*', '*://www.huggingface.co/*', '*://hf.co/*', '*://www.hf.co/*'],
         hostnames: ['huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co']
+    },
+    dash0: {
+        name: 'Dash0',
+        origins: ['*://dash0.com/*', '*://www.dash0.com/*', '*://app.dash0.com/*'],
+        hostnames: ['dash0.com', 'www.dash0.com', 'app.dash0.com']
     }
 };
 

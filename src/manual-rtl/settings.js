@@ -80,7 +80,10 @@ function getAISitesList() {
         'huggingface.co',
         'www.huggingface.co',
         'hf.co',
-        'www.hf.co'
+        'www.hf.co',
+        'dash0.com',
+        'www.dash0.com',
+        'app.dash0.com'
     ];
 
     return manualRtlState.aiSitesList;

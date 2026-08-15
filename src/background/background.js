@@ -769,7 +769,8 @@ const AI_SITES = [
     'pi.ai', 'www.pi.ai',
     'cursor.com', 'www.cursor.com', 'docs.cursor.com',
     'typingmind.com', 'www.typingmind.com',
-    'huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co'
+    'huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co',
+    'dash0.com', 'www.dash0.com', 'app.dash0.com'
 ];
 
 function isAISite(hostname) {
