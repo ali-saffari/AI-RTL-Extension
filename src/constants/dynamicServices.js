@@ -118,7 +118,7 @@ export const DYNAMIC_SERVICES = {
     },
     cursor: {
         name: 'Cursor',
-        origins: ['*://cursor.com/*', '*://*.cursor.com/*'],
+        origins: ['*://cursor.com/*', '*://www.cursor.com/*', '*://docs.cursor.com/*'],
         hostnames: ['cursor.com', 'www.cursor.com', 'docs.cursor.com']
     }
 };

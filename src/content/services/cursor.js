@@ -22,6 +22,8 @@ export function setCursor(rtlAlgorithm = 'advanced_full') {
         }
     });
 
+    AQ('i, svg, [class*="icon"], [class*="Icon"], [class*="codicon"]').removeClass('FontSet');
+
     if (chrome.runtime?.id) {
         addCopyright(
             AQ('form').has('textarea, [contenteditable="true"]').last(),
