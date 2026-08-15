@@ -12,6 +12,7 @@ export const versionChanges = [
     { id: '9', text: 'افزودن سایت Cursor', icon: 'cursor.png', type: 'add' },
     { id: '10', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
     { id: '11', text: 'افزودن سایت TypingMind', icon: 'typingmind.png', type: 'add' },
+    { id: '12', text: 'افزودن سایت Hugging Face', icon: 'huggingface.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

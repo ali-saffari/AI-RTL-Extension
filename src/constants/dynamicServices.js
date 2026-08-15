@@ -125,6 +125,11 @@ export const DYNAMIC_SERVICES = {
         name: 'TypingMind',
         origins: ['*://typingmind.com/*', '*://www.typingmind.com/*'],
         hostnames: ['typingmind.com', 'www.typingmind.com']
+    },
+    huggingface: {
+        name: 'Hugging Face',
+        origins: ['*://huggingface.co/*', '*://www.huggingface.co/*', '*://hf.co/*', '*://www.hf.co/*'],
+        hostnames: ['huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co']
     }
 };
 

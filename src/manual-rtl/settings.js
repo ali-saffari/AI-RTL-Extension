@@ -76,7 +76,11 @@ function getAISitesList() {
         'www.cursor.com',
         'docs.cursor.com',
         'typingmind.com',
-        'www.typingmind.com'
+        'www.typingmind.com',
+        'huggingface.co',
+        'www.huggingface.co',
+        'hf.co',
+        'www.hf.co'
     ];
 
     return manualRtlState.aiSitesList;

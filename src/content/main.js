@@ -60,6 +60,7 @@ import { activateCharacterAi } from './services/character-ai.js';
 import { activatePi } from './services/pi.js';
 import { activateCursor } from './services/cursor.js';
 import { activateTypingMind } from './services/typingmind.js';
+import { activateHuggingFace } from './services/huggingface.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -306,6 +307,10 @@ const serviceConfig = {
     typingmind: {
         urls: ["typingmind.com", "www.typingmind.com"],
         activate: activateTypingMind
+    },
+    huggingface: {
+        urls: ["huggingface.co", "www.huggingface.co", "hf.co", "www.hf.co"],
+        activate: activateHuggingFace
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

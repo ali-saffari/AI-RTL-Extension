@@ -91,7 +91,8 @@ const services: Service[] = [
     { key: 'characterAi', name: 'Character.AI', icon: '/images/character-ai.png', url: 'https://character.ai/', new: true },
     { key: 'pi', name: 'Pi', icon: '/images/pi.png', url: 'https://pi.ai/', new: true },
     { key: 'cursor', name: 'Cursor', icon: '/images/cursor.png', url: 'https://cursor.com/', new: true },
-    { key: 'typingmind', name: 'TypingMind', icon: '/images/typingmind.png', url: 'https://www.typingmind.com/', new: true }
+    { key: 'typingmind', name: 'TypingMind', icon: '/images/typingmind.png', url: 'https://www.typingmind.com/', new: true },
+    { key: 'huggingface', name: 'Hugging Face', icon: '/images/huggingface.png', url: 'https://huggingface.co/', new: true }
 ];
 
 
