@@ -1,6 +1,6 @@
 # AI RTL
 
-Browser extension that fixes right-to-left (RTL) layout and Persian/Farsi font rendering on AI chat websites such as ChatGPT, Claude, Gemini, DeepSeek, Copilot, Perplexity, Grok, and 40+ other tools.
+Browser extension that fixes right-to-left (RTL) layout and Persian/Farsi font rendering on AI chat websites such as ChatGPT, Claude, Gemini, DeepSeek, Copilot, Perplexity, Grok, and 50+ other tools.
 
 Homepage: [https://ai-rtl.ir](https://ai-rtl.ir)
 

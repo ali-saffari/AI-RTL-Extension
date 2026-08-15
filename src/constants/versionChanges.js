@@ -10,6 +10,7 @@ export const versionChanges = [
     { id: '7', text: 'افزودن سایت Character.AI', icon: 'character-ai.png', type: 'add' },
     { id: '8', text: 'افزودن سایت Pi', icon: 'pi.png', type: 'add' },
     { id: '9', text: 'افزودن سایت Cursor', icon: 'cursor.png', type: 'add' },
+    { id: '10', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی
