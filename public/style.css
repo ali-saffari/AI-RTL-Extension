@@ -32,6 +32,9 @@ html:not(.ai-rtl-code-algorithm) .FontSet pre {
 .FontSet h3{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
+.FontSet h4{
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
 .FontSet li{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
@@ -391,14 +394,8 @@ code.AsSetLtr , pre.AsSetLtr {
 
 /*----------------claud----------------*/
 
-
-
-
 .FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif);
-    /*line-height: 32px;*/
-    font-weight: 300;
-    /*font-size: 0.95rem;*/
 }
 
 
@@ -468,10 +465,6 @@ code.AsSetLtr , pre.AsSetLtr {
     font-size: 15px;
     font-weight: 200;
     color: #c7c7c7;
-}
-
-.FontClaude {
-    font-weight: 300;
 }
 
 
@@ -707,10 +700,12 @@ textarea#search-input-textarea {
 
 /*deep*/
 
-
-
-
-
+html.ai-rtl-has-font .ds-markdown h1,
+html.ai-rtl-has-font .ds-markdown h2,
+html.ai-rtl-has-font .ds-markdown h3,
+html.ai-rtl-has-font .ds-markdown h4 {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
 
 ._546d736.AsOkRList ._254829d  {
 

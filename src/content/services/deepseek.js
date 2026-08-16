@@ -4,6 +4,17 @@ import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/ana
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
 export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
+    if (!AQ('#deepseek-font-style').length) {
+        AQ(`<style id="deepseek-font-style">
+            html.ai-rtl-has-font .ds-markdown h1,
+            html.ai-rtl-has-font .ds-markdown h2,
+            html.ai-rtl-has-font .ds-markdown h3,
+            html.ai-rtl-has-font .ds-markdown h4 {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            }
+        </style>`).appendTo('head');
+    }
+
     if (chrome.runtime?.id) {
         let fo2 = `._871cbca`
         

@@ -164,13 +164,37 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
             processedClass: 'AsOk'
         });
     });
+
+    applyClaudeFontWeights();
 }
 
-// Main activation function for Claude
+const CLAUDE_FONT_WEIGHT_STYLE_ID = 'ai-rtl-claude-font-weights';
+const CLAUDE_FONT_WEIGHT_CSS = `
+* {
+    --cds-font-weight-regular: 350 !important;
+    --cds-font-weight-medium: 500 !important;
+    --cds-font-weight-semibold: 680 !important;
+    --cds-font-weight-bold: 700 !important;
+}
+`;
+
+function applyClaudeFontWeights() {
+    let style = document.getElementById(CLAUDE_FONT_WEIGHT_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = CLAUDE_FONT_WEIGHT_STYLE_ID;
+        style.textContent = CLAUDE_FONT_WEIGHT_CSS;
+    }
+    const parent = document.head || document.documentElement;
+    if (style.parentNode !== parent || parent.lastElementChild !== style) {
+        parent.appendChild(style);
+    }
+}
+
 export function activateClaude(rtlAlgorithm = 'advanced_full') {
     console.log("activateClaude with RTL algorithm:", rtlAlgorithm);
-    
-    // Initial setup
+
+    applyClaudeFontWeights();
     setItems_Claude(rtlAlgorithm);
 
     // SetInterval for periodic updates
