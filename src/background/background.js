@@ -539,6 +539,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: false, error: error.message });
             return true;
         }
+    } else if (message.action === 'previewFontScale') {
+        const scale = message.scale;
+        (async () => {
+            try {
+                const tabs = await chrome.tabs.query({});
+                await Promise.all((tabs || []).map((tab) => {
+                    if (!tab.id || isRestrictedBrowserUrl(tab.url)) {
+                        return Promise.resolve();
+                    }
+                    return chrome.tabs.sendMessage(tab.id, {
+                        action: 'previewFontScale',
+                        scale
+                    }).catch(() => {});
+                }));
+            } catch (error) {
+                // Tabs permission may be missing; preview is optional
+            }
+            sendResponse({ success: true });
+        })();
+        return true;
     } else if (message.action === 'getActiveTabInfo' || message.action === 'getActiveSessionInfo') {
         const snapshot = getActiveTabSnapshot();
         

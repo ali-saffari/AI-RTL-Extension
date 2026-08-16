@@ -11,38 +11,16 @@ import {
     normalizeFontScale,
     normalizeSelectedFontId,
 } from '../../utils/fonts';
+import { FONT_SCALE_MODE_FONT_SIZE, getFontScaleMode } from '../../utils/fontScaleSites';
 
 const STYLE_ID = 'ai-rtl-selected-font-style';
-const SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
+const FONT_SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
 const HAS_FONT_CLASS = 'ai-rtl-has-font';
 const NONE_FONT_CLASS = 'ai-rtl-font-none';
-const HAS_SCALE_CLASS = 'ai-rtl-has-font-scale';
+const LEGACY_FONT_SIZE_ATTR = 'data-ai-rtl-font-px';
 const loadedFontIds = new Set();
 let initialized = false;
 let applyingFontId = null;
-
-const FONT_SCALE_TARGETS = [
-    '.FontSet',
-    '.FontSetImportant',
-    '.FontSetImportant2',
-    'textarea.FontSetImportant',
-    '.FontSetImportantGPT',
-    '.CopilotFontSet',
-    '.FontSetPerplexity',
-    '.FontSetVivadoInput',
-    '.FontSetVivado',
-    '.rtl-manual-direction-element',
-    'pending-request'
-].join(', ');
-
-const FONT_SCALE_CSS = `
-html.ai-rtl-has-font-scale :is(${FONT_SCALE_TARGETS}) {
-    zoom: var(--ai-rtl-font-scale);
-}
-html.ai-rtl-has-font-scale :is(${FONT_SCALE_TARGETS}) :is(${FONT_SCALE_TARGETS}) {
-    zoom: 1;
-}
-`;
 
 const NONE_FONT_OVERRIDE_CSS = `
 html.ai-rtl-font-none .FontSet,
@@ -119,26 +97,41 @@ function setRootFontState(fontFamilyValue, isNone) {
     ensureStyleElement(STYLE_ID).textContent = `:root, html { --ai-rtl-font: ${fontFamilyValue}; }`;
 }
 
+function clearLegacyElementScales() {
+    document.querySelectorAll('[' + LEGACY_FONT_SIZE_ATTR + ']').forEach((element) => {
+        element.style.removeProperty('font-size');
+        element.removeAttribute(LEGACY_FONT_SIZE_ATTR);
+    });
+}
+
+function buildFontScaleCss(value) {
+    const mode = getFontScaleMode();
+    if (mode === FONT_SCALE_MODE_FONT_SIZE) {
+        return `html { font-size: ${value}% !important; }`;
+    }
+    return `html { zoom: ${value / 100} !important; }`;
+}
+
 export function applyFontScale(scale) {
+    const value = normalizeFontScale(scale);
     const root = document.documentElement;
     if (!root) {
         return;
     }
 
-    const value = normalizeFontScale(scale);
+    clearLegacyElementScales();
+    root.style.removeProperty('font-size');
+    root.style.removeProperty('zoom');
+
     if (value === DEFAULT_FONT_SCALE) {
-        root.classList.remove(HAS_SCALE_CLASS);
-        root.style.removeProperty('--ai-rtl-font-scale');
-        const style = document.getElementById(SCALE_STYLE_ID);
+        const style = document.getElementById(FONT_SCALE_STYLE_ID);
         if (style) {
             style.textContent = '';
         }
         return;
     }
 
-    root.classList.add(HAS_SCALE_CLASS);
-    root.style.setProperty('--ai-rtl-font-scale', String(value / 100));
-    ensureStyleElement(SCALE_STYLE_ID).textContent = FONT_SCALE_CSS;
+    ensureStyleElement(FONT_SCALE_STYLE_ID).textContent = buildFontScaleCss(value);
 }
 
 async function loadFontFaces(font) {
@@ -233,6 +226,14 @@ export function initSelectedFont() {
             if (changes[FONT_SCALE_STORAGE_KEY]) {
                 applyFontScale(changes[FONT_SCALE_STORAGE_KEY].newValue);
             }
+        });
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            if (message && message.action === 'previewFontScale') {
+                applyFontScale(message.scale);
+                sendResponse({ success: true });
+                return true;
+            }
+            return false;
         });
     } catch (error) {
         applySelectedFont(DEFAULT_FONT_ID);

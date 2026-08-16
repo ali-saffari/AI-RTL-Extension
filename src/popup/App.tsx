@@ -28,7 +28,7 @@ import InstallHintBanner from './InstallHintBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
-import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale } from '../utils/fonts';
+import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
 import {
     getExtensionStoreUrl,
     getRateLinkText,
@@ -390,8 +390,16 @@ function App() {
     const handleFontScaleChange = (value: number) => {
         const nextScale = normalizeFontScale(value);
         setFontScale(nextScale);
+        previewFontScaleOnTabs(nextScale);
+    };
+
+    const handleFontScaleCommit = (value: number) => {
+        const nextScale = normalizeFontScale(value);
+        setFontScale(nextScale);
         try {
-            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale });
+            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale }, () => {
+                void chrome.runtime.lastError;
+            });
         } catch (error) {
             // Silently handle save errors
         }
@@ -1250,6 +1258,7 @@ function App() {
                         onSelectedFontChange={handleSelectedFontChange}
                         fontScale={fontScale}
                         onFontScaleChange={handleFontScaleChange}
+                        onFontScaleCommit={handleFontScaleCommit}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         supportHide={supportHide}

@@ -41,6 +41,7 @@ interface QuickSettingsProps {
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
     onFontScaleChange: (value: number) => void;
+    onFontScaleCommit: (value: number) => void;
     mixedTitleDisplayMode: string;
     onMixedTitleDisplayModeChange: (value: string) => void;
     supportHide: boolean;
@@ -98,6 +99,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onSelectedFontChange,
     fontScale,
     onFontScaleChange,
+    onFontScaleCommit,
     mixedTitleDisplayMode,
     onMixedTitleDisplayModeChange,
     supportHide,
@@ -592,6 +594,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             step={FONT_SCALE_STEP}
                             marks={[{ value: DEFAULT_FONT_SCALE }]}
                             onChange={(_, value) => onFontScaleChange(value as number)}
+                            onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
                             sx={{
                                 mt: 0.5,
                                 color: accent,

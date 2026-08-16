@@ -32,6 +32,7 @@ interface FontSettingCardProps {
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
     onFontScaleChange: (value: number) => void;
+    onFontScaleCommit: (value: number) => void;
     isDarkMode: boolean;
 }
 
@@ -40,6 +41,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
     onSelectedFontChange,
     fontScale,
     onFontScaleChange,
+    onFontScaleCommit,
     isDarkMode
 }) => {
     const theme = useTheme();
@@ -203,6 +205,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                         step={FONT_SCALE_STEP}
                         marks={[{ value: DEFAULT_FONT_SCALE }]}
                         onChange={(_, value) => onFontScaleChange(value as number)}
+                        onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
                         sx={{
                             '& .MuiSlider-thumb': {
                                 color: theme.palette.primary.main

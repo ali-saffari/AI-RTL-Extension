@@ -11,7 +11,7 @@ import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
-import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale } from '../utils/fonts';
+import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -222,8 +222,16 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const handleFontScaleChange = (value: number) => {
         const nextScale = normalizeFontScale(value);
         setFontScale(nextScale);
+        previewFontScaleOnTabs(nextScale);
+    };
+
+    const handleFontScaleCommit = (value: number) => {
+        const nextScale = normalizeFontScale(value);
+        setFontScale(nextScale);
         try {
-            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale });
+            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale }, () => {
+                void chrome.runtime.lastError;
+            });
         } catch (error) {
             console.log('Failed to save font scale setting:', error);
         }
@@ -335,6 +343,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onSelectedFontChange={handleSelectedFontChange}
                         fontScale={fontScale}
                         onFontScaleChange={handleFontScaleChange}
+                        onFontScaleCommit={handleFontScaleCommit}
                     />
                 )}
                 {tabValue === 1 && (

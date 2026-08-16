@@ -35,6 +35,7 @@ interface AlgorithmTabProps {
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
     onFontScaleChange: (value: number) => void;
+    onFontScaleCommit: (value: number) => void;
 }
 
 const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
@@ -48,7 +49,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     selectedFont,
     onSelectedFontChange,
     fontScale,
-    onFontScaleChange
+    onFontScaleChange,
+    onFontScaleCommit
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -137,6 +139,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 onSelectedFontChange={onSelectedFontChange}
                                 fontScale={fontScale}
                                 onFontScaleChange={onFontScaleChange}
+                                onFontScaleCommit={onFontScaleCommit}
                                 isDarkMode={isDarkMode}
                             />
                         </Grid>
