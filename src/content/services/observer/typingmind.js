@@ -1,12 +1,12 @@
-// huggingface.js service functions (Hugging Face - huggingface.co)
-import { addCopyright } from '../utils/copyright.js';
-import { observeDomSections } from '../utils/domObserver.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+// typingmind.js service functions (TypingMind - typingmind.com)
+import { addCopyright } from '../../utils/copyright.js';
+import { observeDomSections } from '../../utils/domObserver.js';
+import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../../utils/textDirectionUtils.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
-const INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"], .ProseMirror';
-const MARKDOWN_SELECTOR = '[class*="markdown"], [class*="prose"], [class*="message"], [class*="chat"], .msg-content, [data-message-type="user"]';
-const COPYRIGHT_SELECTOR = 'form';
+const INPUT_SELECTOR = '#chat-input-textbox, [data-element-id="chat-input-textbox"], textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]';
+const MARKDOWN_SELECTOR = '[class*="prose"], [class*="message"], [class*="whitespace-pre-wrap"]';
+const COPYRIGHT_SELECTOR = '[data-element-id="chat-space-end-part"]';
 
 const INPUT_OPTIONS = {
     fontClass: 'FontSet',
@@ -20,9 +20,9 @@ const MARKDOWN_OPTIONS = {
     setTextAlign: true
 };
 
-function applyHuggingFaceChrome() {
-    if (!AQ('#huggingface-font-style').length) {
-        AQ(`<style id="huggingface-font-style">
+function applyTypingMindChrome() {
+    if (!AQ('#typingmind-font-style').length) {
+        AQ(`<style id="typingmind-font-style">
             html, body,
             body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
                 font-family: iranyekan, sans-serif !important;
@@ -42,7 +42,7 @@ function applyHuggingFaceChrome() {
     AQ(ICON_SELECTOR).removeClass('FontSet');
 }
 
-function processHuggingFaceInput(element, rtlAlgorithm) {
+function processTypingMindInput(element, rtlAlgorithm) {
     if (AQ(element).is(ICON_SELECTOR)) {
         return;
     }
@@ -63,7 +63,7 @@ function processHuggingFaceInput(element, rtlAlgorithm) {
     });
 }
 
-function processHuggingFaceMarkdown(element, rtlAlgorithm) {
+function processTypingMindMarkdown(element, rtlAlgorithm) {
     if (AQ(element).is(ICON_SELECTOR)) {
         return;
     }
@@ -72,45 +72,40 @@ function processHuggingFaceMarkdown(element, rtlAlgorithm) {
     AQ(ICON_SELECTOR).removeClass('FontSet');
 }
 
-function processHuggingFaceCopyright(form) {
+function processTypingMindCopyright(element) {
     if (!chrome.runtime?.id) {
         return;
     }
 
-    const $form = AQ(form).parent().parent();
-    if (!$form.has('textarea, [contenteditable="true"], .ProseMirror').length) {
-        return;
-    }
-
     addCopyright(
-        $form,
+        AQ(element),
         'AsBoxGemini AsBoxB',
-        'margin-top: -14px; margin-bottom: -12px; font-size: 13px;'
+        'margin-top: -11px; margin-bottom: 2px; font-size: 13px;'
     );
 }
 
-export function activateHuggingFace(rtlAlgorithm = 'advanced_full') {
-    console.log('Hugging Face RTL activated with algorithm:', rtlAlgorithm);
+export function activateTypingMind(rtlAlgorithm = 'advanced_full') {
+    console.log('TypingMind RTL activated with algorithm:', rtlAlgorithm);
 
-    applyHuggingFaceChrome();
+    applyTypingMindChrome();
 
     observeDomSections([
         {
             selector: INPUT_SELECTOR,
             ignore: ICON_SELECTOR,
-            process: (el) => processHuggingFaceInput(el, rtlAlgorithm),
+            process: (el) => processTypingMindInput(el, rtlAlgorithm),
             debounceMs: 50
         },
         {
             selector: MARKDOWN_SELECTOR,
             ignore: ICON_SELECTOR,
             exclude: INPUT_SELECTOR,
-            process: (el) => processHuggingFaceMarkdown(el, rtlAlgorithm),
+            process: (el) => processTypingMindMarkdown(el, rtlAlgorithm),
             debounceMs: 150
         },
         {
             selector: COPYRIGHT_SELECTOR,
-            process: processHuggingFaceCopyright,
+            process: processTypingMindCopyright,
             debounceMs: 200
         }
     ]);

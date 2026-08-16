@@ -115,16 +115,25 @@ export function observeDomChanges(onChange, options = {}) {
  * Shared MutationObserver that routes each mutation to matching sections.
  * Only the section whose selector matches is processed (e.g. input vs markdown).
  *
+ * Timing per section:
+ * - debounceMs: wait after the last mutation in a burst, then try to process
+ * - throttleMs: after a process run, wait at least this long before the next run
+ * - idleMs: after a process run, if the observer stays quiet, run one last pass
+ *
  * @param {Array<{
  *   selector: string,
  *   process: Function,
  *   ignore?: string,
  *   exclude?: string,
- *   debounceMs?: number
+ *   debounceMs?: number,
+ *   throttleMs?: number,
+ *   idleMs?: number
  * }>} sections
  * @param {Object} [options]
  * @param {Node} [options.root]
  * @param {number} [options.debounceMs=200]
+ * @param {number} [options.throttleMs=1000]
+ * @param {number} [options.idleMs=1300]
  * @param {MutationObserverInit} [options.observe]
  * @param {boolean} [options.runImmediately=true]
  * @returns {{ disconnect: Function, observer: MutationObserver }}
@@ -133,28 +142,88 @@ export function observeDomSections(sections, options = {}) {
     const {
         root,
         debounceMs = 200,
+        throttleMs = 1000,
+        idleMs = 1300,
         observe = DEFAULT_OBSERVE,
         runImmediately = true,
     } = options;
 
-    const pendingBySection = sections.map(() => new Set());
-    const timers = sections.map(() => null);
+    const states = sections.map((section) => ({
+        pending: new Set(),
+        lastElements: [],
+        debounceTimer: null,
+        cooldownTimer: null,
+        idleTimer: null,
+        lastFlushAt: 0,
+        debounceMs: section.debounceMs ?? debounceMs,
+        throttleMs: section.throttleMs ?? throttleMs,
+        idleMs: section.idleMs ?? idleMs,
+    }));
     let active = false;
 
-    const flushSection = (index) => {
+    const flushSection = (index, { fromIdle = false } = {}) => {
         const section = sections[index];
-        const pending = pendingBySection[index];
-        const elements = Array.from(pending);
-        pending.clear();
+        const state = states[index];
+        const source = state.pending.size ? state.pending : fromIdle ? state.lastElements : [];
+        const elements = Array.from(source);
+        state.pending.clear();
 
-        elements.forEach((el) => {
-            if (!el.isConnected) {
-                return;
-            }
-            section.process(el);
-        });
+        const connected = elements.filter((el) => el.isConnected);
+        connected.forEach((el) => section.process(el));
+        if (connected.length) {
+            state.lastElements = connected;
+            state.lastFlushAt = Date.now();
+        }
 
         observer.takeRecords();
+
+        if (state.cooldownTimer) {
+            clearTimeout(state.cooldownTimer);
+            state.cooldownTimer = null;
+        }
+
+        if (fromIdle || state.idleMs <= 0 || !connected.length) {
+            return;
+        }
+
+        clearTimeout(state.idleTimer);
+        state.idleTimer = setTimeout(() => {
+            state.idleTimer = null;
+            if (state.pending.size) {
+                tryFlush(index);
+                return;
+            }
+
+            // Observer stayed quiet: run one last pass on the latest elements.
+            state.lastElements.forEach((el) => {
+                if (el.isConnected) {
+                    state.pending.add(el);
+                }
+            });
+            flushSection(index, { fromIdle: true });
+        }, state.idleMs);
+    };
+
+    const tryFlush = (index) => {
+        const state = states[index];
+        if (!state.pending.size) {
+            return;
+        }
+
+        if (state.throttleMs > 0 && state.lastFlushAt) {
+            const remaining = state.throttleMs - (Date.now() - state.lastFlushAt);
+            if (remaining > 0) {
+                if (!state.cooldownTimer) {
+                    state.cooldownTimer = setTimeout(() => {
+                        state.cooldownTimer = null;
+                        tryFlush(index);
+                    }, remaining);
+                }
+                return;
+            }
+        }
+
+        flushSection(index);
     };
 
     const queueTargets = (index, targets) => {
@@ -162,10 +231,20 @@ export function observeDomSections(sections, options = {}) {
             return;
         }
 
-        targets.forEach((el) => pendingBySection[index].add(el));
-        clearTimeout(timers[index]);
-        const wait = sections[index].debounceMs ?? debounceMs;
-        timers[index] = setTimeout(() => flushSection(index), wait);
+        const state = states[index];
+        targets.forEach((el) => state.pending.add(el));
+
+        // Observer fired again, so cancel the quiet-pass timer.
+        if (state.idleTimer) {
+            clearTimeout(state.idleTimer);
+            state.idleTimer = null;
+        }
+
+        clearTimeout(state.debounceTimer);
+        state.debounceTimer = setTimeout(() => {
+            state.debounceTimer = null;
+            tryFlush(index);
+        }, state.debounceMs);
     };
 
     const observer = new MutationObserver((mutations) => {
@@ -206,8 +285,8 @@ export function observeDomSections(sections, options = {}) {
         }
 
         sections.forEach((section, index) => {
-            collectInSubtree(scope, section).forEach((el) => pendingBySection[index].add(el));
-            if (pendingBySection[index].size) {
+            collectInSubtree(scope, section).forEach((el) => states[index].pending.add(el));
+            if (states[index].pending.size) {
                 flushSection(index);
             }
         });
@@ -228,8 +307,13 @@ export function observeDomSections(sections, options = {}) {
     return {
         disconnect() {
             active = false;
-            timers.forEach((timer) => clearTimeout(timer));
-            pendingBySection.forEach((pending) => pending.clear());
+            states.forEach((state) => {
+                clearTimeout(state.debounceTimer);
+                clearTimeout(state.cooldownTimer);
+                clearTimeout(state.idleTimer);
+                state.pending.clear();
+                state.lastElements = [];
+            });
             observer.disconnect();
         },
         observer,
