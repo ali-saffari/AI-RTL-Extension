@@ -3,206 +3,40 @@
  * Single source of truth for all text direction decisions
  */
 
+const RE_CODE_KEYWORD = /\b(?:function|class|import|export|const|let|var|return|async|await|def|public|private|interface|typedef|package|SELECT|INSERT|UPDATE|DELETE)\b/;
+const RE_CODE_SYNTAX = /=>|===|!==|&&|\|\||::|<\/?[a-zA-Z]|[{}\[\];]|\$\{/;
+const RE_CODE_COMMENT = /(?:^|\n)\s*(?:\/\/|\/\*|#(?:\s|$)|<!--)/;
+const RE_CODE_INDENT = /(?:^|\n)[ \t]{2,}\S/;
+const CODE_SAMPLE_MAX = 4000;
+
 /**
- * Code detection algorithm
- * Detects if text is programming code or not
- * @param {string} text - Text to analyze
- * @returns {boolean} - True if text is programming code
+ * Fast check for programming code vs natural language inside code-like tags.
  */
 function isCode(text) {
     if (!text || typeof text !== 'string') return false;
-    
-    const trimmedText = text.trim();
-    if (trimmedText.length === 0) return false;
-    
-    // Common programming keywords and patterns
-    const codePatterns = {
-        // Keywords
-        keywords: /\b(function|class|import|export|const|let|var|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|super|extends|implements|interface|type|enum|namespace|module|require|from|as|default|public|private|protected|static|abstract|final|synchronized|volatile|transient|native|strictfp|package|import|public|private|protected|static|void|int|long|short|byte|char|boolean|float|double|string|array|list|map|set|object|null|undefined|true|false|and|or|not|in|is|as|with|lambda|def|lambda|yield|async|await|promise|resolve|reject|then|catch|finally|generator|iterator|decorator|annotation|override|virtual|abstract|sealed|readonly|mutable|immutable|final|static|volatile|transient|synchronized|native|strictfp|package|import|public|private|protected|static|void|int|long|short|byte|char|boolean|float|double|string|array|list|map|set|object|null|undefined|true|false|and|or|not|in|is|as|with|lambda|def|lambda|yield|async|await|promise|resolve|reject|then|catch|finally|generator|iterator|decorator|annotation|override|virtual|abstract|sealed|readonly|mutable|immutable)\b/gi,
-        
-        // Operators and symbols
-        operators: /[+\-*/%=<>!&|^~?:;.,()[\]{}]/g,
-        
-        // String patterns
-        strings: /["'`].*?["'`]/g,
-        
-        // Comments
-        comments: /(\/\/.*|\/\*[\s\S]*?\*\/|#.*|<!--[\s\S]*?-->)/g,
-        
-        // Numbers and hex
-        numbers: /\b\d+(\.\d+)?([eE][+-]?\d+)?\b|\b0x[0-9a-fA-F]+\b|\b0b[01]+\b/g,
-        
-        // Function calls
-        functionCalls: /\w+\s*\(/g,
-        
-        // Variable assignments
-        assignments: /\w+\s*[=+\-*/%]=?\s*/g,
-        
-        // Arrow functions
-        arrowFunctions: /=>/g,
-        
-        // Template literals
-        templateLiterals: /`[^`]*`/g,
-        
-        // Regular expressions
-        regex: /\/[^\/\n]+\/[gimuy]*/g,
-        
-        // HTML tags
-        htmlTags: /<\/?[a-zA-Z][^>]*>/g,
-        
-        // CSS selectors
-        cssSelectors: /[.#][\w-]+\s*\{/g,
-        
-        // SQL keywords
-        sqlKeywords: /\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TABLE|INDEX|VIEW|PROCEDURE|FUNCTION|TRIGGER|UNION|JOIN|INNER|LEFT|RIGHT|OUTER|ON|GROUP|BY|ORDER|HAVING|DISTINCT|COUNT|SUM|AVG|MIN|MAX|CASE|WHEN|THEN|ELSE|END|IF|EXISTS|IN|BETWEEN|LIKE|IS|NULL|NOT|AND|OR|AS|ASC|DESC|LIMIT|OFFSET|TOP|FETCH|NEXT|ROWS|ONLY|WITH|RECURSIVE|WINDOW|PARTITION|OVER|ROW_NUMBER|RANK|DENSE_RANK|LEAD|LAG|FIRST_VALUE|LAST_VALUE|NTILE|PERCENT_RANK|CUME_DIST|LAG|LEAD|FIRST_VALUE|LAST_VALUE|NTILE|PERCENT_RANK|CUME_DIST)\b/gi,
-        
-        // File extensions
-        fileExtensions: /\.(js|ts|jsx|tsx|py|java|cpp|c|h|hpp|cs|php|rb|go|rs|swift|kt|scala|clj|hs|ml|fs|vb|dart|r|m|mm|pl|sh|bash|zsh|fish|ps1|bat|cmd|sql|html|css|scss|sass|less|xml|json|yaml|yml|toml|ini|cfg|conf|log|md|txt|rtf|doc|docx|pdf|ppt|pptx|xls|xlsx|csv|tsv|xml|html|htm|php|asp|jsp|aspx|erb|haml|slim|jade|pug|ejs|hbs|handlebars|mustache|twig|smarty|liquid|jinja2|django|flask|fastapi|express|koa|hapi|sails|meteor|next|nuxt|gatsby|vue|react|angular|svelte|ember|backbone|knockout|mootools|prototype|jquery|lodash|underscore|moment|dayjs|date-fns|axios|fetch|request|superagent|got|node-fetch|ws|socket\.io|redis|mongodb|mongoose|sequelize|typeorm|prisma|knex|bookshelf|waterline|sails|loopback|strapi|ghost|wordpress|drupal|joomla|magento|shopify|woocommerce|prestashop|opencart|oscommerce|zencart|bigcommerce|squarespace|wix|weebly|webflow|framer|figma|sketch|adobe|photoshop|illustrator|indesign|after-effects|premiere|final-cut|davinci|resolve|blender|maya|3ds-max|cinema-4d|houdini|nuke|fusion|hitfilm|lightworks|kdenlive|openshot|shotcut|vlc|ffmpeg|imagemagick|gimp|inkscape|krita|myPaint|paint\.net|paint-3d|canva|picmonkey|fotor|beFunky|pixlr|photopea|remove\.bg|tinypng|squoosh|imageoptim|jpegmini|pngquant|optipng|advpng|pngcrush|pngout|pngnq|pngnq-s9|pngnq-s8|pngnq-s7|pngnq-s6|pngnq-s5|pngnq-s4|pngnq-s3|pngnq-s2|pngnq-s1|pngnq-s0|pngnq-s9|pngnq-s8|pngnq-s7|pngnq-s6|pngnq-s5|pngnq-s4|pngnq-s3|pngnq-s2|pngnq-s1|pngnq-s0)\b/gi
-    };
-    
-    // Calculate scores for different patterns
-    let score = 0;
-    let totalLength = trimmedText.length;
-    
-    // Check for keywords (high weight)
-    const keywordMatches = trimmedText.match(codePatterns.keywords);
-    if (keywordMatches) {
-        score += keywordMatches.length * 3;
+
+    const sample = text.length > CODE_SAMPLE_MAX ? text.slice(0, CODE_SAMPLE_MAX) : text;
+    const trimmed = sample.trim();
+    if (!trimmed) return false;
+
+    let rtlChars = 0;
+    let latinChars = 0;
+    for (let i = 0; i < trimmed.length; i++) {
+        const code = trimmed.charCodeAt(i);
+        if (isRTLCharCode(code)) rtlChars++;
+        else if (isLatinLetterCode(code)) latinChars++;
     }
-    
-    // Check for operators (medium weight)
-    const operatorMatches = trimmedText.match(codePatterns.operators);
-    if (operatorMatches) {
-        score += operatorMatches.length * 2;
-    }
-    
-    // Check for strings (medium weight)
-    const stringMatches = trimmedText.match(codePatterns.strings);
-    if (stringMatches) {
-        score += stringMatches.length * 2;
-    }
-    
-    // Check for comments (high weight)
-    const commentMatches = trimmedText.match(codePatterns.comments);
-    if (commentMatches) {
-        score += commentMatches.length * 3;
-    }
-    
-    // Check for numbers (low weight)
-    const numberMatches = trimmedText.match(codePatterns.numbers);
-    if (numberMatches) {
-        score += numberMatches.length * 1;
-    }
-    
-    // Check for function calls (high weight)
-    const functionCallMatches = trimmedText.match(codePatterns.functionCalls);
-    if (functionCallMatches) {
-        score += functionCallMatches.length * 3;
-    }
-    
-    // Check for assignments (high weight)
-    const assignmentMatches = trimmedText.match(codePatterns.assignments);
-    if (assignmentMatches) {
-        score += assignmentMatches.length * 3;
-    }
-    
-    // Check for arrow functions (high weight)
-    const arrowFunctionMatches = trimmedText.match(codePatterns.arrowFunctions);
-    if (arrowFunctionMatches) {
-        score += arrowFunctionMatches.length * 3;
-    }
-    
-    // Check for template literals (high weight)
-    const templateLiteralMatches = trimmedText.match(codePatterns.templateLiterals);
-    if (templateLiteralMatches) {
-        score += templateLiteralMatches.length * 3;
-    }
-    
-    // Check for regular expressions (high weight)
-    const regexMatches = trimmedText.match(codePatterns.regex);
-    if (regexMatches) {
-        score += regexMatches.length * 3;
-    }
-    
-    // Check for HTML tags (high weight)
-    const htmlTagMatches = trimmedText.match(codePatterns.htmlTags);
-    if (htmlTagMatches) {
-        score += htmlTagMatches.length * 3;
-    }
-    
-    // Check for CSS selectors (high weight)
-    const cssSelectorMatches = trimmedText.match(codePatterns.cssSelectors);
-    if (cssSelectorMatches) {
-        score += cssSelectorMatches.length * 3;
-    }
-    
-    // Check for SQL keywords (high weight)
-    const sqlKeywordMatches = trimmedText.match(codePatterns.sqlKeywords);
-    if (sqlKeywordMatches) {
-        score += sqlKeywordMatches.length * 3;
-    }
-    
-    // Check for file extensions (high weight)
-    const fileExtensionMatches = trimmedText.match(codePatterns.fileExtensions);
-    if (fileExtensionMatches) {
-        score += fileExtensionMatches.length * 3;
-    }
-    
-    // Additional heuristics
-    const lines = trimmedText.split('\n');
-    const nonEmptyLines = lines.filter(line => line.trim().length > 0);
-    
-    // Check for indentation patterns (common in code)
-    let indentedLines = 0;
-    for (const line of nonEmptyLines) {
-        if (line.match(/^\s+/)) {
-            indentedLines++;
-        }
-    }
-    
-    // If more than 50% of lines are indented, likely code
-    if (nonEmptyLines.length > 0 && indentedLines / nonEmptyLines.length > 0.5) {
-        score += 5;
-    }
-    
-    // Check for common code structures
-    const hasBrackets = /[{}]/.test(trimmedText);
-    const hasParentheses = /[()]/.test(trimmedText);
-    const hasSemicolons = /;/.test(trimmedText);
-    const hasColons = /:/.test(trimmedText);
-    
-    if (hasBrackets) score += 2;
-    if (hasParentheses) score += 1;
-    if (hasSemicolons) score += 2;
-    if (hasColons) score += 1;
-    
-    // Check for common code patterns
-    const hasFunctionDeclaration = /function\s+\w+\s*\(/.test(trimmedText);
-    const hasClassDeclaration = /class\s+\w+/.test(trimmedText);
-    const hasImportStatement = /import\s+/.test(trimmedText);
-    const hasExportStatement = /export\s+/.test(trimmedText);
-    const hasVariableDeclaration = /(const|let|var)\s+\w+/.test(trimmedText);
-    const hasIfStatement = /if\s*\(/.test(trimmedText);
-    const hasForLoop = /for\s*\(/.test(trimmedText);
-    const hasWhileLoop = /while\s*\(/.test(trimmedText);
-    
-    if (hasFunctionDeclaration) score += 5;
-    if (hasClassDeclaration) score += 5;
-    if (hasImportStatement) score += 5;
-    if (hasExportStatement) score += 5;
-    if (hasVariableDeclaration) score += 3;
-    if (hasIfStatement) score += 3;
-    if (hasForLoop) score += 3;
-    if (hasWhileLoop) score += 3;
-    
-    // Calculate final score as percentage
-    const maxPossibleScore = totalLength * 0.1; // Maximum possible score based on text length
-    const scorePercentage = (score / Math.max(maxPossibleScore, 1)) * 100;
-    
-    // Threshold for code detection (adjustable)
-    const threshold = 15; // 15% threshold
-    
-    return scorePercentage >= threshold;
+
+    const hasSyntax = RE_CODE_SYNTAX.test(trimmed);
+    if (rtlChars > latinChars * 2 && !hasSyntax) return false;
+
+    let hits = 0;
+    if (RE_CODE_KEYWORD.test(trimmed)) hits += 2;
+    if (hasSyntax) hits += 2;
+    if (RE_CODE_COMMENT.test(trimmed)) hits += 1;
+    if (RE_CODE_INDENT.test(trimmed)) hits += 1;
+
+    return hits >= 2;
 }
 
 
