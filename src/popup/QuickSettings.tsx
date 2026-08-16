@@ -17,10 +17,22 @@ import {
 } from '@mui/material';
 import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
+import {
+    DEFAULT_FONT_ID,
+    NONE_FONT_ID,
+    NONE_FONT_TITLE,
+    RtlFont,
+    getFontFamilyCssValue,
+    getSelectableFonts,
+    injectPreviewFontFaces,
+    loadFontsConfig,
+} from '../utils/fonts';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
     onRtlAlgorithmChange: (value: string) => void;
+    selectedFont: string;
+    onSelectedFontChange: (value: string) => void;
     mixedTitleDisplayMode: string;
     onMixedTitleDisplayModeChange: (value: string) => void;
     supportHide: boolean;
@@ -74,6 +86,8 @@ const TITLE_MODES = [
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
+    selectedFont,
+    onSelectedFontChange,
     mixedTitleDisplayMode,
     onMixedTitleDisplayModeChange,
     supportHide,
@@ -85,6 +99,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
+    const [fonts, setFonts] = React.useState<RtlFont[]>([]);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -98,8 +113,32 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         checkTabsPermission();
     }, []);
 
+    React.useEffect(() => {
+        let cancelled = false;
+        loadFontsConfig()
+            .then((config) => {
+                if (cancelled) {
+                    return;
+                }
+                const selectable = getSelectableFonts(config);
+                setFonts(selectable);
+                injectPreviewFontFaces('ai-rtl-popup-font-preview', selectable);
+            })
+            .catch(() => {});
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const selectedAlgo = ALGORITHMS.find((item) => item.id === rtlAlgorithm) ?? ALGORITHMS[1];
     const selectedTitleMode = TITLE_MODES.find((item) => item.id === mixedTitleDisplayMode) ?? TITLE_MODES[0];
+    const selectedFontOption = fonts.find((font) => font.id === selectedFont);
+    const selectedFontFamily = selectedFont === NONE_FONT_ID
+        ? 'iranyekan'
+        : selectedFontOption
+            ? getFontFamilyCssValue(selectedFontOption)
+            : 'iranyekan, sans-serif';
     const infoAlgo = ALGORITHMS.find((item) => item.id === infoAlgoId) ?? null;
     const manualEnabled = manualRtlSettings.manualRtlEnabled !== false;
 
@@ -421,6 +460,113 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             </Typography>
                         </Box>
                     )}
+                </Box>
+
+                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
+                    <Typography className="quick-settings-label" sx={{ mb: 1 }}>
+                        فونت
+                    </Typography>
+                    <FormControl fullWidth size="small">
+                        <Select
+                            dir="rtl"
+                            className="quick-settings-select"
+                            value={selectedFont}
+                            renderValue={(value) => {
+                                if (value === NONE_FONT_ID) {
+                                    return NONE_FONT_TITLE;
+                                }
+                                return fonts.find((item) => item.id === value)?.title || value;
+                            }}
+                            onChange={(event) => onSelectedFontChange(event.target.value)}
+                            MenuProps={{
+                                PaperProps: {
+                                    className: 'quick-settings-select-menu',
+                                    sx: {
+                                        mt: 0.5,
+                                        maxHeight: 280,
+                                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                        backgroundImage: 'none',
+                                    },
+                                },
+                            }}
+                            sx={{
+                                fontFamily: selectedFontFamily,
+                                fontSize: '0.82rem',
+                                backgroundColor: fieldBg,
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                                borderRadius: '10px',
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: cardBorder,
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: accent,
+                                    borderWidth: '1px',
+                                },
+                                '& .MuiSelect-icon': {
+                                    color: muted,
+                                },
+                            }}
+                        >
+                            <MenuItem
+                                value={NONE_FONT_ID}
+                                dir="rtl"
+                                sx={{
+                                    fontFamily: 'iranyekan',
+                                    fontSize: '0.82rem',
+                                    py: 1,
+                                    textAlign: 'right',
+                                    direction: 'rtl',
+                                }}
+                            >
+                                {NONE_FONT_TITLE}
+                            </MenuItem>
+                            {selectedFont !== NONE_FONT_ID && !fonts.some((font) => font.id === selectedFont) && (
+                                <MenuItem value={selectedFont} sx={{ display: 'none' }}>
+                                    {selectedFont}
+                                </MenuItem>
+                            )}
+                            {fonts.map((font) => (
+                                <MenuItem
+                                    key={font.id}
+                                    value={font.id}
+                                    dir="rtl"
+                                    sx={{
+                                        fontFamily: getFontFamilyCssValue(font),
+                                        fontSize: '0.9rem',
+                                        justifyContent: 'space-between',
+                                        gap: 1,
+                                        py: 1,
+                                        textAlign: 'right',
+                                        direction: 'rtl',
+                                    }}
+                                >
+                                    <span>{font.title}</span>
+                                    {font.id === DEFAULT_FONT_ID ? (
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                flexShrink: 0,
+                                                px: 0.7,
+                                                py: 0.1,
+                                                borderRadius: 1,
+                                                fontSize: '0.62rem',
+                                                fontWeight: 600,
+                                                fontFamily: 'iranyekan',
+                                                color: accent,
+                                                border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                            }}
+                                        >
+                                            پیش‌فرض
+                                        </Box>
+                                    ) : null}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>

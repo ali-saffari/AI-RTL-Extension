@@ -145,6 +145,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         chrome.storage.sync.set({
             ...SERVICE_FLAGS,
             rtlAlgorithmMode: 'advanced_full',
+            selectedFont: 'iranyekan',
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
             activationHintDismissed: false,
@@ -199,6 +200,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 
                 if (!storedData.hasOwnProperty('rtlAlgorithmMode')) {
                     updates.rtlAlgorithmMode = storedData.rtlAlgorithm === 'first_word' ? 'first_word' : 'advanced_full';
+                }
+
+                if (!storedData.hasOwnProperty('selectedFont')) {
+                    updates.selectedFont = 'iranyekan';
                 }
                 
                 // Check and initialize mixedTitleDisplayMode

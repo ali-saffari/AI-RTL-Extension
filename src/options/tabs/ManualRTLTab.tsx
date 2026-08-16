@@ -783,7 +783,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 color: 'text.secondary',
                                                 fontSize: '0.8rem'
                                             }}>
-                                                اعمال فونت ایران یکان روی متن‌های تغییر جهت داده شده
+                                                اعمال فونت انتخاب‌شده روی متن‌های تغییر جهت داده شده
                                             </Typography>
                                         </Box>
                                         <Switch

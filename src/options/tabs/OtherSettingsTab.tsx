@@ -58,6 +58,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 exportDate: new Date().toISOString(),
                 settings: {
                     rtlAlgorithmMode: allSettings.rtlAlgorithmMode,
+                    selectedFont: allSettings.selectedFont,
                     supportHide: allSettings.supportHide,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
@@ -67,6 +68,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     ...Object.keys(allSettings).reduce((acc, key) => {
                         // Include service flags (check if it's a boolean service flag)
                         if (key !== 'rtlAlgorithmMode' && 
+                            key !== 'selectedFont' &&
                             key !== 'supportHide' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
@@ -135,6 +137,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.rtlAlgorithmMode !== undefined) {
                 settingsToImport.rtlAlgorithmMode = importData.settings.rtlAlgorithmMode;
             }
+            if (importData.settings.selectedFont !== undefined) {
+                settingsToImport.selectedFont = importData.settings.selectedFont;
+            }
             if (importData.settings.supportHide !== undefined) {
                 settingsToImport.supportHide = importData.settings.supportHide;
             }
@@ -154,6 +159,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             // Import service flags
             Object.keys(importData.settings).forEach(key => {
                 if (key !== 'rtlAlgorithmMode' && 
+                    key !== 'selectedFont' &&
                     key !== 'supportHide' && 
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 

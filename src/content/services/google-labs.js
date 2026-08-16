@@ -5,9 +5,9 @@ import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorith
 export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#google-labs-font-style').length) {
         AQ(`<style id="google-labs-font-style">
-            html, body,
-            body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(md-icon):not([class*="material-icons"]):not([class*="material-symbols"]):not([class*="google-symbols"]) {
-                font-family: iranyekan, sans-serif !important;
+            html.ai-rtl-has-font, html.ai-rtl-has-font body,
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(md-icon):not([class*="material-icons"]):not([class*="material-symbols"]):not([class*="google-symbols"]) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             code, pre, kbd, samp, code *, pre * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;

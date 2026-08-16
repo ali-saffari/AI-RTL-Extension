@@ -1,3 +1,7 @@
+:root {
+    --ai-rtl-font: iranyekan, sans-serif;
+}
+
 .AsRed {
     background: red !important;
 }
@@ -7,54 +11,54 @@
 }
 
 .FontSet {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSet p{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 .FontSet b{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
 .FontSet h1{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 .FontSet h2{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSet h3{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 .FontSet li{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 textarea.FontSetImportant{
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSetImportant2 {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
 
 .FontSetImportant {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 .chat-input-container textarea.FontSetImportant {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 /*.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li , .FontSetImportantGPT * {*/
-/*    font-family: iranyekan, sans-serif !important;*/
+/*    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;*/
 /*}*/
 
 .FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li  {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 /*.FontSetImportantGPT .katex  , .FontSetImportantGPT .katex * {*/
@@ -212,7 +216,7 @@ code.AsSetLtr , pre.AsSetLtr {
 }
 
 .language-plaintext.FontSet {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .AsRtl_rowReverse {
@@ -351,7 +355,7 @@ code.AsSetLtr , pre.AsSetLtr {
 
 
 .FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
-    font-family: iranyekan, sans-serif;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif);
     /*line-height: 32px;*/
     font-weight: 300;
     /*font-size: 0.95rem;*/
@@ -415,7 +419,7 @@ code.AsSetLtr , pre.AsSetLtr {
  
     direction: rtl;
     text-align: left;
-    font-family: iranyekan, sans-serif;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 
 }
 
@@ -461,7 +465,7 @@ copilot
 
 
 .CopilotFontSet {
-    font-family: iranyekan, sans-serif;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 }
 
 .listboxRtlCopilot {
@@ -535,11 +539,11 @@ copilot
 
 
 .FontSetPerplexity .font-sans {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSetPerplexity h2 {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSetPerplexity code {
@@ -547,12 +551,12 @@ copilot
 }
 
 .FontSetImportant .font-display {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
 .AsRtl .font-display {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .AsBoxPerplexity {
@@ -727,7 +731,7 @@ textarea#search-input-textarea {
 
 
 pending-request {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 /*grok*/
 .AsBoxgrok {
@@ -915,7 +919,7 @@ a.AsSBtn.AsDonate {
 /* ----------notebooklm----- */
 /* 
 .FontSet .ng-star-inserted {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 } */
 
 
@@ -924,7 +928,7 @@ a.AsSBtn.AsDonate {
 }
 
 .AsOkNotebooklm[dir="rtl"] .ng-star-inserted  {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
@@ -996,14 +1000,14 @@ textarea[spellcheck="true"]::spelling-error,
 /*--------Vivado-------------*/
 
 .FontSetVivadoInput {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
     font-size: 10px;
 
 }
 
 
 .FontSetVivado {
-    font-family: iranyekan, sans-serif !important;
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
     font-size: 10px !important;
     line-height: 30px !important;
 }

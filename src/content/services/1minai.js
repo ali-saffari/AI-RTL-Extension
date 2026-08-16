@@ -10,7 +10,7 @@ export function set1minai(rtlAlgorithm = 'advanced_full') {
 
     // Add CSS for ant-input elements
     if (!AQ('#1minai-ant-input-style').length) {
-        AQ('<style id="1minai-ant-input-style">:where(.css-b9n3i9).ant-input { font-family: iranyekan, sans-serif !important; }</style>').appendTo('head');
+        AQ('<style id="1minai-ant-input-style">html.ai-rtl-has-font :where(.css-b9n3i9).ant-input { font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important; }</style>').appendTo('head');
     }
 
     AQ('textarea, input[type="text"], input[type="search"], input:not([type])').each(function (each) {

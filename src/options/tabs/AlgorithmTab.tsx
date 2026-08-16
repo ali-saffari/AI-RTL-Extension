@@ -21,6 +21,7 @@ import {
     Container
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
+import FontSettingCard from './FontSettingCard';
 
 interface AlgorithmTabProps {
     rtlAlgorithm: string;
@@ -30,6 +31,8 @@ interface AlgorithmTabProps {
     onPreviewChange: (enabled: boolean) => void;
     mixedTitleDisplayMode?: string;
     onMixedTitleDisplayModeChange?: (value: string) => void;
+    selectedFont: string;
+    onSelectedFontChange: (value: string) => void;
 }
 
 const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
@@ -39,7 +42,9 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     previewEnabled,
     onPreviewChange,
     mixedTitleDisplayMode = 'unified',
-    onMixedTitleDisplayModeChange
+    onMixedTitleDisplayModeChange,
+    selectedFont,
+    onSelectedFontChange
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -121,6 +126,15 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
             <Grid item xs={12} md={6} sx={{ order: { xs: 1, md: 1 } }}>
                 <Container maxWidth={false} sx={{ p: 0 }}>
                     <Grid container spacing={3}>
+                        {/* فونت */}
+                        <Grid item xs={12}>
+                            <FontSettingCard
+                                selectedFont={selectedFont}
+                                onSelectedFontChange={onSelectedFontChange}
+                                isDarkMode={isDarkMode}
+                            />
+                        </Grid>
+
                         {/* الگوریتم تشخیص RTL */}
                         <Grid item xs={12}>
                             <Card elevation={2}>

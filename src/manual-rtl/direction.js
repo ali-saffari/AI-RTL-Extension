@@ -41,11 +41,13 @@ export function applyDirection(element, direction) {
         console.error('[RTL Text Selector] ❌ Error setting direction style:', error);
     }
 
-    // اعمال فونت اگر تنظیمات فعال باشد
-    const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false; // به صورت پیش‌فرض true
-    if (applyFont) {
+    // اعمال فونت اگر تنظیمات فعال باشد و فونتی انتخاب شده باشد
+    const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
+    const fontFamily = manualRtlState.selectedFontFamily;
+    if (applyFont && fontFamily) {
         try {
-            element.style.setProperty('font-family', "iranyekan, 'IRANYekan', Tahoma, Arial, sans-serif", 'important');
+            element.style.setProperty('font-family', fontFamily, 'important');
+            element.setAttribute('data-ai-rtl-font', '1');
         } catch (error) {
             console.error('[RTL Text Selector] ❌ Error setting font-family:', error);
         }
@@ -90,6 +92,9 @@ export function hasDirectionChanges(element) {
     // بررسی font-family style (اگر تنظیمات فونت فعال باشد)
     const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
     if (applyFont) {
+        if (element.hasAttribute('data-ai-rtl-font')) {
+            return true;
+        }
         const fontFamilyStyle = element.style.getPropertyValue('font-family');
         if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
             return true;
@@ -120,9 +125,14 @@ export function removeDirectionChanges(element) {
         // حذف font-family style (اگر تنظیمات فونت فعال باشد)
         const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
         if (applyFont) {
-            const fontFamilyStyle = element.style.getPropertyValue('font-family');
-            if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
+            if (element.hasAttribute('data-ai-rtl-font')) {
                 element.style.removeProperty('font-family');
+                element.removeAttribute('data-ai-rtl-font');
+            } else {
+                const fontFamilyStyle = element.style.getPropertyValue('font-family');
+                if (fontFamilyStyle && fontFamilyStyle.includes('iranyekan')) {
+                    element.style.removeProperty('font-family');
+                }
             }
         }
 

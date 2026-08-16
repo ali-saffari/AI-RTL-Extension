@@ -11,5 +11,7 @@ export const manualRtlState = {
     cachedExtensionLogoUrl: null,
     currentMenuElement: null,
     imageObserver: null,
+    selectedFont: 'iranyekan',
+    selectedFontFamily: 'iranyekan, sans-serif',
 };
 

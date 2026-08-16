@@ -5,8 +5,8 @@ import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorith
 export function setVeo3(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#veo3-font-style').length) {
         AQ(`<style id="veo3-font-style">
-            html, body, body *:not(code):not(pre):not(kbd):not(samp) {
-                font-family: iranyekan, sans-serif !important;
+            html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             code, pre, kbd, samp, code *, pre * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;

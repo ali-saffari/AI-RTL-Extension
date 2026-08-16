@@ -7,14 +7,14 @@
     "packageName": "cursor-chat-rtl"
   },
   "defaultFont": "iranyekan",
-  "licenseNotice": "افزونه AI RTL با مجوز MIT منتشر می‌شود. فونت‌های همراه، جز ایران‌یکان، تحت SIL OFL 1.1 هستند. ایران‌یکان متعلق به Fontiran است.",
+  "licenseNotice": "افزونه AI RTL با مجوز MIT منتشر می‌شود. فونت‌های همراه، جز ایران‌یکان، تحت SIL OFL 1.1 هستند. ایران‌یکان متعلق به Fontiran است (کد مجوز T7RJ805N).",
   "fonts": [
     {
       "id": "iranyekan",
       "title": "ایران یکان",
       "family": "iranyekan",
       "version": "web",
-      "license": "Fontiran",
+      "license": "Fontiran T7RJ805N",
       "source": "https://fontiran.com",
       "selectable": true,
       "files": [

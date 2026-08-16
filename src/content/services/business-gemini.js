@@ -67,19 +67,19 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
                         direction: rtl !important;
                     }
                     .FontSet {
-                        font-family: iranyekan, sans-serif !important;
+                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .disclaimer {
-                        font-family: iranyekan, sans-serif !important;
+                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .conversation-title {
-                        font-family: iranyekan, sans-serif !important;
+                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .greeting {
-                        font-family: iranyekan, sans-serif !important;
+                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .greeting-subtitle {
-                        font-family: iranyekan, sans-serif !important;
+                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .AsSBtn {
                         border: 1px solid;

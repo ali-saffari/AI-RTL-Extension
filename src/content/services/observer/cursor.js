@@ -24,9 +24,9 @@ const MARKDOWN_OPTIONS = {
 function applyCursorChrome() {
     if (!AQ('#cursor-font-style').length) {
         AQ(`<style id="cursor-font-style">
-            html, body,
-            body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(.monaco-editor):not(.monaco-editor *):not([class*="codicon"]):not([class*="icon"]):not([class*="Icon"]) {
-                font-family: iranyekan, sans-serif !important;
+            html.ai-rtl-has-font, html.ai-rtl-has-font body,
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(.monaco-editor):not(.monaco-editor *):not([class*="codicon"]):not([class*="icon"]):not([class*="Icon"]) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             code, pre, kbd, samp, code *, pre *,
             .monaco-editor, .monaco-editor * {

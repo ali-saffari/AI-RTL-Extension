@@ -28,6 +28,7 @@ import InstallHintBanner from './InstallHintBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import { DEFAULT_FONT_ID, SELECTED_FONT_STORAGE_KEY } from '../utils/fonts';
 import {
     getExtensionStoreUrl,
     getRateLinkText,
@@ -191,6 +192,7 @@ const lightTheme = createTheme({
 function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
+    const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
@@ -224,9 +226,12 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
+                }
+                if (result[SELECTED_FONT_STORAGE_KEY]) {
+                    setSelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
                 }
                 if (result.mixedTitleDisplayMode) {
                     setMixedTitleDisplayMode(result.mixedTitleDisplayMode);
@@ -296,6 +301,9 @@ function App() {
                         }
                     }
                 }
+                if (changes[SELECTED_FONT_STORAGE_KEY]) {
+                    setSelectedFont(changes[SELECTED_FONT_STORAGE_KEY].newValue || DEFAULT_FONT_ID);
+                }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
                 }
@@ -358,6 +366,15 @@ function App() {
         setMixedTitleDisplayMode(value);
         try {
             chrome.storage.sync.set({ mixedTitleDisplayMode: value });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
+    const handleSelectedFontChange = (value: string) => {
+        setSelectedFont(value);
+        try {
+            chrome.storage.sync.set({ [SELECTED_FONT_STORAGE_KEY]: value });
         } catch (error) {
             // Silently handle save errors
         }
@@ -1212,6 +1229,8 @@ function App() {
                     <QuickSettings
                         rtlAlgorithm={rtlAlgorithm}
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
+                        selectedFont={selectedFont}
+                        onSelectedFontChange={handleSelectedFontChange}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         supportHide={supportHide}

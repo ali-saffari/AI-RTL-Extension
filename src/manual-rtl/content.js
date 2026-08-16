@@ -2,6 +2,14 @@
 // This script is injected separately to all sites based on settings
 
 import { initTextSelector } from './index.js';
+import { initSelectedFont } from '../content/utils/applySelectedFont.js';
+import { initManualRtlFont } from './font.js';
+
+initSelectedFont();
+initManualRtlFont();
+
+// Initialize text selector highlighter (works on all sites)
+initTextSelector();
 
 // Initialize text selector highlighter (works on all sites)
 initTextSelector();

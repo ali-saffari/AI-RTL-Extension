@@ -11,6 +11,7 @@ import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import { DEFAULT_FONT_ID, SELECTED_FONT_STORAGE_KEY } from '../utils/fonts';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -46,6 +47,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     
     const [tabValue, setTabValue] = React.useState(getInitialTab);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
+    const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [supportHide, setSupportHide] = React.useState(false);
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
@@ -71,10 +73,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'manualRtlSettings',
                 'analytics',
                 'previewEnabled',
-                'mixedTitleDisplayMode'
+                'mixedTitleDisplayMode',
+                SELECTED_FONT_STORAGE_KEY
             ], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
+                }
+                if (result[SELECTED_FONT_STORAGE_KEY]) {
+                    setSelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -122,6 +128,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             if (areaName === 'sync') {
                 if (changes.rtlAlgorithmMode) {
                     setRtlAlgorithm(changes.rtlAlgorithmMode.newValue);
+                }
+                if (changes[SELECTED_FONT_STORAGE_KEY]) {
+                    setSelectedFont(changes[SELECTED_FONT_STORAGE_KEY].newValue || DEFAULT_FONT_ID);
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
@@ -190,6 +199,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.set({ rtlAlgorithmMode: value });
         } catch (error) {
             console.log('Failed to save RTL algorithm setting:', error);
+        }
+    };
+
+    const handleSelectedFontChange = (value: string) => {
+        setSelectedFont(value);
+        try {
+            chrome.storage.sync.set({ [SELECTED_FONT_STORAGE_KEY]: value });
+        } catch (error) {
+            console.log('Failed to save font setting:', error);
         }
     };
 
@@ -295,6 +313,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onPreviewChange={handlePreviewChange}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
+                        selectedFont={selectedFont}
+                        onSelectedFontChange={handleSelectedFontChange}
                     />
                 )}
                 {tabValue === 1 && (

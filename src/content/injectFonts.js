@@ -3,6 +3,10 @@
  * Page CSP blocks moz-extension:// @font-face in stylesheets.
  * Load fonts from the extension context via FontFace + getURL.
  */
+import { initSelectedFont } from './utils/applySelectedFont.js';
+
+initSelectedFont();
+
 (function injectIranYekanFonts() {
     try {
         var api = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)

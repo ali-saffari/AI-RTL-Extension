@@ -5,9 +5,9 @@ import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorith
 export function setFal(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#fal-font-style').length) {
         AQ(`<style id="fal-font-style">
-            html, body,
-            body *:not(code):not(pre):not(kbd):not(samp):not(.monaco-editor):not(.monaco-editor *) {
-                font-family: iranyekan, sans-serif !important;
+            html.ai-rtl-has-font, html.ai-rtl-has-font body,
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(.monaco-editor):not(.monaco-editor *) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             code, pre, kbd, samp, code *, pre *,
             .monaco-editor, .monaco-editor * {
