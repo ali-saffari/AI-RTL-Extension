@@ -62,6 +62,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     fontScale: allSettings.fontScale,
                     supportHide: allSettings.supportHide,
                     applyAlgorithmToCode: allSettings.applyAlgorithmToCode,
+                    flipRtlArrows: allSettings.flipRtlArrows,
                     mixedTitleDisplayMode: allSettings.mixedTitleDisplayMode,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
@@ -75,6 +76,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             key !== 'fontScale' &&
                             key !== 'supportHide' &&
                             key !== 'applyAlgorithmToCode' &&
+                            key !== 'flipRtlArrows' &&
                             key !== 'mixedTitleDisplayMode' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
@@ -155,6 +157,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.applyAlgorithmToCode !== undefined) {
                 settingsToImport.applyAlgorithmToCode = importData.settings.applyAlgorithmToCode === true;
             }
+            if (importData.settings.flipRtlArrows !== undefined) {
+                settingsToImport.flipRtlArrows = importData.settings.flipRtlArrows === true;
+            }
             if (importData.settings.mixedTitleDisplayMode !== undefined) {
                 settingsToImport.mixedTitleDisplayMode = importData.settings.mixedTitleDisplayMode;
             }
@@ -178,6 +183,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== 'fontScale' &&
                     key !== 'supportHide' && 
                     key !== 'applyAlgorithmToCode' &&
+                    key !== 'flipRtlArrows' &&
                     key !== 'mixedTitleDisplayMode' &&
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 

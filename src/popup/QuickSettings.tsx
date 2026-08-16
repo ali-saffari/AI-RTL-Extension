@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
+import ExperimentalBadge from '../components/ExperimentalBadge';
 import {
     DEFAULT_FONT_ID,
     DEFAULT_FONT_SCALE,
@@ -46,6 +47,8 @@ interface QuickSettingsProps {
     onMixedTitleDisplayModeChange: (value: string) => void;
     applyAlgorithmToCode: boolean;
     onApplyAlgorithmToCodeChange: (enabled: boolean) => void;
+    flipRtlArrows: boolean;
+    onFlipRtlArrowsChange: (enabled: boolean) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     isDarkMode: boolean;
@@ -106,6 +109,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onMixedTitleDisplayModeChange,
     applyAlgorithmToCode,
     onApplyAlgorithmToCodeChange,
+    flipRtlArrows,
+    onFlipRtlArrowsChange,
     supportHide,
     onSupportChange,
     isDarkMode,
@@ -486,13 +491,39 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 gap: 1,
                             }}
                         >
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                <Typography className="quick-settings-label">
+                                    برعکس کردن فلش‌ها در متن راست‌چین
+                                </Typography>
+                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                            </Box>
+                            <Switch
+                                size="small"
+                                checked={flipRtlArrows}
+                                onChange={(event) => onFlipRtlArrowsChange(event.target.checked)}
+                                sx={switchSx}
+                                inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
+                            />
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                            }}
+                        >
+                            <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
                                 <Typography className="quick-settings-label">
                                     اعمال روی باکس کدها{' '}
                                     <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
                                         (Markdown)
                                     </Box>
                                 </Typography>
+                                <ExperimentalBadge isDarkMode={isDarkMode} />
                             </Box>
                             <Switch
                                 size="small"
@@ -506,9 +537,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
-                    <Typography className="quick-settings-label" sx={{ mb: 1 }}>
-                        فونت
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
+                        <Typography className="quick-settings-label">
+                            فونت
+                        </Typography>
+                        <ExperimentalBadge isDarkMode={isDarkMode} />
+                    </Box>
                     <FormControl fullWidth size="small">
                         <Select
                             dir="rtl"
@@ -612,7 +646,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </FormControl>
                     <Box sx={{ mt: 1.75 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
-                            <Typography className="quick-settings-label">اندازه فونت</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                <Typography className="quick-settings-label">اندازه فونت</Typography>
+                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                            </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted }}>
                                 {formatFontScaleLabel(fontScale)}
                             </Typography>
@@ -692,21 +729,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
                                 <Typography className="quick-settings-label">چینش دستی</Typography>
-                                <Box
-                                    component="span"
-                                    sx={{
-                                        px: 0.7,
-                                        py: 0.1,
-                                        borderRadius: 1,
-                                        fontSize: '0.62rem',
-                                        fontWeight: 600,
-                                        color: isDarkMode ? '#ffb74d' : '#ef6c00',
-                                        border: `1px solid ${isDarkMode ? 'rgba(255, 152, 0, 0.45)' : 'rgba(239, 108, 0, 0.35)'}`,
-                                        background: isDarkMode ? 'rgba(255, 152, 0, 0.12)' : 'rgba(255, 152, 0, 0.1)',
-                                    }}
-                                >
-                                    آزمایشی
-                                </Box>
+                                <ExperimentalBadge isDarkMode={isDarkMode} />
                             </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
                                 راست‌چین یا چپ‌چین کردن متن در هر سایت
@@ -753,19 +776,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             </Button>
                         )}
                     </Box>
-
-                    {hasTabsPermission !== false && (
-                        <Typography
-                            sx={{
-                                mt: 1,
-                                fontSize: '0.7rem',
-                                fontWeight: 600,
-                                color: manualEnabled ? accent : muted,
-                            }}
-                        >
-                            {manualEnabled ? 'فعال' : 'غیرفعال'}
-                        </Typography>
-                    )}
                 </Box>
             </Box>
             <Dialog

@@ -150,6 +150,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
             applyAlgorithmToCode: false,
+            flipRtlArrows: false,
             activationHintDismissed: false,
             troubleshootingHintDismissed: true
         });
@@ -219,6 +220,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!storedData.hasOwnProperty('applyAlgorithmToCode')) {
                     updates.applyAlgorithmToCode = false;
+                }
+
+                if (!storedData.hasOwnProperty('flipRtlArrows')) {
+                    updates.flipRtlArrows = false;
                 }
                 
                 // Check and initialize manual RTL settings

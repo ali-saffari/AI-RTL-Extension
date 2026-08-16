@@ -32,29 +32,6 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     });
 
 
-
-    // Process ds-message elements (messages in chat)
-    // AQ('.ds-markdown').each(function (each) {
-    //     if (AQ(this).find('.ds-markdown').length > 0) {
-    //         // If ds-markdown exists inside, use advanced function for complex messages
-    //         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-    //             fontClass: 'FontSet',
-    //             processedClass: 'AsOk',
-    //             isContainer: true
-    //         });
-    //     } else {
-    //         // Otherwise, style the div inside ds-message for simple messages
-    //         AQ(this).find('div').each(function() {
-    //             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-    //                 fontClass: 'FontSet',
-    //                 processedClass: 'AsOk'
-    //             });
-    //         });
-    //     }
-    // });
-
-    // Process _546d736 elements for text direction detection (history items)
-
     AQ(' .ds-markdown , .ds-message div').each(function (each) {
         // AQ(this).addClass('AsOk FontSet FontClaude');
         
@@ -75,7 +52,6 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         });
     });
 
- 
 }
 
 // Main activation function for DeepSeek

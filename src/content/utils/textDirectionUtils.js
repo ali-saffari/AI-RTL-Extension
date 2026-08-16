@@ -22,6 +22,47 @@ const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark
 const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
 let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 let applyAlgorithmToCodeCache = false;
+let flipRtlArrowsCache = false;
+
+const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
+    'textarea', 'input', 'script', 'style', 'svg', 'math',
+    '.katex', '.katex-html', '.katex-display', '.ProseMirror'
+].join(', ');
+
+const CODE_SKIP_ARROW_FLIP_SELECTOR = [
+    'pre', 'code', 'kbd', 'samp',
+    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block'
+].join(', ');
+
+const UNICODE_ARROW_FLIP_MAP = {
+    '→': '←',
+    '⇒': '⇐',
+    '⟶': '⟵',
+    '⟹': '⟸',
+    '➡': '⬅',
+    '▶': '◀',
+    '▷': '◁',
+    '►': '◄',
+    '▸': '◂',
+    '▻': '◅',
+    '⇨': '⇦',
+    '⇾': '⇽',
+    '↦': '↤',
+    '↠': '↞',
+    '↝': '↜',
+    '↣': '↢',
+    '⇀': '↼',
+    '⇝': '⇜',
+    '⇢': '⇠',
+    '☞': '☜',
+    '☛': '☚',
+    '➜': '←',
+    '➔': '←',
+    '➝': '←',
+    '➞': '←'
+};
+const UNICODE_ARROW_FLIP_RE = new RegExp(`[${Object.keys(UNICODE_ARROW_FLIP_MAP).join('')}]`, 'g');
+const FLIPPABLE_ARROW_RE = /==>|-->|=>|->|[→⇒⟶⟹➡▶▷►▸▻⇨⇾↦↠↝↣⇀⇝⇢☞☛➜➔➝➞]/;
 
 function isExtensionContextValid() {
     try {
@@ -49,6 +90,127 @@ function setApplyAlgorithmToCode(enabled) {
 
 function isApplyAlgorithmToCodeEnabled() {
     return applyAlgorithmToCodeCache === true;
+}
+
+function setFlipRtlArrows(enabled) {
+    flipRtlArrowsCache = enabled === true;
+}
+
+function isFlipRtlArrowsEnabled() {
+    return flipRtlArrowsCache === true;
+}
+
+function unwrapElement(element) {
+    if (!element) {
+        return null;
+    }
+    if (element.nodeType === 1) {
+        return element;
+    }
+    if (element[0] && element[0].nodeType === 1) {
+        return element[0];
+    }
+    return null;
+}
+
+function flipArrowsInText(text) {
+    if (!text || !FLIPPABLE_ARROW_RE.test(text)) {
+        return text;
+    }
+    return text
+        .replace(/==>/g, '<==')
+        .replace(/-->/g, '<--')
+        .replace(/=>/g, '<=')
+        .replace(/->/g, '<-')
+        .replace(UNICODE_ARROW_FLIP_RE, (ch) => UNICODE_ARROW_FLIP_MAP[ch] || ch);
+}
+
+function shouldSkipArrowFlip(parent) {
+    if (!parent || typeof parent.closest !== 'function') {
+        return true;
+    }
+    if (parent.closest(ALWAYS_SKIP_ARROW_FLIP_SELECTOR)) {
+        return true;
+    }
+    if (!isApplyAlgorithmToCodeEnabled() && parent.closest(CODE_SKIP_ARROW_FLIP_SELECTOR)) {
+        return true;
+    }
+    return false;
+}
+
+function isTextNodeInRtlContext(textNode) {
+    let current = textNode.parentElement;
+    while (current) {
+        const dir = current.getAttribute('dir');
+        if (dir === 'rtl') {
+            return true;
+        }
+        if (dir === 'ltr') {
+            return false;
+        }
+        if (dir === 'auto') {
+            try {
+                return getComputedStyle(current).direction === 'rtl';
+            } catch {
+                return false;
+            }
+        }
+        current = current.parentElement;
+    }
+
+    const parent = textNode.parentElement;
+    if (!parent) {
+        return false;
+    }
+    try {
+        return getComputedStyle(parent).direction === 'rtl';
+    } catch {
+        return false;
+    }
+}
+
+function flipRtlArrowsInTree(element) {
+    if (!isFlipRtlArrowsEnabled()) {
+        return;
+    }
+
+    const root = unwrapElement(element);
+    if (!root || typeof document === 'undefined' || !document.createTreeWalker) {
+        return;
+    }
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+            const text = node.nodeValue;
+            if (!text || !FLIPPABLE_ARROW_RE.test(text)) {
+                return NodeFilter.FILTER_REJECT;
+            }
+
+            const parent = node.parentElement;
+            if (!parent) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            if (shouldSkipArrowFlip(parent)) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            if (!isTextNodeInRtlContext(node)) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    });
+
+    const nodes = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    for (const node of nodes) {
+        const next = flipArrowsInText(node.nodeValue);
+        if (next !== node.nodeValue) {
+            node.nodeValue = next;
+        }
+    }
 }
 
 function applyForcedCodeLtr($element) {
@@ -171,6 +333,9 @@ function processCodeMirrorBlock($element, element, options = {}) {
     const direction = detectTextDirection(blockText) === 'rtl' ? 'rtl' : 'ltr';
     setDebugAttr($element, 'data-debug-mode', 'cm-code-block-unified');
     applyCodeBlockDirection($targets, direction, blockFontClass);
+    if (direction === 'rtl') {
+        flipRtlArrowsInTree($content);
+    }
 }
 
 function processCodeMirrorBlocks(container, options = {}) {
@@ -281,6 +446,10 @@ function setTextDirectionAndFont(element, options = {}) {
         } else {
             AQ(element).css('text-align', 'left');
         }
+    }
+
+    if (finalDirection === 'rtl') {
+        flipRtlArrowsInTree(element);
     }
     
     return finalDirection;
@@ -1147,6 +1316,7 @@ function processTextElementsAdvanced(container, options = {}) {
             }
         
     });
+    flipRtlArrowsInTree(container);
     } catch (error) {
         if (isInvalidatedError(error)) {
             return;
@@ -1437,6 +1607,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             $element.attr('data-text-length', currentTextLength.toString());
             // Reset skip log flag when processing happens
             $element.removeAttr('data-skip-log-sent');
+            flipRtlArrowsInTree($element);
         }
         //  else {
         //     // Log when processing is skipped (only once)
@@ -1509,6 +1680,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             $element.attr('data-algorithm-rtl', 'advanced_full');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
+            flipRtlArrowsInTree($element);
         }
 
     } else if (rtlAlgorithm === 'first_word') {
@@ -1536,6 +1708,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         }
         
         $element.attr('data-algorithm-rtl', 'first_word');
+        flipRtlArrowsInTree($element);
     }
     } catch (error) {
         if (isInvalidatedError(error)) {
@@ -1595,6 +1768,10 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
             if (rtlClass && direction === 'rtl') {
                 $element.addClass(rtlClass);
             }
+
+            if (direction === 'rtl') {
+                flipRtlArrowsInTree($element);
+            }
         }
 
     } else if (rtlAlgorithm === 'first_word') {
@@ -1637,6 +1814,8 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
                     }
                 }
             }
+
+            flipRtlArrowsInTree($element);
         }
 
         
@@ -1659,6 +1838,7 @@ export {
         detectDirectionByAlgorithm,
         setMixedTitleDisplayMode,
         setApplyAlgorithmToCode,
+        setFlipRtlArrows,
         processCodeMirrorBlocks,
         isLockedMarkdownEditor,
         processLockedEditorByCss

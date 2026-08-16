@@ -54,6 +54,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
+    const [flipRtlArrows, setFlipRtlArrows] = React.useState(false);
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
@@ -77,6 +78,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'previewEnabled',
                 'mixedTitleDisplayMode',
                 'applyAlgorithmToCode',
+                'flipRtlArrows',
                 SELECTED_FONT_STORAGE_KEY,
                 FONT_SCALE_STORAGE_KEY
             ], (result) => {
@@ -124,6 +126,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (result.applyAlgorithmToCode !== undefined) {
                     setApplyAlgorithmToCode(result.applyAlgorithmToCode === true);
                 }
+                if (result.flipRtlArrows !== undefined) {
+                    setFlipRtlArrows(result.flipRtlArrows === true);
+                }
             });
         } catch (error) {
             console.log('Failed to load settings:', error);
@@ -165,6 +170,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.applyAlgorithmToCode) {
                     setApplyAlgorithmToCode(changes.applyAlgorithmToCode.newValue === true);
+                }
+                if (changes.flipRtlArrows) {
+                    setFlipRtlArrows(changes.flipRtlArrows.newValue === true);
                 }
             }
         };
@@ -299,6 +307,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
+    const handleFlipRtlArrowsChange = (enabled: boolean) => {
+        setFlipRtlArrows(enabled);
+        try {
+            chrome.storage.sync.set({ flipRtlArrows: enabled });
+        } catch (error) {
+            console.log('Failed to save flip RTL arrows setting:', error);
+        }
+    };
+
     return (
         <Box sx={{ width: '100%' }}>
             {/* Tabs */}
@@ -358,6 +375,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         applyAlgorithmToCode={applyAlgorithmToCode}
                         onApplyAlgorithmToCodeChange={handleApplyAlgorithmToCodeChange}
+                        flipRtlArrows={flipRtlArrows}
+                        onFlipRtlArrowsChange={handleFlipRtlArrowsChange}
                         selectedFont={selectedFont}
                         onSelectedFontChange={handleSelectedFontChange}
                         fontScale={fontScale}

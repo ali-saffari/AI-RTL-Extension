@@ -26,6 +26,7 @@ import {
     injectPreviewFontFaces,
     loadFontsConfig,
 } from '../../utils/fonts';
+import ExperimentalBadge from '../../components/ExperimentalBadge';
 
 interface FontSettingCardProps {
     selectedFont: string;
@@ -83,12 +84,15 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
         <Card elevation={2}>
             <CardContent>
                 <Box sx={{ mb: 1.5, textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{
-                        fontWeight: 600,
-                        color: 'primary.main'
-                    }}>
-                        فونت
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
+                        <Typography variant="h6" sx={{
+                            fontWeight: 600,
+                            color: 'primary.main'
+                        }}>
+                            فونت
+                        </Typography>
+                        <ExperimentalBadge isDarkMode={isDarkMode} />
+                    </Box>
                 </Box>
 
                 <FormControl fullWidth size="small">
@@ -191,9 +195,12 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
 
                 <Box sx={{ mt: 2.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
-                            اندازه فونت
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                                اندازه فونت
+                            </Typography>
+                            <ExperimentalBadge isDarkMode={isDarkMode} />
+                        </Box>
                         <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
                             {formatFontScaleLabel(fontScale)}
                         </Typography>

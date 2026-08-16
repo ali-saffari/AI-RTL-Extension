@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 import FontSettingCard from './FontSettingCard';
+import ExperimentalBadge from '../../components/ExperimentalBadge';
 
 interface AlgorithmTabProps {
     rtlAlgorithm: string;
@@ -33,6 +34,8 @@ interface AlgorithmTabProps {
     onMixedTitleDisplayModeChange?: (value: string) => void;
     applyAlgorithmToCode?: boolean;
     onApplyAlgorithmToCodeChange?: (enabled: boolean) => void;
+    flipRtlArrows?: boolean;
+    onFlipRtlArrowsChange?: (enabled: boolean) => void;
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
@@ -50,6 +53,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     onMixedTitleDisplayModeChange,
     applyAlgorithmToCode = false,
     onApplyAlgorithmToCodeChange,
+    flipRtlArrows = false,
+    onFlipRtlArrowsChange,
     selectedFont,
     onSelectedFontChange,
     fontScale,
@@ -289,20 +294,88 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             </Card>
                         </Grid>
 
+                        {/* برعکس کردن فلش‌ها در متن راست‌چین */}
+                        <Grid item xs={12}>
+                            <Card elevation={2}>
+                                <CardContent dir="rtl">
+                                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, mb: 0.5 }}>
+                                            <Typography variant="h6" sx={{ 
+                                                fontWeight: 600, 
+                                                color: 'primary.main'
+                                            }}>
+                                                برعکس کردن فلش‌ها
+                                            </Typography>
+                                            <ExperimentalBadge isDarkMode={isDarkMode} />
+                                        </Box>
+                                        <Typography variant="body2" sx={{ 
+                                            color: 'text.secondary',
+                                            fontSize: '0.8rem'
+                                        }}>
+                                            وقتی متن راست‌چین تشخیص داده شود، فلش‌های چپ‌به‌راست برعکس می‌شوند
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                                    }}>
+                                        <Box sx={{ flex: 1, pr: 2 }}>
+                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 500, 
+                                                fontSize: '0.95rem',
+                                                color: theme.palette.text.primary
+                                            }}>
+                                                برعکس کردن فلش‌ها در متن راست‌چین
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ 
+                                                color: 'text.secondary',
+                                                fontSize: '0.78rem',
+                                                mt: 0.5,
+                                                lineHeight: 1.6
+                                            }}>
+                                                مثال: مرحله ۱ → مرحله ۲ تبدیل می‌شود به مرحله ۱ ← مرحله ۲
+                                            </Typography>
+                                        </Box>
+                                        <Switch
+                                            checked={flipRtlArrows}
+                                            onChange={(e) => onFlipRtlArrowsChange?.(e.target.checked)}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                            }}
+                                            inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
+                                        />
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+
                         {/* اعمال روی باکس کدها (Markdown) */}
                         <Grid item xs={12}>
                             <Card elevation={2}>
                                 <CardContent dir="rtl">
                                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
-                                        <Typography variant="h6" sx={{ 
-                                            fontWeight: 600, 
-                                            color: 'primary.main'
-                                        }}>
-                                            اعمال روی باکس کدها{' '}
-                                            <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
-                                                (Markdown)
-                                            </Box>
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
+                                            <Typography variant="h6" sx={{ 
+                                                fontWeight: 600, 
+                                                color: 'primary.main'
+                                            }}>
+                                                اعمال روی باکس کدها{' '}
+                                                <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
+                                                    (Markdown)
+                                                </Box>
+                                            </Typography>
+                                            <ExperimentalBadge isDarkMode={isDarkMode} />
+                                        </Box>
                                     </Box>
                                     <Box sx={{ 
                                         display: 'flex', 
