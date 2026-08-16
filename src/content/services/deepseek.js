@@ -32,22 +32,34 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     });
 
 
-    AQ(' .ds-markdown , .ds-message div').each(function (each) {
+    AQ('.ds-markdown').each(function () {
         // AQ(this).addClass('AsOk FontSet FontClaude');
-        
+
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSet FontClaude',
+            fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true
         });
     });
 
 
+    AQ('.ds-message > div:first-of-type').each(function () {
+        const $el = AQ(this);
+        if ($el.find('.ds-markdown').length) {
+            return;
+        }
+
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            rtlClass: 'AsOkRList'
+        });
+    });
 
     AQ('._546d736 , .afa34042').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            // processedClass: 'AsOk',
+            processedClass: 'AsOk',
             rtlClass: 'AsOkRList'
         });
     });
