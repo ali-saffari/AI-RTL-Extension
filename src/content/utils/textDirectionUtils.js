@@ -21,6 +21,7 @@ const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark
 
 const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
 let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
+let applyAlgorithmToCodeCache = false;
 
 function isExtensionContextValid() {
     try {
@@ -37,6 +38,47 @@ function isInvalidatedError(error) {
 
 function setMixedTitleDisplayMode(mode) {
     mixedTitleDisplayModeCache = mode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
+}
+
+function setApplyAlgorithmToCode(enabled) {
+    applyAlgorithmToCodeCache = enabled === true;
+}
+
+function isApplyAlgorithmToCodeEnabled() {
+    return applyAlgorithmToCodeCache === true;
+}
+
+function applyForcedCodeLtr($element) {
+    $element.attr('dir', 'ltr');
+    $element.css('text-align', 'left');
+    $element.addClass('AsSetLtr');
+    $element.addClass('FontSetCode');
+}
+
+function isCodeElementContent($element) {
+    const text = $element.text();
+    const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
+    return !hasLanguageTextClass && isCode(text);
+}
+
+function processCodeLikeElement($element, element, options = {}) {
+    const { fontClass, setTextAlign, processedClass } = options;
+    if (processedClass) {
+        $element.addClass(processedClass);
+    }
+
+    const text = $element.text();
+    const isCodeContent = isCodeElementContent($element);
+
+    if (isCodeContent && !isApplyAlgorithmToCodeEnabled()) {
+        setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
+        applyForcedCodeLtr($element);
+        return;
+    }
+
+    setDebugAttr($element, 'data-debug-mode', isCodeContent ? 'code-element-algorithm' : 'code-element-normal');
+    $element.find('*').removeAttr('dir');
+    setTextDirectionAndFont(element, { fontClass, setTextAlign, text });
 }
 
 
@@ -667,25 +709,7 @@ function processTextElementsAdvanced(container, options = {}) {
             const hasPreOrCode = $element.find('pre, code').length > 0;
             
             if (hasPreOrCode) {
-                // If li contains pre or code, process with code logic
-                const text = $element.text();
-                const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
-                const isCodeContent = !hasLanguageTextClass && isCode(text);
-                
-                $element.addClass(processedClass);
-
-                if (isCodeContent) {
-                    setDebugAttr($element, 'data-debug-mode', 'li-code-element-ltr');
-                    // If content is detected as code, always force LTR
-                    $element.attr("dir", "ltr");
-                    $element.addClass('AsSetLtr');
-                    $element.addClass('FontSetCode');
-                } else {
-                    setDebugAttr($element, 'data-debug-mode', 'li-code-element-normal');
-                    // If not code or has language-text class, use normal direction detection
-                    $element.find('*').removeAttr('dir');
-                    setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                }
+                processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass });
             } else {
                 // If li doesn't contain pre or code, skip processing
                 setDebugAttr($element, 'data-debug-mode', 'li-inside-list-skipped');
@@ -737,17 +761,15 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for div elements with md-code-block class (code content)
         if (tagName === 'div' &&  ($element.hasClass('md-code-block') || $element.hasClass('cm-editor'))) {
-            setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-ltr');
-            // Force LTR for code blocks
-            $element.attr("dir", "ltr");
-            // if (fontClass) {
-            //     $element.addClass(fontClass);
-            // }
-            $element.addClass('AsSetLtr');
-            $element.addClass('FontSetCode');
             $element.addClass(processedClass);
-            // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
+            if (!isApplyAlgorithmToCodeEnabled()) {
+                setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-ltr');
+                applyForcedCodeLtr($element);
+            } else {
+                setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-algorithm');
+                setTextDirectionAndFont(this, { fontClass, setTextAlign, text: $element.text() });
+            }
             return;
         }
 
@@ -776,30 +798,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for code elements - use code detection algorithm
         if (['pre', 'code'].includes(tagName)) {
-            const text = $element.text();
-            const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
-            const isCodeContent = !hasLanguageTextClass && isCode(text);
-            
-            $element.addClass(processedClass);
-
-            if (isCodeContent) {
-                $element.attr('data-debug-mode', 'code-element-ltr');
-                // If content is detected as code, always force LTR
-                $element.attr("dir", "ltr");
-                // if (fontClass) {
-                //     $element.addClass(fontClass);
-                // }
-                $element.addClass('AsSetLtr');
-                $element.addClass('FontSetCode');
-                $element.addClass(processedClass);
-            } else {
-                $element.attr('data-debug-mode', 'code-element-normal');
-                // If not code or has language-text class, use normal direction detection
-                $element.find('*').removeAttr('dir');
-                $element.addClass(processedClass);
-                 setTextDirectionAndFont(this, { fontClass, setTextAlign });
-            }
-
+            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass });
             return;
         }
 
@@ -903,31 +902,7 @@ function processTextElementsAdvanced(container, options = {}) {
                             
 
                                 $li.find('pre, code').each(function() {
-
-                                    const text = AQ(this).text();
-                                    const hasLanguageTextClass = AQ(this).hasClass('language-text') || AQ(this).find('.language-text').length > 0;
-                                    const isCodeContent = !hasLanguageTextClass && isCode(text);
-                                    
-                                    AQ(this).addClass(processedClass);
-                        
-                                    if (isCodeContent) {
-                                        AQ(this).attr('data-debug-mode', 'code-element-ltr');
-                                        // If content is detected as code, always force LTR
-                                        AQ(this).attr("dir", "ltr");
-                                        // if (fontClass) {
-                                        //     $element.addClass(fontClass);
-                                        // }
-                                        AQ(this).addClass('AsSetLtr');
-                                        AQ(this).addClass('FontSetCode');
-                                        AQ(this).addClass(processedClass);
-                                    } else {
-                                        AQ(this).attr('data-debug-mode', 'code-element-normal');
-                                        // If not code or has language-text class, use normal direction detection
-                                        AQ(this).find('*').removeAttr('dir');
-                                        AQ(this).addClass(processedClass);
-                                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
-                                    }
-
+                                    processCodeLikeElement(AQ(this), this, { fontClass, setTextAlign, processedClass });
                                 })
 
                             }
@@ -1181,7 +1156,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
         const nth = typeCount[tagName];
         const selector = `${rootSelector}>${tagName}:nth-of-type(${nth})`;
 
-        if (tagName === 'pre') {
+        if (tagName === 'pre' && !isApplyAlgorithmToCodeEnabled()) {
             blockRules.push({ selector, direction: 'ltr' });
             return;
         }
@@ -1387,15 +1362,12 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
                     siteConfig: mergedOptions.siteConfig
                 });
 
-                // Set code and pre elements to LTR and left align
                 $element.find('code, pre').each(function() {
-                    const $codeElement = AQ(this);
-                    $codeElement.attr('dir', 'ltr');
-                    $codeElement.css('text-align', 'left');
-                    $codeElement.addClass('AsSetLtr');
-                    if (!$codeElement.hasClass('FontSetCode')) {
-                        $codeElement.addClass('FontSetCode');
-                    }
+                    processCodeLikeElement(AQ(this), this, {
+                        fontClass: mergedOptions.fontClass,
+                        setTextAlign: mergedOptions.setTextAlign,
+                        processedClass: mergedOptions.processedClass
+                    });
                 });
             }
             
@@ -1551,6 +1523,7 @@ export {
         setTextDirectionAndFontByRtlAlgorithm,
         detectDirectionByAlgorithm,
         setMixedTitleDisplayMode,
+        setApplyAlgorithmToCode,
         isLockedMarkdownEditor,
         processLockedEditorByCss
     };
