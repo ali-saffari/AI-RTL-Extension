@@ -93,7 +93,8 @@ const services: Service[] = [
     { key: 'cursor', name: 'Cursor', icon: '/images/cursor.png', url: 'https://cursor.com/', new: true },
     { key: 'typingmind', name: 'TypingMind', icon: '/images/typingmind.png', url: 'https://www.typingmind.com/', new: true },
     { key: 'huggingface', name: 'Hugging Face', icon: '/images/huggingface.png', url: 'https://huggingface.co/', new: true },
-    { key: 'dash0', name: 'Dash0', icon: '/images/dash0.png', url: 'https://app.dash0.com/', new: true }
+    { key: 'dash0', name: 'Dash0', icon: '/images/dash0.png', url: 'https://app.dash0.com/', new: true },
+    { key: 'zerve', name: 'Zerve', icon: '/images/zerve.png', url: 'https://app.zerve.ai/', new: true }
 ];
 
 

@@ -58,10 +58,11 @@ import { activateFal } from './services/fal.js';
 import { activateBfl } from './services/bfl.js';
 import { activateCharacterAi } from './services/character-ai.js';
 import { activatePi } from './services/pi.js';
-import { activateCursor } from './services/cursor.js';
-import { activateTypingMind } from './services/typingmind.js';
-import { activateHuggingFace } from './services/huggingface.js';
-import { activateDash0 } from './services/dash0.js';
+import { activateCursor } from './services/observer/cursor.js';
+import { activateTypingMind } from './services/observer/typingmind.js';
+import { activateHuggingFace } from './services/observer/huggingface.js';
+import { activateDash0 } from './services/observer/dash0.js';
+import { activateZerve } from './services/observer/zerve.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -316,6 +317,10 @@ const serviceConfig = {
     dash0: {
         urls: ["dash0.com", "www.dash0.com", "app.dash0.com"],
         activate: activateDash0
+    },
+    zerve: {
+        urls: ["zerve.ai", "www.zerve.ai", "app.zerve.ai"],
+        activate: activateZerve
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

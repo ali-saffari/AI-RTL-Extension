@@ -14,6 +14,7 @@ export const versionChanges = [
     { id: '11', text: 'افزودن سایت TypingMind', icon: 'typingmind.png', type: 'add' },
     { id: '12', text: 'افزودن سایت Hugging Face', icon: 'huggingface.png', type: 'add' },
     { id: '13', text: 'افزودن سایت Dash0', icon: 'dash0.png', type: 'add' },
+    { id: '14', text: 'افزودن سایت Zerve', icon: 'zerve.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

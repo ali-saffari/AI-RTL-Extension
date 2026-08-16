@@ -135,6 +135,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Dash0',
         origins: ['*://dash0.com/*', '*://www.dash0.com/*', '*://app.dash0.com/*'],
         hostnames: ['dash0.com', 'www.dash0.com', 'app.dash0.com']
+    },
+    zerve: {
+        name: 'Zerve',
+        origins: ['*://zerve.ai/*', '*://www.zerve.ai/*', '*://app.zerve.ai/*'],
+        hostnames: ['zerve.ai', 'www.zerve.ai', 'app.zerve.ai']
     }
 };
 
