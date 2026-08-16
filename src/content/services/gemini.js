@@ -67,46 +67,61 @@ export function activateGemini(rtlAlgorithm = 'advanced_full') {
 
 
     let oldText = '';
+    const stopGeminiTimers = () => {
+        clearInterval(fontInterval);
+        clearInterval(geminiInterval);
+    };
+
     const fontInterval = setInterval(() => {
-        if (!isExtensionContextValid()) {
-            clearInterval(fontInterval);
-            return;
-        }
-
-        AQ('.bot-name-ugc-label ').each(function (each) {
-            // console.log("gds-label-l", this)
-            if (!AQ(this).hasClass("FontSet")) {
-                AQ(this).addClass('FontSet');
+        try {
+            if (!isExtensionContextValid()) {
+                stopGeminiTimers();
+                return;
             }
-        });
 
+            AQ('.bot-name-ugc-label ').each(function (each) {
+                // console.log("gds-label-l", this)
+                if (!AQ(this).hasClass("FontSet")) {
+                    AQ(this).addClass('FontSet');
+                }
+            });
 
-        
+            AQ('.ql-editor').each(function (each) {
+                // console.log("gds-label-l", this)
+                if (!AQ(this).hasClass("FontSet")) {
+                    AQ(this).addClass('FontSet');
+                }
+            });
 
-        AQ('.ql-editor').each(function (each) {
-            // console.log("gds-label-l", this)
-            if (!AQ(this).hasClass("FontSet")) {
-                AQ(this).addClass('FontSet');
-            }
-        });
-
-
-    AQ('.ql-editor p').each(function (each) {
+            AQ('.ql-editor p').each(function (each) {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     processedClass: false,
                     setTextAlign: true
                 });
-    });
+            });
+        } catch (error) {
+            if (!isExtensionContextValid() || String(error?.message || error).includes('Extension context invalidated')) {
+                stopGeminiTimers();
+                return;
+            }
+            throw error;
+        }
     }, 100);
 
-
-   
     const geminiInterval = setInterval(() => {
-        if (!isExtensionContextValid()) {
-            clearInterval(geminiInterval);
-            return;
+        try {
+            if (!isExtensionContextValid()) {
+                stopGeminiTimers();
+                return;
+            }
+            setGemini(rtlAlgorithm);
+        } catch (error) {
+            if (!isExtensionContextValid() || String(error?.message || error).includes('Extension context invalidated')) {
+                stopGeminiTimers();
+                return;
+            }
+            throw error;
         }
-        setGemini(rtlAlgorithm);
     }, 1000);
 }

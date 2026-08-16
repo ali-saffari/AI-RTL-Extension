@@ -42,6 +42,8 @@ import { activateNotion } from './services/notion.js';
 import { activateGenspark } from './services/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
+import { SessionManager } from './utils/session.js';
+import { setMixedTitleDisplayMode } from './utils/textDirectionUtils.js';
 import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
@@ -67,6 +69,24 @@ import { activateZerve } from './services/observer/zerve.js';
 // Global variables
 let site = window.location.hostname;
 let lastTrackedService = null;
+
+function isInvalidatedContextMessage(value) {
+    const message = value?.message || String(value || '');
+    return message.includes('Extension context invalidated');
+}
+
+window.addEventListener('error', (event) => {
+    if (isInvalidatedContextMessage(event.error) || isInvalidatedContextMessage(event.message)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }
+}, true);
+
+window.addEventListener('unhandledrejection', (event) => {
+    if (isInvalidatedContextMessage(event.reason)) {
+        event.preventDefault();
+    }
+});
 
 
 // Listen for content script activation event - register early
@@ -350,8 +370,6 @@ function isCurrentSiteInServiceConfig() {
 // Analytics Session Manager
 // ============================================
 
-import { SessionManager } from './utils/session.js';
-
 const sessionManager = new SessionManager();
 
 // Listen for storage changes
@@ -423,8 +441,9 @@ async function initializeAllServices() {
     let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode']);
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode']);
         rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
+        setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
     } catch (error) {
         console.log('Storage access failed:', error);
     }

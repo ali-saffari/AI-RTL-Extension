@@ -20,7 +20,7 @@ function setDebugAttr($element, attrName, value) {
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
 const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
-let mixedTitleDisplayModeCache = null;
+let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 
 function isExtensionContextValid() {
     try {
@@ -30,38 +30,13 @@ function isExtensionContextValid() {
     }
 }
 
-function readMixedTitleDisplayMode(callback) {
-    if (mixedTitleDisplayModeCache !== null) {
-        callback(mixedTitleDisplayModeCache);
-        return;
-    }
+function isInvalidatedError(error) {
+    const message = error?.message || String(error || '');
+    return message.includes('Extension context invalidated') || !isExtensionContextValid();
+}
 
-    const useDefault = () => {
-        mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
-        callback(mixedTitleDisplayModeCache);
-    };
-
-    try {
-        if (!isExtensionContextValid() || !chrome.storage?.sync?.get) {
-            useDefault();
-            return;
-        }
-
-        chrome.storage.sync.get(['mixedTitleDisplayMode'], (result) => {
-            try {
-                if (chrome.runtime?.lastError) {
-                    useDefault();
-                    return;
-                }
-                mixedTitleDisplayModeCache = result?.mixedTitleDisplayMode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
-                callback(mixedTitleDisplayModeCache);
-            } catch {
-                useDefault();
-            }
-        });
-    } catch {
-        useDefault();
-    }
+function setMixedTitleDisplayMode(mode) {
+    mixedTitleDisplayModeCache = mode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 }
 
 
@@ -479,6 +454,7 @@ export function processTablesInContainer(container, options = {}) {
  * @param {boolean} isContainer - Whether this is a container element (optional)
  */
 function processTextElementsAdvanced(container, options = {}) {
+    try {
     let {
         fontClass = 'FontSet',
         processedClass = 'AsOk',
@@ -603,9 +579,8 @@ function processTextElementsAdvanced(container, options = {}) {
 
             // Check mixedTitleDisplayMode setting
             // Default to 'unified' if not set
-            readMixedTitleDisplayMode((mixedTitleMode) => {
-                // If unified mode and mainContainer exists, apply majority direction
-                if (mixedTitleMode === 'unified' && mainContainer) {
+            const mixedTitleMode = mixedTitleDisplayModeCache;
+            if (mixedTitleMode === 'unified' && mainContainer) {
                     const allHeaders = mainContainer.find(tagName);
                     let rtlCount = 0;
                     let ltrCount = 0;
@@ -646,7 +621,6 @@ function processTextElementsAdvanced(container, options = {}) {
                     }
                 }
                 // In individual mode, each header keeps its own direction (already set above)
-            });
 
             setDebugAttr($element, 'data-debug-mode', 'header-processed');
             return;
@@ -1076,6 +1050,12 @@ function processTextElementsAdvanced(container, options = {}) {
             }
         
     });
+    } catch (error) {
+        if (isInvalidatedError(error)) {
+            return;
+        }
+        throw error;
+    }
 }
 
 
@@ -1097,6 +1077,7 @@ function getAttributeTextElements() {
  * @param {Object} options - Additional options (optional)
  */
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
+    try {
     const $element = AQ(element);
     
     // Default options for each algorithm
@@ -1365,6 +1346,12 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
         
 
     }
+    } catch (error) {
+        if (isInvalidatedError(error)) {
+            return;
+        }
+        throw error;
+    }
 }
 
 export {
@@ -1379,6 +1366,7 @@ export {
         getAttributeTextElements,
         processTextElementsByRtlAlgorithm,
         setTextDirectionAndFontByRtlAlgorithm,
-        detectDirectionByAlgorithm
+        detectDirectionByAlgorithm,
+        setMixedTitleDisplayMode
     };
 
