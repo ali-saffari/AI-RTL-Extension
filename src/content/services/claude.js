@@ -116,6 +116,8 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+
+    
     
 
     // پاسخ های کلاود
@@ -144,6 +146,14 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: true
+        });
+    });
+
+    // پیام‌های کاربر
+    AQ('[data-testid="user-message"]').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
         });
     });
 

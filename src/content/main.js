@@ -43,7 +43,7 @@ import { activateGenspark } from './services/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { SessionManager } from './utils/session.js';
-import { setMixedTitleDisplayMode } from './utils/textDirectionUtils.js';
+import { setMixedTitleDisplayMode, setApplyAlgorithmToCode } from './utils/textDirectionUtils.js';
 import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
@@ -401,6 +401,14 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         return;
     }
 
+    if (changes.applyAlgorithmToCode) {
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
+        location.reload();
+        return;
+    }
+
     if (changes.supportHide) {
         const hide = changes.supportHide.newValue === true;
         // Wait for AQ to be available
@@ -441,9 +449,10 @@ async function initializeAllServices() {
     let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode']);
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode']);
         rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
         setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
+        setApplyAlgorithmToCode(results.applyAlgorithmToCode);
     } catch (error) {
         console.log('Storage access failed:', error);
     }

@@ -53,6 +53,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
+    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
@@ -75,6 +76,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'analytics',
                 'previewEnabled',
                 'mixedTitleDisplayMode',
+                'applyAlgorithmToCode',
                 SELECTED_FONT_STORAGE_KEY,
                 FONT_SCALE_STORAGE_KEY
             ], (result) => {
@@ -119,6 +121,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 } else {
                     setMixedTitleDisplayMode('unified'); // Default to unified
                 }
+                if (result.applyAlgorithmToCode !== undefined) {
+                    setApplyAlgorithmToCode(result.applyAlgorithmToCode === true);
+                }
             });
         } catch (error) {
             console.log('Failed to load settings:', error);
@@ -157,6 +162,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.mixedTitleDisplayMode) {
                     setMixedTitleDisplayMode(changes.mixedTitleDisplayMode.newValue);
+                }
+                if (changes.applyAlgorithmToCode) {
+                    setApplyAlgorithmToCode(changes.applyAlgorithmToCode.newValue === true);
                 }
             }
         };
@@ -282,6 +290,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
+    const handleApplyAlgorithmToCodeChange = (enabled: boolean) => {
+        setApplyAlgorithmToCode(enabled);
+        try {
+            chrome.storage.sync.set({ applyAlgorithmToCode: enabled });
+        } catch (error) {
+            console.log('Failed to save code algorithm setting:', error);
+        }
+    };
+
     return (
         <Box sx={{ width: '100%' }}>
             {/* Tabs */}
@@ -339,6 +356,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onPreviewChange={handlePreviewChange}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
+                        applyAlgorithmToCode={applyAlgorithmToCode}
+                        onApplyAlgorithmToCodeChange={handleApplyAlgorithmToCodeChange}
                         selectedFont={selectedFont}
                         onSelectedFontChange={handleSelectedFontChange}
                         fontScale={fontScale}

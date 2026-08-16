@@ -44,6 +44,8 @@ interface QuickSettingsProps {
     onFontScaleCommit: (value: number) => void;
     mixedTitleDisplayMode: string;
     onMixedTitleDisplayModeChange: (value: string) => void;
+    applyAlgorithmToCode: boolean;
+    onApplyAlgorithmToCodeChange: (enabled: boolean) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     isDarkMode: boolean;
@@ -102,6 +104,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onFontScaleCommit,
     mixedTitleDisplayMode,
     onMixedTitleDisplayModeChange,
+    applyAlgorithmToCode,
+    onApplyAlgorithmToCodeChange,
     supportHide,
     onSupportChange,
     isDarkMode,
@@ -472,6 +476,33 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             </Typography>
                         </Box>
                     )}
+
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                            }}
+                        >
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                                <Typography className="quick-settings-label">
+                                    اعمال روی باکس کدها{' '}
+                                    <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
+                                        (Markdown)
+                                    </Box>
+                                </Typography>
+                            </Box>
+                            <Switch
+                                size="small"
+                                checked={applyAlgorithmToCode}
+                                onChange={(event) => onApplyAlgorithmToCodeChange(event.target.checked)}
+                                sx={switchSx}
+                                inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
+                            />
+                        </Box>
+                    </Box>
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>

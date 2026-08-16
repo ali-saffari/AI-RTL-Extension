@@ -1,13 +1,14 @@
 // ChatGPT service functions
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, processCodeMirrorBlocks } from '../utils/textDirectionUtils.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
 const markdownProcessTimes = new WeakMap();
 const MARKDOWN_PROCESS_OPTIONS = {
-    fontClass: 'FontSetImportantGPT',
+    fontClass: 'FontSetGPT',
+    codeFontClass: 'FontSetCodeBlocksGPT',
     processedClass: 'AsOkText',
     isContainer: true,
     siteConfig: 'chatgpt',
@@ -52,7 +53,7 @@ function processUserMessageNode(node, rtlAlgorithm) {
 
     userMessages.each(function() {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true
         });
@@ -73,7 +74,7 @@ function processSuggestionNode(node, rtlAlgorithm) {
         $node.find('.whitespace-pre-wrap').each(function() {
             if (!AQ(this).hasClass('AsOk')) {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                    fontClass: 'FontSet',
+                    fontClass: 'FontSetGPT',
                     processedClass: 'AsOk'
                 });
             }
@@ -83,7 +84,7 @@ function processSuggestionNode(node, rtlAlgorithm) {
     suggestionElements.each(function() {
         if (!AQ(this).hasClass('AsOk')) {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
+                fontClass: 'FontSetGPT',
                 processedClass: 'AsOk'
             });
         }
@@ -113,6 +114,10 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
 
         AQ(element).addClass('AsSetAlgorithm');
         processTextElementsByRtlAlgorithm(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
+        processCodeMirrorBlocks(element, {
+            fontClass: 'FontSetCodeBlocksGPT',
+            setTextAlign: true
+        });
     };
 
     const flushPendingMarkdown = () => {
@@ -198,14 +203,19 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
     AQ('.hljs-comment').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
     })
 
+    processCodeMirrorBlocks(document.body, {
+        fontClass: 'FontSetCodeBlocksGPT',
+        setTextAlign: true
+    });
+
     AQ('[data-message-author-role="user"]').each(function () {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true
         });
@@ -215,7 +225,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         if (!AQ(this).parent().hasClass("AsOk")) {
             AQ(this).parent().addClass('AsOk');
             const text = AQ(this).text()
-            AQ(this).addClass('FontSetImportantGPT');
+            AQ(this).addClass('FontSetGPT');
             if (isRTL(text)) {
                 AQ(this).parent().addClass("setRight")
             }
@@ -225,16 +235,16 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
 
     AQ('body').each(function (each) {
-        AQ(this).addClass('FontSet');
+        AQ(this).addClass('FontSetGPT');
     })
 
     AQ(presentation).each(function (each) {
-        AQ(this).addClass('FontSet');
+        AQ(this).addClass('FontSetGPT');
     })
 
     AQ(presentation + '#prosemirror-editor-container').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             rtlClass: 'flex-row-reverse'
         });
@@ -248,14 +258,14 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSetImportantGPT',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
         
         AQ(this).on('keyup paste', function() {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                    fontClass: 'FontSet',
+                    fontClass: 'FontSetGPT',
                 });
             });
         });
@@ -264,7 +274,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     
     AQ('.text-token-text-secondary span').each(function (each) {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
+            fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
     })
@@ -283,7 +293,7 @@ export function initializeChatGptHistory() {
             if (p) {
                 AQ(this).attr("dir", "rtl");
                 AQ(this).addClass('AsRtlList');
-                AQ(this).addClass('FontSet');
+                AQ(this).addClass('FontSetGPT');
                 AQ(this).parent().addClass('AsRtlList_parent');
             }
         }

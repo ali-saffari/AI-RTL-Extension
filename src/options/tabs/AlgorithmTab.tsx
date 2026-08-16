@@ -31,6 +31,8 @@ interface AlgorithmTabProps {
     onPreviewChange: (enabled: boolean) => void;
     mixedTitleDisplayMode?: string;
     onMixedTitleDisplayModeChange?: (value: string) => void;
+    applyAlgorithmToCode?: boolean;
+    onApplyAlgorithmToCodeChange?: (enabled: boolean) => void;
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
@@ -46,6 +48,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     onPreviewChange,
     mixedTitleDisplayMode = 'unified',
     onMixedTitleDisplayModeChange,
+    applyAlgorithmToCode = false,
+    onApplyAlgorithmToCodeChange,
     selectedFont,
     onSelectedFontChange,
     fontScale,
@@ -281,6 +285,60 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             );
                                         })}
                                     </RadioGroup>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+
+                        {/* اعمال روی باکس کدها (Markdown) */}
+                        <Grid item xs={12}>
+                            <Card elevation={2}>
+                                <CardContent dir="rtl">
+                                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                                        <Typography variant="h6" sx={{ 
+                                            fontWeight: 600, 
+                                            color: 'primary.main'
+                                        }}>
+                                            اعمال روی باکس کدها{' '}
+                                            <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
+                                                (Markdown)
+                                            </Box>
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                                    }}>
+                                        <Box sx={{ flex: 1, pr: 2 }}>
+                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 500, 
+                                                fontSize: '0.95rem',
+                                                color: theme.palette.text.primary
+                                            }}>
+                                                اعمال روی باکس کدها{' '}
+                                                <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
+                                                    (Markdown)
+                                                </Box>
+                                            </Typography>
+                                        </Box>
+                                        <Switch
+                                            checked={applyAlgorithmToCode}
+                                            onChange={(e) => onApplyAlgorithmToCodeChange?.(e.target.checked)}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                            }}
+                                            inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
+                                        />
+                                    </Box>
                                 </CardContent>
                             </Card>
                         </Grid>

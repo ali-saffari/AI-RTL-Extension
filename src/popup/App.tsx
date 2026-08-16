@@ -195,6 +195,7 @@ function App() {
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
+    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
@@ -227,7 +228,7 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -239,6 +240,9 @@ function App() {
                 }
                 if (result.mixedTitleDisplayMode) {
                     setMixedTitleDisplayMode(result.mixedTitleDisplayMode);
+                }
+                if (result.applyAlgorithmToCode !== undefined) {
+                    setApplyAlgorithmToCode(result.applyAlgorithmToCode === true);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -344,6 +348,9 @@ function App() {
                 if (changes.mixedTitleDisplayMode) {
                     setMixedTitleDisplayMode(changes.mixedTitleDisplayMode.newValue || 'unified');
                 }
+                if (changes.applyAlgorithmToCode) {
+                    setApplyAlgorithmToCode(changes.applyAlgorithmToCode.newValue === true);
+                }
             }
         };
 
@@ -373,6 +380,15 @@ function App() {
         setMixedTitleDisplayMode(value);
         try {
             chrome.storage.sync.set({ mixedTitleDisplayMode: value });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
+    const handleApplyAlgorithmToCodeChange = (enabled: boolean) => {
+        setApplyAlgorithmToCode(enabled);
+        try {
+            chrome.storage.sync.set({ applyAlgorithmToCode: enabled });
         } catch (error) {
             // Silently handle save errors
         }
@@ -1261,6 +1277,8 @@ function App() {
                         onFontScaleCommit={handleFontScaleCommit}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
+                        applyAlgorithmToCode={applyAlgorithmToCode}
+                        onApplyAlgorithmToCodeChange={handleApplyAlgorithmToCodeChange}
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
                         isDarkMode={isDarkMode}

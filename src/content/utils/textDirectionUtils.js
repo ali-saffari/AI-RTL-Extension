@@ -42,6 +42,9 @@ function setMixedTitleDisplayMode(mode) {
 
 function setApplyAlgorithmToCode(enabled) {
     applyAlgorithmToCodeCache = enabled === true;
+    if (typeof document !== 'undefined' && document.documentElement) {
+        document.documentElement.classList.toggle('ai-rtl-code-algorithm', applyAlgorithmToCodeCache);
+    }
 }
 
 function isApplyAlgorithmToCodeEnabled() {
@@ -52,7 +55,30 @@ function applyForcedCodeLtr($element) {
     $element.attr('dir', 'ltr');
     $element.css('text-align', 'left');
     $element.addClass('AsSetLtr');
-    $element.addClass('FontSetCode');
+    $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT');
+}
+
+const CM_DIR_STYLE_ID = 'ai-rtl-cm-code-direction';
+
+function ensureCodeMirrorDirectionStyles() {
+    if (typeof document === 'undefined' || document.getElementById(CM_DIR_STYLE_ID)) {
+        return;
+    }
+    const style = document.createElement('style');
+    style.id = CM_DIR_STYLE_ID;
+    style.textContent = `
+        .cm-content[dir="rtl"], .cm-line[dir="rtl"] {
+            direction: rtl !important;
+            unicode-bidi: isolate;
+        }
+        .cm-content[dir="ltr"], .cm-line[dir="ltr"] {
+            direction: ltr !important;
+            unicode-bidi: isolate;
+        }
+        .cm-content[dir="rtl"], .cm-line[dir="rtl"] { text-align: right !important; }
+        .cm-content[dir="ltr"], .cm-line[dir="ltr"] { text-align: left !important; }
+    `;
+    (document.head || document.documentElement).appendChild(style);
 }
 
 function isCodeElementContent($element) {
@@ -62,13 +88,14 @@ function isCodeElementContent($element) {
 }
 
 function processCodeLikeElement($element, element, options = {}) {
-    const { fontClass, setTextAlign, processedClass } = options;
+    const { fontClass, setTextAlign, processedClass, codeFontClass } = options;
     if (processedClass) {
         $element.addClass(processedClass);
     }
 
     const text = $element.text();
     const isCodeContent = isCodeElementContent($element);
+    const appliedFontClass = isCodeContent ? (codeFontClass || fontClass) : fontClass;
 
     if (isCodeContent && !isApplyAlgorithmToCodeEnabled()) {
         setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
@@ -78,7 +105,79 @@ function processCodeLikeElement($element, element, options = {}) {
 
     setDebugAttr($element, 'data-debug-mode', isCodeContent ? 'code-element-algorithm' : 'code-element-normal');
     $element.find('*').removeAttr('dir');
-    setTextDirectionAndFont(element, { fontClass, setTextAlign, text });
+    setTextDirectionAndFont(element, {
+        fontClass: appliedFontClass,
+        setTextAlign: isCodeContent || setTextAlign,
+        text,
+        applyFontIfRtl: isCodeContent
+    });
+}
+
+function isCodeMirrorCodeBlock($element) {
+    return $element.hasClass('cm-content') || $element.hasClass('cm-editor') || $element.hasClass('md-code-block');
+}
+
+function getCodeMirrorTargets($element, $content) {
+    let $targets = $content.add($content.children('.cm-line'));
+    if ($element[0] !== $content[0]) {
+        $targets = $targets.add($element);
+    }
+    return $targets;
+}
+
+function applyCodeBlockDirection($targets, direction, fontClass) {
+    $targets.each(function() {
+        const $el = AQ(this);
+        if (direction === 'rtl') {
+            $el.attr('dir', 'rtl');
+            $el.attr('data-direction', 'rtl');
+            $el.css('text-align', 'right');
+            $el.removeClass('AsSetLtr');
+            if (fontClass) {
+                $el.addClass(fontClass);
+            }
+            return;
+        }
+        applyForcedCodeLtr($el);
+        if (fontClass) {
+            $el.removeClass(fontClass);
+        }
+    });
+}
+
+function processCodeMirrorBlock($element, element, options = {}) {
+    const { fontClass, processedClass, codeFontClass } = options;
+    const blockFontClass = codeFontClass || fontClass;
+    const $content = $element.hasClass('cm-content')
+        ? $element
+        : ($element.find('.cm-content').first().length ? $element.find('.cm-content').first() : $element);
+
+    ensureCodeMirrorDirectionStyles();
+
+    if (processedClass) {
+        $element.addClass(processedClass);
+        $element.find('*').addClass(processedClass);
+    }
+
+    const $targets = getCodeMirrorTargets($element, $content);
+
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        setDebugAttr($element, 'data-debug-mode', 'cm-code-block-ltr');
+        applyCodeBlockDirection($targets, 'ltr', blockFontClass);
+        return;
+    }
+
+    const blockText = $content.text();
+    const direction = detectTextDirection(blockText) === 'rtl' ? 'rtl' : 'ltr';
+    setDebugAttr($element, 'data-debug-mode', 'cm-code-block-unified');
+    applyCodeBlockDirection($targets, direction, blockFontClass);
+}
+
+function processCodeMirrorBlocks(container, options = {}) {
+    const $root = container ? AQ(container) : AQ(document);
+    $root.find('.cm-content, .md-code-block').add($root.filter('.cm-content, .md-code-block')).each(function() {
+        processCodeMirrorBlock(AQ(this), this, options);
+    });
 }
 
 
@@ -128,7 +227,8 @@ function setTextDirectionAndFont(element, options = {}) {
     const {
         fontClass = 'FontSet',
         text: providedText = null,
-        setTextAlign = false
+        setTextAlign = false,
+        applyFontIfRtl = false
     } = options;
     
     // اگر متن پاس شده، از اون استفاده کن، وگرنه textWithoutLinks محاسبه کن
@@ -141,6 +241,7 @@ function setTextDirectionAndFont(element, options = {}) {
         $tempElement.find('a').remove();
         $tempElement.find('div.rounded-xl').remove();
         $tempElement.find('pre, code').remove();
+        $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
         $tempElement.find('button').remove();
         $tempElement.find('[data-copy="false"]').remove();
         textToUse = $tempElement.text().trim();
@@ -166,7 +267,11 @@ function setTextDirectionAndFont(element, options = {}) {
 
     AQ(element).attr("dir", finalDirection);
     if (fontClass) {
-        AQ(element).addClass(fontClass);
+        if (!applyFontIfRtl || finalDirection === 'rtl') {
+            AQ(element).addClass(fontClass);
+        } else {
+            AQ(element).removeClass(fontClass);
+        }
     }
     
     // Set text alignment if setTextAlign is enabled
@@ -505,7 +610,8 @@ function processTextElementsAdvanced(container, options = {}) {
         removeSkipTags = [],
         setTextAlign = false,
         removeDirAuto = false,
-        endTyping = false
+        endTyping = false,
+        codeFontClass
     } = options;
     // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
@@ -706,10 +812,10 @@ function processTextElementsAdvanced(container, options = {}) {
         // Handle li elements that are inside ol or ul
         if (tagName === 'li' && ($element.parent().is('ol') || $element.parent().is('ul'))) {
             // Check if li contains pre or code elements
-            const hasPreOrCode = $element.find('pre, code').length > 0;
+            const hasPreOrCode = $element.find('pre, code, .cm-content, .cm-editor').length > 0;
             
             if (hasPreOrCode) {
-                processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass });
+                processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
             } else {
                 // If li doesn't contain pre or code, skip processing
                 setDebugAttr($element, 'data-debug-mode', 'li-inside-list-skipped');
@@ -718,10 +824,24 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
         
-        // Skip div elements with rounded-xl class (for Copilot code sections)
+        // Skip div elements with rounded-xl class (for Copilot code sections),
+        // unless they wrap a code editor that should follow the code setting
         if (tagName === 'div' && $element.hasClass('rounded-xl')) {
+            const $innerCode = $element.find('.cm-content, .cm-editor, .md-code-block, pre, code');
+            if ($innerCode.length) {
+                $innerCode.each(function() {
+                    const $inner = AQ(this);
+                    if (isCodeMirrorCodeBlock($inner)) {
+                        processCodeMirrorBlock($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                    } else {
+                        processCodeLikeElement($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                    }
+                });
+                $element.addClass(processedClass);
+                $element.find('*').addClass(processedClass);
+                return;
+            }
             setDebugAttr($element, 'data-debug-mode', 'div-rounded-xl-skipped');
-            // Mark all children as processed without processing them
             $element.find('*').addClass(processedClass);
             return;
         }
@@ -759,17 +879,9 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
         
-        // Special handling for div elements with md-code-block class (code content)
-        if (tagName === 'div' &&  ($element.hasClass('md-code-block') || $element.hasClass('cm-editor'))) {
-            $element.addClass(processedClass);
-            $element.find('*').addClass(processedClass);
-            if (!isApplyAlgorithmToCodeEnabled()) {
-                setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-ltr');
-                applyForcedCodeLtr($element);
-            } else {
-                setDebugAttr($element, 'data-debug-mode', 'div-md-code-block-algorithm');
-                setTextDirectionAndFont(this, { fontClass, setTextAlign, text: $element.text() });
-            }
+        // CodeMirror / markdown code editors (ChatGPT cm-content, DeepSeek md-code-block, ...)
+        if (tagName === 'div' && isCodeMirrorCodeBlock($element)) {
+            processCodeMirrorBlock($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
             return;
         }
 
@@ -798,7 +910,7 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for code elements - use code detection algorithm
         if (['pre', 'code'].includes(tagName)) {
-            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass });
+            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
             return;
         }
 
@@ -901,8 +1013,13 @@ function processTextElementsAdvanced(container, options = {}) {
                                 // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
                             
 
-                                $li.find('pre, code').each(function() {
-                                    processCodeLikeElement(AQ(this), this, { fontClass, setTextAlign, processedClass });
+                                $li.find('pre, code, .cm-content').each(function() {
+                                    const $inner = AQ(this);
+                                    if ($inner.hasClass('cm-content')) {
+                                        processCodeMirrorBlock($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                                    } else {
+                                        processCodeLikeElement($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                                    }
                                 })
 
                             }
@@ -1091,6 +1208,9 @@ function lockedEditorDirRule(selector, direction, setTextAlign) {
     if (setTextAlign) {
         rule += `text-align:${align}!important;`;
     }
+    if (selector.includes('>pre:') && direction !== 'rtl') {
+        rule += 'font-family:revert!important;';
+    }
     return `${rule}}`;
 }
 
@@ -1203,7 +1323,10 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
             });
         });
 
-        const css = rules.map((item) => lockedEditorDirRule(item.selector, item.direction, setTextAlign)).join('');
+        const css = rules.map((item) => {
+            const alignForRule = setTextAlign || item.selector.includes('>pre:');
+            return lockedEditorDirRule(item.selector, item.direction, alignForRule);
+        }).join('');
         if (lockedEditorCssById.get(editorId) !== css) {
             lockedEditorCssById.set(editorId, css);
             flushLockedEditorStyles();
@@ -1261,6 +1384,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         $tempElement.find('a').remove();
         $tempElement.find('div.rounded-xl').remove();
         $tempElement.find('pre, code').remove();
+        $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
         $tempElement.find('button').remove();
         $tempElement.find('[data-copy="false"]').remove();
         const currentText = $tempElement.text().trim();
@@ -1362,12 +1486,23 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
                     siteConfig: mergedOptions.siteConfig
                 });
 
-                $element.find('code, pre').each(function() {
-                    processCodeLikeElement(AQ(this), this, {
-                        fontClass: mergedOptions.fontClass,
-                        setTextAlign: mergedOptions.setTextAlign,
-                        processedClass: mergedOptions.processedClass
-                    });
+                $element.find('code, pre, .cm-content, .md-code-block').each(function() {
+                    const $codeElement = AQ(this);
+                    if ($codeElement.hasClass('cm-content') || $codeElement.hasClass('md-code-block')) {
+                        processCodeMirrorBlock($codeElement, this, {
+                            fontClass: mergedOptions.fontClass,
+                            codeFontClass: mergedOptions.codeFontClass,
+                            setTextAlign: mergedOptions.setTextAlign,
+                            processedClass: mergedOptions.processedClass
+                        });
+                    } else {
+                        processCodeLikeElement($codeElement, this, {
+                            fontClass: mergedOptions.fontClass,
+                            codeFontClass: mergedOptions.codeFontClass,
+                            setTextAlign: mergedOptions.setTextAlign,
+                            processedClass: mergedOptions.processedClass
+                        });
+                    }
                 });
             }
             
@@ -1524,6 +1659,7 @@ export {
         detectDirectionByAlgorithm,
         setMixedTitleDisplayMode,
         setApplyAlgorithmToCode,
+        processCodeMirrorBlocks,
         isLockedMarkdownEditor,
         processLockedEditorByCss
     };

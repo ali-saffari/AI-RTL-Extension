@@ -149,6 +149,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             fontScale: 100,
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
+            applyAlgorithmToCode: false,
             activationHintDismissed: false,
             troubleshootingHintDismissed: true
         });
@@ -214,6 +215,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 // Check and initialize mixedTitleDisplayMode
                 if (!storedData.hasOwnProperty('mixedTitleDisplayMode')) {
                     updates.mixedTitleDisplayMode = 'unified';
+                }
+
+                if (!storedData.hasOwnProperty('applyAlgorithmToCode')) {
+                    updates.applyAlgorithmToCode = false;
                 }
                 
                 // Check and initialize manual RTL settings

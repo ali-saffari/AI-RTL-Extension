@@ -61,6 +61,8 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     selectedFont: allSettings.selectedFont,
                     fontScale: allSettings.fontScale,
                     supportHide: allSettings.supportHide,
+                    applyAlgorithmToCode: allSettings.applyAlgorithmToCode,
+                    mixedTitleDisplayMode: allSettings.mixedTitleDisplayMode,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
                     analytics: allSettings.analytics,
@@ -71,7 +73,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                         if (key !== 'rtlAlgorithmMode' && 
                             key !== 'selectedFont' &&
                             key !== 'fontScale' &&
-                            key !== 'supportHide' && 
+                            key !== 'supportHide' &&
+                            key !== 'applyAlgorithmToCode' &&
+                            key !== 'mixedTitleDisplayMode' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
                             key !== 'analytics' && 
@@ -148,6 +152,12 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.supportHide !== undefined) {
                 settingsToImport.supportHide = importData.settings.supportHide;
             }
+            if (importData.settings.applyAlgorithmToCode !== undefined) {
+                settingsToImport.applyAlgorithmToCode = importData.settings.applyAlgorithmToCode === true;
+            }
+            if (importData.settings.mixedTitleDisplayMode !== undefined) {
+                settingsToImport.mixedTitleDisplayMode = importData.settings.mixedTitleDisplayMode;
+            }
             if (importData.settings.manualRtlSettings !== undefined) {
                 settingsToImport.manualRtlSettings = importData.settings.manualRtlSettings;
             }
@@ -167,6 +177,8 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== 'selectedFont' &&
                     key !== 'fontScale' &&
                     key !== 'supportHide' && 
+                    key !== 'applyAlgorithmToCode' &&
+                    key !== 'mixedTitleDisplayMode' &&
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 
                     key !== 'analytics' && 

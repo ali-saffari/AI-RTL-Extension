@@ -6,7 +6,7 @@
     background: red !important;
 }
 
-.FontSet pre {
+html:not(.ai-rtl-code-algorithm) .FontSet pre {
     direction: ltr;
 }
 
@@ -61,6 +61,38 @@ textarea.FontSetImportant{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
+.FontSetGPT,
+.FontSetGPT * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+.FontSetGPT .katex,
+.FontSetGPT .katex * {
+    font-family: KaTeX_Main, "Times New Roman", serif !important;
+}
+
+.FontSetGPT pre,
+.FontSetGPT pre *,
+.FontSetGPT code,
+.FontSetGPT code *,
+.FontSetGPT .cm-content,
+.FontSetGPT .cm-content *,
+.FontSetGPT .cm-line,
+.FontSetGPT .cm-line *,
+.FontSetGPT .cm-editor,
+.FontSetGPT .cm-editor *,
+.FontSetGPT .md-code-block,
+.FontSetGPT .md-code-block * {
+    font-family: revert !important;
+}
+
+.FontSetGPT .FontSetCodeBlocksGPT,
+.FontSetGPT .FontSetCodeBlocksGPT *,
+.FontSetCodeBlocksGPT,
+.FontSetCodeBlocksGPT * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
 /*.FontSetImportantGPT .katex  , .FontSetImportantGPT .katex * {*/
 /*    font-family : KaTeX_Main, Times New Roman, serif ;*/
 
@@ -78,6 +110,13 @@ textarea.FontSetImportant{
 .items-stretch .items-start code, .items-stretch .items-start pre {
     font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
     direction: ltr !important;
+}
+
+.items-stretch .items-start code.FontSetCodeBlocksGPT,
+.items-stretch .items-start pre.FontSetCodeBlocksGPT,
+.items-stretch .items-start .FontSetCodeBlocksGPT,
+.items-stretch .items-start .FontSetCodeBlocksGPT * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .AsOkBtn {
@@ -334,7 +373,8 @@ code.AsSetLtr , pre.AsSetLtr {
 }
 
 
-.FontSetImportantGPT [dir=rtl] code.hljs,.FontSetImportantGPT  [dir=rtl] code[class*=language-], .FontSetImportantGPT  [dir=rtl] pre[class*=language-] {
+.FontSetImportantGPT [dir=rtl] code.hljs,.FontSetImportantGPT  [dir=rtl] code[class*=language-], .FontSetImportantGPT  [dir=rtl] pre[class*=language-],
+.FontSetGPT [dir=rtl] code.hljs, .FontSetGPT [dir=rtl] code[class*=language-], .FontSetGPT [dir=rtl] pre[class*=language-] {
     text-align: left !important;
 }
 
