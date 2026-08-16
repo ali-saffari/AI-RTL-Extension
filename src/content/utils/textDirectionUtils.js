@@ -19,6 +19,51 @@ function setDebugAttr($element, attrName, value) {
 // Common formatting tags array - defined once for consistency
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
+const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
+let mixedTitleDisplayModeCache = null;
+
+function isExtensionContextValid() {
+    try {
+        return typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
+    } catch {
+        return false;
+    }
+}
+
+function readMixedTitleDisplayMode(callback) {
+    if (mixedTitleDisplayModeCache !== null) {
+        callback(mixedTitleDisplayModeCache);
+        return;
+    }
+
+    const useDefault = () => {
+        mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
+        callback(mixedTitleDisplayModeCache);
+    };
+
+    try {
+        if (!isExtensionContextValid() || !chrome.storage?.sync?.get) {
+            useDefault();
+            return;
+        }
+
+        chrome.storage.sync.get(['mixedTitleDisplayMode'], (result) => {
+            try {
+                if (chrome.runtime?.lastError) {
+                    useDefault();
+                    return;
+                }
+                mixedTitleDisplayModeCache = result?.mixedTitleDisplayMode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
+                callback(mixedTitleDisplayModeCache);
+            } catch {
+                useDefault();
+            }
+        });
+    } catch {
+        useDefault();
+    }
+}
+
 
 /**
  * One-time function to set text direction and font for any element
@@ -558,9 +603,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
             // Check mixedTitleDisplayMode setting
             // Default to 'unified' if not set
-            chrome.storage.sync.get(['mixedTitleDisplayMode'], (result) => {
-                const mixedTitleMode = result.mixedTitleDisplayMode || 'unified';
-                
+            readMixedTitleDisplayMode((mixedTitleMode) => {
                 // If unified mode and mainContainer exists, apply majority direction
                 if (mixedTitleMode === 'unified' && mainContainer) {
                     const allHeaders = mainContainer.find(tagName);
