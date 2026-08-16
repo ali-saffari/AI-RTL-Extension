@@ -17,89 +17,58 @@ This set of fonts are used in this project under the license: (T7RJ805N)
 *	
 **/
 
-
-
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: bold;
-
-
-	
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebbold.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebbold.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebbold.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebbold.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebbold.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 100;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebthin.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebthin.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebthin.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebthin.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebthin.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 300;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanweblight.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanweblight.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanweblight.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanweblight.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanweblight.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: normal;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebregular.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebregular.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebregular.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebregular.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebregular.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 500;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebmedium.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebmedium.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebmedium.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebmedium.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebmedium.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 800;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebextrabold.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebextrabold.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebextrabold.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebextrabold.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebextrabold.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 900;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebblack.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebblack.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebblack.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebblack.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebblack.woff') format('woff');
 }
 
 @font-face {
 	font-family: iranyekan;
 	font-style: normal;
 	font-weight: 950;
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebextrablack.eot');
-	src: url('chrome-extension://__MSG_@@extension_id__/fonts/eot/iranyekanwebextrablack.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/woff/iranyekanwebextrablack.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
-		 url('chrome-extension://__MSG_@@extension_id__/fonts/ttf/iranyekanwebextrablack.ttf') format('truetype');
+	src: url('chrome-extension://__MSG_@@extension_id__/fonts/iranyekan/iranyekanwebextrablack.woff') format('woff');
 }
-
-

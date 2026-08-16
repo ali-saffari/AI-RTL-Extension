@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "ai-rtl",
+    "name": "AI RTL (Persian/Farsi) : cursor",
+    "nameFa": "راست‌چین هوش مصنوعی برای Cursor",
+    "packageName": "cursor-chat-rtl"
+  },
+  "defaultFont": "iranyekan",
+  "licenseNotice": "افزونه AI RTL با مجوز MIT منتشر می‌شود. فونت‌های همراه، جز ایران‌یکان، تحت SIL OFL 1.1 هستند. ایران‌یکان متعلق به Fontiran است.",
+  "fonts": [
+    {
+      "id": "iranyekan",
+      "title": "ایران یکان",
+      "family": "iranyekan",
+      "version": "web",
+      "license": "Fontiran",
+      "source": "https://fontiran.com",
+      "selectable": true,
+      "files": [
+        { "path": "iranyekan/iranyekanwebthin.woff", "weight": 100, "sha256": "45180934086cf5f750084571519151124aa5c9589def5ac6771c48d276e213f5" },
+        { "path": "iranyekan/iranyekanweblight.woff", "weight": 300, "sha256": "dc30c4b7eb50f25d679b8b3d21f6dc2a6a620fb47d7b6c2830f7392e277753c6" },
+        { "path": "iranyekan/iranyekanwebregular.woff", "weight": 400, "sha256": "a8206b7015814de39f1a0bc7da97313749cf227e46a458bdbddf653b48410717" },
+        { "path": "iranyekan/iranyekanwebmedium.woff", "weight": 500, "sha256": "a92ad94d332d7a07f75dbb982ecb1312de15f9a416ef200817be8aa69c04a18d" },
+        { "path": "iranyekan/iranyekanwebbold.woff", "weight": 700, "sha256": "75899726329ac5689461437c82198664dec7ff0d32bdbb20d73f6c9fa49ff3be" },
+        { "path": "iranyekan/iranyekanwebextrabold.woff", "weight": 800, "sha256": "96d73641f3f951d6128b6e544992a827dbc92a84a616911510f81826c527510c" },
+        { "path": "iranyekan/iranyekanwebblack.woff", "weight": 900, "sha256": "f6271a28f0ae7144786fa12b4442abda5fc00440f1502652c45920e38f7b3ffe" },
+        { "path": "iranyekan/iranyekanwebextrablack.woff", "weight": 950, "sha256": "6acfda9742854ac780309535f2d42d5d37db1557a0e4461962d7488d994d829a" }
+      ]
+    },
+    {
+      "id": "vazir",
+      "title": "وزیرمتن",
+      "family": "Vazirmatn",
+      "version": "33.003",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/vazirmatn",
+      "selectable": true,
+      "files": [
+        { "path": "vazir/variable/Vazirmatn[wght].woff2", "weight": "100 900", "sha256": "4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92" }
+      ]
+    },
+    {
+      "id": "shabnam",
+      "title": "شبنم",
+      "family": "Shabnam",
+      "version": "5.0.1",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/shabnam-font",
+      "selectable": true,
+      "files": [
+        { "path": "shabnam/Shabnam-Thin.woff2", "weight": 100, "sha256": "a074a415cfe0e4f57e2ede996a73d0e509c0ea194c9678c7b87c65fb977907e7" },
+        { "path": "shabnam/Shabnam-Light.woff2", "weight": 300, "sha256": "87cf5dde711a284c1e25dd414d51a571b7c9aedd91b2b96f9d679869f5d65162" },
+        { "path": "shabnam/Shabnam.woff2", "weight": 400, "sha256": "540d3f4e172bd6b5c70dd06bce57e055ce59270e95ea642b414fe0709faaa085" },
+        { "path": "shabnam/Shabnam-Medium.woff2", "weight": 500, "sha256": "fd5931f57e84baad81cc7243cfc1c83e5ac7f5dd17818d917765063544a54441" },
+        { "path": "shabnam/Shabnam-Bold.woff2", "weight": 700, "sha256": "1ff187f5320ec4527ebb6a71831b88289a6cb18ca33ac34476b96960f0af7282" }
+      ]
+    },
+    {
+      "id": "sahel",
+      "title": "ساحل",
+      "family": "Sahel",
+      "version": "3.4.0",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/sahel-font",
+      "selectable": true,
+      "files": [
+        { "path": "sahel/variable/Sahel-VF.woff2", "weight": "100 900", "sha256": "f922c35e2e6198c31edd662dbb051dac4238865293dedfb491016b5120eceb90" }
+      ]
+    },
+    {
+      "id": "samim",
+      "title": "صمیم",
+      "family": "Samim",
+      "version": "4.0.5",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/samim-font",
+      "selectable": true,
+      "files": [
+        { "path": "samim/Samim.woff2", "weight": 400, "sha256": "b45379592d11b2bb9135eb78cea8b54220d89b26d67fb19bae5d15a540d32556" },
+        { "path": "samim/Samim-Medium.woff2", "weight": 500, "sha256": "669fc8c8559080eab9fa0757424331c641a5134245dfb952e7471454f38e0384" },
+        { "path": "samim/Samim-Bold.woff2", "weight": 700, "sha256": "2433289a5eab77e0374c98180640c2eb1fa5301d6ec3c6219d720662cf0904fc" }
+      ]
+    },
+    {
+      "id": "parastoo",
+      "title": "پرستو",
+      "family": "Parastoo",
+      "version": "2.0.1",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/parastoo-font",
+      "selectable": true,
+      "files": [
+        { "path": "parastoo/Parastoo.woff2", "weight": 400, "sha256": "0ea93e20e83b7f73becfe1e149e2e743c534d100ee5db5b0c07e3bb437c94d6d" },
+        { "path": "parastoo/Parastoo-Bold.woff2", "weight": 700, "sha256": "bd1dfcff791ca304cc8775b13ff0383fe4f560593f1de51659f8f278187d736a" }
+      ]
+    },
+    {
+      "id": "tanha",
+      "title": "تنها",
+      "family": "Tanha",
+      "version": "0.10",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/tanha-font",
+      "selectable": true,
+      "files": [
+        { "path": "tanha/Tanha.woff2", "weight": 400, "sha256": "923a3c2dca7ab76cfb4bc15b7ab9158c7933ffd92546338f5d6676c15d53fc54" }
+      ]
+    },
+    {
+      "id": "nahid",
+      "title": "ناهید",
+      "family": "Nahid",
+      "version": "0.3.0",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/nahid-font",
+      "selectable": true,
+      "files": [
+        { "path": "nahid/Nahid.woff2", "weight": 400, "sha256": "ebb5033e79efac882793cb916bf36f7887526e70ecd4d24991a2f59c16e05a8e" }
+      ]
+    },
+    {
+      "id": "gandom",
+      "title": "گندم",
+      "family": "Gandom",
+      "version": "0.8",
+      "license": "OFL-1.1",
+      "source": "https://github.com/rastikerdar/gandom-font",
+      "selectable": true,
+      "files": [
+        { "path": "gandom/Gandom.woff2", "weight": 400, "sha256": "8fa22a2b857613e7416e383707fad3ac9d6cbecf24d7257e996797ab90544be7" }
+      ]
+    },
+    {
+      "id": "estedad",
+      "title": "استعداد",
+      "family": "Estedad",
+      "version": "7.3",
+      "license": "OFL-1.1",
+      "source": "https://github.com/aminabedi68/Estedad",
+      "selectable": true,
+      "files": [
+        { "path": "estedad/variable/Estedad[KSHD,wght].woff2", "weight": "100 900", "sha256": "aebabb9a1cd008339a25f7421e2529e91b8727bd3aaa021c7e0303b844fc51ef" }
+      ]
+    },
+    {
+      "id": "estedad-fd",
+      "title": "استعداد (اعداد فارسی)",
+      "family": "Estedad FD",
+      "version": "7.3",
+      "license": "OFL-1.1",
+      "source": "https://github.com/aminabedi68/Estedad",
+      "selectable": false,
+      "files": [
+        { "path": "estedad/variable/Estedad-FD[KSHD,wght].woff2", "weight": "100 900", "sha256": "d9d9ab2e516764239708c51d487f45d6ce23d13045eb3ee3719eecfd04c8ede7" }
+      ]
+    },
+    {
+      "id": "mikhak",
+      "title": "میخک",
+      "family": "Mikhak",
+      "version": "3.2",
+      "license": "OFL-1.1",
+      "source": "https://github.com/aminabedi68/Mikhak",
+      "selectable": true,
+      "files": [
+        { "path": "mikhak/variable/Mikhak[DSTY,KSHD,wght].woff2", "weight": "100 900", "sha256": "f923da2f641333fa8192f2cc9a52d2ecc3d68998d9cf0f68439478e83c521236" }
+      ]
+    },
+    {
+      "id": "mikhak-fd",
+      "title": "میخک (اعداد فارسی)",
+      "family": "Mikhak FD",
+      "version": "3.2",
+      "license": "OFL-1.1",
+      "source": "https://github.com/aminabedi68/Mikhak",
+      "selectable": false,
+      "files": [
+        { "path": "mikhak/variable/Mikhak-FD[DSTY,KSHD,wght].woff2", "weight": "100 900", "sha256": "9aeb696054fc116d02c16bb49347bfb904a535f5af34c551cf892e4f047e9132" }
+      ]
+    },
+    {
+      "id": "arad",
+      "title": "آراد",
+      "family": "Arad",
+      "version": "1.010",
+      "license": "OFL-1.1",
+      "source": "https://github.com/MDarvishi5124/Arad",
+      "selectable": true,
+      "files": [
+        { "path": "arad/Arad-VF.woff2", "weight": "100 900", "sha256": "9de912b7719fc112e592b5632aefea39562960529fbfcec98eec3805e99ef74e" }
+      ]
+    },
+    {
+      "id": "behdad",
+      "title": "بهداد",
+      "family": "Behdad",
+      "version": "0.0.3",
+      "license": "OFL-1.1",
+      "source": "Persian Font Store / Saleh Souzanchi",
+      "selectable": true,
+      "files": [
+        { "path": "behdad/Behdad-Regular.woff2", "weight": 400, "sha256": "ed43154ffce6bbec94ba81c890362d25e70602154e6e7e4c71b613220acc8c7c" }
+      ]
+    },
+    {
+      "id": "nika",
+      "title": "نیکا",
+      "family": "Nika",
+      "version": "1.0.0",
+      "license": "OFL-1.1",
+      "source": "Persian Font Store / Saleh Souzanchi",
+      "selectable": true,
+      "files": [
+        { "path": "nika/Nika-Regular.woff2", "weight": 400, "sha256": "24ae2f9ab86d95cba1768417708b37c04cd7ca8a843397fb4d2bedcf15be8809" }
+      ]
+    },
+    {
+      "id": "shahab",
+      "title": "شهاب",
+      "family": "Shahab",
+      "version": "0.0.2",
+      "license": "OFL-1.1",
+      "source": "Persian Font Store / Saleh Souzanchi",
+      "selectable": true,
+      "files": [
+        { "path": "shahab/Shahab-Regular.woff2", "weight": 400, "sha256": "c9e0e6cb30042e39a3fe3d66fb1ab52bb5bcb642ff0de59426b4fbec2aa5bcbc" }
+      ]
+    },
+    {
+      "id": "ganjname",
+      "title": "گنج‌نامه",
+      "family": "GanjNamehSans",
+      "version": "0.0.4",
+      "license": "OFL-1.1",
+      "source": "Persian Font Store / Saleh Souzanchi",
+      "selectable": true,
+      "files": [
+        { "path": "ganjname/GanjNamehSans-Regular.woff2", "weight": 400, "sha256": "8509dfb832a356efa2f530b3e3cd889901cfd8385426f0b042574fa1a39b414d" }
+      ]
+    }
+  ]
+}

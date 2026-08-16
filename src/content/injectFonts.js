@@ -27,7 +27,7 @@
 
         faces.forEach(function (item) {
             try {
-                var url = api.runtime.getURL('fonts/woff/' + item.file);
+                var url = api.runtime.getURL('fonts/iranyekan/' + item.file);
                 var face = new FontFace('iranyekan', 'url(' + JSON.stringify(url) + ')', {
                     style: 'normal',
                     weight: item.weight
