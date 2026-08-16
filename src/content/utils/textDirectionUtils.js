@@ -709,6 +709,11 @@ function processTextElementsAdvanced(container, options = {}) {
             $element.find('*').addClass(processedClass);
             return;
         }
+
+        if (this.matches && this.matches('.ProseMirror.markdown[contenteditable]')) {
+            setDebugAttr($element, 'data-debug-mode', 'locked-markdown-editor-skipped');
+            return;
+        }
         
 
 
@@ -1071,6 +1076,172 @@ function getAttributeTextElements() {
 }
 
 /**
+ * Locked ProseMirror editors revert DOM edits on children.
+ * Style them from a stylesheet keyed by an id on the editor root.
+ */
+const LOCKED_EDITOR_STYLE_ID = 'ai-rtl-locked-editor-css';
+const LOCKED_EDITOR_BLOCK_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'ul', 'ol'];
+const LOCKED_EDITOR_HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+const lockedEditorCssById = new Map();
+let lockedEditorSeq = 0;
+
+function isLockedMarkdownEditor(element) {
+    const el = element && element.jquery ? element[0] : element;
+    return Boolean(el && el.nodeType === Node.ELEMENT_NODE && el.matches && el.matches('.ProseMirror.markdown[contenteditable]'));
+}
+
+function getLockedEditorId(element) {
+    let editorId = element.getAttribute('data-ai-rtl-editor');
+    if (!editorId) {
+        lockedEditorSeq += 1;
+        editorId = `e${lockedEditorSeq}`;
+        element.setAttribute('data-ai-rtl-editor', editorId);
+    }
+    return editorId;
+}
+
+function flushLockedEditorStyles() {
+    let styleEl = document.getElementById(LOCKED_EDITOR_STYLE_ID);
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = LOCKED_EDITOR_STYLE_ID;
+        document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = Array.from(lockedEditorCssById.values()).join('\n');
+}
+
+function lockedEditorDirRule(selector, direction, setTextAlign) {
+    const align = direction === 'rtl' ? 'right' : 'left';
+    let rule = `${selector}{direction:${direction}!important;unicode-bidi:isolate;`;
+    if (setTextAlign) {
+        rule += `text-align:${align}!important;`;
+    }
+    return `${rule}}`;
+}
+
+function majorityDirection(directions) {
+    let rtlCount = 0;
+    let ltrCount = 0;
+    directions.forEach((direction) => {
+        if (direction === 'rtl') {
+            rtlCount += 1;
+        } else if (direction === 'ltr') {
+            ltrCount += 1;
+        }
+    });
+    if (rtlCount === 0 && ltrCount === 0) {
+        return 'ltr';
+    }
+    return rtlCount >= ltrCount ? 'rtl' : 'ltr';
+}
+
+/**
+ * advanced_section for editors whose child DOM cannot be mutated.
+ * Assigns an id on the root, then targets p:nth-of-type, h3:nth-of-type, ...
+ */
+function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
+    const el = element && element.jquery ? element[0] : element;
+    if (!isLockedMarkdownEditor(el) || rtlAlgorithm !== 'advanced_section') {
+        return false;
+    }
+
+    const fontClass = options.fontClass || 'FontSet';
+    const setTextAlign = options.setTextAlign === true;
+    const $element = AQ(el);
+
+    $element.addClass(`AsSetAlgorithm ${fontClass}`);
+    el.removeAttribute('dir');
+    el.removeAttribute('data-direction');
+    el.style.removeProperty('text-align');
+
+    const editorId = getLockedEditorId(el);
+    let contentSig = '';
+    for (let i = 0; i < el.children.length; i++) {
+        const child = el.children[i];
+        const text = (child.textContent || '').trim();
+        contentSig += `${child.tagName}:${text.length}:${text.slice(0, 12)}:${text.slice(-12)}|`;
+    }
+    if (el.getAttribute('data-ai-rtl-sig') === contentSig && lockedEditorCssById.has(editorId)) {
+        return true;
+    }
+    el.setAttribute('data-ai-rtl-sig', contentSig);
+
+    const rootSelector = `[data-ai-rtl-editor="${editorId}"]`;
+    const typeCount = {};
+    const headingDirs = {};
+    const blockRules = [];
+
+    Array.from(el.children).forEach((child) => {
+        const tagName = child.tagName.toLowerCase();
+        if (!LOCKED_EDITOR_BLOCK_TAGS.includes(tagName)) {
+            return;
+        }
+
+        typeCount[tagName] = (typeCount[tagName] || 0) + 1;
+        const nth = typeCount[tagName];
+        const selector = `${rootSelector}>${tagName}:nth-of-type(${nth})`;
+
+        if (tagName === 'pre') {
+            blockRules.push({ selector, direction: 'ltr' });
+            return;
+        }
+
+        if (tagName === 'ul' || tagName === 'ol') {
+            const itemDirs = [];
+            Array.from(child.children).forEach((item, itemIndex) => {
+                if (item.tagName.toLowerCase() !== 'li') {
+                    return;
+                }
+                const itemDirection = detectDirectionByAlgorithm(item.textContent || '', rtlAlgorithm);
+                itemDirs.push(itemDirection);
+                blockRules.push({
+                    selector: `${selector}>li:nth-of-type(${itemIndex + 1})`,
+                    direction: itemDirection
+                });
+            });
+            blockRules.push({ selector, direction: majorityDirection(itemDirs) });
+            return;
+        }
+
+        const direction = detectDirectionByAlgorithm(child.textContent || '', rtlAlgorithm);
+        if (LOCKED_EDITOR_HEADING_TAGS.includes(tagName)) {
+            if (!headingDirs[tagName]) {
+                headingDirs[tagName] = [];
+            }
+            headingDirs[tagName].push({ selector, direction });
+            return;
+        }
+
+        blockRules.push({ selector, direction });
+    });
+
+    const applyRules = (headingMode) => {
+        const rules = blockRules.slice();
+        Object.keys(headingDirs).forEach((tagName) => {
+            const headings = headingDirs[tagName];
+            const unifiedDirection = majorityDirection(headings.map((item) => item.direction));
+            headings.forEach((item) => {
+                rules.push({
+                    selector: item.selector,
+                    direction: headingMode === 'unified' ? unifiedDirection : item.direction
+                });
+            });
+        });
+
+        const css = rules.map((item) => lockedEditorDirRule(item.selector, item.direction, setTextAlign)).join('');
+        if (lockedEditorCssById.get(editorId) !== css) {
+            lockedEditorCssById.set(editorId, css);
+            flushLockedEditorStyles();
+        }
+
+        $element.attr('data-algorithm-rtl', 'advanced_section');
+    };
+
+    applyRules(mixedTitleDisplayModeCache || DEFAULT_MIXED_TITLE_DISPLAY_MODE);
+    return true;
+}
+
+/**
  * Process text elements based on RTL algorithm
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
@@ -1079,6 +1250,14 @@ function getAttributeTextElements() {
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
     try {
     const $element = AQ(element);
+
+    if (isLockedMarkdownEditor($element[0]) && rtlAlgorithm !== 'advanced_section') {
+        const editorId = $element[0].getAttribute('data-ai-rtl-editor');
+        if (editorId && lockedEditorCssById.has(editorId)) {
+            lockedEditorCssById.delete(editorId);
+            flushLockedEditorStyles();
+        }
+    }
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -1137,6 +1316,10 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
+
+        if (processLockedEditorByCss($element[0], rtlAlgorithm, mergedOptions)) {
+            return;
+        }
         
         const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
         
@@ -1247,6 +1430,12 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         $element.attr('data-algorithm-rtl', 'first_word');
     }
+    } catch (error) {
+        if (isInvalidatedError(error)) {
+            return;
+        }
+        throw error;
+    }
 }
 
 /**
@@ -1346,12 +1535,6 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
         
 
     }
-    } catch (error) {
-        if (isInvalidatedError(error)) {
-            return;
-        }
-        throw error;
-    }
 }
 
 export {
@@ -1367,6 +1550,8 @@ export {
         processTextElementsByRtlAlgorithm,
         setTextDirectionAndFontByRtlAlgorithm,
         detectDirectionByAlgorithm,
-        setMixedTitleDisplayMode
+        setMixedTitleDisplayMode,
+        isLockedMarkdownEditor,
+        processLockedEditorByCss
     };
 
