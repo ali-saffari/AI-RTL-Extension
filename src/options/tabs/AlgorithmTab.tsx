@@ -33,6 +33,8 @@ interface AlgorithmTabProps {
     onMixedTitleDisplayModeChange?: (value: string) => void;
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
+    fontScale: number;
+    onFontScaleChange: (value: number) => void;
 }
 
 const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
@@ -44,7 +46,9 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     mixedTitleDisplayMode = 'unified',
     onMixedTitleDisplayModeChange,
     selectedFont,
-    onSelectedFontChange
+    onSelectedFontChange,
+    fontScale,
+    onFontScaleChange
 }) => {
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
@@ -131,6 +135,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             <FontSettingCard
                                 selectedFont={selectedFont}
                                 onSelectedFontChange={onSelectedFontChange}
+                                fontScale={fontScale}
+                                onFontScaleChange={onFontScaleChange}
                                 isDarkMode={isDarkMode}
                             />
                         </Grid>

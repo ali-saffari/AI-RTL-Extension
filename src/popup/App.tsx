@@ -28,7 +28,7 @@ import InstallHintBanner from './InstallHintBanner';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
-import { DEFAULT_FONT_ID, SELECTED_FONT_STORAGE_KEY } from '../utils/fonts';
+import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale } from '../utils/fonts';
 import {
     getExtensionStoreUrl,
     getRateLinkText,
@@ -193,6 +193,7 @@ function App() {
     const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
+    const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [supportHide, setSupportHide] = React.useState(false);
     const [isDarkMode, setIsDarkMode] = React.useState(true);
@@ -226,12 +227,15 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
                 if (result[SELECTED_FONT_STORAGE_KEY]) {
                     setSelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
+                }
+                if (result[FONT_SCALE_STORAGE_KEY] !== undefined) {
+                    setFontScale(normalizeFontScale(result[FONT_SCALE_STORAGE_KEY]));
                 }
                 if (result.mixedTitleDisplayMode) {
                     setMixedTitleDisplayMode(result.mixedTitleDisplayMode);
@@ -304,6 +308,9 @@ function App() {
                 if (changes[SELECTED_FONT_STORAGE_KEY]) {
                     setSelectedFont(changes[SELECTED_FONT_STORAGE_KEY].newValue || DEFAULT_FONT_ID);
                 }
+                if (changes[FONT_SCALE_STORAGE_KEY]) {
+                    setFontScale(normalizeFontScale(changes[FONT_SCALE_STORAGE_KEY].newValue));
+                }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
                 }
@@ -375,6 +382,16 @@ function App() {
         setSelectedFont(value);
         try {
             chrome.storage.sync.set({ [SELECTED_FONT_STORAGE_KEY]: value });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
+    const handleFontScaleChange = (value: number) => {
+        const nextScale = normalizeFontScale(value);
+        setFontScale(nextScale);
+        try {
+            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale });
         } catch (error) {
             // Silently handle save errors
         }
@@ -1231,6 +1248,8 @@ function App() {
                         onRtlAlgorithmChange={handleRtlAlgorithmChange}
                         selectedFont={selectedFont}
                         onSelectedFontChange={handleSelectedFontChange}
+                        fontScale={fontScale}
+                        onFontScaleChange={handleFontScaleChange}
                         mixedTitleDisplayMode={mixedTitleDisplayMode}
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         supportHide={supportHide}

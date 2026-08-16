@@ -7,14 +7,20 @@ import {
     MenuItem,
     Select,
     SelectChangeEvent,
+    Slider,
     Typography,
     useTheme
 } from '@mui/material';
 import {
     DEFAULT_FONT_ID,
+    DEFAULT_FONT_SCALE,
+    FONT_SCALE_STEP,
+    MAX_FONT_SCALE,
+    MIN_FONT_SCALE,
     NONE_FONT_ID,
     NONE_FONT_TITLE,
     RtlFont,
+    formatFontScaleLabel,
     getFontFamilyCssValue,
     getSelectableFonts,
     injectPreviewFontFaces,
@@ -24,12 +30,16 @@ import {
 interface FontSettingCardProps {
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
+    fontScale: number;
+    onFontScaleChange: (value: number) => void;
     isDarkMode: boolean;
 }
 
 const FontSettingCard: React.FC<FontSettingCardProps> = ({
     selectedFont,
     onSelectedFontChange,
+    fontScale,
+    onFontScaleChange,
     isDarkMode
 }) => {
     const theme = useTheme();
@@ -176,6 +186,41 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                         ))}
                     </Select>
                 </FormControl>
+
+                <Box sx={{ mt: 2.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                            اندازه فونت
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+                            {formatFontScaleLabel(fontScale)}
+                        </Typography>
+                    </Box>
+                    <Slider
+                        value={fontScale}
+                        min={MIN_FONT_SCALE}
+                        max={MAX_FONT_SCALE}
+                        step={FONT_SCALE_STEP}
+                        marks={[{ value: DEFAULT_FONT_SCALE }]}
+                        onChange={(_, value) => onFontScaleChange(value as number)}
+                        sx={{
+                            '& .MuiSlider-thumb': {
+                                color: theme.palette.primary.main
+                            },
+                            '& .MuiSlider-track': {
+                                color: theme.palette.primary.main
+                            },
+                            '& .MuiSlider-rail': {
+                                opacity: 0.35
+                            },
+                            '& .MuiSlider-mark': {
+                                backgroundColor: theme.palette.primary.main,
+                                height: 10,
+                                width: 2
+                            }
+                        }}
+                    />
+                </Box>
             </CardContent>
         </Card>
     );

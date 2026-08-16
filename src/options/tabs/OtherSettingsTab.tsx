@@ -59,6 +59,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 settings: {
                     rtlAlgorithmMode: allSettings.rtlAlgorithmMode,
                     selectedFont: allSettings.selectedFont,
+                    fontScale: allSettings.fontScale,
                     supportHide: allSettings.supportHide,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
@@ -69,6 +70,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                         // Include service flags (check if it's a boolean service flag)
                         if (key !== 'rtlAlgorithmMode' && 
                             key !== 'selectedFont' &&
+                            key !== 'fontScale' &&
                             key !== 'supportHide' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
@@ -140,6 +142,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.selectedFont !== undefined) {
                 settingsToImport.selectedFont = importData.settings.selectedFont;
             }
+            if (importData.settings.fontScale !== undefined) {
+                settingsToImport.fontScale = importData.settings.fontScale;
+            }
             if (importData.settings.supportHide !== undefined) {
                 settingsToImport.supportHide = importData.settings.supportHide;
             }
@@ -160,6 +165,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             Object.keys(importData.settings).forEach(key => {
                 if (key !== 'rtlAlgorithmMode' && 
                     key !== 'selectedFont' &&
+                    key !== 'fontScale' &&
                     key !== 'supportHide' && 
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 

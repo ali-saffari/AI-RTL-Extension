@@ -1,20 +1,48 @@
 import {
     DEFAULT_FONT_ID,
+    DEFAULT_FONT_SCALE,
+    FONT_SCALE_STORAGE_KEY,
     NONE_FONT_ID,
     SELECTED_FONT_STORAGE_KEY,
     getFontById,
     getFontFamilyCssValue,
     getFontFormat,
     loadFontsConfig,
+    normalizeFontScale,
     normalizeSelectedFontId,
 } from '../../utils/fonts';
 
 const STYLE_ID = 'ai-rtl-selected-font-style';
+const SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
 const HAS_FONT_CLASS = 'ai-rtl-has-font';
 const NONE_FONT_CLASS = 'ai-rtl-font-none';
+const HAS_SCALE_CLASS = 'ai-rtl-has-font-scale';
 const loadedFontIds = new Set();
 let initialized = false;
 let applyingFontId = null;
+
+const FONT_SCALE_TARGETS = [
+    '.FontSet',
+    '.FontSetImportant',
+    '.FontSetImportant2',
+    'textarea.FontSetImportant',
+    '.FontSetImportantGPT',
+    '.CopilotFontSet',
+    '.FontSetPerplexity',
+    '.FontSetVivadoInput',
+    '.FontSetVivado',
+    '.rtl-manual-direction-element',
+    'pending-request'
+].join(', ');
+
+const FONT_SCALE_CSS = `
+html.ai-rtl-has-font-scale :is(${FONT_SCALE_TARGETS}) {
+    zoom: var(--ai-rtl-font-scale);
+}
+html.ai-rtl-has-font-scale :is(${FONT_SCALE_TARGETS}) :is(${FONT_SCALE_TARGETS}) {
+    zoom: 1;
+}
+`;
 
 const NONE_FONT_OVERRIDE_CSS = `
 html.ai-rtl-font-none .FontSet,
@@ -60,11 +88,11 @@ function getRuntime() {
     return null;
 }
 
-function ensureStyleElement() {
-    let style = document.getElementById(STYLE_ID);
+function ensureStyleElement(styleId) {
+    let style = document.getElementById(styleId);
     if (!style) {
         style = document.createElement('style');
-        style.id = STYLE_ID;
+        style.id = styleId;
         const parent = document.head || document.documentElement;
         parent.appendChild(style);
     }
@@ -81,14 +109,36 @@ function setRootFontState(fontFamilyValue, isNone) {
         root.style.removeProperty('--ai-rtl-font');
         root.classList.add(NONE_FONT_CLASS);
         root.classList.remove(HAS_FONT_CLASS);
-        ensureStyleElement().textContent = NONE_FONT_OVERRIDE_CSS;
+        ensureStyleElement(STYLE_ID).textContent = NONE_FONT_OVERRIDE_CSS;
         return;
     }
 
     root.style.setProperty('--ai-rtl-font', fontFamilyValue);
     root.classList.add(HAS_FONT_CLASS);
     root.classList.remove(NONE_FONT_CLASS);
-    ensureStyleElement().textContent = `:root, html { --ai-rtl-font: ${fontFamilyValue}; }`;
+    ensureStyleElement(STYLE_ID).textContent = `:root, html { --ai-rtl-font: ${fontFamilyValue}; }`;
+}
+
+export function applyFontScale(scale) {
+    const root = document.documentElement;
+    if (!root) {
+        return;
+    }
+
+    const value = normalizeFontScale(scale);
+    if (value === DEFAULT_FONT_SCALE) {
+        root.classList.remove(HAS_SCALE_CLASS);
+        root.style.removeProperty('--ai-rtl-font-scale');
+        const style = document.getElementById(SCALE_STYLE_ID);
+        if (style) {
+            style.textContent = '';
+        }
+        return;
+    }
+
+    root.classList.add(HAS_SCALE_CLASS);
+    root.style.setProperty('--ai-rtl-font-scale', String(value / 100));
+    ensureStyleElement(SCALE_STYLE_ID).textContent = FONT_SCALE_CSS;
 }
 
 async function loadFontFaces(font) {
@@ -169,15 +219,23 @@ export function initSelectedFont() {
     initialized = true;
 
     try {
-        chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY], (result) => {
+        chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY], (result) => {
             applySelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
+            applyFontScale(result[FONT_SCALE_STORAGE_KEY]);
         });
         chrome.storage.onChanged.addListener((changes, areaName) => {
-            if (areaName === 'sync' && changes[SELECTED_FONT_STORAGE_KEY]) {
+            if (areaName !== 'sync') {
+                return;
+            }
+            if (changes[SELECTED_FONT_STORAGE_KEY]) {
                 applySelectedFont(changes[SELECTED_FONT_STORAGE_KEY].newValue);
+            }
+            if (changes[FONT_SCALE_STORAGE_KEY]) {
+                applyFontScale(changes[FONT_SCALE_STORAGE_KEY].newValue);
             }
         });
     } catch (error) {
         applySelectedFont(DEFAULT_FONT_ID);
+        applyFontScale(DEFAULT_FONT_SCALE);
     }
 }

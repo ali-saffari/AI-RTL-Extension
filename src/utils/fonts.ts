@@ -5,6 +5,12 @@ export const SELECTED_FONT_STORAGE_KEY = 'selectedFont';
 export const NONE_FONT_TITLE = 'بدون تغییر فونت';
 export const FONT_PREVIEW_SAMPLE = 'نمونه متن فارسی Abc';
 
+export const FONT_SCALE_STORAGE_KEY = 'fontScale';
+export const DEFAULT_FONT_SCALE = 100;
+export const MIN_FONT_SCALE = 70;
+export const MAX_FONT_SCALE = 160;
+export const FONT_SCALE_STEP = 5;
+
 export interface RtlFontFile {
     path: string;
     weight: number | string;
@@ -107,4 +113,21 @@ export function injectPreviewFontFaces(styleId: string, fonts: RtlFont[]): void 
         document.head.appendChild(style);
     }
     style.textContent = css;
+}
+
+export function normalizeFontScale(scale?: number | null): number {
+    const value = Number(scale);
+    if (!Number.isFinite(value)) {
+        return DEFAULT_FONT_SCALE;
+    }
+    const clamped = Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, value));
+    return Math.round(clamped / FONT_SCALE_STEP) * FONT_SCALE_STEP;
+}
+
+export function formatFontScaleLabel(scale: number): string {
+    const value = normalizeFontScale(scale);
+    if (value === DEFAULT_FONT_SCALE) {
+        return 'پیش‌فرض';
+    }
+    return `${value}٪`;
 }

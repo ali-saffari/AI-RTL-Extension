@@ -11,7 +11,7 @@ import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
-import { DEFAULT_FONT_ID, SELECTED_FONT_STORAGE_KEY } from '../utils/fonts';
+import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale } from '../utils/fonts';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -48,6 +48,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [tabValue, setTabValue] = React.useState(getInitialTab);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
+    const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [supportHide, setSupportHide] = React.useState(false);
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
@@ -74,13 +75,17 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'analytics',
                 'previewEnabled',
                 'mixedTitleDisplayMode',
-                SELECTED_FONT_STORAGE_KEY
+                SELECTED_FONT_STORAGE_KEY,
+                FONT_SCALE_STORAGE_KEY
             ], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
                 if (result[SELECTED_FONT_STORAGE_KEY]) {
                     setSelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
+                }
+                if (result[FONT_SCALE_STORAGE_KEY] !== undefined) {
+                    setFontScale(normalizeFontScale(result[FONT_SCALE_STORAGE_KEY]));
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -131,6 +136,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes[SELECTED_FONT_STORAGE_KEY]) {
                     setSelectedFont(changes[SELECTED_FONT_STORAGE_KEY].newValue || DEFAULT_FONT_ID);
+                }
+                if (changes[FONT_SCALE_STORAGE_KEY]) {
+                    setFontScale(normalizeFontScale(changes[FONT_SCALE_STORAGE_KEY].newValue));
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
@@ -208,6 +216,16 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.set({ [SELECTED_FONT_STORAGE_KEY]: value });
         } catch (error) {
             console.log('Failed to save font setting:', error);
+        }
+    };
+
+    const handleFontScaleChange = (value: number) => {
+        const nextScale = normalizeFontScale(value);
+        setFontScale(nextScale);
+        try {
+            chrome.storage.sync.set({ [FONT_SCALE_STORAGE_KEY]: nextScale });
+        } catch (error) {
+            console.log('Failed to save font scale setting:', error);
         }
     };
 
@@ -315,6 +333,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onMixedTitleDisplayModeChange={handleMixedTitleDisplayModeChange}
                         selectedFont={selectedFont}
                         onSelectedFontChange={handleSelectedFontChange}
+                        fontScale={fontScale}
+                        onFontScaleChange={handleFontScaleChange}
                     />
                 )}
                 {tabValue === 1 && (

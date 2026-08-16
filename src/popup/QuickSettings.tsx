@@ -8,6 +8,7 @@ import {
     Select,
     MenuItem,
     FormControl,
+    Slider,
     IconButton,
     Tooltip,
     Dialog,
@@ -19,9 +20,14 @@ import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import {
     DEFAULT_FONT_ID,
+    DEFAULT_FONT_SCALE,
+    FONT_SCALE_STEP,
+    MAX_FONT_SCALE,
+    MIN_FONT_SCALE,
     NONE_FONT_ID,
     NONE_FONT_TITLE,
     RtlFont,
+    formatFontScaleLabel,
     getFontFamilyCssValue,
     getSelectableFonts,
     injectPreviewFontFaces,
@@ -33,6 +39,8 @@ interface QuickSettingsProps {
     onRtlAlgorithmChange: (value: string) => void;
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
+    fontScale: number;
+    onFontScaleChange: (value: number) => void;
     mixedTitleDisplayMode: string;
     onMixedTitleDisplayModeChange: (value: string) => void;
     supportHide: boolean;
@@ -88,6 +96,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onRtlAlgorithmChange,
     selectedFont,
     onSelectedFontChange,
+    fontScale,
+    onFontScaleChange,
     mixedTitleDisplayMode,
     onMixedTitleDisplayModeChange,
     supportHide,
@@ -567,6 +577,35 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             ))}
                         </Select>
                     </FormControl>
+                    <Box sx={{ mt: 1.75 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                            <Typography className="quick-settings-label">اندازه فونت</Typography>
+                            <Typography sx={{ fontSize: '0.72rem', color: muted }}>
+                                {formatFontScaleLabel(fontScale)}
+                            </Typography>
+                        </Box>
+                        <Slider
+                            size="small"
+                            value={fontScale}
+                            min={MIN_FONT_SCALE}
+                            max={MAX_FONT_SCALE}
+                            step={FONT_SCALE_STEP}
+                            marks={[{ value: DEFAULT_FONT_SCALE }]}
+                            onChange={(_, value) => onFontScaleChange(value as number)}
+                            sx={{
+                                mt: 0.5,
+                                color: accent,
+                                '& .MuiSlider-rail': {
+                                    opacity: 0.35
+                                },
+                                '& .MuiSlider-mark': {
+                                    backgroundColor: accent,
+                                    height: 8,
+                                    width: 2
+                                }
+                            }}
+                        />
+                    </Box>
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>

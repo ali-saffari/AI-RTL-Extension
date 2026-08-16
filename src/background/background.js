@@ -146,6 +146,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             ...SERVICE_FLAGS,
             rtlAlgorithmMode: 'advanced_full',
             selectedFont: 'iranyekan',
+            fontScale: 100,
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
             activationHintDismissed: false,
@@ -204,6 +205,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!storedData.hasOwnProperty('selectedFont')) {
                     updates.selectedFont = 'iranyekan';
+                }
+
+                if (!storedData.hasOwnProperty('fontScale')) {
+                    updates.fontScale = 100;
                 }
                 
                 // Check and initialize mixedTitleDisplayMode
