@@ -119,7 +119,7 @@ function setupStoryCapsuleAnimation() {
 function createUpdateModalHTML() {
     const manifest = chrome.runtime.getManifest();
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
-    const iconUrl = chrome.runtime.getURL('images/icon-128.png');
+    const iconUrl = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
     const currentVersion = manifest.version;
 
     // متن استاتیک اصلی که کاملاً از لیست جدا شده است

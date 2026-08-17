@@ -177,7 +177,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <img
-                        src={chrome.runtime.getURL('/images/p logo 100.png')}
+                        src={chrome.runtime.getURL('/images/logo/p logo 100.png')}
                         alt="Manual RTL"
                         style={{
                             width: 20,

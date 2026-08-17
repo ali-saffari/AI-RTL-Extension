@@ -5,5 +5,5 @@ export let saffariLink = getExtensionStoreUrl();
 export let textSaffari = "امیدوارم از نسخه بهینه شده برای فارسی زبانان لذت ببرید"
 // let imagePath = "images/alisaffari11.jpg";
 
-export let imagePath = "images/p logo 100.png";
-export let extensionIconPath = "images/myLogo.png";
+export let imagePath = "images/logo/p logo 100.png";
+export let extensionIconPath = "images/logo/ai-rtl-logo.png";

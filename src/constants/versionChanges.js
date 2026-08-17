@@ -1,20 +1,20 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'myLogo.png', type: 'fix' },
-    { id: '2', text: 'افزودن سایت Google Labs (Flow)', icon: 'labs-google.png', type: 'add' },
-    { id: '3', text: 'افزودن سایت Meta AI', icon: 'meta.png', type: 'add' },
-    { id: '4', text: 'افزودن سایت fal.ai', icon: 'fal.png', type: 'add' },
-    { id: '5', text: 'آپدیت Gemini', icon: 'Gemini.png', type: 'fix' },
-    { id: '6', text: 'افزودن سایت Black Forest', icon: 'bfl.png', type: 'add' },
-    { id: '7', text: 'افزودن سایت Character.AI', icon: 'character-ai.png', type: 'add' },
-    { id: '8', text: 'افزودن سایت Pi', icon: 'pi.png', type: 'add' },
-    { id: '9', text: 'افزودن سایت Cursor', icon: 'cursor.png', type: 'add' },
-    { id: '10', text: 'آپدیت DeepSeek', icon: 'deepseek.jpg', type: 'fix' },
-    { id: '11', text: 'افزودن سایت TypingMind', icon: 'typingmind.png', type: 'add' },
-    { id: '12', text: 'افزودن سایت Hugging Face', icon: 'huggingface.png', type: 'add' },
-    { id: '13', text: 'افزودن سایت Dash0', icon: 'dash0.png', type: 'add' },
-    { id: '14', text: 'افزودن سایت Zerve', icon: 'zerve.png', type: 'add' },
+    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'logo/ai-rtl-logo.png', type: 'fix' },
+    { id: '2', text: 'افزودن سایت Google Labs (Flow)', icon: 'sites/labs-google.png', type: 'add' },
+    { id: '3', text: 'افزودن سایت Meta AI', icon: 'sites/meta.png', type: 'add' },
+    { id: '4', text: 'افزودن سایت fal.ai', icon: 'sites/fal.png', type: 'add' },
+    { id: '5', text: 'آپدیت Gemini', icon: 'sites/Gemini.png', type: 'fix' },
+    { id: '6', text: 'افزودن سایت Black Forest', icon: 'sites/bfl.png', type: 'add' },
+    { id: '7', text: 'افزودن سایت Character.AI', icon: 'sites/character-ai.png', type: 'add' },
+    { id: '8', text: 'افزودن سایت Pi', icon: 'sites/pi.png', type: 'add' },
+    { id: '9', text: 'افزودن سایت Cursor', icon: 'sites/cursor.png', type: 'add' },
+    { id: '10', text: 'آپدیت DeepSeek', icon: 'sites/deepseek.jpg', type: 'fix' },
+    { id: '11', text: 'افزودن سایت TypingMind', icon: 'sites/typingmind.png', type: 'add' },
+    { id: '12', text: 'افزودن سایت Hugging Face', icon: 'sites/huggingface.png', type: 'add' },
+    { id: '13', text: 'افزودن سایت Dash0', icon: 'sites/dash0.png', type: 'add' },
+    { id: '14', text: 'افزودن سایت Zerve', icon: 'sites/zerve.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

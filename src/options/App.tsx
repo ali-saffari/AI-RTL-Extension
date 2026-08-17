@@ -207,7 +207,7 @@ function OptionsApp() {
                         <Toolbar sx={{ justifyContent: 'space-between', py: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Avatar
-                                    src="/images/myLogo.png"
+                                    src="/images/logo/ai-rtl-logo.png"
                                     alt="RTL Extension Logo"
                                     sx={{ 
                                         width: 48, 

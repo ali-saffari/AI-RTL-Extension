@@ -6,7 +6,6 @@ import {
     Box,
     Typography,
     Chip,
-    Avatar,
     Tabs,
     Tab,
     AppBar,
@@ -765,17 +764,51 @@ function App() {
                     dir="ltr"
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar
-                            src="/images/myLogo.png"
-                            alt="RTL Extension Logo"
-                            sx={{ 
-                                width: 44, 
-                                height: 44, 
+                        <Box
+                            sx={{
+                                width: 44,
+                                height: 44,
                                 ml: 0.5,
                                 borderRadius: 1.5,
-                                boxShadow: '0 2px 8px rgba(0, 233, 255, 0.2)'
+                                overflow: 'hidden',
+                                position: 'relative',
+                                flexShrink: 0,
+                                backgroundColor: 'transparent',
+                                boxShadow: 'none',
+                                transition: 'box-shadow 0.2s ease',
+                                '&:hover': {
+                                    boxShadow: '0 2px 8px rgba(0, 233, 255, 0.2)',
+                                },
+                                '& img': {
+                                    position: 'absolute',
+                                    inset: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                    transition: 'opacity 0.2s ease',
+                                },
+                                '& .popup-logo-v2': {
+                                    opacity: 0,
+                                },
+                                '&:hover .popup-logo-v1': {
+                                    opacity: 0,
+                                },
+                                '&:hover .popup-logo-v2': {
+                                    opacity: 1,
+                                },
                             }}
-                        />
+                        >
+                            <img
+                                className="popup-logo-v2"
+                                src="/images/logo/ai-rtl-logo-2.png"
+                                alt=""
+                            />
+                            <img
+                                className="popup-logo-v1"
+                                src="/images/logo/ai-rtl-logo.png"
+                                alt="RTL Extension Logo"
+                            />
+                        </Box>
                         
                         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography 
@@ -1371,7 +1404,7 @@ function App() {
                             aria-label="سایت AI RTL"
                         >
                             <span className="popup-side-item-icon">
-                                <img src="/images/ai-rtl-logo.png" alt="" />
+                                <img src="/images/logo/ai-rtl-logo.png" alt="" />
                             </span>
                             <span className="popup-side-item-label">سایت AI RTL</span>
                         </a>

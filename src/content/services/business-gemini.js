@@ -40,8 +40,8 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
                         margin-left: 6px;
                         height: 22px;
                         width: 22px;
-                        border-radius: 50px;
-                        border: 1px solid;
+                        border-radius: 0;
+                        border: none;
                     }
                     .AsBoxB {
                         margin: auto;

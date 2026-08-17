@@ -117,7 +117,7 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
                 }}
             >
                 <img
-                    src={chrome.runtime?.getURL ? chrome.runtime.getURL('images/myLogo.png') : '/images/myLogo.png'}
+                    src={chrome.runtime?.getURL ? chrome.runtime.getURL('images/logo/ai-rtl-logo.png') : '/images/logo/ai-rtl-logo.png'}
                     alt="RTL Extension"
                     style={{
                         width: isMinimized ? '20px' : '18px',
