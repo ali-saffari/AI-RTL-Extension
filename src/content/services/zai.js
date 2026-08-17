@@ -3,7 +3,7 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
-
+const IGNORE_SELECTOR = '.thinking-chain-container';
 
 export function setZai(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -26,14 +26,18 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsOK'
+            processedClass: 'AsOK',
+            ignoreSelector: IGNORE_SELECTOR,
+            removeInnerDir: true
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                setTextAlign: true
+                setTextAlign: true,
+                ignoreSelector: IGNORE_SELECTOR,
+            removeInnerDir: true
             });
         });
     });
@@ -43,7 +47,9 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOK',
-            rtlClass: 'AsRtl'
+            rtlClass: 'AsRtl',
+            ignoreSelector: IGNORE_SELECTOR,
+            removeInnerDir: true
         });
     });
 
@@ -65,7 +71,9 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
-            isContainer: true
+            isContainer: true,
+            ignoreSelector: IGNORE_SELECTOR,
+            removeInnerDir: true
         });
     });
 }

@@ -2,6 +2,8 @@
 import { addCopyright } from '../utils/copyright.js';
 import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
 
+const IGNORE_SELECTOR = '[data-testid="thinking-status"]';
+
 export function setMeta(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#meta-font-style').length) {
         AQ(`<style id="meta-font-style">
@@ -36,24 +38,27 @@ export function setMeta(rtlAlgorithm = 'advanced_full') {
 
         setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsOk'
+            processedClass: 'AsOk',
+            ignoreSelector: IGNORE_SELECTOR
         });
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
                 setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
-                    fontClass: 'FontSet'
+                    fontClass: 'FontSet',
+                    ignoreSelector: IGNORE_SELECTOR
                 });
             });
         });
     });
 
-    AQ('[class*="markdown-content"]').each(function () {
+    AQ('[class*="ur-markdown"]').each(function () {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,
-            setTextAlign: true
+            setTextAlign: true,
+            ignoreSelector: IGNORE_SELECTOR
         });
     });
 }

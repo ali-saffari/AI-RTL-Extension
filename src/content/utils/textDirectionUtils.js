@@ -63,6 +63,134 @@ const UNICODE_ARROW_FLIP_MAP = {
 };
 const UNICODE_ARROW_FLIP_RE = new RegExp(`[${Object.keys(UNICODE_ARROW_FLIP_MAP).join('')}]`, 'g');
 const FLIPPABLE_ARROW_RE = /==>|-->|=>|->|[→⇒⟶⟹➡▶▷►▸▻⇨⇾↦↠↝↣⇀⇝⇢☞☛➜➔➝➞]/;
+const loggedIgnoredEls = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+
+function getElementClassName(el) {
+    if (!el) return '';
+    const className = el.className;
+    if (typeof className === 'string') return className;
+    if (className && typeof className.baseVal === 'string') return className.baseVal;
+    return el.getAttribute('class') || '';
+}
+
+function getIgnoreSelector(options = {}) {
+    const value = options.ignoreSelector;
+    return typeof value === 'string' && value.length ? value : null;
+}
+
+function queryIgnoredElements(root, selector, includeRoot = true) {
+    if (!root || root.nodeType !== 1 || !selector) {
+        return [];
+    }
+    try {
+        if (!root.firstElementChild) {
+            return includeRoot && root.matches(selector) ? [root] : [];
+        }
+        const found = root.querySelectorAll(selector);
+        if (!includeRoot || !root.matches(selector)) {
+            return found;
+        }
+        const matches = [root];
+        for (let i = 0; i < found.length; i++) {
+            matches.push(found[i]);
+        }
+        return matches;
+    } catch {
+        return [];
+    }
+}
+
+function logIgnoredIfSensed(el, selector) {
+    if (!DEBUG_MODE || !el || !el.isConnected) {
+        return;
+    }
+    if (loggedIgnoredEls && loggedIgnoredEls.has(el)) {
+        return;
+    }
+    loggedIgnoredEls?.add(el);
+    console.log('ignoreSelector sensed', {
+        element: el,
+        selector,
+        className: getElementClassName(el)
+    });
+}
+
+function stripNonAnalyzableContent($tempElement, options = {}) {
+    $tempElement.find('a').remove();
+    $tempElement.find('div.rounded-xl').remove();
+    $tempElement.find('pre, code').remove();
+    $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
+    $tempElement.find('button').remove();
+    $tempElement.find('[data-copy="false"]').remove();
+    const ignoreSelector = getIgnoreSelector(options);
+    const root = $tempElement && $tempElement[0];
+    if (ignoreSelector && root) {
+        const ignored = queryIgnoredElements(root, ignoreSelector, false);
+        for (let i = ignored.length - 1; i >= 0; i--) {
+            ignored[i].remove();
+        }
+    }
+}
+
+function getAnalyzableText($element, options = {}) {
+    const $tempElement = $element.clone();
+    stripNonAnalyzableContent($tempElement, options);
+    return $tempElement.text().trim();
+}
+
+function isolateIgnoredElements($element, selector) {
+    const root = unwrapElement($element);
+    const ignored = queryIgnoredElements(root, selector, true);
+    for (let i = 0; i < ignored.length; i++) {
+        const el = ignored[i];
+        logIgnoredIfSensed(el, selector);
+        if (!el.hasAttribute('dir')) {
+            el.setAttribute('dir', 'auto');
+        }
+    }
+}
+
+const INNER_DIR_TARGET_SELECTOR = [
+    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'li', 'blockquote', 'div', 'section', 'article', 'header',
+    'span', 'ul', 'ol'
+].join(', ');
+
+const INNER_DIR_SKIP_SELECTOR = [
+    'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
+    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
+    '.katex', '.katex-html', '.katex-display'
+].join(', ');
+
+function isRemoveInnerDirEnabled(options = {}) {
+    return options.removeInnerDir === true;
+}
+
+function shouldSkipInnerDirStrip(el) {
+    if (!el || typeof el.closest !== 'function') {
+        return true;
+    }
+    return el.matches(INNER_DIR_SKIP_SELECTOR) || Boolean(el.closest(INNER_DIR_SKIP_SELECTOR));
+}
+
+function stripInnerDirAttributes($element) {
+    if (!$element || !$element.length) {
+        return;
+    }
+    $element.find(INNER_DIR_TARGET_SELECTOR).each(function() {
+        if (!this.hasAttribute('dir') || shouldSkipInnerDirStrip(this)) {
+            return;
+        }
+        AQ(this).removeAttr('dir');
+    });
+}
+
+function applyRemoveInnerDir($element, rtlAlgorithm, options = {}) {
+    if (rtlAlgorithm === 'advanced_section' || !isRemoveInnerDirEnabled(options)) {
+        return;
+    }
+    stripInnerDirAttributes($element);
+}
 
 function isExtensionContextValid() {
     try {
@@ -395,6 +523,7 @@ function setTextDirectionAndFont(element, options = {}) {
         setTextAlign = false,
         applyFontIfRtl = false
     } = options;
+    const ignoreSelector = getIgnoreSelector(options);
     
     // اگر متن پاس شده، از اون استفاده کن، وگرنه textWithoutLinks محاسبه کن
     let textToUse;
@@ -402,14 +531,7 @@ function setTextDirectionAndFont(element, options = {}) {
         textToUse = providedText;
     } else {
         // متن رو بدون محتوای تگ a برای تشخیص جهت استفاده کن
-        const $tempElement = AQ(element).clone();
-        $tempElement.find('a').remove();
-        $tempElement.find('div.rounded-xl').remove();
-        $tempElement.find('pre, code').remove();
-        $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
-        $tempElement.find('button').remove();
-        $tempElement.find('[data-copy="false"]').remove();
-        textToUse = $tempElement.text().trim();
+        textToUse = getAnalyzableText(AQ(element), { ignoreSelector });
         
         // اگر text() خالی بود، val() رو چک کن (برای input/textarea)
         if (!textToUse || !textToUse.trim()) {
@@ -426,6 +548,15 @@ function setTextDirectionAndFont(element, options = {}) {
     
     // If detectTextDirection returns empty or null, use 'auto'
     const finalDirection = direction || 'auto';
+
+    if (DEBUG_MODE && ignoreSelector) {
+        console.log('ignoreSelector analyzed text', {
+            element: unwrapElement(element),
+            selector: ignoreSelector,
+            text: textToUse,
+            direction: finalDirection
+        });
+    }
 
         // AQ(element).attr('data-text', textToUse)
         AQ(element).attr('data-direction', finalDirection)
@@ -1514,6 +1645,8 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
  * @param {Object} options - Additional options (optional)
+ * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
+ * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  */
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
     try {
@@ -1548,16 +1681,11 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
      * @param {string} processedClass - Class name to count processed elements
      * @returns {Object} - Object containing shouldProcess boolean and currentTextLength number
      */
-    function shouldProcessElement($element, processedClass) {
+    function shouldProcessElement($element, processedClass, processOptions = {}) {
         // Get current text content for length comparison
-        const $tempElement = $element.clone();
-        $tempElement.find('a').remove();
-        $tempElement.find('div.rounded-xl').remove();
-        $tempElement.find('pre, code').remove();
-        $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
-        $tempElement.find('button').remove();
-        $tempElement.find('[data-copy="false"]').remove();
-        const currentText = $tempElement.text().trim();
+        const currentText = getAnalyzableText($element, processOptions);
+        
+
         
         const currentTextLength = currentText.length;
         
@@ -1576,6 +1704,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         return {
             shouldProcess,
+            currentText,
             currentTextLength,
             storedLength,
             lengthDifference,
@@ -1643,11 +1772,14 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
     } else if (rtlAlgorithm === 'advanced_full') {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
         
-        const { shouldProcess, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass);
+        const ignoreSelector = getIgnoreSelector(mergedOptions);
+        const { shouldProcess, currentText, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass, {
+            ignoreSelector
+        });
         
         if (shouldProcess) {
             // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
-            setTextDirectionAndFont(element, mergedOptions);
+            setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
             
             // Process tables in container for advanced_full algorithm (only if isContainer is true)
             if (mergedOptions.isContainer) {
@@ -1683,6 +1815,11 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             flipRtlArrowsInTree($element);
         }
 
+        applyRemoveInnerDir($element, rtlAlgorithm, mergedOptions);
+        if (ignoreSelector) {
+            isolateIgnoredElements($element, ignoreSelector);
+        }
+
     } else if (rtlAlgorithm === 'first_word') {
         $element.attr("dir", "auto");
         
@@ -1709,6 +1846,12 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         
         $element.attr('data-algorithm-rtl', 'first_word');
         flipRtlArrowsInTree($element);
+
+        applyRemoveInnerDir($element, rtlAlgorithm, options);
+        const firstWordIgnoreSelector = getIgnoreSelector(options);
+        if (firstWordIgnoreSelector) {
+            isolateIgnoredElements($element, firstWordIgnoreSelector);
+        }
     }
     } catch (error) {
         if (isInvalidatedError(error)) {
@@ -1741,6 +1884,8 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
  * @param {Object} options - Additional options (optional)
  * @param {string} options.rtlClass - Class to add when direction is RTL (optional, defaults to null)
+ * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
+ * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  */
 function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
     const $element = AQ(element);
@@ -1756,7 +1901,12 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
     if (rtlAlgorithm === 'advanced_section' || rtlAlgorithm === 'advanced_full') {
         // Check processedClass only if it's not false
         if (!processedClass || !$element.hasClass(processedClass)) {
-            const mergedOptions = { ...defaultOptions, ...options };
+            const ignoreSelector = getIgnoreSelector(options);
+            const mergedOptions = {
+                ...defaultOptions,
+                ...options,
+                ignoreSelector
+            };
             const direction = setTextDirectionAndFont(element, mergedOptions);
             
             // Add processedClass only if it's not false
@@ -1820,6 +1970,12 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
 
         
 
+    }
+
+    applyRemoveInnerDir($element, rtlAlgorithm, options);
+    const ignoreSelector = getIgnoreSelector(options);
+    if (ignoreSelector) {
+        isolateIgnoredElements($element, ignoreSelector);
     }
 }
 
