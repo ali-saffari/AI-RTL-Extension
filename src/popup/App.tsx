@@ -1364,6 +1364,18 @@ function App() {
                             <span className="popup-side-item-label">کانال تلگرام AI RTL</span>
                         </a>
                         <a
+                            href="https://ai-rtl.ir/?source=extension-popup-side-site"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="popup-side-item popup-side-item-site"
+                            aria-label="سایت AI RTL"
+                        >
+                            <span className="popup-side-item-icon">
+                                <img src="/images/ai-rtl-logo.png" alt="" />
+                            </span>
+                            <span className="popup-side-item-label">سایت AI RTL</span>
+                        </a>
+                        <a
                             href="https://ai-rtl.ir/support/?source=extension-popup-side-support"
                             target="_blank"
                             rel="noopener noreferrer"

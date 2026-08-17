@@ -18,10 +18,8 @@
     ],
     "host_permissions": [
         "https://ai-rtl.ir/*",
-        "https://shop.ai-rtl.ir/*",
         "https://api.ai-rtl.ir/*",
         "https://chatgpt-rtl.ir/*",
-        "https://shop.chatgpt-rtl.ir/*",
         "https://api.chatgpt-rtl.ir/*"
     ],
     "optional_host_permissions": [
@@ -77,10 +75,8 @@
                 "https://jules.google.com/*",
                 "https://ai-rtl.ir/*",
                 "https://api.ai-rtl.ir/*",
-                "https://shop.ai-rtl.ir/*",
                 "https://chatgpt-rtl.ir/*",
                 "https://api.chatgpt-rtl.ir/*",
-                "https://shop.chatgpt-rtl.ir/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
                 "https://digen.ai/*",

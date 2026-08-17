@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     List,
     ListItem,
@@ -21,7 +21,7 @@ import {
     Box,
     Paper,
 } from '@mui/material';
-import { mdiInformationOutline, mdiOpenInNew } from '@mdi/js';
+import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 
 interface Service {
@@ -31,6 +31,7 @@ interface Service {
     url: string;
     helpText?: string;
     new?: boolean;
+    keywords?: string[];
 }
 
 interface CheckedState {
@@ -39,62 +40,62 @@ interface CheckedState {
 
 const services: Service[] = [
 
-    { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/' },
-    { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com' },
-    { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa', helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.' },
-    { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai' },
-    { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/' },
+    { key: 'chatGpt', name: 'ChatGPT', icon: '/images/openAi-icon.png', url: 'https://chatgpt.com/', keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
+    { key: 'deepseek', name: 'DeepSeek', icon: '/images/deepseek.jpg', url: 'https://chat.deepseek.com', keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
+    { key: 'copilot', name: 'Copilot', icon: '/images/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa', helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
+    { key: 'claude', name: 'Claude', icon: '/images/claude-icon.png', url: 'https://claude.ai', keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
+    { key: 'gemini', name: 'Gemini', icon: '/images/Gemini.png', url: 'https://gemini.google.com/', keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
     // { key: 'google', name: 'Google AI Mode', icon: '/images/google.png', url: 'https://google.com/', new: true },
-    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/Gemini.png', url: 'https://business.gemini.google/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.' },
-    { key: 'perplexity', name: 'Perplexity', icon: '/images/perplexity.png', url: 'https://perplexity.ai' },
-    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.' },
-    { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/notebooklm.png', url: 'https://notebook.google.com/?hl=fa' },
-    { key: 'googleLabs', name: 'Google Labs (Flow)', icon: '/images/labs-google.png', url: 'https://labs.google/', new: true },
-    { key: 'meta', name: 'Meta AI', icon: '/images/meta.png', url: 'https://www.meta.ai/', new: true },
-    { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.' },
-    { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai' },
-    { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/' },
-    { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/' },
-    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/' },
-    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot' },
-    { key: 'minimax', name: 'Minimax', icon: '/images/minimax.png', url: 'https://agent.minimax.io/' },
-    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat' },
-    { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com' },
-    { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/' },
-    { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/' },
-    { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai' },
-    { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/' },
-    { key: 'blackbox', name: 'Black Box', icon: '/images/blackbox.png', url: 'https://www.blackbox.ai/' },
-    { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/' },
-    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/' },
-    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/' },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/' },
-    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/' },
-    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/' },
-    { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/' },
-    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.' },
-    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/'},
-    { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/' },
-    { key: 'arena', name: 'Arena', icon: '/images/arena.png', url: 'https://arena.ai/' },
-    { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/' },
-    { key: 'clickup', name: 'ClickUp', icon: '/images/clickup.png', url: 'https://app.clickup.com/' },
-    { key: 't3chat', name: 'T3 Chat', icon: '/images/t3-chat.png', url: 'https://t3.chat/' },
-    { key: 'vivado', name: 'Vivado AMD', icon: '/images/vivado.png', url: 'https://vivado.amd.com/chat' },
-    { key: 'atxp', name: 'ATXP Chat', icon: '/images/atxp.png', url: 'https://chat.atxp.ai/' },
-    { key: 'consensus', name: 'Consensus', icon: '/images/consensus.png', url: 'https://consensus.app/' },
-    { key: 'scispace', name: 'SciSpace', icon: '/images/scispace.png', url: 'https://scispace.com/' },
-    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/chatboxai.png', url: 'https://web.chatboxai.app/' },
-    { key: 'lumo', name: 'Lumo', icon: '/images/lumo-proton.png', url: 'https://lumo.proton.me/' },
-    { key: 'veo3', name: 'Veo 3', icon: '/images/veo3.png', url: 'https://www-veo3.com/' },
-    { key: 'fal', name: 'fal.ai', icon: '/images/fal.png', url: 'https://fal.ai/', new: true, helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.' },
-    { key: 'bfl', name: 'Black Forest', icon: '/images/bfl.png', url: 'https://bfl.ai/', new: true },
-    { key: 'characterAi', name: 'Character.AI', icon: '/images/character-ai.png', url: 'https://character.ai/', new: true },
-    { key: 'pi', name: 'Pi', icon: '/images/pi.png', url: 'https://pi.ai/', new: true },
-    { key: 'cursor', name: 'Cursor', icon: '/images/cursor.png', url: 'https://cursor.com/', new: true },
-    { key: 'typingmind', name: 'TypingMind', icon: '/images/typingmind.png', url: 'https://www.typingmind.com/', new: true },
-    { key: 'huggingface', name: 'Hugging Face', icon: '/images/huggingface.png', url: 'https://huggingface.co/', new: true },
-    { key: 'dash0', name: 'Dash0', icon: '/images/dash0.png', url: 'https://app.dash0.com/', new: true },
-    { key: 'zerve', name: 'Zerve', icon: '/images/zerve.png', url: 'https://app.zerve.ai/', new: true }
+    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/Gemini.png', url: 'https://business.gemini.google/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['gemini', 'جمینی', 'بیزینس', 'workspace', 'گوگل', 'google'] },
+    { key: 'perplexity', name: 'Perplexity', icon: '/images/perplexity.png', url: 'https://perplexity.ai', keywords: ['perplexity', 'پرپلکسیتی', 'پرپلکسی', 'سرچ', 'جستجو'] },
+    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['aistudio', 'ai studio', 'ای استودیو', 'ای‌استودیو', 'گوگل', 'google'] },
+    { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/notebooklm.png', url: 'https://notebook.google.com/?hl=fa', keywords: ['notebooklm', 'notebook', 'نوت بوک', 'نوتبوک', 'نوت‌بوک', 'گوگل'] },
+    { key: 'googleLabs', name: 'Google Labs (Flow)', icon: '/images/labs-google.png', url: 'https://labs.google/', new: true, keywords: ['labs', 'flow', 'فلو', 'لبز', 'گوگل لبز', 'whisk', 'ویدیو'] },
+    { key: 'meta', name: 'Meta AI', icon: '/images/meta.png', url: 'https://www.meta.ai/', new: true, keywords: ['meta', 'متا', 'llama', 'لاما', 'facebook', 'فیسبوک', 'instagram'] },
+    { key: 'grok', name: 'Grok', icon: '/images/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.', keywords: ['grok', 'گروک', 'xai', 'ایکس ای آی', 'توییتر', 'twitter', 'ایلان'] },
+    { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/qwen.png', url: 'https://chat.qwen.ai', keywords: ['qwen', 'کوئن', 'alibaba', 'علی بابا', 'علی‌بابا', 'tongyi'] },
+    { key: 'kimi', name: 'Kimi', icon: '/images/kimi.png', url: 'https://www.kimi.com/', keywords: ['kimi', 'کیمی', 'moonshot', 'k2'] },
+    { key: 'openrouter', name: 'OpenRouter', icon: '/images/openrouter.png', url: 'https://openrouter.ai/', keywords: ['openrouter', 'اوپن روتر', 'اوپن‌روتر'] },
+    { key: 'zai', name: 'Z.ai', icon: '/images/z.ai.png', url: 'https://chat.z.ai/', keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
+    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/GithubCopilot.png', url: 'https://github.com/copilot', keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
+    { key: 'minimax', name: 'Minimax', icon: '/images/minimax.png', url: 'https://agent.minimax.io/', keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
+    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/duckduckgo.png', url: 'https://duckduckgo.com/aichat', keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
+    { key: 'youCom', name: 'you.com', icon: '/images/you com.jpg', url: 'https://you.com', keywords: ['you', 'یو'] },
+    { key: 'poeCom', name: 'poe.com', icon: '/images/poe.png', url: 'https://poe.com/', keywords: ['poe', 'پو', 'quora'] },
+    { key: 'monica', name: 'Monica', icon: '/images/monica.png', url: 'https://monica.im/', keywords: ['monica', 'مونیکا'] },
+    { key: 'mistral', name: 'Mistral', icon: '/images/chat-mistral.png', url: 'https://chat.mistral.ai', keywords: ['mistral', 'میسترال', 'le chat'] },
+    { key: 'manus', name: 'Manus', icon: '/images/manus.png', url: 'https://manus.im/', keywords: ['manus', 'مانوس'] },
+    { key: 'blackbox', name: 'Black Box', icon: '/images/blackbox.png', url: 'https://www.blackbox.ai/', keywords: ['blackbox', 'بلک باکس', 'بلک‌باکس', 'کد'] },
+    { key: 'oneMinai', name: '1min.AI', icon: '/images/openAi-icon.png', url: 'https://app.1min.ai/', keywords: ['1min', 'وان مین', 'وان‌مین'] },
+    { key: 'digen', name: 'Digen', icon: '/images/digen.png', url: 'https://digen.ai/', keywords: ['digen', 'دیجن'] },
+    { key: 'jules', name: 'Google Jules', icon: '/images/jules.png', url: 'https://jules.google.com/', keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/writesonic.png', url: 'https://app.writesonic.com/chat/', keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
+    { key: 'lovable', name: 'Lovable', icon: '/images/lovable.png', url: 'https://lovable.dev/', keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/ernie.png', url: 'https://ernie.baidu.com/', keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin'] },
+    { key: 'gamma', name: 'Gamma', icon: '/images/gama.png', url: 'https://gamma.app/', keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
+    { key: 'synaps', name: 'Synaps', icon: '/images/synaps.png', url: 'https://www.synaps.app/', helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
+    { key: 'notion', name: 'Notion', icon: '/images/notion.png', url: 'https://www.notion.so/', keywords: ['notion', 'نوشن'] },
+    { key: 'genspark', name: 'Genspark', icon: '/images/genspark.png', url: 'https://genspark.ai/', keywords: ['genspark', 'جن اسپارک', 'جن‌اسپارک'] },
+    { key: 'arena', name: 'Arena', icon: '/images/arena.png', url: 'https://arena.ai/', keywords: ['arena', 'آرنا', 'lmsys', 'lmarena'] },
+    { key: 'duckai', name: 'Duck AI', icon: '/images/duckduckgo.png', url: 'https://duck.ai/', keywords: ['duck', 'داک', 'duck.ai'] },
+    { key: 'clickup', name: 'ClickUp', icon: '/images/clickup.png', url: 'https://app.clickup.com/', keywords: ['clickup', 'کلیک آپ', 'کلیک‌آپ'] },
+    { key: 't3chat', name: 'T3 Chat', icon: '/images/t3-chat.png', url: 'https://t3.chat/', keywords: ['t3', 'تی تری', 'تی‌تری', 'theo'] },
+    { key: 'vivado', name: 'Vivado AMD', icon: '/images/vivado.png', url: 'https://vivado.amd.com/chat', keywords: ['vivado', 'ویوادو', 'amd'] },
+    { key: 'atxp', name: 'ATXP Chat', icon: '/images/atxp.png', url: 'https://chat.atxp.ai/', keywords: ['atxp'] },
+    { key: 'consensus', name: 'Consensus', icon: '/images/consensus.png', url: 'https://consensus.app/', keywords: ['consensus', 'کنسنسوس', 'مقاله', 'پژوهش', 'paper', 'research'] },
+    { key: 'scispace', name: 'SciSpace', icon: '/images/scispace.png', url: 'https://scispace.com/', keywords: ['scispace', 'سای اسپیس', 'سای‌اسپیس', 'مقاله', 'پژوهش', 'paper'] },
+    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/chatboxai.png', url: 'https://web.chatboxai.app/', keywords: ['chatbox', 'چت باکس', 'چت‌باکس'] },
+    { key: 'lumo', name: 'Lumo', icon: '/images/lumo-proton.png', url: 'https://lumo.proton.me/', keywords: ['lumo', 'لومو', 'proton', 'پروتون'] },
+    { key: 'veo3', name: 'Veo 3', icon: '/images/veo3.png', url: 'https://www-veo3.com/', keywords: ['veo', 'وئو', 'ویدیو', 'video', 'گوگل'] },
+    { key: 'fal', name: 'fal.ai', icon: '/images/fal.png', url: 'https://fal.ai/', new: true, helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.', keywords: ['fal', 'فال', 'تصویر', 'image', 'video', 'ویدیو'] },
+    { key: 'bfl', name: 'Black Forest', icon: '/images/bfl.png', url: 'https://bfl.ai/', new: true, keywords: ['bfl', 'flux', 'بلک فارست', 'بلک‌فارست', 'فلوکس', 'تصویر', 'image'] },
+    { key: 'characterAi', name: 'Character.AI', icon: '/images/character-ai.png', url: 'https://character.ai/', new: true, keywords: ['character', 'کاراکتر', 'شخصیت', 'c.ai'] },
+    { key: 'pi', name: 'Pi', icon: '/images/pi.png', url: 'https://pi.ai/', new: true, keywords: ['pi', 'پای', 'inflection'] },
+    { key: 'cursor', name: 'Cursor', icon: '/images/cursor.png', url: 'https://cursor.com/', new: true, keywords: ['cursor', 'کرسر', 'کورسر', 'کرسور', 'کد', 'ide', 'ادیتور'] },
+    { key: 'typingmind', name: 'TypingMind', icon: '/images/typingmind.png', url: 'https://www.typingmind.com/', new: true, keywords: ['typingmind', 'تایپینگ مایند', 'تایپینگ‌مایند'] },
+    { key: 'huggingface', name: 'Hugging Face', icon: '/images/huggingface.png', url: 'https://huggingface.co/', new: true, keywords: ['huggingface', 'هاگینگ فیس', 'هاگینگ‌فیس', 'hf', 'مدل'] },
+    { key: 'dash0', name: 'Dash0', icon: '/images/dash0.png', url: 'https://app.dash0.com/', new: true, keywords: ['dash0', 'دش صفر', 'دش'] },
+    { key: 'zerve', name: 'Zerve', icon: '/images/zerve.png', url: 'https://app.zerve.ai/', new: true, keywords: ['zerve', 'زرو'] }
 ];
 
 
@@ -143,6 +144,9 @@ export default function ServiceList() {
     const [permissionServiceName, setPermissionServiceName] = useState<string>('');
     const [permissionServiceKey, setPermissionServiceKey] = useState<string>('');
     const [activeServiceKey, setActiveServiceKey] = useState<string | null>(null);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchInputRef = useRef<HTMLInputElement>(null);
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -304,10 +308,47 @@ export default function ServiceList() {
     };
 
 
-    // Keep services in original order, just mark active one
-    const sortedServices = React.useMemo(() => {
-        return services;
-    }, []);
+    useEffect(() => {
+        if (isSearchOpen) {
+            searchInputRef.current?.focus();
+        }
+    }, [isSearchOpen]);
+
+    const closeSearch = () => {
+        setIsSearchOpen(false);
+        setSearchQuery('');
+    };
+
+    const matchesSearch = (service: Service, query: string) => {
+        const normalizedQuery = query.trim().toLowerCase().replace(/\u200c/g, '');
+        if (!normalizedQuery) {
+            return true;
+        }
+
+        let hostname = '';
+        try {
+            hostname = new URL(service.url).hostname.replace(/^www\./, '');
+        } catch {
+            hostname = '';
+        }
+
+        const searchableText = [
+            service.name,
+            service.key,
+            service.url,
+            hostname,
+            ...(service.keywords || []),
+        ]
+            .join(' ')
+            .toLowerCase()
+            .replace(/\u200c/g, '');
+
+        return searchableText.includes(normalizedQuery);
+    };
+
+    const filteredServices = useMemo(() => {
+        return services.filter(service => matchesSearch(service, searchQuery));
+    }, [searchQuery]);
 
     // Get active service for display at top
     const activeService = React.useMemo(() => {
@@ -329,18 +370,77 @@ export default function ServiceList() {
                         component="div" 
                         id="nested-list-subheader" 
                         sx={{ 
-                            textAlign: 'center', 
+                            textAlign: 'center',
+                            position: 'sticky',
+                            top: 0,
+                            zIndex: 1,
+                            height: 48,
+                            minHeight: 48,
+                            maxHeight: 48,
+                            lineHeight: '48px',
+                            overflow: 'hidden',
+                            boxSizing: 'border-box',
                             backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                             color: isDarkMode ? '#ffffff' : '#000000',
                             borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`
                         }}
                         style={{ direction: 'ltr' }}
                     >
-                        تعداد کل: {services.length} | تعداد فعال: {Object.values(checked).filter(Boolean).length}
+                        {isSearchOpen ? (
+                            <input
+                                ref={searchInputRef}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        closeSearch();
+                                    }
+                                }}
+                                placeholder="جستجوی سایت..."
+                                dir="rtl"
+                                className="service-list-search-input"
+                            />
+                        ) : (
+                            `تعداد کل: ${services.length} | تعداد فعال: ${Object.values(checked).filter(Boolean).length}`
+                        )}
+                        <Box
+                            component="button"
+                            type="button"
+                            onClick={isSearchOpen ? closeSearch : () => setIsSearchOpen(true)}
+                            aria-label={isSearchOpen ? 'بستن جستجو' : 'جستجو'}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 0,
+                                height: 48,
+                                width: 28,
+                                p: 0,
+                                border: 0,
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: isDarkMode ? '#ffffff' : '#000000',
+                                opacity: 0.55,
+                                '&:hover': { opacity: 1 },
+                            }}
+                        >
+                            <SvgIcon sx={{ fontSize: '1.15rem' }}>
+                                <path d={isSearchOpen ? mdiClose : mdiMagnify} />
+                            </SvgIcon>
+                        </Box>
                     </ListSubheader>
                 }
             >
-                {sortedServices.map((service, index) => {
+                {filteredServices.length === 0 && (
+                    <Box sx={{ py: 4, px: 2, textAlign: 'center' }} style={{ direction: 'rtl' }}>
+                        <Typography sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                            سایتی با این جستجو پیدا نشد
+                        </Typography>
+                    </Box>
+                )}
+                {filteredServices.map((service, index) => {
                     const isActive = service.key === activeServiceKey;
                     return (
                     <React.Fragment key={service.key}>
@@ -514,7 +614,7 @@ export default function ServiceList() {
                                 </Paper>
                             </Box>
                         )}
-                        {index < sortedServices.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
+                        {index < filteredServices.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
                     );
                 })}
