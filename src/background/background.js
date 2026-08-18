@@ -4,6 +4,10 @@ import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from 
 import { hasHostPermission } from '../utils/hasHostPermission.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
+const IS_DEV = process.env.NODE_ENV !== 'production';
+const devLog = (...args) => { if (IS_DEV) console.log.apply(console, args); };
+const devError = (...args) => { if (IS_DEV) console.error.apply(console, args); };
+
 // ============================================
 // CONFIGURATION
 // ============================================
@@ -53,7 +57,7 @@ async function initializeUserId() {
         }));
         return uid;
     } catch (error) {
-        console.error('Error initializing user ID:', error);
+        devError('Error initializing user ID:', error);
         chrome.runtime.setUninstallURL(buildExtensionSiteUrl('/uninstall-feedback/', {
             error: '1',
             source: 'extension-uninstall'
@@ -75,7 +79,7 @@ initializeUserId();
 //
 //         // Save entire config to storage as onlineConfig
 //         chrome.storage.sync.set({ onlineConfig: sitesConfig }, () => {
-//             console.log('[Background] Online config saved to storage:', sitesConfig);
+//             devLog('[Background] Online config saved to storage:', sitesConfig);
 //         });
 //
 //         // Update all services flags based on config
@@ -93,12 +97,12 @@ initializeUserId();
 //
 //             if (Object.keys(updates).length > 0) {
 //                 chrome.storage.sync.set(updates, () => {
-//                     console.log('[Background] Sites config updated from API:', updates);
+//                     devLog('[Background] Sites config updated from API:', updates);
 //                 });
 //             }
 //         });
 //     } catch (error) {
-//         console.error('[Background] Error applying sites config:', error);
+//         devError('[Background] Error applying sites config:', error);
 //     }
 // }
 
@@ -124,7 +128,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 }
             });
         } catch (e) {
-            console.error('[Background] Firefox manual RTL migrate failed:', e);
+            devError('[Background] Firefox manual RTL migrate failed:', e);
         }
     }
     
@@ -167,7 +171,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         // Prevent update modal from appearing right after fresh install
         if (UPDATE_MODAL_ENABLED && UPDATE_MODAL_ID) {
             chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: UPDATE_MODAL_ID }, () => {
-                console.log('[Background] Set update modal closed ID to', UPDATE_MODAL_ID, 'for new installation');
+                devLog('[Background] Set update modal closed ID to', UPDATE_MODAL_ID, 'for new installation');
             });
         }
         
@@ -181,7 +185,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 })
             });
         } catch (error) {
-            console.error('[Background] Error opening activation guide page:', error);
+            devError('[Background] Error opening activation guide page:', error);
         }
     } else if (details.reason === 'update') {
         try {
@@ -286,7 +290,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                     // Old storage key was `notebook`; `googleNotebook` is the new key
                     const wasNotebookEnabled = storedData.notebook === true || storedData.googleNotebook === true;
-                    console.log('[Background] Notebook migration status', {
+                    devLog('[Background] Notebook migration status', {
                         hasNotebookOrigin,
                         oldNotebookKey: storedData.notebook,
                         newGoogleNotebookKey: storedData.googleNotebook,
@@ -303,12 +307,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                             updates.notebookNeedsReenable = true;
                         }
                     }
-                    console.log('[Background] Notebook migration result', {
+                    devLog('[Background] Notebook migration result', {
                         googleNotebook: updates.googleNotebook,
                         notebookNeedsReenable: updates.notebookNeedsReenable
                     });
                 } catch (permissionError) {
-                    console.error('[Background] Notebook origin permission check failed:', permissionError);
+                    devError('[Background] Notebook origin permission check failed:', permissionError);
                 }
 
                 if (Object.keys(updates).length > 0) {
@@ -329,7 +333,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 }
             });
         } catch (error) {
-            console.log('Update handler warning:', error.message);
+            devLog('Update handler warning:', error.message);
         }
     }
 });
@@ -546,7 +550,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: true });
             return true;
         } catch (error) {
-            console.error('[Background] Exception opening options page:', error);
+            devError('[Background] Exception opening options page:', error);
             sendResponse({ success: false, error: error.message });
             return true;
         }
@@ -627,12 +631,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                             // If content script message fails (e.g., receiving end does not exist), fall back to snapshot
                             // This is normal when content script is not injected or not ready
                             if (e.message && !e.message.includes('Receiving end does not exist')) {
-                                console.log('[ActiveTab] Failed to get info from content script:', e.message);
+                                devLog('[ActiveTab] Failed to get info from content script:', e.message);
                             }
                         }
                     }
                 } catch (error) {
-                    console.log('[ActiveTab] Error getting info from content script:', error.message);
+                    devLog('[ActiveTab] Error getting info from content script:', error.message);
                 }
                 
                 // Fall back to original snapshot
@@ -669,7 +673,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 // Request permissions
                 const permissions = ['scripting'];
 
-                console.log('[Background] service.origins', { permissions, origins: service.origins });
+                devLog('[Background] service.origins', { permissions, origins: service.origins });
                 const granted = await chrome.permissions.request({ permissions, origins: service.origins });
                 
                 if (granted) {
@@ -679,13 +683,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         storageUpdate.notebookNeedsReenable = false;
                     }
                     await chrome.storage.sync.set(storageUpdate);
-                    console.log(`[Background] Service ${serviceKey} enabled after permission grant`);
+                    devLog(`[Background] Service ${serviceKey} enabled after permission grant`);
                     sendResponse?.({ success: true, granted: true });
                 } else {
                     sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
                 }
             } catch (error) {
-                console.error('[Background] Error in requestPermissionsAndEnableService:', error);
+                devError('[Background] Error in requestPermissionsAndEnableService:', error);
                 sendResponse?.({ success: false, error: error.message });
             }
         })();
@@ -695,24 +699,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Request scripting permission for the site before adding
         // Note: This is called from popup onClick (user gesture context)
         // Only handles enable=true, disable is handled in popup
-        console.log('[Background] Received toggleManualRtlSite message:', message);
+        devLog('[Background] Received toggleManualRtlSite message:', message);
         (async () => {
             try {
                 const { hostname, favicon } = message;
                 
                 if (!hostname) {
-                    console.error('[Background] Hostname is required');
+                    devError('[Background] Hostname is required');
                     sendResponse?.({ success: false, error: 'Hostname is required' });
                     return;
                 }
 
-                console.log(`[Background] Requesting permissions for ${hostname}`);
+                devLog(`[Background] Requesting permissions for ${hostname}`);
                 // Request permissions
                 const permissions = ['scripting'];
                 const origins = [`*://${hostname}/*`];
                 const granted = await chrome.permissions.request({ permissions, origins: origins });
 
-                console.log(`[Background] Permission request result for ${hostname}:`, granted);
+                devLog(`[Background] Permission request result for ${hostname}:`, granted);
 
                 if (granted) {
                     // Get current active sites
@@ -722,7 +726,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     // Check if site already exists
                     const siteExists = currentSites.some(site => site.hostname === hostname);
                     if (siteExists) {
-                        console.log(`[Background] Site ${hostname} already in list`);
+                        devLog(`[Background] Site ${hostname} already in list`);
                         sendResponse?.({ success: true, granted: true, alreadyExists: true });
                         return;
                     }
@@ -739,14 +743,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         manualRtlActiveSites: updatedSites
                     });
 
-                    console.log(`[Background] Site ${hostname} added to manual RTL active sites`);
+                    devLog(`[Background] Site ${hostname} added to manual RTL active sites`);
                     sendResponse?.({ success: true, granted: true });
                 } else {
-                    console.log(`[Background] Permission denied for ${hostname}`);
+                    devLog(`[Background] Permission denied for ${hostname}`);
                     sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
                 }
             } catch (error) {
-                console.error('[Background] Error in toggleManualRtlSite:', error);
+                devError('[Background] Error in toggleManualRtlSite:', error);
                 sendResponse?.({ success: false, error: error.message });
             }
         })();
@@ -761,7 +765,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 });
                 sendResponse?.({ success: true });
             } catch (error) {
-                console.error('[Background] Error in activateCurrentTab:', error);
+                devError('[Background] Error in activateCurrentTab:', error);
                 sendResponse?.({ success: false, error: error.message });
             }
         })();
@@ -781,7 +785,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 await Promise.all(promises);
                 sendResponse?.({ success: true });
             } catch (error) {
-                console.error('[Background] Error closing update modal in all tabs:', error);
+                devError('[Background] Error closing update modal in all tabs:', error);
                 sendResponse?.({ success: false, error: error.message });
             }
         })();
@@ -873,7 +877,7 @@ async function shouldEnableManualRtlForSite(hostname) {
         
         return false;
     } catch (error) {
-        console.error('[Background] Error checking manual RTL for site:', error);
+        devError('[Background] Error checking manual RTL for site:', error);
         return false;
     }
 }
@@ -939,7 +943,7 @@ async function activateManualRtlForSite(tabId, options = {}) {
         // Check if permissions are granted
         const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
         if (!hasScripting) {
-            console.log('[Background] Missing scripting permission for manual RTL');
+            devLog('[Background] Missing scripting permission for manual RTL');
             return;
         }
         
@@ -947,7 +951,7 @@ async function activateManualRtlForSite(tabId, options = {}) {
             const origin = `*://${hostname}/*`;
             const hasOrigin = await hasHostPermission(origin);
             if (!hasOrigin) {
-                console.log(`[Background] Missing origin permission for ${hostname}`);
+                devLog(`[Background] Missing origin permission for ${hostname}`);
                 return;
             }
         }
@@ -959,11 +963,11 @@ async function activateManualRtlForSite(tabId, options = {}) {
                 files: ['js/manual-rtl.js']
             });
             
-            console.log(`[Background] Manual RTL injected for ${hostname} (tab ${tabId})`);
+            devLog(`[Background] Manual RTL injected for ${hostname} (tab ${tabId})`);
         } catch (injectError) {
             // Ignore errors for error pages or invalid tabs
             if (injectError.message && injectError.message.includes('error page')) {
-                console.log('[Background] Tab is showing error page, skipping manual RTL injection');
+                devLog('[Background] Tab is showing error page, skipping manual RTL injection');
             } else if (injectError.message && injectError.message.includes('extensions gallery cannot be scripted')) {
                 // Store error for this hostname so popup can display appropriate message
                 chrome.storage.local.get(['manualRtlUnsupportedSites'], (result) => {
@@ -974,12 +978,12 @@ async function activateManualRtlForSite(tabId, options = {}) {
                     }
                 });
             } else {
-                console.error('[Background] Error injecting manual RTL:', injectError);
+                devError('[Background] Error injecting manual RTL:', injectError);
             }
         }
     } catch (error) {
         // Tab might not be accessible, ignore
-        console.error('[Background] Error in activateManualRtlForSite:', error);
+        devError('[Background] Error in activateManualRtlForSite:', error);
     }
 }
 
@@ -990,10 +994,10 @@ async function activateManualRtlForSite(tabId, options = {}) {
 async function activateContentScriptForDynamicSites(tabId) {
     if (!tabId) return;
     
-    console.log('[Background] activateContentScriptForDynamicSites', tabId);
+    devLog('[Background] activateContentScriptForDynamicSites', tabId);
     try {
         const tab = await chrome.tabs.get(tabId);
-        console.log('[Background] tab', tab);
+        devLog('[Background] tab', tab);
         if (!tab.url) return;
         
         // Check if tab is in a valid state (not error page, not browser internal pages)
@@ -1001,7 +1005,7 @@ async function activateContentScriptForDynamicSites(tabId) {
             return;
         }
         
-        console.log('[Background] tab.url', tab.url);
+        devLog('[Background] tab.url', tab.url);
 
         const url = new URL(tab.url);
         const serviceName = getServiceNameFromHostname(url.hostname);
@@ -1017,7 +1021,7 @@ async function activateContentScriptForDynamicSites(tabId) {
         
         // If service is not enabled, no need to check permissions
         if (!serviceEnabled) {
-            console.log(`[Background] ${serviceName} is disabled in settings`);
+            devLog(`[Background] ${serviceName} is disabled in settings`);
             return;
         }
         
@@ -1031,28 +1035,28 @@ async function activateContentScriptForDynamicSites(tabId) {
             hasRequiredOrigins = await hasHostPermission(service.origins);
         }
         
-        console.log('[Background] hasScripting', hasScripting);
-        console.log('[Background] hasRequiredOrigins', hasRequiredOrigins);
+        devLog('[Background] hasScripting', hasScripting);
+        devLog('[Background] hasRequiredOrigins', hasRequiredOrigins);
         
         // If permissions are missing, return without injecting
         if (!hasScripting || !hasRequiredOrigins) {
-            console.log(`[Background] Missing permissions for ${serviceName}`);
+            devLog(`[Background] Missing permissions for ${serviceName}`);
             return;
         }
         
         try {
             await injectContentFiles(tabId);
-            console.log(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
+            devLog(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
             if (injectError.message && injectError.message.includes('error page')) {
-                console.log('[Background] Tab is showing error page, skipping injection');
+                devLog('[Background] Tab is showing error page, skipping injection');
             } else {
-                console.error('[Background] Error injecting files:', injectError);
+                devError('[Background] Error injecting files:', injectError);
             }
         }
     } catch (error) {
         // Tab might not be accessible, ignore
-        console.error('[Background] Error injecting content script:', error);
+        devError('[Background] Error injecting content script:', error);
     }
 }
 
@@ -1078,7 +1082,7 @@ async function injectTabNow(tabId, options = {}) {
             ignoreComplete: true
         });
     } catch (error) {
-        console.error('[Background] Error in injectTabNow:', error);
+        devError('[Background] Error in injectTabNow:', error);
     }
 }
 
@@ -1103,7 +1107,7 @@ async function activateCurrentTab(options = {}) {
             }
             return;
         } catch (error) {
-            console.error('[Background] Error activating all tabs:', error);
+            devError('[Background] Error activating all tabs:', error);
         }
     }
 
@@ -1113,7 +1117,7 @@ async function activateCurrentTab(options = {}) {
 function setupEventListeners() {
     chrome.tabs.onActivated.addListener(async (activeInfo) => {
         if (!activeInfo?.tabId) return;
-        console.log('[Events] Tab activated', activeInfo);
+        devLog('[Events] Tab activated', activeInfo);
         resetActiveTabInfo(activeInfo.tabId);
         broadcastActiveTabInfo('tab-activated');
         
@@ -1126,7 +1130,7 @@ function setupEventListeners() {
 
     chrome.tabs.onRemoved.addListener((tabId) => {
         if (tabId) {
-            console.log('[Events] Tab removed', tabId);
+            devLog('[Events] Tab removed', tabId);
             if (activeTabInfo?.tabId === tabId) {
                 activeTabInfo = null;
                 broadcastActiveTabInfo('tab-removed');
@@ -1173,12 +1177,12 @@ function setupEventListeners() {
 
     chrome.windows.onFocusChanged.addListener((windowId) => {
         if (windowId === chrome.windows.WINDOW_ID_NONE) {
-            console.log('[Events] Chrome lost focus');
+            devLog('[Events] Chrome lost focus');
         }
     });
 
     chrome.storage.sync.onChanged.addListener(async (changes) => {
-        console.log('[Events] Storage changed', changes);
+        devLog('[Events] Storage changed', changes);
         
         // If manual RTL settings changed, update active tabs
         if (changes.manualRtlSettings || changes.manualRtlActiveSites) {
@@ -1191,7 +1195,7 @@ function setupEventListeners() {
                     }
                 }
             } catch (error) {
-                console.error('[Background] Error updating manual RTL after storage change:', error);
+                devError('[Background] Error updating manual RTL after storage change:', error);
             }
         }
     });
@@ -1204,13 +1208,13 @@ function setupEventListeners() {
             try {
                 await activateCurrentTab({ skipOriginCheck: true });
             } catch (error) {
-                console.error('[Background] Error activating tab after permission grant:', error);
+                devError('[Background] Error activating tab after permission grant:', error);
             }
         });
     }
 
     chrome.runtime.onSuspend.addListener(async () => {
-        console.log('[Events] Runtime suspending');
+        devLog('[Events] Runtime suspending');
         // Analytics cleanup is handled in analytics.js
     });
 }
@@ -1228,7 +1232,7 @@ setupEventListeners();
             }
         }
     } catch (error) {
-        console.error('[Background] Error activating manual RTL on startup:', error);
+        devError('[Background] Error activating manual RTL on startup:', error);
     }
 })();// Analytics initialization is handled in analytics.js
 

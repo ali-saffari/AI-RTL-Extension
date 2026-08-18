@@ -134,6 +134,20 @@ module.exports = {
         minimize: isProduction,
         minimizer: [
             new TerserPlugin({
+                include: /background\.js$/,
+                terserOptions: {
+                    compress: {
+                        drop_console: true,
+                        drop_debugger: true,
+                    },
+                    format: {
+                        comments: false,
+                    },
+                },
+                extractComments: false,
+            }),
+            new TerserPlugin({
+                exclude: /background\.js$/,
                 terserOptions: {
                     compress: {
                         drop_console: false,

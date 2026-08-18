@@ -91,7 +91,7 @@ async function main() {
         log('Running webpack build...', 'yellow');
         
         try {
-            execSync('npm run build:chrome:dev', { 
+            execSync('npm run build:chrome', { 
                 stdio: 'inherit',
                 cwd: path.join(__dirname, '..')
             });

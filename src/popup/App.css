@@ -96,6 +96,10 @@ html.popup-side-expanded .popup-columns {
     direction: rtl;
 }
 
+.popup-main-inner.has-site-permissions-hint {
+    padding-bottom: 52px;
+}
+
 .popup-side-slot {
     position: relative;
     z-index: 20;
@@ -760,5 +764,18 @@ body[data-theme="light"] {
 .service-list-search-input::placeholder {
     opacity: 0.55;
     color: inherit;
+}
+
+.site-permissions-hint {
+    direction: rtl;
+}
+
+.site-permissions-hint-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    direction: rtl !important;
+    text-align: right !important;
 }
 

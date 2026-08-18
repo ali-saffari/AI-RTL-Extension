@@ -25,6 +25,8 @@ import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { hasHostPermission } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import { isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
+import SitePermissionsHint from './SitePermissionsHint';
 
 interface Service {
     key: string;
@@ -34,76 +36,100 @@ interface Service {
     helpText?: string;
     new?: boolean;
     keywords?: string[];
+    hosts?: string[];
 }
 
 interface CheckedState {
     [key: string]: boolean;
 }
 
+const normalizeHost = (hostname: string) => hostname.replace(/^www\./, '').toLowerCase();
+
+const hostMatches = (tabHost: string, serviceHost: string) => {
+    const a = normalizeHost(tabHost);
+    const b = normalizeHost(serviceHost);
+    return a === b || a.endsWith('.' + b);
+};
+
+const getServiceHosts = (service: Service) => {
+    const hosts = new Set<string>();
+    try {
+        hosts.add(normalizeHost(new URL(service.url).hostname));
+    } catch {
+        // Ignore invalid service URLs
+    }
+    (service.hosts || []).forEach((host) => hosts.add(normalizeHost(host)));
+    return Array.from(hosts);
+};
+
 const services: Service[] = [
 
-    { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
-    { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
-    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://www.bing.com/chat?setlang=fa', helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
-    { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
-    { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
+    { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', hosts: ['chatgpt.com', 'chat.openai.com'], keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
+    { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', hosts: ['chat.deepseek.com'], keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
+    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.microsoft.com/', hosts: ['copilot.microsoft.com', 'bing.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
+    { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', hosts: ['claude.ai'], keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
+    { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', hosts: ['gemini.google.com'], keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
     // { key: 'google', name: 'Google AI Mode', icon: '/images/sites/google.png', url: 'https://google.com/', new: true },
-    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/sites/Gemini.png', url: 'https://business.gemini.google/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['gemini', 'جمینی', 'بیزینس', 'workspace', 'گوگل', 'google'] },
-    { key: 'perplexity', name: 'Perplexity', icon: '/images/sites/perplexity.png', url: 'https://perplexity.ai', keywords: ['perplexity', 'پرپلکسیتی', 'پرپلکسی', 'سرچ', 'جستجو'] },
-    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/sites/aistudio.png', url: 'https://aistudio.google.com/', helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['aistudio', 'ai studio', 'ای استودیو', 'ای‌استودیو', 'گوگل', 'google'] },
-    { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/sites/notebooklm.png', url: 'https://notebook.google.com/?hl=fa', keywords: ['notebooklm', 'notebook', 'نوت بوک', 'نوتبوک', 'نوت‌بوک', 'گوگل'] },
-    { key: 'googleLabs', name: 'Google Labs (Flow)', icon: '/images/sites/labs-google.png', url: 'https://labs.google/', new: true, keywords: ['labs', 'flow', 'فلو', 'لبز', 'گوگل لبز', 'whisk', 'ویدیو'] },
-    { key: 'meta', name: 'Meta AI', icon: '/images/sites/meta.png', url: 'https://www.meta.ai/', new: true, keywords: ['meta', 'متا', 'llama', 'لاما', 'facebook', 'فیسبوک', 'instagram'] },
-    { key: 'grok', name: 'Grok', icon: '/images/sites/gork.png', url: 'https://grok.com/', helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.', keywords: ['grok', 'گروک', 'xai', 'ایکس ای آی', 'توییتر', 'twitter', 'ایلان'] },
-    { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/sites/qwen.png', url: 'https://chat.qwen.ai', keywords: ['qwen', 'کوئن', 'alibaba', 'علی بابا', 'علی‌بابا', 'tongyi'] },
-    { key: 'kimi', name: 'Kimi', icon: '/images/sites/kimi.png', url: 'https://www.kimi.com/', keywords: ['kimi', 'کیمی', 'moonshot', 'k2'] },
-    { key: 'openrouter', name: 'OpenRouter', icon: '/images/sites/openrouter.png', url: 'https://openrouter.ai/', keywords: ['openrouter', 'اوپن روتر', 'اوپن‌روتر'] },
-    { key: 'zai', name: 'Z.ai', icon: '/images/sites/z.ai.png', url: 'https://chat.z.ai/', keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
-    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
-    { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
-    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
-    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', keywords: ['you', 'یو'] },
-    { key: 'poeCom', name: 'poe.com', icon: '/images/sites/poe.png', url: 'https://poe.com/', keywords: ['poe', 'پو', 'quora'] },
-    { key: 'monica', name: 'Monica', icon: '/images/sites/monica.png', url: 'https://monica.im/', keywords: ['monica', 'مونیکا'] },
-    { key: 'mistral', name: 'Mistral', icon: '/images/sites/chat-mistral.png', url: 'https://chat.mistral.ai', keywords: ['mistral', 'میسترال', 'le chat'] },
-    { key: 'manus', name: 'Manus', icon: '/images/sites/manus.png', url: 'https://manus.im/', keywords: ['manus', 'مانوس'] },
-    { key: 'blackbox', name: 'Black Box', icon: '/images/sites/blackbox.png', url: 'https://www.blackbox.ai/', keywords: ['blackbox', 'بلک باکس', 'بلک‌باکس', 'کد'] },
-    { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/openAi-icon.png', url: 'https://app.1min.ai/', keywords: ['1min', 'وان مین', 'وان‌مین'] },
-    { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://digen.ai/', keywords: ['digen', 'دیجن'] },
-    { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
-    { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
-    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://ernie.baidu.com/', keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin'] },
-    { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
-    { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
-    { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', keywords: ['notion', 'نوشن'] },
-    { key: 'genspark', name: 'Genspark', icon: '/images/sites/genspark.png', url: 'https://genspark.ai/', keywords: ['genspark', 'جن اسپارک', 'جن‌اسپارک'] },
-    { key: 'arena', name: 'Arena', icon: '/images/sites/arena.png', url: 'https://arena.ai/', keywords: ['arena', 'آرنا', 'lmsys', 'lmarena'] },
-    { key: 'duckai', name: 'Duck AI', icon: '/images/sites/duckduckgo.png', url: 'https://duck.ai/', keywords: ['duck', 'داک', 'duck.ai'] },
-    { key: 'clickup', name: 'ClickUp', icon: '/images/sites/clickup.png', url: 'https://app.clickup.com/', keywords: ['clickup', 'کلیک آپ', 'کلیک‌آپ'] },
-    { key: 't3chat', name: 'T3 Chat', icon: '/images/sites/t3-chat.png', url: 'https://t3.chat/', keywords: ['t3', 'تی تری', 'تی‌تری', 'theo'] },
-    { key: 'vivado', name: 'Vivado AMD', icon: '/images/sites/vivado.png', url: 'https://vivado.amd.com/chat', keywords: ['vivado', 'ویوادو', 'amd'] },
-    { key: 'atxp', name: 'ATXP Chat', icon: '/images/sites/atxp.png', url: 'https://chat.atxp.ai/', keywords: ['atxp'] },
-    { key: 'consensus', name: 'Consensus', icon: '/images/sites/consensus.png', url: 'https://consensus.app/', keywords: ['consensus', 'کنسنسوس', 'مقاله', 'پژوهش', 'paper', 'research'] },
-    { key: 'scispace', name: 'SciSpace', icon: '/images/sites/scispace.png', url: 'https://scispace.com/', keywords: ['scispace', 'سای اسپیس', 'سای‌اسپیس', 'مقاله', 'پژوهش', 'paper'] },
-    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/sites/chatboxai.png', url: 'https://web.chatboxai.app/', keywords: ['chatbox', 'چت باکس', 'چت‌باکس'] },
-    { key: 'lumo', name: 'Lumo', icon: '/images/sites/lumo-proton.png', url: 'https://lumo.proton.me/', keywords: ['lumo', 'لومو', 'proton', 'پروتون'] },
-    { key: 'veo3', name: 'Veo 3', icon: '/images/sites/veo3.png', url: 'https://www-veo3.com/', keywords: ['veo', 'وئو', 'ویدیو', 'video', 'گوگل'] },
-    { key: 'fal', name: 'fal.ai', icon: '/images/sites/fal.png', url: 'https://fal.ai/', new: true, helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.', keywords: ['fal', 'فال', 'تصویر', 'image', 'video', 'ویدیو'] },
-    { key: 'bfl', name: 'Black Forest', icon: '/images/sites/bfl.png', url: 'https://bfl.ai/', new: true, keywords: ['bfl', 'flux', 'بلک فارست', 'بلک‌فارست', 'فلوکس', 'تصویر', 'image'] },
-    { key: 'characterAi', name: 'Character.AI', icon: '/images/sites/character-ai.png', url: 'https://character.ai/', new: true, keywords: ['character', 'کاراکتر', 'شخصیت', 'c.ai'] },
-    { key: 'pi', name: 'Pi', icon: '/images/sites/pi.png', url: 'https://pi.ai/', new: true, keywords: ['pi', 'پای', 'inflection'] },
-    { key: 'cursor', name: 'Cursor', icon: '/images/sites/cursor.png', url: 'https://cursor.com/', new: true, keywords: ['cursor', 'کرسر', 'کورسر', 'کرسور', 'کد', 'ide', 'ادیتور'] },
-    { key: 'typingmind', name: 'TypingMind', icon: '/images/sites/typingmind.png', url: 'https://www.typingmind.com/', new: true, keywords: ['typingmind', 'تایپینگ مایند', 'تایپینگ‌مایند'] },
-    { key: 'huggingface', name: 'Hugging Face', icon: '/images/sites/huggingface.png', url: 'https://huggingface.co/', new: true, keywords: ['huggingface', 'هاگینگ فیس', 'هاگینگ‌فیس', 'hf', 'مدل'] },
-    { key: 'dash0', name: 'Dash0', icon: '/images/sites/dash0.png', url: 'https://app.dash0.com/', new: true, keywords: ['dash0', 'دش صفر', 'دش'] },
-    { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, keywords: ['zerve', 'زرو'] }
+    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/sites/Gemini.png', url: 'https://business.gemini.google/', hosts: ['business.gemini.google'], helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['gemini', 'جمینی', 'بیزینس', 'workspace', 'گوگل', 'google'] },
+    { key: 'perplexity', name: 'Perplexity', icon: '/images/sites/perplexity.png', url: 'https://perplexity.ai', hosts: ['perplexity.ai'], keywords: ['perplexity', 'پرپلکسیتی', 'پرپلکسی', 'سرچ', 'جستجو'] },
+    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/sites/aistudio.png', url: 'https://aistudio.google.com/', hosts: ['aistudio.google.com'], helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['aistudio', 'ai studio', 'ای استودیو', 'ای‌استودیو', 'گوگل', 'google'] },
+    { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/sites/notebooklm.png', url: 'https://notebook.google.com/?hl=fa', hosts: ['notebook.google.com', 'notebooklm.google.com'], keywords: ['notebooklm', 'notebook', 'نوت بوک', 'نوتبوک', 'نوت‌بوک', 'گوگل'] },
+    { key: 'googleLabs', name: 'Google Labs (Flow)', icon: '/images/sites/labs-google.png', url: 'https://labs.google/', new: true, hosts: ['labs.google'], keywords: ['labs', 'flow', 'فلو', 'لبز', 'گوگل لبز', 'whisk', 'ویدیو'] },
+    { key: 'meta', name: 'Meta AI', icon: '/images/sites/meta.png', url: 'https://www.meta.ai/', new: true, hosts: ['meta.ai'], keywords: ['meta', 'متا', 'llama', 'لاما', 'facebook', 'فیسبوک', 'instagram'] },
+    { key: 'grok', name: 'Grok', icon: '/images/sites/gork.png', url: 'https://grok.com/', hosts: ['grok.com'], helpText: 'سایت Grok از فونت <strong>وزیرمتن</strong> به صورت رسمی استفاده می‌کند. به منظور حفظ احترام <strong>مرحوم صابر راستی کردار</strong> سازنده این فونت، فونت این سایت تغییر نمی‌کند و فقط الگوریتم فعال می‌باشد.', keywords: ['grok', 'گروک', 'xai', 'ایکس ای آی', 'توییتر', 'twitter', 'ایلان'] },
+    { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/sites/qwen.png', url: 'https://chat.qwen.ai', hosts: ['chat.qwen.ai', 'chat.qwenlm.ai'], keywords: ['qwen', 'کوئن', 'alibaba', 'علی بابا', 'علی‌بابا', 'tongyi'] },
+    { key: 'kimi', name: 'Kimi', icon: '/images/sites/kimi.png', url: 'https://www.kimi.com/', hosts: ['kimi.com'], keywords: ['kimi', 'کیمی', 'moonshot', 'k2'] },
+    { key: 'openrouter', name: 'OpenRouter', icon: '/images/sites/openrouter.png', url: 'https://openrouter.ai/', hosts: ['openrouter.ai'], keywords: ['openrouter', 'اوپن روتر', 'اوپن‌روتر'] },
+    { key: 'zai', name: 'Z.ai', icon: '/images/sites/z.ai.png', url: 'https://chat.z.ai/', hosts: ['chat.z.ai'], keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
+    { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
+    { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
+    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', hosts: ['duckduckgo.com'], keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
+    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], keywords: ['you', 'یو'] },
+    { key: 'poeCom', name: 'poe.com', icon: '/images/sites/poe.png', url: 'https://poe.com/', hosts: ['poe.com'], keywords: ['poe', 'پو', 'quora'] },
+    { key: 'monica', name: 'Monica', icon: '/images/sites/monica.png', url: 'https://monica.im/', hosts: ['monica.im'], keywords: ['monica', 'مونیکا'] },
+    { key: 'mistral', name: 'Mistral', icon: '/images/sites/chat-mistral.png', url: 'https://chat.mistral.ai', hosts: ['chat.mistral.ai'], keywords: ['mistral', 'میسترال', 'le chat'] },
+    { key: 'manus', name: 'Manus', icon: '/images/sites/manus.png', url: 'https://manus.im/', hosts: ['manus.im'], keywords: ['manus', 'مانوس'] },
+    { key: 'blackbox', name: 'Black Box', icon: '/images/sites/blackbox.png', url: 'https://www.blackbox.ai/', hosts: ['blackbox.ai'], keywords: ['blackbox', 'بلک باکس', 'بلک‌باکس', 'کد'] },
+    { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/openAi-icon.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
+    { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://digen.ai/', hosts: ['digen.ai'], keywords: ['digen', 'دیجن'] },
+    { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
+    { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', hosts: ['lovable.dev'], keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://ernie.baidu.com/', hosts: ['ernie.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin'] },
+    { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', hosts: ['gamma.app'], keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
+    { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', hosts: ['synaps.app', 'my.synaps.app'], helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
+    { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', hosts: ['notion.so'], keywords: ['notion', 'نوشن'] },
+    { key: 'genspark', name: 'Genspark', icon: '/images/sites/genspark.png', url: 'https://genspark.ai/', hosts: ['genspark.ai'], keywords: ['genspark', 'جن اسپارک', 'جن‌اسپارک'] },
+    { key: 'arena', name: 'Arena', icon: '/images/sites/arena.png', url: 'https://arena.ai/', hosts: ['arena.ai', 'lmarena.ai'], keywords: ['arena', 'آرنا', 'lmsys', 'lmarena'] },
+    { key: 'duckai', name: 'Duck AI', icon: '/images/sites/duckduckgo.png', url: 'https://duck.ai/', hosts: ['duck.ai'], keywords: ['duck', 'داک', 'duck.ai'] },
+    { key: 'clickup', name: 'ClickUp', icon: '/images/sites/clickup.png', url: 'https://app.clickup.com/', hosts: ['app.clickup.com'], keywords: ['clickup', 'کلیک آپ', 'کلیک‌آپ'] },
+    { key: 't3chat', name: 'T3 Chat', icon: '/images/sites/t3-chat.png', url: 'https://t3.chat/', hosts: ['t3.chat'], keywords: ['t3', 'تی تری', 'تی‌تری', 'theo'] },
+    { key: 'vivado', name: 'Vivado AMD', icon: '/images/sites/vivado.png', url: 'https://vivado.amd.com/chat', hosts: ['vivado.amd.com'], keywords: ['vivado', 'ویوادو', 'amd'] },
+    { key: 'atxp', name: 'ATXP Chat', icon: '/images/sites/atxp.png', url: 'https://chat.atxp.ai/', hosts: ['chat.atxp.ai'], keywords: ['atxp'] },
+    { key: 'consensus', name: 'Consensus', icon: '/images/sites/consensus.png', url: 'https://consensus.app/', hosts: ['consensus.app'], keywords: ['consensus', 'کنسنسوس', 'مقاله', 'پژوهش', 'paper', 'research'] },
+    { key: 'scispace', name: 'SciSpace', icon: '/images/sites/scispace.png', url: 'https://scispace.com/', hosts: ['scispace.com'], keywords: ['scispace', 'سای اسپیس', 'سای‌اسپیس', 'مقاله', 'پژوهش', 'paper'] },
+    { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/sites/chatboxai.png', url: 'https://web.chatboxai.app/', hosts: ['web.chatboxai.app'], keywords: ['chatbox', 'چت باکس', 'چت‌باکس'] },
+    { key: 'lumo', name: 'Lumo', icon: '/images/sites/lumo-proton.png', url: 'https://lumo.proton.me/', hosts: ['lumo.proton.me'], keywords: ['lumo', 'لومو', 'proton', 'پروتون'] },
+    { key: 'veo3', name: 'Veo 3', icon: '/images/sites/veo3.png', url: 'https://www-veo3.com/', hosts: ['www-veo3.com'], keywords: ['veo', 'وئو', 'ویدیو', 'video', 'گوگل'] },
+    { key: 'fal', name: 'fal.ai', icon: '/images/sites/fal.png', url: 'https://fal.ai/', new: true, hosts: ['fal.ai'], helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.', keywords: ['fal', 'فال', 'تصویر', 'image', 'video', 'ویدیو'] },
+    { key: 'bfl', name: 'Black Forest', icon: '/images/sites/bfl.png', url: 'https://bfl.ai/', new: true, hosts: ['bfl.ai'], keywords: ['bfl', 'flux', 'بلک فارست', 'بلک‌فارست', 'فلوکس', 'تصویر', 'image'] },
+    { key: 'characterAi', name: 'Character.AI', icon: '/images/sites/character-ai.png', url: 'https://character.ai/', new: true, hosts: ['character.ai', 'c.ai'], keywords: ['character', 'کاراکتر', 'شخصیت', 'c.ai'] },
+    { key: 'pi', name: 'Pi', icon: '/images/sites/pi.png', url: 'https://pi.ai/', new: true, hosts: ['pi.ai'], keywords: ['pi', 'پای', 'inflection'] },
+    { key: 'cursor', name: 'Cursor', icon: '/images/sites/cursor.png', url: 'https://cursor.com/', new: true, hosts: ['cursor.com', 'docs.cursor.com'], keywords: ['cursor', 'کرسر', 'کورسر', 'کرسور', 'کد', 'ide', 'ادیتور'] },
+    { key: 'typingmind', name: 'TypingMind', icon: '/images/sites/typingmind.png', url: 'https://www.typingmind.com/', new: true, hosts: ['typingmind.com'], keywords: ['typingmind', 'تایپینگ مایند', 'تایپینگ‌مایند'] },
+    { key: 'huggingface', name: 'Hugging Face', icon: '/images/sites/huggingface.png', url: 'https://huggingface.co/', new: true, hosts: ['huggingface.co', 'hf.co'], keywords: ['huggingface', 'هاگینگ فیس', 'هاگینگ‌فیس', 'hf', 'مدل'] },
+    { key: 'dash0', name: 'Dash0', icon: '/images/sites/dash0.png', url: 'https://app.dash0.com/', new: true, hosts: ['dash0.com', 'app.dash0.com'], keywords: ['dash0', 'دش صفر', 'دش'] },
+    { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, hosts: ['zerve.ai', 'app.zerve.ai'], keywords: ['zerve', 'زرو'] }
 ];
 
 
 export { services };
 
-export default function ServiceList() {
+interface ServiceListProps {
+    pinOpenSiteMode?: PinOpenSiteMode;
+}
+
+export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProps) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -148,7 +174,9 @@ export default function ServiceList() {
     const [activeServiceKey, setActiveServiceKey] = useState<string | null>(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showPermissionsHint, setShowPermissionsHint] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const lovableItemRef = useRef<HTMLLIElement>(null);
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -169,76 +197,212 @@ export default function ServiceList() {
     
     const allowButtonText = getAllowButtonText();
 
-    // Check current tab and find matching service using the same method as ManualRtlBanner
+    const pinOpenSiteInList = isPinOpenSiteEnabled(pinOpenSiteMode);
+
+    // Detect the currently open tab. Prefer tabs.query so the pin appears on first
+    // popup open, without waiting for the background cache / content script.
     useEffect(() => {
+        if (!pinOpenSiteInList) {
+            setActiveServiceKey(null);
+            return;
+        }
         let isMounted = true;
+        let applySeq = 0;
+
+        const isHttpUrl = (url?: string) => Boolean(url && /^https?:/i.test(url));
+        const isExtensionPage = (url?: string) =>
+            Boolean(url && /^(moz-extension:|chrome-extension:|about:)/i.test(url));
+
+        const findMatchingService = (hostname: string) => {
+            const normalizedHostname = normalizeHost(hostname);
+            return services.find((service) =>
+                getServiceHosts(service).some((host) => hostMatches(normalizedHostname, host))
+            ) || null;
+        };
+
+        const canShowInLimitedMode = async (service: Service) => {
+            const dynamic = DYNAMIC_SERVICES[service.key as keyof typeof DYNAMIC_SERVICES];
+            if (!dynamic?.origins) {
+                return true;
+            }
+            return hasHostPermission(dynamic.origins);
+        };
+
+        const applyHostname = async (hostname?: string | null, clearIfMissing = false) => {
+            const seq = ++applySeq;
+            if (!isMounted) {
+                return false;
+            }
+            if (!hostname) {
+                if (clearIfMissing && seq === applySeq) {
+                    setActiveServiceKey(null);
+                }
+                return false;
+            }
+
+            const service = findMatchingService(hostname);
+            if (!service) {
+                if (seq === applySeq) {
+                    setActiveServiceKey(null);
+                }
+                return false;
+            }
+
+            if (pinOpenSiteMode === 'limited' && !(await canShowInLimitedMode(service))) {
+                if (isMounted && seq === applySeq) {
+                    setActiveServiceKey(null);
+                }
+                return false;
+            }
+
+            if (isMounted && seq === applySeq) {
+                setActiveServiceKey(service.key);
+            }
+            return true;
+        };
+
+        const applyTabUrl = async (url?: string, clearIfMissing = false) => {
+            if (!url || isExtensionPage(url)) {
+                return false;
+            }
+            if (!isHttpUrl(url)) {
+                return applyHostname(null, clearIfMissing);
+            }
+            return applyHostname(new URL(url).hostname, clearIfMissing);
+        };
+
+        const hostnameFromTabs = async (tabs?: chrome.tabs.Tab[], clearIfMissing = false) => {
+            const url = (tabs || []).find((tab) => isHttpUrl(tab.url))?.url;
+            return applyTabUrl(url, clearIfMissing);
+        };
+
+        const shouldClearHiddenTab = (tabs?: chrome.tabs.Tab[]) => {
+            return (tabs || []).some((tab) => {
+                if (isExtensionPage(tab.url)) {
+                    return false;
+                }
+                return !isHttpUrl(tab.url);
+            });
+        };
+
+        const detectFromTabs = async () => {
+            try {
+                const focusedTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+                if (await hostnameFromTabs(focusedTabs)) {
+                    return true;
+                }
+                if (pinOpenSiteMode === 'limited' && shouldClearHiddenTab(focusedTabs)) {
+                    setActiveServiceKey(null);
+                    return true;
+                }
+
+                const activeTabs = await chrome.tabs.query({ active: true });
+                if (await hostnameFromTabs(activeTabs)) {
+                    return true;
+                }
+                if (pinOpenSiteMode === 'limited' && shouldClearHiddenTab(activeTabs)) {
+                    setActiveServiceKey(null);
+                    return true;
+                }
+            } catch {
+                // tabs permission may be missing in Chrome
+            }
+            return false;
+        };
+
+        const detectFromTabId = async (tabId?: number) => {
+            if (!tabId || !chrome.tabs?.get) {
+                return detectFromTabs();
+            }
+            try {
+                const tab = await chrome.tabs.get(tabId);
+                if (await applyTabUrl(tab?.url, true)) {
+                    return true;
+                }
+            } catch {
+                // Ignore
+            }
+            return detectFromTabs();
+        };
+
+        const detectFromBackground = () => {
+            try {
+                chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
+                    if (!isMounted || chrome.runtime.lastError) {
+                        return;
+                    }
+                    void applyHostname(response?.tabInfo?.hostname);
+                });
+            } catch {
+                // Ignore
+            }
+        };
 
         const handleActiveTabUpdate = (message: any) => {
             if (!isMounted || !message) return;
             if (message.action === 'activeTabInfoUpdated') {
-                const tabInfo = message.payload;
-                if (tabInfo?.hostname) {
-                    findMatchingService(tabInfo.hostname);
-                } else {
-                    setActiveServiceKey(null);
-                }
+                void applyHostname(message.payload?.hostname);
             }
         };
 
-        const findMatchingService = (hostname: string) => {
-            // Normalize hostname (remove www. prefix if present)
-            const normalizedHostname = hostname.replace(/^www\./, '').toLowerCase();
-            
-            // Find matching service
-            for (const service of services) {
-                try {
-                    const serviceUrlObj = new URL(service.url);
-                    const serviceHostname = serviceUrlObj.hostname.replace(/^www\./, '').toLowerCase();
-                    
-                    // Check if hostname matches
-                    if (normalizedHostname === serviceHostname || 
-                        normalizedHostname.endsWith('.' + serviceHostname) ||
-                        serviceHostname.endsWith('.' + normalizedHostname)) {
-                        setActiveServiceKey(service.key);
-                        return;
-                    }
-                } catch (e) {
-                    // Skip invalid service URLs
-                    continue;
-                }
+        const runDetection = async (tabId?: number) => {
+            const found = tabId
+                ? await detectFromTabId(tabId)
+                : await detectFromTabs();
+            if (!isMounted || found) {
+                return;
             }
-            setActiveServiceKey(null);
+            detectFromBackground();
         };
 
-        const fetchActiveTabInfo = () => {
-            try {
-                chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
-                    if (!isMounted) return;
-                    if (chrome.runtime.lastError) {
-                        setActiveServiceKey(null);
-                        return;
-                    }
-                    if (response?.success && response?.tabInfo?.hostname) {
-                        findMatchingService(response.tabInfo.hostname);
-                    } else {
-                        setActiveServiceKey(null);
-                    }
-                });
-            } catch (error) {
-                if (isMounted) {
-                    setActiveServiceKey(null);
-                }
-            }
+        const handleTabActivated = (activeInfo: { tabId?: number }) => {
+            void runDetection(activeInfo?.tabId);
         };
 
-        fetchActiveTabInfo();
+        const handleTabUpdated = (
+            tabId: number,
+            changeInfo: { url?: string; status?: string },
+            tab?: chrome.tabs.Tab
+        ) => {
+            if (!changeInfo?.url && changeInfo?.status !== 'complete') {
+                return;
+            }
+            if (tab && tab.active === false) {
+                return;
+            }
+            if (changeInfo.url) {
+                void applyTabUrl(changeInfo.url, true);
+                return;
+            }
+            void runDetection(tabId);
+        };
+
+        void runDetection();
         chrome.runtime.onMessage.addListener(handleActiveTabUpdate);
+
+        try {
+            chrome.tabs?.onActivated?.addListener(handleTabActivated);
+            chrome.tabs?.onUpdated?.addListener(handleTabUpdated);
+        } catch {
+            // tabs permission may be missing in Chrome
+        }
+
+        const retryTimer = window.setTimeout(() => {
+            void runDetection();
+        }, 250);
 
         return () => {
             isMounted = false;
+            window.clearTimeout(retryTimer);
             chrome.runtime.onMessage.removeListener(handleActiveTabUpdate);
+            try {
+                chrome.tabs?.onActivated?.removeListener(handleTabActivated);
+                chrome.tabs?.onUpdated?.removeListener(handleTabUpdated);
+            } catch {
+                // Ignore
+            }
         };
-    }, []);
+    }, [pinOpenSiteInList, pinOpenSiteMode]);
 
     useEffect(() => {
         try {
@@ -329,7 +493,7 @@ export default function ServiceList() {
 
         let hostname = '';
         try {
-            hostname = new URL(service.url).hostname.replace(/^www\./, '');
+            hostname = normalizeHost(new URL(service.url).hostname);
         } catch {
             hostname = '';
         }
@@ -339,6 +503,7 @@ export default function ServiceList() {
             service.key,
             service.url,
             hostname,
+            ...(service.hosts || []),
             ...(service.keywords || []),
         ]
             .join(' ')
@@ -360,6 +525,57 @@ export default function ServiceList() {
         return services.find(s => s.key === activeServiceKey) || null;
     }, [activeServiceKey]);
 
+    const listItems = useMemo(() => {
+        const hideOriginal = pinOpenSiteInList && activeService?.key === 'chatGpt';
+        const items: Array<{ service: Service; pinned: boolean }> = filteredServices
+            .filter((service) => !(hideOriginal && service.key === activeService?.key))
+            .map((service) => ({
+                service,
+                pinned: false,
+            }));
+
+        if (pinOpenSiteInList && activeService && matchesSearch(activeService, searchQuery)) {
+            items.unshift({ service: activeService, pinned: true });
+        }
+
+        return items;
+    }, [filteredServices, activeService, searchQuery, pinOpenSiteInList]);
+
+    useEffect(() => {
+        if (showPermissionsHint) {
+            return;
+        }
+
+        const lovableInList = listItems.some((item) => !item.pinned && item.service.key === 'lovable');
+        const scrollRoot = document.querySelector('.popup-main');
+
+        if (!lovableInList || !scrollRoot) {
+            return;
+        }
+
+        const updateHintVisibility = () => {
+            const lovableEl = lovableItemRef.current;
+            if (!lovableEl || searchQuery.trim()) {
+                return;
+            }
+
+            const rootRect = scrollRoot.getBoundingClientRect();
+            const lovableRect = lovableEl.getBoundingClientRect();
+            if (lovableRect.top <= rootRect.bottom - 32) {
+                setShowPermissionsHint(true);
+            }
+        };
+
+        updateHintVisibility();
+        scrollRoot.addEventListener('scroll', updateHintVisibility, { passive: true });
+        window.addEventListener('resize', updateHintVisibility);
+
+        return () => {
+            scrollRoot.removeEventListener('scroll', updateHintVisibility);
+            window.removeEventListener('resize', updateHintVisibility);
+        };
+    }, [listItems, searchQuery, showPermissionsHint]);
+
     // default: '#1a1a2e',
     // paper: '#2f2f41',
     return (
@@ -375,7 +591,7 @@ export default function ServiceList() {
                             textAlign: 'center',
                             position: 'sticky',
                             top: 0,
-                            zIndex: 1,
+                            zIndex: 3,
                             height: 48,
                             minHeight: 48,
                             maxHeight: 48,
@@ -442,12 +658,37 @@ export default function ServiceList() {
                         </Typography>
                     </Box>
                 )}
-                {filteredServices.map((service, index) => {
+                {listItems.map(({ service, pinned }, index) => {
                     const isActive = service.key === activeServiceKey;
                     return (
-                    <React.Fragment key={service.key}>
-                            <ListItem disablePadding style={{ direction: 'ltr' }}>
-                                <ListItemButton style={{ direction: 'ltr' }}>
+                    <React.Fragment key={pinned ? `pinned-${service.key}` : service.key}>
+                            <ListItem
+                                disablePadding
+                                ref={!pinned && service.key === 'lovable' ? lovableItemRef : undefined}
+                                style={{ direction: 'ltr' }}
+                                sx={pinned ? {
+                                    position: 'sticky',
+                                    top: 48,
+                                    zIndex: 2,
+                                    backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                    boxShadow: isDarkMode
+                                        ? '0 4px 10px rgba(0, 0, 0, 0.35)'
+                                        : '0 4px 10px rgba(0, 0, 0, 0.08)',
+                                } : undefined}
+                            >
+                                <ListItemButton
+                                    style={{ direction: 'ltr' }}
+                                    sx={pinned ? {
+                                        backgroundColor: isDarkMode
+                                            ? 'rgba(76, 175, 80, 0.16)'
+                                            : 'rgba(76, 175, 80, 0.1)',
+                                        '&:hover': {
+                                            backgroundColor: isDarkMode
+                                                ? 'rgba(76, 175, 80, 0.24)'
+                                                : 'rgba(76, 175, 80, 0.16)',
+                                        },
+                                    } : undefined}
+                                >
                                     <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                                         <ListItemIcon sx={{ minWidth: 40 }}>
                                             <Avatar 
@@ -616,12 +857,17 @@ export default function ServiceList() {
                                 </Paper>
                             </Box>
                         )}
-                        {index < filteredServices.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
+                        {index < listItems.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
                     );
                 })}
             </List>
 
+
+            <SitePermissionsHint
+                visible={showPermissionsHint}
+                isDarkMode={isDarkMode}
+            />
 
             {/* Generic Help Modal */}
             <Dialog 

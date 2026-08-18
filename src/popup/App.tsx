@@ -29,6 +29,12 @@ import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
 import {
+    getDefaultPinOpenSiteMode,
+    normalizePinOpenSiteMode,
+    PIN_OPEN_SITE_STORAGE_KEY,
+    PinOpenSiteMode,
+} from '../utils/pinOpenSite';
+import {
     getExtensionStoreUrl,
     getRateLinkText,
     getStorePageLinkText,
@@ -197,6 +203,7 @@ function App() {
     const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
     const [flipRtlArrows, setFlipRtlArrows] = React.useState(false);
     const [supportHide, setSupportHide] = React.useState(false);
+    const [pinOpenSiteMode, setPinOpenSiteMode] = React.useState<PinOpenSiteMode>(getDefaultPinOpenSiteMode());
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
@@ -228,7 +235,7 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'supportHide', 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -249,6 +256,9 @@ function App() {
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
+                }
+                if (result[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
+                    setPinOpenSiteMode(normalizePinOpenSiteMode(result[PIN_OPEN_SITE_STORAGE_KEY]));
                 }
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
@@ -320,6 +330,9 @@ function App() {
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
+                }
+                if (changes[PIN_OPEN_SITE_STORAGE_KEY]) {
+                    setPinOpenSiteMode(normalizePinOpenSiteMode(changes[PIN_OPEN_SITE_STORAGE_KEY].newValue));
                 }
                 if (changes.isDarkMode) {
                     setIsDarkMode(changes.isDarkMode.newValue);
@@ -446,6 +459,15 @@ function App() {
         }
     };
 
+    const handlePinOpenSiteModeChange = (mode: PinOpenSiteMode) => {
+        setPinOpenSiteMode(mode);
+        try {
+            chrome.storage.sync.set({ [PIN_OPEN_SITE_STORAGE_KEY]: mode });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
     // Save manual RTL settings to storage when changed
     const handleManualRtlSettingsChange = async (settings: ManualRtlSettings) => {
         setManualRtlSettings(settings);
@@ -458,14 +480,17 @@ function App() {
     };
 
     // Toggle theme and save to storage
-    const handleThemeToggle = () => {
-        const newTheme = !isDarkMode;
-        setIsDarkMode(newTheme);
+    const handleDarkModeChange = (enabled: boolean) => {
+        setIsDarkMode(enabled);
         try {
-            chrome.storage.sync.set({ isDarkMode: newTheme });
+            chrome.storage.sync.set({ isDarkMode: enabled });
         } catch (error) {
             // Silently handle save errors
         }
+    };
+
+    const handleThemeToggle = () => {
+        handleDarkModeChange(!isDarkMode);
     };
 
     const handleHighlightSettingsButton = React.useCallback(() => {
@@ -1038,7 +1063,7 @@ function App() {
                             </Typography>
                             <div className="listSite">
                             <Box sx={{ p: 2 }}>
-                                <ServiceList />
+                                <ServiceList pinOpenSiteMode={pinOpenSiteMode} />
                                 </Box>
                             </div>
                         </div>
@@ -1332,7 +1357,10 @@ function App() {
                         onFlipRtlArrowsChange={handleFlipRtlArrowsChange}
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
+                        pinOpenSiteMode={pinOpenSiteMode}
+                        onPinOpenSiteModeChange={handlePinOpenSiteModeChange}
                         isDarkMode={isDarkMode}
+                        onDarkModeChange={handleDarkModeChange}
                         manualRtlSettings={manualRtlSettings}
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         onClose={() => handleSettingsOpenChange(false)}

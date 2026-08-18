@@ -19,6 +19,13 @@ import {
 import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
+import { isFirefoxRuntime } from '../utils/isFirefox';
+import {
+    PinOpenSiteMode,
+    hasTabsPermission as checkTabsPermission,
+    requestTabsPermission,
+} from '../utils/pinOpenSite';
+import PinOpenSiteModeSelect from '../components/PinOpenSiteModeSelect';
 import {
     DEFAULT_FONT_ID,
     DEFAULT_FONT_SCALE,
@@ -51,7 +58,10 @@ interface QuickSettingsProps {
     onFlipRtlArrowsChange: (enabled: boolean) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
+    pinOpenSiteMode: PinOpenSiteMode;
+    onPinOpenSiteModeChange: (mode: PinOpenSiteMode) => void;
     isDarkMode: boolean;
+    onDarkModeChange: (enabled: boolean) => void;
     manualRtlSettings: ManualRtlSettings;
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     onClose?: () => void;
@@ -97,6 +107,11 @@ const TITLE_MODES = [
     },
 ] as const;
 
+const THEME_MODES = [
+    { id: 'dark', title: 'تاریک' },
+    { id: 'light', title: 'روشن' },
+] as const;
+
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
@@ -113,7 +128,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onFlipRtlArrowsChange,
     supportHide,
     onSupportChange,
+    pinOpenSiteMode,
+    onPinOpenSiteModeChange,
     isDarkMode,
+    onDarkModeChange,
     manualRtlSettings,
     onManualRtlSettingsChange,
     onClose,
@@ -121,6 +139,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
+    const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -182,6 +201,33 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const openOptions = (hash = '') => {
         const page = hash ? `options.html#${hash}` : 'options.html';
         chrome.tabs.create({ url: chrome.runtime.getURL(page) });
+    };
+
+    const handlePinOpenSiteModeSelect = async (mode: PinOpenSiteMode) => {
+        if (mode !== 'full' || isFirefoxRuntime() || hasTabsPermission === true) {
+            onPinOpenSiteModeChange(mode);
+            return;
+        }
+
+        const alreadyGranted = await checkTabsPermission();
+        if (alreadyGranted) {
+            setHasTabsPermission(true);
+            onPinOpenSiteModeChange('full');
+            return;
+        }
+
+        setPinSitePermissionOpen(true);
+    };
+
+    const handleRequestPinSitePermission = async () => {
+        const granted = await requestTabsPermission();
+        if (granted) {
+            setHasTabsPermission(true);
+            setPinSitePermissionOpen(false);
+            onPinOpenSiteModeChange('full');
+            return;
+        }
+        setPinSitePermissionOpen(false);
     };
 
     return (
@@ -679,6 +725,105 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Box>
                 </Box>
 
+                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder, gap: 0, p: 0 }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            px: 1.5,
+                            py: 1.25,
+                        }}
+                    >
+                        <Typography className="quick-settings-label">تم منو اکستشن</Typography>
+                        <FormControl size="small" sx={{ width: 'max-content', flexShrink: 0 }}>
+                            <Select
+                                dir="rtl"
+                                autoWidth
+                                className="quick-settings-select"
+                                value={isDarkMode ? 'dark' : 'light'}
+                                renderValue={(value) => THEME_MODES.find((item) => item.id === value)?.title ?? ''}
+                                onChange={(event) => onDarkModeChange(event.target.value === 'dark')}
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: 'quick-settings-select-menu',
+                                        sx: {
+                                            mt: 0.5,
+                                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                            backgroundImage: 'none',
+                                        },
+                                    },
+                                }}
+                                sx={{
+                                    width: 'max-content',
+                                    fontFamily: 'iranyekan',
+                                    fontSize: '0.82rem',
+                                    backgroundColor: fieldBg,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b',
+                                    borderRadius: '10px',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: cardBorder,
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: accent,
+                                        borderWidth: '1px',
+                                    },
+                                    '& .MuiSelect-select': {
+                                        width: 'auto',
+                                        whiteSpace: 'nowrap',
+                                    },
+                                    '& .MuiSelect-icon': {
+                                        color: muted,
+                                    },
+                                }}
+                                inputProps={{ 'aria-label': 'تم منو اکستشن' }}
+                            >
+                                {THEME_MODES.map((mode) => (
+                                    <MenuItem
+                                        key={mode.id}
+                                        value={mode.id}
+                                        dir="rtl"
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                            fontSize: '0.82rem',
+                                            textAlign: 'right',
+                                            direction: 'rtl',
+                                        }}
+                                    >
+                                        {mode.title}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            px: 1.5,
+                            py: 1.25,
+                            borderTop: `1px solid ${cardBorder}`,
+                        }}
+                    >
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography className="quick-settings-label">نمایش سایت باز در بالای لیست</Typography>
+                        </Box>
+                        <PinOpenSiteModeSelect
+                            value={pinOpenSiteMode}
+                            onChange={(mode) => {
+                                void handlePinOpenSiteModeSelect(mode);
+                            }}
+                            isDarkMode={isDarkMode}
+                        />
+                    </Box>
+                </Box>
+
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{
@@ -850,6 +995,57 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         صفحه تست الگوریتم
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={pinSitePermissionOpen}
+                onClose={() => setPinSitePermissionOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        padding: '8px'
+                    }
+                }}
+            >
+                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                    نیاز به دسترسی تب
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                    <Typography
+                        variant="body1"
+                        paragraph
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    >
+                        برای حالت فعال، افزونه باید تب فعلی را تشخیص دهد و به دسترسی <strong>Tabs</strong> نیاز دارد.
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        paragraph
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    >
+                        فقط دامنه سایت تب فعلی خوانده می‌شود. آدرس کامل، محتوای صفحه یا داده شخصی جمع‌آوری نمی‌شود.
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                    <Button
+                        onClick={() => setPinSitePermissionOpen(false)}
+                        variant="text"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan' }}
+                    >
+                        بستن
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            void handleRequestPinSitePermission();
+                        }}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan' }}
+                    >
+                        دریافت مجوز
                     </Button>
                 </DialogActions>
             </Dialog>

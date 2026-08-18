@@ -12,6 +12,7 @@ import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
+import { getDefaultPinOpenSiteMode, normalizePinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY, PinOpenSiteMode } from '../utils/pinOpenSite';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -50,6 +51,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [supportHide, setSupportHide] = React.useState(false);
+    const [pinOpenSiteMode, setPinOpenSiteMode] = React.useState<PinOpenSiteMode>(getDefaultPinOpenSiteMode());
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
@@ -72,7 +74,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         try {
             chrome.storage.sync.get([
                 'rtlAlgorithmMode', 
-                'supportHide', 
+                'supportHide',
+                PIN_OPEN_SITE_STORAGE_KEY, 
                 'manualRtlSettings',
                 'analytics',
                 'previewEnabled',
@@ -93,6 +96,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
+                }
+                if (result[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
+                    setPinOpenSiteMode(normalizePinOpenSiteMode(result[PIN_OPEN_SITE_STORAGE_KEY]));
                 }
                 // Use manualRtlSettings
                 const settings = result.manualRtlSettings;
@@ -152,6 +158,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
+                }
+                if (changes[PIN_OPEN_SITE_STORAGE_KEY]) {
+                    setPinOpenSiteMode(normalizePinOpenSiteMode(changes[PIN_OPEN_SITE_STORAGE_KEY].newValue));
                 }
                 if (changes.manualRtlSettings) {
                     const newSettings = changes.manualRtlSettings?.newValue;
@@ -259,6 +268,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.set({ supportHide: enabled });
         } catch (error) {
             console.log('Failed to save support setting:', error);
+        }
+    };
+
+    const handlePinOpenSiteModeChange = (mode: PinOpenSiteMode) => {
+        setPinOpenSiteMode(mode);
+        try {
+            chrome.storage.sync.set({ [PIN_OPEN_SITE_STORAGE_KEY]: mode });
+        } catch (error) {
+            console.log('Failed to save pin open site setting:', error);
         }
     };
 
@@ -395,6 +413,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                     <OtherSettingsTab
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
+                        pinOpenSiteMode={pinOpenSiteMode}
+                        onPinOpenSiteModeChange={handlePinOpenSiteModeChange}
                         isDarkMode={isDarkMode}
                         analytics={analytics}
                         onAnalyticsChange={handleAnalyticsChange}

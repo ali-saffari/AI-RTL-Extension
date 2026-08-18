@@ -15,7 +15,11 @@ import {
     Grid,
     Button,
     Alert,
-    Snackbar
+    Snackbar,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import { mdiDownload, mdiUpload } from '@mdi/js';
 import {
@@ -23,10 +27,21 @@ import {
     getOfficialStoreLabel,
     getViewInStoreText,
 } from '../../utils/storeLinks';
+import { isFirefoxRuntime } from '../../utils/isFirefox';
+import {
+    PIN_OPEN_SITE_STORAGE_KEY,
+    PinOpenSiteMode,
+    hasTabsPermission,
+    normalizePinOpenSiteMode,
+    requestTabsPermission,
+} from '../../utils/pinOpenSite';
+import PinOpenSiteModeSelect from '../../components/PinOpenSiteModeSelect';
 
 interface OtherSettingsTabProps {
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
+    pinOpenSiteMode: PinOpenSiteMode;
+    onPinOpenSiteModeChange: (mode: PinOpenSiteMode) => void;
     isDarkMode: boolean;
     analytics: boolean;
     onAnalyticsChange: (enabled: boolean) => void;
@@ -35,6 +50,8 @@ interface OtherSettingsTabProps {
 const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     supportHide,
     onSupportChange,
+    pinOpenSiteMode,
+    onPinOpenSiteModeChange,
     isDarkMode,
     analytics,
     onAnalyticsChange
@@ -46,6 +63,32 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     const [snackbarOpen, setSnackbarOpen] = React.useState(false);
     const [snackbarMessage, setSnackbarMessage] = React.useState('');
     const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
+    const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
+
+    const handlePinOpenSiteModeSelect = async (mode: PinOpenSiteMode) => {
+        if (mode !== 'full' || isFirefoxRuntime()) {
+            onPinOpenSiteModeChange(mode);
+            return;
+        }
+
+        const alreadyGranted = await hasTabsPermission();
+        if (alreadyGranted) {
+            onPinOpenSiteModeChange('full');
+            return;
+        }
+
+        setPinSitePermissionOpen(true);
+    };
+
+    const handleRequestPinSitePermission = async () => {
+        const granted = await requestTabsPermission();
+        if (granted) {
+            setPinSitePermissionOpen(false);
+            onPinOpenSiteModeChange('full');
+            return;
+        }
+        setPinSitePermissionOpen(false);
+    };
 
     // Export settings
     const handleExportSettings = async () => {
@@ -61,6 +104,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     selectedFont: allSettings.selectedFont,
                     fontScale: allSettings.fontScale,
                     supportHide: allSettings.supportHide,
+                    [PIN_OPEN_SITE_STORAGE_KEY]: allSettings[PIN_OPEN_SITE_STORAGE_KEY],
                     applyAlgorithmToCode: allSettings.applyAlgorithmToCode,
                     flipRtlArrows: allSettings.flipRtlArrows,
                     mixedTitleDisplayMode: allSettings.mixedTitleDisplayMode,
@@ -75,6 +119,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             key !== 'selectedFont' &&
                             key !== 'fontScale' &&
                             key !== 'supportHide' &&
+                            key !== PIN_OPEN_SITE_STORAGE_KEY &&
                             key !== 'applyAlgorithmToCode' &&
                             key !== 'flipRtlArrows' &&
                             key !== 'mixedTitleDisplayMode' && 
@@ -154,6 +199,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.supportHide !== undefined) {
                 settingsToImport.supportHide = importData.settings.supportHide;
             }
+            if (importData.settings[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
+                settingsToImport[PIN_OPEN_SITE_STORAGE_KEY] = normalizePinOpenSiteMode(
+                    importData.settings[PIN_OPEN_SITE_STORAGE_KEY]
+                );
+            }
             if (importData.settings.applyAlgorithmToCode !== undefined) {
                 settingsToImport.applyAlgorithmToCode = importData.settings.applyAlgorithmToCode === true;
             }
@@ -182,6 +232,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== 'selectedFont' &&
                     key !== 'fontScale' &&
                     key !== 'supportHide' && 
+                    key !== PIN_OPEN_SITE_STORAGE_KEY &&
                     key !== 'applyAlgorithmToCode' &&
                     key !== 'flipRtlArrows' &&
                     key !== 'mixedTitleDisplayMode' &&
@@ -252,6 +303,28 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         }}
                                     />
                                 </ListItemSecondaryAction>
+                            </ListItem>
+                            <Divider />
+                            <ListItem
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: 2,
+                                    py: 1.5,
+                                }}
+                            >
+                                <ListItemText 
+                                    primary="نمایش سایت باز در بالای لیست"
+                                    sx={{ flex: 1, minWidth: 0, my: 0 }}
+                                />
+                                <PinOpenSiteModeSelect
+                                    value={pinOpenSiteMode}
+                                    onChange={(mode) => {
+                                        void handlePinOpenSiteModeSelect(mode);
+                                    }}
+                                    isDarkMode={isDarkMode}
+                                />
                             </ListItem>
                             <Divider />
                             <ListItem>
@@ -484,6 +557,38 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 {snackbarMessage}
             </Alert>
         </Snackbar>
+        <Dialog
+            open={pinSitePermissionOpen}
+            onClose={() => setPinSitePermissionOpen(false)}
+            maxWidth="sm"
+            fullWidth
+        >
+            <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontFamily: 'iranyekan' }}>
+                نیاز به دسترسی تب
+            </DialogTitle>
+            <DialogContent style={{ direction: 'rtl', textAlign: 'justify' }}>
+                <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8 }}>
+                    برای حالت فعال، افزونه باید تب فعلی را تشخیص دهد و به دسترسی Tabs نیاز دارد.
+                </Typography>
+                <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8, mt: 1.5 }}>
+                    فقط دامنه سایت تب فعلی خوانده می‌شود. آدرس کامل، محتوای صفحه یا داده شخصی جمع‌آوری نمی‌شود.
+                </Typography>
+            </DialogContent>
+            <DialogActions sx={{ flexDirection: 'row-reverse', gap: 1, px: 3, pb: 2 }}>
+                <Button onClick={() => setPinSitePermissionOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
+                    بستن
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        void handleRequestPinSitePermission();
+                    }}
+                    sx={{ fontFamily: 'iranyekan' }}
+                >
+                    دریافت مجوز
+                </Button>
+            </DialogActions>
+        </Dialog>
     </>
     );
 };
