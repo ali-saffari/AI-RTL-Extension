@@ -23,6 +23,8 @@ import {
 } from '@mui/material';
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
+import { hasHostPermission } from '../utils/hasHostPermission';
+import { isFirefoxRuntime } from '../utils/isFirefox';
 
 interface Service {
     key: string;
@@ -270,14 +272,14 @@ export default function ServiceList() {
             return;
         }
         
-        // If enabling a dynamic service, check permissions
-        if (checked && dynamicServices.includes(key)) {
+        // Firefox already has <all_urls> in the manifest — no Chrome-style permission prompt
+        if (checked && dynamicServices.includes(key) && !isFirefoxRuntime()) {
             const service = DYNAMIC_SERVICES[key as keyof typeof DYNAMIC_SERVICES];
             if (service && service.origins) {
                 const origins = service.origins;
                 try {
                     const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-                    const hasOrigins = await chrome.permissions.contains({ origins });
+                    const hasOrigins = await hasHostPermission(origins);
                     
                     if (!hasScripting || !hasOrigins) {
                         // Show permission dialog

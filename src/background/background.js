@@ -1,6 +1,7 @@
 // Import dynamic services configuration
 import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
+import { hasHostPermission } from '../utils/hasHostPermission.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 // ============================================
@@ -109,7 +110,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Default manual RTL settings
     const defaultManualRtlSettings = getDefaultManualRtlSettings();
 
-    // Firefox: migrate existing profiles to all-sites mode (no allowlist)
+    // Firefox: only supported AI sites (no all_urls / no allowlist)
     if (isFirefoxRuntime()) {
         try {
             const stored = await chrome.storage.sync.get(['manualRtlSettings']);
@@ -118,7 +119,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 manualRtlSettings: {
                     ...defaultManualRtlSettings,
                     ...current,
-                    manualRtlSiteMode: 'all',
+                    manualRtlSiteMode: 'ai_sites',
                     manualRtlEnabled: current.manualRtlEnabled === true
                 }
             });
@@ -276,7 +277,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                     const notebookGrantedOrigins = (granted.origins || []).filter((origin) =>
                         origin.includes('notebook')
                     );
-                    let hasNotebookOrigin = await chrome.permissions.contains({ origins: notebookOrigins });
+                    let hasNotebookOrigin = await hasHostPermission(notebookOrigins);
                     if (!hasNotebookOrigin) {
                         hasNotebookOrigin = (granted.origins || []).some((origin) =>
                             origin.includes('://notebook.google.com/')
@@ -469,11 +470,11 @@ function buildExtensionSiteUrl(path, extraParams = {}) {
 }
 
 function getDefaultManualRtlSettings() {
-    // Firefox: all-sites mode available, Manual RTL off by default (no allowlist UI)
+    // Firefox: supported AI sites only, Manual RTL off by default (no allowlist UI)
     if (isFirefoxRuntime()) {
         return {
             manualRtlEnabled: false,
-            manualRtlSiteMode: 'all',
+            manualRtlSiteMode: 'ai_sites',
             menuDisplayMode: 'logo_first',
             highlightMode: 'on_direction_change',
             highlightColor: '#ff0000',
@@ -750,6 +751,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         })();
         return true; // Keep message channel open for async response
+    } else if (message.action === 'activateCurrentTab') {
+        (async () => {
+            try {
+                await activateCurrentTab({
+                    tabId: message.tabId,
+                    activateAllTabs: message.activateAllTabs === true,
+                    skipOriginCheck: true
+                });
+                sendResponse?.({ success: true });
+            } catch (error) {
+                console.error('[Background] Error in activateCurrentTab:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true;
     } else if (message.action === 'closeUpdateModalInAllTabs') {
         // Close update modal in all tabs
         (async () => {
@@ -828,9 +844,9 @@ async function shouldEnableManualRtlForSite(hostname) {
             return false;
         }
         
-        // Firefox: always treat as all-sites mode (no allowlist)
+        // Firefox: only sites declared in the manifest (no allowlist)
         const siteMode = isFirefoxRuntime()
-            ? 'all'
+            ? 'ai_sites'
             : (manualRtlSettings.manualRtlSiteMode || 'allowed_sites');
         
         // Check site mode
@@ -862,15 +878,52 @@ async function shouldEnableManualRtlForSite(hostname) {
     }
 }
 
-async function activateManualRtlForSite(tabId) {
+async function injectContentFiles(tabId) {
+    const target = { tabId };
+    if (isFirefoxRuntime()) {
+        // Sequential files: Firefox does not always run a files[] array in order.
+        await chrome.scripting.insertCSS({
+            target,
+            files: ['style.css']
+        }).catch(() => {});
+        await chrome.scripting.executeScript({
+            target,
+            files: ['js/inject-fonts.js']
+        });
+        await chrome.scripting.executeScript({
+            target,
+            files: ['js/myJquery-3.7.1.js']
+        });
+        await chrome.scripting.executeScript({
+            target,
+            files: ['js/content.js']
+        });
+        return;
+    }
+
+    await Promise.all([
+        chrome.scripting.insertCSS({
+            target,
+            files: ['css/fontiran-iranyekan.css', 'style.css']
+        }),
+        chrome.scripting.executeScript({
+            target,
+            files: ['js/myJquery-3.7.1.js', 'js/content.js']
+        })
+    ]);
+}
+
+async function activateManualRtlForSite(tabId, options = {}) {
     if (!tabId) return;
+    const skipOriginCheck = options.skipOriginCheck === true;
+    const ignoreComplete = options.ignoreComplete === true;
     
     try {
         const tab = await chrome.tabs.get(tabId);
         if (!tab.url) return;
         
         // Check if tab is in a valid state
-        if (isRestrictedBrowserUrl(tab.url) || tab.status !== 'complete') {
+        if (isRestrictedBrowserUrl(tab.url) || (!ignoreComplete && tab.status !== 'complete')) {
             return;
         }
         
@@ -890,12 +943,13 @@ async function activateManualRtlForSite(tabId) {
             return;
         }
         
-        // Check if origin permission is granted
-        const origin = `*://${hostname}/*`;
-        const hasOrigin = await chrome.permissions.contains({ origins: [origin] });
-        if (!hasOrigin) {
-            console.log(`[Background] Missing origin permission for ${hostname}`);
-            return;
+        if (!skipOriginCheck) {
+            const origin = `*://${hostname}/*`;
+            const hasOrigin = await hasHostPermission(origin);
+            if (!hasOrigin) {
+                console.log(`[Background] Missing origin permission for ${hostname}`);
+                return;
+            }
         }
         
         // Inject manual RTL script
@@ -974,8 +1028,7 @@ async function activateContentScriptForDynamicSites(tabId) {
         const service = DYNAMIC_SERVICES[serviceName];
         let hasRequiredOrigins = false;
         if (service) {
-            // For all dynamic services, check their specific origins
-            hasRequiredOrigins = await chrome.permissions.contains({ origins: service.origins });
+            hasRequiredOrigins = await hasHostPermission(service.origins);
         }
         
         console.log('[Background] hasScripting', hasScripting);
@@ -987,54 +1040,74 @@ async function activateContentScriptForDynamicSites(tabId) {
             return;
         }
         
-        // Inject content script activation
         try {
-            if (serviceEnabled) {
-                // Inject all files together (CSS and JavaScript in parallel)
-                console.log('[Background] inject all files together (CSS and JavaScript in parallel)');
-                try {
-                    if (isFirefoxRuntime()) {
-                        // Firefox: avoid moz-extension @font-face (blocked by page CSP).
-                        // Keep same idle timing as Chrome; fonts load via FontFace API.
-                        await Promise.all([
-                            chrome.scripting.insertCSS({
-                                target: { tabId: tabId },
-                                files: ['style.css']
-                            }),
-                            chrome.scripting.executeScript({
-                                target: { tabId: tabId },
-                                files: ['js/inject-fonts.js', 'js/myJquery-3.7.1.js', 'js/content.js']
-                            })
-                        ]);
-                    } else {
-                        await Promise.all([
-                            chrome.scripting.insertCSS({
-                                target: { tabId: tabId },
-                                files: ['css/fontiran-iranyekan.css', 'style.css']
-                            }),
-                            chrome.scripting.executeScript({
-                                target: { tabId: tabId },
-                                files: ['js/myJquery-3.7.1.js', 'js/content.js']
-                            })
-                        ]);
-                    }
-                    console.log(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
-                } catch (injectError) {
-                    // Ignore errors for error pages or invalid tabs
-                    if (injectError.message && injectError.message.includes('error page')) {
-                        console.log('[Background] Tab is showing error page, skipping injection');
-                    } else {
-                        console.error('[Background] Error injecting files:', injectError);
-                    }
-                }
-            }
+            await injectContentFiles(tabId);
+            console.log(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
-            console.error(`[Background] Error injecting content script for ${serviceName}:`, injectError);
+            if (injectError.message && injectError.message.includes('error page')) {
+                console.log('[Background] Tab is showing error page, skipping injection');
+            } else {
+                console.error('[Background] Error injecting files:', injectError);
+            }
         }
     } catch (error) {
         // Tab might not be accessible, ignore
-        console.error(`[Background] Error injecting content script for ${serviceName}:`, error);
+        console.error('[Background] Error injecting content script:', error);
     }
+}
+
+async function injectTabNow(tabId, options = {}) {
+    if (!tabId) return;
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        if (!tab?.url || isRestrictedBrowserUrl(tab.url) || !isValidHttpPage(tab.url)) {
+            return;
+        }
+
+        try {
+            await injectContentFiles(tabId);
+        } catch (injectError) {
+            if (injectError.message && injectError.message.includes('error page')) {
+                return;
+            }
+            await activateContentScriptForDynamicSites(tabId);
+        }
+
+        await activateManualRtlForSite(tabId, {
+            skipOriginCheck: options.skipOriginCheck === true,
+            ignoreComplete: true
+        });
+    } catch (error) {
+        console.error('[Background] Error in injectTabNow:', error);
+    }
+}
+
+async function activateCurrentTab(options = {}) {
+    let tabId = options.tabId;
+    if (!tabId) {
+        try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            tabId = tabs[0]?.id;
+        } catch {
+            tabId = activeTabInfo?.tabId;
+        }
+    }
+
+    if (options.activateAllTabs) {
+        try {
+            const tabs = await chrome.tabs.query({});
+            for (const tab of tabs) {
+                if (tab.id && tab.url && isValidHttpPage(tab.url) && !isRestrictedBrowserUrl(tab.url)) {
+                    await injectTabNow(tab.id, options);
+                }
+            }
+            return;
+        } catch (error) {
+            console.error('[Background] Error activating all tabs:', error);
+        }
+    }
+
+    await injectTabNow(tabId, options);
 }
 
 function setupEventListeners() {
@@ -1122,6 +1195,19 @@ function setupEventListeners() {
             }
         }
     });
+
+    if (chrome.permissions?.onAdded) {
+        chrome.permissions.onAdded.addListener(async (perms) => {
+            if (!perms?.origins?.length) {
+                return;
+            }
+            try {
+                await activateCurrentTab({ skipOriginCheck: true });
+            } catch (error) {
+                console.error('[Background] Error activating tab after permission grant:', error);
+            }
+        });
+    }
 
     chrome.runtime.onSuspend.addListener(async () => {
         console.log('[Events] Runtime suspending');

@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../types/manualRtl';
+import { hasHostPermission } from '../utils/hasHostPermission';
 
 interface ActiveTabInfoSnapshot {
     tabId: number | null;
@@ -72,7 +73,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
         try {
             const origins = [`*://${activeHostname}/*`];
             const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-            const hasOrigin = await chrome.permissions.contains({ origins: origins });
+            const hasOrigin = await hasHostPermission(origins);
             setHasPermission(hasScripting && hasOrigin);
         } catch (error) {
             setHasPermission(false);
@@ -145,7 +146,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
             try {
                 const origins = [`*://${activeHostname}/*`];
                 const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-                const hasOrigin = await chrome.permissions.contains({ origins: origins });
+                const hasOrigin = await hasHostPermission(origins);
                 const currentHasPermission = hasScripting && hasOrigin;
                 
                 if (!currentHasPermission) {

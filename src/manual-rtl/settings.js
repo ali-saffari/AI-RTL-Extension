@@ -134,7 +134,7 @@ export function shouldEnableTextSelector(callback) {
             && chrome.runtime
             && chrome.runtime.getURL
             && chrome.runtime.getURL('').startsWith('moz-extension:'))
-            ? 'all'
+            ? 'ai_sites'
             : (settings.manualRtlSiteMode || 'allowed_sites');
         const hostname = window.location.hostname;
         console.log('[RTL Text Selector] Checking site:', hostname, 'mode:', siteMode);

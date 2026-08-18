@@ -115,7 +115,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
         return `${activeHostname.slice(0, 17)}...`;
     }, [activeHostname]);
     
-    // Firefox: all-sites access, no allowlist UI
+    // Firefox: supported AI sites only, no allowlist UI
     const shouldShowSiteSection = React.useMemo(() => {
         if (isFirefoxRuntime()) return false;
         return manualRtlSettings.manualRtlEnabled && 
@@ -128,7 +128,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
             return 'غیرفعال';
         }
         if (isFirefoxRuntime()) {
-            return 'فعال برای همه سایت‌ها';
+            return 'فعال برای سایت‌های هوش مصنوعی';
         }
         switch (manualRtlSettings.manualRtlSiteMode) {
             case 'all':
@@ -206,7 +206,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                                 opacity: 0.8
                             }}
                         >
-                              (همه سایت ها)
+                              (سایت‌های پشتیبانی‌شده)
                         </Typography>
                     </Box>
                     <Box component="span" sx={{ 

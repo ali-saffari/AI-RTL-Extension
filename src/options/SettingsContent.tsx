@@ -58,7 +58,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
-        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
+        manualRtlSiteMode: firefoxDefaults ? 'ai_sites' : 'allowed_sites',
         menuDisplayMode: 'logo_first',
         highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
@@ -99,7 +99,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (settings) {
                     setManualRtlSettings({
                         manualRtlEnabled: firefoxDefaults ? false : true,
-                        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
+                        manualRtlSiteMode: firefoxDefaults ? 'ai_sites' : 'allowed_sites',
                         menuDisplayMode: 'logo_first',
                         highlightMode: 'on_direction_change',
                         highlightColor: '#ff0000',
@@ -107,7 +107,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         logoDisplay: 'always',
                         applyFont: true,
                         ...settings,
-                        ...(firefoxDefaults ? { manualRtlSiteMode: 'all' as const } : {})
+                        ...(firefoxDefaults ? { manualRtlSiteMode: 'ai_sites' as const } : {})
                     });
                 }
                 if (result.analytics !== undefined) {

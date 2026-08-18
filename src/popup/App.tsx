@@ -200,7 +200,7 @@ function App() {
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
-        manualRtlSiteMode: firefoxDefaults ? 'all' : 'allowed_sites',
+        manualRtlSiteMode: firefoxDefaults ? 'ai_sites' : 'allowed_sites',
         menuDisplayMode: 'logo_first',
         highlightMode: 'on_direction_change',
         highlightColor: '#ff0000',
@@ -262,7 +262,7 @@ function App() {
                     setManualRtlSettings({
                         ...manualRtlSettings,
                         ...settings,
-                        ...(firefoxDefaults ? { manualRtlSiteMode: 'all' as const } : {})
+                        ...(firefoxDefaults ? { manualRtlSiteMode: 'ai_sites' as const } : {})
                     });
                 }
                 // Load manualRtlInfoDismissed
