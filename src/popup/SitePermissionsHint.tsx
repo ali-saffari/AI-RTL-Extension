@@ -97,19 +97,16 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         cursor: 'pointer',
                         font: 'inherit',
                         color: 'inherit',
-                        background: isDarkMode
-                            ? 'linear-gradient(180deg, rgba(47, 47, 65, 0.98) 0%, #1a1a2e 100%)'
-                            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #e0f2fe 100%)',
+                        backgroundColor: isDarkMode
+                            ? 'rgba(26, 26, 46, 0.42)'
+                            : 'rgba(224, 242, 254, 0.42)',
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.4)'
                             : '1px solid rgba(30, 64, 175, 0.28)',
-                        boxShadow: isDarkMode
-                            ? '0 -8px 22px rgba(0, 0, 0, 0.35)'
-                            : '0 -8px 22px rgba(15, 23, 42, 0.12)',
+                        boxShadow: 'none',
+                        transition: 'background-color 0.28s ease',
                         '&:hover': {
-                            background: isDarkMode
-                                ? 'linear-gradient(180deg, rgba(0, 233, 255, 0.12) 0%, #1a1a2e 100%)'
-                                : 'linear-gradient(180deg, rgba(30, 64, 175, 0.08) 0%, #e0f2fe 100%)',
+                            backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                         },
                     }}
                 >
@@ -130,7 +127,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     >
                         چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟
                     </Typography>
-                    <SvgIcon sx={{ fontSize: '1.05rem', color: accent, flexShrink: 0, opacity: 0.85 }}>
+                    <SvgIcon sx={{ fontSize: '1.05rem', color: accent, flexShrink: 0 }}>
                         <path d={mdiChevronLeft} />
                     </SvgIcon>
                 </Box>
@@ -198,20 +195,20 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
                     <Button
-                        onClick={() => setModalOpen(false)}
-                        variant="contained"
-                        color="primary"
-                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
-                    >
-                        بستن
-                    </Button>
-                    <Button
                         onClick={handleDontShowAgain}
                         variant="text"
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         دیگر نشانم نده
+                    </Button>
+                    <Button
+                        onClick={() => setModalOpen(false)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -568,10 +568,10 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             </DialogTitle>
             <DialogContent style={{ direction: 'rtl', textAlign: 'justify' }}>
                 <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8 }}>
-                    برای حالت فعال، افزونه باید تب فعلی را تشخیص دهد و به دسترسی Tabs نیاز دارد.
+                    برای اینکه سایتِ در حال مشاهده (در صورت پشتیبانی شدن توسط افزونه) همیشه بالای لیست بیاید، حتی اگر هنوز آن را فعال نکرده باشید، افزونه با کمک «مجوز تب‌ها» باز بودن آن را تشخیص می‌دهد تا بتوانید سریع‌تر فعالش کنید.
                 </Typography>
                 <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8, mt: 1.5 }}>
-                    فقط دامنه سایت تب فعلی خوانده می‌شود. آدرس کامل، محتوای صفحه یا داده شخصی جمع‌آوری نمی‌شود.
+                    این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ flexDirection: 'row-reverse', gap: 1, px: 3, pb: 2 }}>

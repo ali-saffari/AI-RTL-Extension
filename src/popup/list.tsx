@@ -938,7 +938,7 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    این مجوز فقط برای اعمال تغییرات روی صفحه استفاده می‌شود و هیچ داده‌ای جمع‌آوری نمی‌شود.
+                    این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
                 </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>

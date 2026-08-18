@@ -69,10 +69,9 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
 
     return (
         <>
-            <FormControl size="small" sx={{ width: 'max-content', flexShrink: 0 }}>
+            <FormControl size="small" sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
                 <Select
                     dir="rtl"
-                    autoWidth
                     open={menuOpen}
                     onOpen={() => setMenuOpen(true)}
                     onClose={() => setMenuOpen(false)}
@@ -89,14 +88,13 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                             className: 'quick-settings-select-menu',
                             sx: {
                                 mt: 0.5,
-                                minWidth: 210,
                                 backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                                 backgroundImage: 'none',
                             },
                         },
                     }}
                     sx={{
-                        width: 'max-content',
+                        minWidth: '7.5rem',
                         fontFamily: 'iranyekan',
                         fontSize: '0.82rem',
                         backgroundColor: fieldBg,
@@ -113,7 +111,6 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                             borderWidth: '1px',
                         },
                         '& .MuiSelect-select': {
-                            width: 'auto',
                             whiteSpace: 'nowrap',
                         },
                         '& .MuiSelect-icon': {
@@ -132,6 +129,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                                 fontSize: '0.82rem',
                                 textAlign: 'right',
                                 direction: 'rtl',
+                                width: '100%',
                             }}
                         >
                             <Box

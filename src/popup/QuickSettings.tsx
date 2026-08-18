@@ -737,10 +737,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Typography className="quick-settings-label">تم منو اکستشن</Typography>
-                        <FormControl size="small" sx={{ width: 'max-content', flexShrink: 0 }}>
+                        <FormControl size="small" sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
                             <Select
                                 dir="rtl"
-                                autoWidth
                                 className="quick-settings-select"
                                 value={isDarkMode ? 'dark' : 'light'}
                                 renderValue={(value) => THEME_MODES.find((item) => item.id === value)?.title ?? ''}
@@ -756,7 +755,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     },
                                 }}
                                 sx={{
-                                    width: 'max-content',
+                                    minWidth: '7.5rem',
                                     fontFamily: 'iranyekan',
                                     fontSize: '0.82rem',
                                     backgroundColor: fieldBg,
@@ -773,7 +772,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         borderWidth: '1px',
                                     },
                                     '& .MuiSelect-select': {
-                                        width: 'auto',
                                         whiteSpace: 'nowrap',
                                     },
                                     '& .MuiSelect-icon': {
@@ -792,6 +790,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                             fontSize: '0.82rem',
                                             textAlign: 'right',
                                             direction: 'rtl',
+                                            width: '100%',
                                         }}
                                     >
                                         {mode.title}
@@ -1018,14 +1017,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         paragraph
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        برای حالت فعال، افزونه باید تب فعلی را تشخیص دهد و به دسترسی <strong>Tabs</strong> نیاز دارد.
+                        برای اینکه سایتِ در حال مشاهده (در صورت پشتیبانی شدن توسط افزونه) همیشه بالای لیست بیاید، حتی اگر هنوز آن را فعال نکرده باشید، افزونه با کمک «مجوز تب‌ها» باز بودن آن را تشخیص می‌دهد تا بتوانید سریع‌تر فعالش کنید.
                     </Typography>
                     <Typography
                         variant="body1"
                         paragraph
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        فقط دامنه سایت تب فعلی خوانده می‌شود. آدرس کامل، محتوای صفحه یا داده شخصی جمع‌آوری نمی‌شود.
+                        این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
