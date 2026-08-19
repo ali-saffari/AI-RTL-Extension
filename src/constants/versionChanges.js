@@ -1,22 +1,55 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'logo/ai-rtl-logo.png', type: 'fix' },
-    { id: '2', text: 'افزودن سایت Google Labs (Flow)', icon: 'sites/labs-google.png', type: 'add' },
-    { id: '3', text: 'افزودن سایت Meta AI', icon: 'sites/meta.png', type: 'add' },
-    { id: '4', text: 'افزودن سایت fal.ai', icon: 'sites/fal.png', type: 'add' },
-    { id: '5', text: 'آپدیت Gemini', icon: 'sites/Gemini.png', type: 'fix' },
-    { id: '6', text: 'افزودن سایت Black Forest', icon: 'sites/bfl.png', type: 'add' },
-    { id: '7', text: 'افزودن سایت Character.AI', icon: 'sites/character-ai.png', type: 'add' },
-    { id: '8', text: 'افزودن سایت Pi', icon: 'sites/pi.png', type: 'add' },
-    { id: '9', text: 'افزودن سایت Cursor', icon: 'sites/cursor.png', type: 'add' },
-    { id: '10', text: 'آپدیت DeepSeek', icon: 'sites/deepseek.jpg', type: 'fix' },
-    { id: '11', text: 'افزودن سایت TypingMind', icon: 'sites/typingmind.png', type: 'add' },
-    { id: '12', text: 'افزودن سایت Hugging Face', icon: 'sites/huggingface.png', type: 'add' },
-    { id: '13', text: 'افزودن سایت Dash0', icon: 'sites/dash0.png', type: 'add' },
-    { id: '14', text: 'افزودن سایت Zerve', icon: 'sites/zerve.png', type: 'add' },
-    { id: '15', text: 'افزودن سایت Qwen Coder', icon: 'sites/qwen.png', type: 'add' },
+    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'feature' },
+    { id: '16', text: 'افزودن قابلیت تغییر فونت و سایز فونت', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '17', text: 'قابلیت برعکس کردن فلش‌ها در متن راست‌چین', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '18', text: 'قابلیت راست‌چین کردن مارک‌داون‌ها', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '19', text: 'نمایش سایت باز در بالای لیست', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '2', text: 'افزودن سایت Google Labs (Flow)', shortName: 'Google Labs', icon: 'sites/labs-google.png', type: 'add', group: 'site' },
+    { id: '3', text: 'افزودن سایت Meta AI', shortName: 'Meta AI', icon: 'sites/meta.png', type: 'add', group: 'site' },
+    { id: '4', text: 'افزودن سایت fal.ai', shortName: 'fal.ai', icon: 'sites/fal.png', type: 'add', group: 'site' },
+    { id: '5', text: 'آپدیت Gemini', shortName: 'Gemini', icon: 'sites/Gemini.png', type: 'fix', group: 'site' },
+    { id: '6', text: 'افزودن سایت Black Forest', shortName: 'Black Forest', icon: 'sites/bfl.png', type: 'add', group: 'site' },
+    { id: '7', text: 'افزودن سایت Character.AI', shortName: 'Character.AI', icon: 'sites/character-ai.png', type: 'add', group: 'site' },
+    { id: '8', text: 'افزودن سایت Pi', shortName: 'Pi', icon: 'sites/pi.png', type: 'add', group: 'site' },
+    { id: '9', text: 'افزودن سایت Cursor', shortName: 'Cursor', icon: 'sites/cursor.png', type: 'add', group: 'site' },
+    { id: '10', text: 'آپدیت DeepSeek', shortName: 'DeepSeek', icon: 'sites/deepseek.jpg', type: 'fix', group: 'site' },
+    { id: '11', text: 'افزودن سایت TypingMind', shortName: 'TypingMind', icon: 'sites/typingmind.png', type: 'add', group: 'site' },
+    { id: '12', text: 'افزودن سایت Hugging Face', shortName: 'Hugging Face', icon: 'sites/huggingface.png', type: 'add', group: 'site' },
+    { id: '13', text: 'افزودن سایت Dash0', shortName: 'Dash0', icon: 'sites/dash0.png', type: 'add', group: 'site' },
+    { id: '14', text: 'افزودن سایت Zerve', shortName: 'Zerve', icon: 'sites/zerve.png', type: 'add', group: 'site' },
+    { id: '15', text: 'افزودن سایت Qwen Coder', shortName: 'Qwen Coder', icon: 'sites/qwen.png', type: 'add', group: 'site' },
 ];
+
+export function getSiteShortName(change) {
+    if (change.shortName) {
+        return change.shortName;
+    }
+
+    return String(change.text || '')
+        .replace(/^افزودن سایت\s+/, '')
+        .replace(/^آپدیت\s+/, '');
+}
+
+export function splitVersionChanges(changes = versionChanges) {
+    const features = [];
+    const sites = [];
+
+    for (const change of changes) {
+        const isSite = change.group === 'site' || String(change.icon || '').startsWith('sites/');
+        if (isSite) {
+            sites.push(change);
+        } else {
+            features.push(change);
+        }
+    }
+
+    const updatedSites = sites.filter((site) => site.type !== 'add');
+    const addedSites = sites.filter((site) => site.type === 'add');
+
+    return { features, sites, updatedSites, addedSites };
+}
 
 // لیست تغییرات نسخه‌های قبلی
 export const previousChanges = [

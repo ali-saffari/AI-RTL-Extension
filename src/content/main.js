@@ -19,6 +19,7 @@ import { activateAistudio } from './services/aistudio.js';
 import { activateDeepSeek } from './services/deepseek.js';
 import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
+import { activateQwenCoder } from './services/qwen-coder.js';
 import { activateNotebooklm } from './services/notebooklm.js';
 import { activateZai } from './services/zai.js';
 import { activateArena } from './services/arena.js';
@@ -65,7 +66,6 @@ import { activateTypingMind } from './services/observer/typingmind.js';
 import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
-import { activateQwenCoder } from './services/observer/qwen-coder.js';
 
 // Global variables
 let site = window.location.hostname;

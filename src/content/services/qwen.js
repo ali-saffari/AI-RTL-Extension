@@ -6,8 +6,8 @@ import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setText
 export function setQwenlm(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
-              let fo2 = `.chat-message-input-container.in-chat`
-         addCopyright(AQ(fo2), 'AsBoxQwen AsBoxB' ,`margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
+              let fo2 = `.chat-layout-input-container`
+         addCopyright(AQ(fo2), 'AsBoxQwen AsBoxB' ,`margin-top: 11px; margin-bottom: -5px; transform: scale(0.7);`);
 
 
     }
