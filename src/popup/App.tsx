@@ -908,6 +908,7 @@ function App() {
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#dae8f1' }}>
+                    {!notebookNeedsReenable && (
                     <Typography 
                         variant="body2" 
                         sx={{ 
@@ -920,6 +921,7 @@ function App() {
                     >
                         این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد.
                     </Typography>
+                    )}
                     <Typography 
                         variant="body2" 
                         sx={{ 
@@ -958,7 +960,7 @@ function App() {
                     </Box>
                 )}
 
-                {!activationHintDismissed && (
+                {!notebookNeedsReenable && !activationHintDismissed && (
                     <Box sx={{
                         background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
@@ -971,7 +973,7 @@ function App() {
                     </Box>
                 )}
 
-                {activationHintDismissed && !troubleshootingHintDismissed && (
+                {!notebookNeedsReenable && activationHintDismissed && !troubleshootingHintDismissed && (
                     <Box sx={{
                         background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
