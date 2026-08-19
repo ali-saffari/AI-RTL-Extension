@@ -15,6 +15,7 @@ export const versionChanges = [
     { id: '12', text: 'افزودن سایت Hugging Face', icon: 'sites/huggingface.png', type: 'add' },
     { id: '13', text: 'افزودن سایت Dash0', icon: 'sites/dash0.png', type: 'add' },
     { id: '14', text: 'افزودن سایت Zerve', icon: 'sites/zerve.png', type: 'add' },
+    { id: '15', text: 'افزودن سایت Qwen Coder', icon: 'sites/qwen.png', type: 'add' },
 ];
 
 // لیست تغییرات نسخه‌های قبلی

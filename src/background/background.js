@@ -831,7 +831,8 @@ const AI_SITES = [
     'typingmind.com', 'www.typingmind.com',
     'huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co',
     'dash0.com', 'www.dash0.com', 'app.dash0.com',
-    'zerve.ai', 'www.zerve.ai', 'app.zerve.ai'
+    'zerve.ai', 'www.zerve.ai', 'app.zerve.ai',
+    'coder.qwen.ai'
 ];
 
 function isAISite(hostname) {

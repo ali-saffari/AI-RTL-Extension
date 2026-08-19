@@ -25,6 +25,7 @@ export const FONT_SCALE_SITE_MODES = {
     'you.com': 'zoom',
     'chat.qwenlm.ai': 'zoom',
     'chat.qwen.ai': 'zoom',
+    'coder.qwen.ai': 'zoom',
     'poe.com': 'zoom',
     'monica.im': 'zoom',
     'gemini.google.com': 'zoom',

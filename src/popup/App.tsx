@@ -935,7 +935,7 @@ function App() {
 
                 {notebookNeedsReenable && (
                     <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
                     }}>
                         <InstallHintBanner
@@ -947,7 +947,7 @@ function App() {
 
                 {!activationHintDismissed && (
                     <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
                     }}>
                         <InstallHintBanner
@@ -960,7 +960,7 @@ function App() {
 
                 {activationHintDismissed && !troubleshootingHintDismissed && (
                     <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
                     }}>
                         <InstallHintBanner
@@ -973,7 +973,7 @@ function App() {
 
                 {!algorithmHintDismissed && rtlAlgorithm === 'advanced_full' && (
                     <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#b3d1e4',
+                        background: isDarkMode ? 'transparent' : '#dae8f1',
                         pb: 1.5
                     }}>
                         <InstallHintBanner

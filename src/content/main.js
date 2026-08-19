@@ -65,6 +65,7 @@ import { activateTypingMind } from './services/observer/typingmind.js';
 import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
+import { activateQwenCoder } from './services/observer/qwen-coder.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -161,6 +162,10 @@ const serviceConfig = {
     qwenlm: {
         urls: ["chat.qwenlm.ai", "chat.qwen.ai"],
         activate: activateQwen
+    },
+    qwenCoder: {
+        urls: ["coder.qwen.ai"],
+        activate: activateQwenCoder
     },
     poeCom: {
         urls: ["poe.com"],

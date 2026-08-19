@@ -140,6 +140,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Zerve',
         origins: ['*://zerve.ai/*', '*://www.zerve.ai/*', '*://app.zerve.ai/*'],
         hostnames: ['zerve.ai', 'www.zerve.ai', 'app.zerve.ai']
+    },
+    qwenCoder: {
+        name: 'QWEN CODER',
+        origins: ['*://coder.qwen.ai/*'],
+        hostnames: ['coder.qwen.ai']
     }
 };
 

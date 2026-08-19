@@ -88,7 +88,8 @@ function getAISitesList() {
         'app.dash0.com',
         'zerve.ai',
         'www.zerve.ai',
-        'app.zerve.ai'
+        'app.zerve.ai',
+        'coder.qwen.ai'
     ];
 
     return manualRtlState.aiSitesList;
