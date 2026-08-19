@@ -1,20 +1,27 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'تغییر ظاهر افزونه', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'feature' },
+    { id: '1', text: 'تغییر ظاهر افزونه', note: 'اضافه شدن منو در سمت چپ و دسترسی سریع به تنظیمات', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'menu' },
+    { id: '25', text: 'تغییر لوگو و آیکون', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'menu' },
+    { id: '19', text: 'قابلیت نمایش سایت باز در بالای لیست', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'menu' },
+    { id: '26', text: 'قابلیت سرچ در لیست سایت‌ها', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'menu' },
+    { id: '20', text: 'آپدیت الگوریتم راست‌چین و بهینه‌سازی آن', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'feature' },
+    { id: '24', text: 'بهبود عملکرد نسخه فایرفاکس اکستنشن', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'feature' },
     { id: '16', text: 'افزودن قابلیت تغییر فونت و سایز فونت', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
-    { id: '17', text: 'قابلیت برعکس کردن فلش‌ها در متن راست‌چین', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
-    { id: '18', text: 'قابلیت راست‌چین کردن مارک‌داون‌ها', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
-    { id: '19', text: 'نمایش سایت باز در بالای لیست', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '17', text: 'قابلیت برعکس کردن فلش‌ها در متن‌های فارسی و راست‌چین', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '18', text: 'قابلیت راست‌چین باکس کدها (مارک‌داون‌های) فارسی', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '2', text: 'افزودن سایت Google Labs (Flow)', shortName: 'Google Labs', icon: 'sites/labs-google.png', type: 'add', group: 'site' },
     { id: '3', text: 'افزودن سایت Meta AI', shortName: 'Meta AI', icon: 'sites/meta.png', type: 'add', group: 'site' },
     { id: '4', text: 'افزودن سایت fal.ai', shortName: 'fal.ai', icon: 'sites/fal.png', type: 'add', group: 'site' },
     { id: '5', text: 'آپدیت Gemini', shortName: 'Gemini', icon: 'sites/Gemini.png', type: 'fix', group: 'site' },
+    { id: '23', text: 'آپدیت ChatGPT', shortName: 'ChatGPT', icon: 'sites/openAi-icon.png', type: 'fix', group: 'site' },
     { id: '6', text: 'افزودن سایت Black Forest', shortName: 'Black Forest', icon: 'sites/bfl.png', type: 'add', group: 'site' },
     { id: '7', text: 'افزودن سایت Character.AI', shortName: 'Character.AI', icon: 'sites/character-ai.png', type: 'add', group: 'site' },
     { id: '8', text: 'افزودن سایت Pi', shortName: 'Pi', icon: 'sites/pi.png', type: 'add', group: 'site' },
     { id: '9', text: 'افزودن سایت Cursor', shortName: 'Cursor', icon: 'sites/cursor.png', type: 'add', group: 'site' },
     { id: '10', text: 'آپدیت DeepSeek', shortName: 'DeepSeek', icon: 'sites/deepseek.jpg', type: 'fix', group: 'site' },
+    { id: '21', text: 'آپدیت Qwen', shortName: 'Qwen', icon: 'sites/qwen.png', type: 'fix', group: 'site' },
+    { id: '22', text: 'آپدیت Z.ai', shortName: 'Z.ai', icon: 'sites/z.ai.png', type: 'fix', group: 'site' },
     { id: '11', text: 'افزودن سایت TypingMind', shortName: 'TypingMind', icon: 'sites/typingmind.png', type: 'add', group: 'site' },
     { id: '12', text: 'افزودن سایت Hugging Face', shortName: 'Hugging Face', icon: 'sites/huggingface.png', type: 'add', group: 'site' },
     { id: '13', text: 'افزودن سایت Dash0', shortName: 'Dash0', icon: 'sites/dash0.png', type: 'add', group: 'site' },
@@ -33,6 +40,7 @@ export function getSiteShortName(change) {
 }
 
 export function splitVersionChanges(changes = versionChanges) {
+    const menuChanges = [];
     const features = [];
     const sites = [];
 
@@ -40,6 +48,8 @@ export function splitVersionChanges(changes = versionChanges) {
         const isSite = change.group === 'site' || String(change.icon || '').startsWith('sites/');
         if (isSite) {
             sites.push(change);
+        } else if (change.group === 'menu') {
+            menuChanges.push(change);
         } else {
             features.push(change);
         }
@@ -48,7 +58,7 @@ export function splitVersionChanges(changes = versionChanges) {
     const updatedSites = sites.filter((site) => site.type !== 'add');
     const addedSites = sites.filter((site) => site.type === 'add');
 
-    return { features, sites, updatedSites, addedSites };
+    return { menuChanges, features, sites, updatedSites, addedSites };
 }
 
 // لیست تغییرات نسخه‌های قبلی

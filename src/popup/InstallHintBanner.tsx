@@ -344,10 +344,18 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                             lineHeight: 1.8
                         }}
                     >
-                        این پیام پنهان بشه؟
+                        این پیام برای همیشه پنهان شود؟
                     </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setHideConfirmOpen(false)}
+                        variant="text"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        خیر
+                    </Button>
                     <Button
                         onClick={() => {
                             setHideConfirmOpen(false);
@@ -358,14 +366,6 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         بله
-                    </Button>
-                    <Button
-                        onClick={() => setHideConfirmOpen(false)}
-                        variant="text"
-                        color="primary"
-                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
-                    >
-                        خیر
                     </Button>
                 </DialogActions>
             </Dialog>

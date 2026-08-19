@@ -260,7 +260,7 @@ function shouldSkipArrowFlip(parent) {
     if (parent.closest(ALWAYS_SKIP_ARROW_FLIP_SELECTOR)) {
         return true;
     }
-    if (!isApplyAlgorithmToCodeEnabled() && parent.closest(CODE_SKIP_ARROW_FLIP_SELECTOR)) {
+    if (parent.closest(CODE_SKIP_ARROW_FLIP_SELECTOR)) {
         return true;
     }
     return false;
@@ -377,29 +377,39 @@ function isCodeElementContent($element) {
     return !hasLanguageTextClass && isCode(text);
 }
 
+function shouldApplyRtlToCodeBlock(text, $element) {
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        return false;
+    }
+    if ($element && isCodeElementContent($element)) {
+        return false;
+    }
+    if (isCode(text)) {
+        return false;
+    }
+    return detectTextDirection(text) === 'rtl';
+}
+
 function processCodeLikeElement($element, element, options = {}) {
-    const { fontClass, setTextAlign, processedClass, codeFontClass } = options;
+    const { fontClass, setTextAlign, processedClass } = options;
     if (processedClass) {
         $element.addClass(processedClass);
     }
 
     const text = $element.text();
-    const isCodeContent = isCodeElementContent($element);
-    const appliedFontClass = isCodeContent ? (codeFontClass || fontClass) : fontClass;
-
-    if (isCodeContent && !isApplyAlgorithmToCodeEnabled()) {
+    if (isCodeElementContent($element)) {
         setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
         applyForcedCodeLtr($element);
         return;
     }
 
-    setDebugAttr($element, 'data-debug-mode', isCodeContent ? 'code-element-algorithm' : 'code-element-normal');
+    setDebugAttr($element, 'data-debug-mode', 'code-element-normal');
     $element.find('*').removeAttr('dir');
     setTextDirectionAndFont(element, {
-        fontClass: appliedFontClass,
-        setTextAlign: isCodeContent || setTextAlign,
+        fontClass,
+        setTextAlign,
         text,
-        applyFontIfRtl: isCodeContent
+        applyFontIfRtl: false
     });
 }
 
@@ -451,19 +461,15 @@ function processCodeMirrorBlock($element, element, options = {}) {
 
     const $targets = getCodeMirrorTargets($element, $content);
 
-    if (!isApplyAlgorithmToCodeEnabled()) {
+    const blockText = $content.text();
+    if (!shouldApplyRtlToCodeBlock(blockText, $content)) {
         setDebugAttr($element, 'data-debug-mode', 'cm-code-block-ltr');
         applyCodeBlockDirection($targets, 'ltr', blockFontClass);
         return;
     }
 
-    const blockText = $content.text();
-    const direction = detectTextDirection(blockText) === 'rtl' ? 'rtl' : 'ltr';
-    setDebugAttr($element, 'data-debug-mode', 'cm-code-block-unified');
-    applyCodeBlockDirection($targets, direction, blockFontClass);
-    if (direction === 'rtl') {
-        flipRtlArrowsInTree($content);
-    }
+    setDebugAttr($element, 'data-debug-mode', 'cm-code-block-persian');
+    applyCodeBlockDirection($targets, 'rtl', blockFontClass);
 }
 
 function processCodeMirrorBlocks(container, options = {}) {
@@ -1577,8 +1583,10 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
         const nth = typeCount[tagName];
         const selector = `${rootSelector}>${tagName}:nth-of-type(${nth})`;
 
-        if (tagName === 'pre' && !isApplyAlgorithmToCodeEnabled()) {
-            blockRules.push({ selector, direction: 'ltr' });
+        if (tagName === 'pre') {
+            const preText = child.textContent || '';
+            const preDirection = shouldApplyRtlToCodeBlock(preText) ? 'rtl' : 'ltr';
+            blockRules.push({ selector, direction: preDirection });
             return;
         }
 

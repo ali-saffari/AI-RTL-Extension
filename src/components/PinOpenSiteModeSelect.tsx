@@ -218,7 +218,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                         </Typography>
                     ) : null}
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                     <Button
                         onClick={() => setInfoModeId(null)}
                         variant="contained"

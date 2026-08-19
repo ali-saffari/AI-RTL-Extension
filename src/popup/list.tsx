@@ -277,32 +277,61 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
             return applyTabUrl(url, clearIfMissing);
         };
 
-        const shouldClearHiddenTab = (tabs?: chrome.tabs.Tab[]) => {
+        // Without the tabs permission, missing tab.url only means the URL is hidden —
+        // it is not proof that the page is chrome:// or otherwise restricted.
+        const hasVisibleRestrictedUrl = (tabs?: chrome.tabs.Tab[]) => {
             return (tabs || []).some((tab) => {
-                if (isExtensionPage(tab.url)) {
+                if (!tab.url || isExtensionPage(tab.url)) {
                     return false;
                 }
                 return !isHttpUrl(tab.url);
             });
         };
 
-        const detectFromTabs = async () => {
+        const queryCandidateTabs = async () => {
             try {
                 const focusedTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-                if (await hostnameFromTabs(focusedTabs)) {
-                    return true;
+                if (focusedTabs?.length) {
+                    return focusedTabs;
                 }
-                if (pinOpenSiteMode === 'limited' && shouldClearHiddenTab(focusedTabs)) {
-                    setActiveServiceKey(null);
-                    return true;
-                }
+            } catch {
+                // tabs.query can fail in some contexts
+            }
+            try {
+                return await chrome.tabs.query({ active: true });
+            } catch {
+                return [];
+            }
+        };
 
-                const activeTabs = await chrome.tabs.query({ active: true });
-                if (await hostnameFromTabs(activeTabs)) {
+        const hostnameFromContentScript = async (tabs?: chrome.tabs.Tab[]) => {
+            for (const tab of tabs || []) {
+                if (!tab.id || isExtensionPage(tab.url)) {
+                    continue;
+                }
+                try {
+                    const pageInfo = await chrome.tabs.sendMessage(tab.id, { action: 'getPageInfo' });
+                    if (pageInfo?.success && pageInfo.hostname) {
+                        return applyHostname(pageInfo.hostname);
+                    }
+                } catch {
+                    // Content script is not injected on this tab
+                }
+            }
+            return false;
+        };
+
+        const detectFromTabs = async () => {
+            try {
+                const tabs = await queryCandidateTabs();
+                if (await hostnameFromTabs(tabs)) {
                     return true;
                 }
-                if (pinOpenSiteMode === 'limited' && shouldClearHiddenTab(activeTabs)) {
+                if (hasVisibleRestrictedUrl(tabs)) {
                     setActiveServiceKey(null);
+                    return true;
+                }
+                if (await hostnameFromContentScript(tabs)) {
                     return true;
                 }
             } catch {
@@ -527,9 +556,8 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
     }, [activeServiceKey]);
 
     const listItems = useMemo(() => {
-        const hideOriginal = pinOpenSiteInList && activeService?.key === 'chatGpt';
         const items: Array<{ service: Service; pinned: boolean }> = filteredServices
-            .filter((service) => !(hideOriginal && service.key === activeService?.key))
+            .filter((service) => !(pinOpenSiteInList && activeService && service.key === activeService.key))
             .map((service) => ({
                 service,
                 pinned: false,
@@ -893,7 +921,7 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
                         dangerouslySetInnerHTML={{ __html: selectedService?.helpText || '' }}
                     />
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
                     <Button 
                         onClick={() => setHelpModalOpen(false)}
                         variant="contained"
@@ -942,7 +970,7 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
                     این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
                 </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                 <Button 
                         onClick={() => setPermissionModalOpen(false)}
                         variant="text"

@@ -929,7 +929,20 @@ function App() {
                             fontWeight: 400
                         }}
                     >
-                        امیدوارم از استفاده از این اکستشن لذت ببرید ❤️ و اگر دوست داشتید حمایت کنید
+                        امیدوارم از استفاده از این اکستشن لذت ببرید ❤️ و اگر دوست داشتید{' '}
+                        <a
+                            href="https://ai-rtl.ir/supporters/?source=extension-popup-intro-supporters"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
+                            حمایت
+                        </a>
+                        {' '}کنید
                     </Typography>
                 </Box>
 

@@ -402,25 +402,46 @@ function resetActiveTabInfo(tabId) {
                 return;
             }
 
-            if (chrome.runtime.lastError || !tab?.url) {
+            if (chrome.runtime.lastError) {
                 return;
             }
 
-            // Only process http/https pages
-            if (!isValidHttpPage(tab.url)) {
+            if (tab?.url && !isValidHttpPage(tab.url)) {
                 activeTabInfo = null;
                 broadcastActiveTabInfo('reset-skipped-non-http');
                 return;
             }
 
+            if (tab?.url && isValidHttpPage(tab.url)) {
+                try {
+                    const url = new URL(tab.url);
+                    activeTabInfo.hostname = url.hostname;
+                    activeTabInfo.favicon = tab.favIconUrl || '';
+                    activeTabInfo.lastUpdatedAt = Date.now();
+                    broadcastActiveTabInfo('reset-tab-details');
+                    return;
+                } catch (err) {
+                    // Ignore invalid URL errors
+                }
+            }
+
+            // Limited mode has no tabs permission, so tab.url is often hidden.
+            // Ask the content script — it is already injected on supported sites.
             try {
-                const url = new URL(tab.url);
-                activeTabInfo.hostname = url.hostname;
-                activeTabInfo.favicon = tab.favIconUrl || '';
-                activeTabInfo.lastUpdatedAt = Date.now();
-                broadcastActiveTabInfo('reset-tab-details');
+                chrome.tabs.sendMessage(tabId, { action: 'getPageInfo' }, (pageInfo) => {
+                    if (!activeTabInfo || activeTabInfo.tabId !== tabId) {
+                        return;
+                    }
+                    if (chrome.runtime.lastError || !pageInfo?.success || !pageInfo.hostname) {
+                        return;
+                    }
+                    activeTabInfo.hostname = pageInfo.hostname || '';
+                    activeTabInfo.favicon = pageInfo.favicon || activeTabInfo.favicon || '';
+                    activeTabInfo.lastUpdatedAt = Date.now();
+                    broadcastActiveTabInfo('reset-page-info');
+                });
             } catch (err) {
-                // Ignore invalid URL errors
+                // Content script may not be injected
             }
         });
     } catch (error) {
@@ -575,88 +596,69 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })();
         return true;
     } else if (message.action === 'getActiveTabInfo' || message.action === 'getActiveSessionInfo') {
-        const snapshot = getActiveTabSnapshot();
-        
-        // If we don't have hostname, try to get it from content script
-        if (!snapshot || !snapshot.hostname) {
-            (async () => {
-                try {
-                    // Try to get active tab ID
-                    let activeTabId = null;
-                    try {
-                        const hasTabsPermission = await chrome.permissions.contains({ permissions: ['tabs'] });
-                        if (hasTabsPermission && chrome?.tabs?.query) {
-                            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-                            if (tabs && tabs.length > 0) {
-                                activeTabId = tabs[0].id;
-                            }
-                        } else if (activeTabInfo?.tabId) {
-                            // Use cached tab ID if available
-                            activeTabId = activeTabInfo.tabId;
-                        }
-                    } catch (e) {
-                        // If tabs permission not available, try to use cached tab ID
-                        if (activeTabInfo?.tabId) {
-                            activeTabId = activeTabInfo.tabId;
-                        }
-                    }
+        (async () => {
+            const snapshot = getActiveTabSnapshot();
+            let activeTabId = null;
 
-                    // If we have tab ID, try to get info from content script via message
-                    if (activeTabId && chrome?.tabs?.sendMessage) {
-                        try {
-                            const pageInfo = await chrome.tabs.sendMessage(activeTabId, { action: 'getPageInfo' });
-
-                            if (pageInfo && pageInfo.success && pageInfo.hostname) {
-                                const enhancedSnapshot = {
-                                    tabId: activeTabId,
-                                    hostname: pageInfo.hostname || '',
-                                    favicon: pageInfo.favicon || '',
-                                    hasHostname: Boolean(pageInfo.hostname),
-                                    activatedAt: activeTabInfo?.activatedAt || Date.now(),
-                                    lastUpdatedAt: Date.now()
-                                };
-                                
-                                // Update activeTabInfo cache
-                                activeTabInfo = enhancedSnapshot;
-                                
-                                sendResponse?.({
-                                    success: true,
-                                    tabInfo: enhancedSnapshot,
-                                    tabHostname: enhancedSnapshot.hostname || '',
-                                    session: null
-                                });
-                                return;
-                            }
-                        } catch (e) {
-                            // If content script message fails (e.g., receiving end does not exist), fall back to snapshot
-                            // This is normal when content script is not injected or not ready
-                            if (e.message && !e.message.includes('Receiving end does not exist')) {
-                                devLog('[ActiveTab] Failed to get info from content script:', e.message);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    devLog('[ActiveTab] Error getting info from content script:', error.message);
+            try {
+                // tab.id is available even without the tabs permission
+                const focusedTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+                activeTabId = focusedTabs?.[0]?.id || null;
+                if (!activeTabId) {
+                    const activeTabs = await chrome.tabs.query({ active: true });
+                    activeTabId = activeTabs?.[0]?.id || null;
                 }
-                
-                // Fall back to original snapshot
-                sendResponse?.({
-                    success: true,
-                    tabInfo: snapshot,
-                    tabHostname: snapshot?.hostname || '',
-                    session: null
-                });
-            })();
-            return true; // Keep channel open for async response
-        }
-        
-        sendResponse?.({
-            success: true,
-            tabInfo: snapshot,
-            tabHostname: snapshot?.hostname || '',
-            session: null
-        });
-        return true;
+            } catch (e) {
+                activeTabId = snapshot?.tabId || null;
+            }
+
+            if (!activeTabId && snapshot?.tabId) {
+                activeTabId = snapshot.tabId;
+            }
+
+            if (activeTabId && chrome?.tabs?.sendMessage) {
+                try {
+                    const pageInfo = await chrome.tabs.sendMessage(activeTabId, { action: 'getPageInfo' });
+
+                    if (pageInfo && pageInfo.success && pageInfo.hostname) {
+                        const enhancedSnapshot = {
+                            tabId: activeTabId,
+                            hostname: pageInfo.hostname || '',
+                            favicon: pageInfo.favicon || '',
+                            hasHostname: Boolean(pageInfo.hostname),
+                            activatedAt: (snapshot?.tabId === activeTabId ? snapshot.activatedAt : Date.now()) || Date.now(),
+                            lastUpdatedAt: Date.now()
+                        };
+
+                        activeTabInfo = enhancedSnapshot;
+
+                        sendResponse?.({
+                            success: true,
+                            tabInfo: enhancedSnapshot,
+                            tabHostname: enhancedSnapshot.hostname || '',
+                            session: null
+                        });
+                        return;
+                    }
+                } catch (e) {
+                    if (e.message && !e.message.includes('Receiving end does not exist')) {
+                        devLog('[ActiveTab] Failed to get info from content script:', e.message);
+                    }
+                }
+            }
+
+            const safeSnapshot = snapshot?.tabId && activeTabId && snapshot.tabId !== activeTabId
+                ? null
+                : snapshot;
+
+            sendResponse?.({
+                success: true,
+                tabInfo: safeSnapshot,
+                tabHostname: safeSnapshot?.hostname || '',
+                session: null
+            });
+        })();
+        return true; // Keep channel open for async response
     } else if (message.action === 'requestPermissionsAndEnableService') {
         // Handle permission request and service activation from popup
         // Note: This is called from popup onClick (user gesture context)

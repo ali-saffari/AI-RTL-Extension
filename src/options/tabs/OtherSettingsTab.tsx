@@ -21,7 +21,8 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
-import { mdiDownload, mdiUpload } from '@mdi/js';
+import { mdiDownload, mdiUpload, mdiUpdate } from '@mdi/js';
+import { openUpdateModal } from '../../utils/openUpdateModal';
 import {
     getExtensionStoreUrl,
     getOfficialStoreLabel,
@@ -392,6 +393,36 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                     </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText 
+                                    primary="پنجره به‌روزرسانی‌ها"
+                                    secondary="مشاهده جزئیات آخرین نسخه افزونه"
+                                />
+                                <ListItemSecondaryAction>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={
+                                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                <path d={mdiUpdate} />
+                                            </SvgIcon>
+                                        }
+                                        onClick={openUpdateModal}
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            '&:hover': {
+                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                            },
+                                        }}
+                                    >
+                                        نمایش
+                                    </Button>
+                                </ListItemSecondaryAction>
+                            </ListItem>
                         </List>
                     </CardContent>
                 </Card>
@@ -574,7 +605,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
                 </Typography>
             </DialogContent>
-            <DialogActions sx={{ flexDirection: 'row-reverse', gap: 1, px: 3, pb: 2 }}>
+            <DialogActions sx={{ gap: 1, px: 3, pb: 2 }}>
                 <Button onClick={() => setPinSitePermissionOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
                     بستن
                 </Button>

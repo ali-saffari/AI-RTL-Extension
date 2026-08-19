@@ -193,7 +193,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         من به عنوان سازنده وقتی خودم را جای کاربر می‌گذارم، از دسترسی‌های گسترده، پیش‌فرض و غیرضروری حس ناامنی می‌گیرم. باور دارم حق کاربر است که بداند دقیقاً چه دسترسی‌هایی و به چه دلیلی به یک افزونه داده می‌شود. به همین دلیل شفافیت و حفظ اعتماد شما را در اولویت گذاشتم تا کنترل کامل افزونه دست خودتان باشد.
                     </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                     <Button
                         onClick={handleDontShowAgain}
                         variant="text"

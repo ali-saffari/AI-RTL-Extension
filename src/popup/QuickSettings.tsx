@@ -138,6 +138,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
+    const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
 
@@ -437,15 +438,17 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Select>
                     </FormControl>
 
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.4, mt: 1 }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55, mt: 1 }}>
+                        {selectedAlgo.hint}
                         <IconButton
                             size="small"
                             aria-label={`توضیحات ${selectedAlgo.title}`}
                             onClick={() => setInfoAlgoId(selectedAlgo.id)}
                             sx={{
                                 p: 0.2,
-                                mt: '-1px',
-                                flexShrink: 0,
+                                ml: 0.15,
+                                mb: '1px',
+                                verticalAlign: 'middle',
                                 color: accent,
                                 '&:hover': {
                                     backgroundColor: selectedBg,
@@ -456,10 +459,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <path d={mdiInformationOutline} />
                             </SvgIcon>
                         </IconButton>
-                        <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55, flex: 1 }}>
-                            {selectedAlgo.hint}
-                        </Typography>
-                    </Box>
+                    </Typography>
 
                     {rtlAlgorithm === 'advanced_section' && (
                         <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
@@ -562,13 +562,30 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 gap: 1,
                             }}
                         >
-                            <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                            <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                                 <Typography className="quick-settings-label">
                                     اعمال روی باکس کدها{' '}
                                     <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
                                         (Markdown)
                                     </Box>
                                 </Typography>
+                                <IconButton
+                                    size="small"
+                                    aria-label="توضیحات اعمال روی باکس کدها"
+                                    onClick={() => setCodeInfoOpen(true)}
+                                    sx={{
+                                        p: 0.2,
+                                        flexShrink: 0,
+                                        color: accent,
+                                        '&:hover': {
+                                            backgroundColor: selectedBg,
+                                        },
+                                    }}
+                                >
+                                    <SvgIcon sx={{ fontSize: '1rem' }}>
+                                        <path d={mdiInformationOutline} />
+                                    </SvgIcon>
+                                </IconButton>
                                 <ExperimentalBadge isDarkMode={isDarkMode} />
                             </Box>
                             <Switch
@@ -975,15 +992,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </>
                     ) : null}
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
-                    <Button
-                        onClick={() => setInfoAlgoId(null)}
-                        variant="contained"
-                        color="primary"
-                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
-                    >
-                        بستن
-                    </Button>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                     <Button
                         onClick={() => {
                             setInfoAlgoId(null);
@@ -994,6 +1003,72 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         صفحه تست الگوریتم
+                    </Button>
+                    <Button
+                        onClick={() => setInfoAlgoId(null)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={codeInfoOpen}
+                onClose={() => setCodeInfoOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    اعمال روی باکس کدها (Markdown)
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        وقتی این گزینه روشن باشد، الگوریتم فقط روی باکس‌هایی اعمال می‌شود که محتوای فارسی دارند. متن فارسی در این باکس‌ها راست‌چین می‌شود تا خواندنش راحت‌تر باشد.
+                    </Typography>
+                    <Typography
+                        sx={{
+                            fontSize: '0.8rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                            mt: 1,
+                            color: muted,
+                        }}
+                    >
+                        روی خودِ کدهای برنامه‌نویسی تغییری اعمال نمی‌شود و جهت آن‌ها چپ‌چین باقی می‌ماند.
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setCodeInfoOpen(false)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1027,7 +1102,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
                     </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px', flexDirection: 'row-reverse' }}>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                     <Button
                         onClick={() => setPinSitePermissionOpen(false)}
                         variant="text"

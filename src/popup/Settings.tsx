@@ -783,8 +783,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <DialogActions sx={{ 
                     justifyContent: 'center', 
                     pt: 2,
-                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                    flexDirection: 'row-reverse'
+                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
                 }}>
                     <Button 
                         onClick={handleCloseModal}
