@@ -417,6 +417,12 @@ function analyzeTextDirection(text) {
         return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
     }
 
+    // English-first mixed text that is still Persian-majority and ends RTL
+    // should stay RTL (e.g. "dfdfdfsd fsdf یبکخن ... حن م")
+    if (lastWordIsRTL && totalRTLWords > wordCount / 2) {
+        return 'rtl';
+    }
+
     if (difference <= 10) {
         return firstWordIsRTL ? 'rtl' : 'ltr';
     }
