@@ -61,6 +61,13 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         }
     });
 
+    AQ('[data-row-key^="chat:"] .flex-1').each(function (each) {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk'
+        });
+    });
+
 
 
     

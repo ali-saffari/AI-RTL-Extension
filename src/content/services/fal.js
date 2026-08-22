@@ -30,6 +30,13 @@ export function setFal(rtlAlgorithm = 'advanced_full') {
         );
     }
 
+    AQ('.no-scrollbar.pointer-events-none.whitespace-pre-wrap.font-sans.text-content-strong').each(function () {
+        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            setTextAlign: true
+        });
+    });
+
     AQ('textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]').each(function () {
         if (AQ(this).closest('.monaco-editor, .monaco-editor-background, [class*="cm-editor"]').length) {
             return;
