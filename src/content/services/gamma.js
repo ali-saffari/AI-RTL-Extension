@@ -1,7 +1,7 @@
 // gamma.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setGamma(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -16,7 +16,7 @@ export function setGamma(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -24,7 +24,7 @@ export function setGamma(rtlAlgorithm = 'advanced_full') {
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -38,14 +38,14 @@ export function setGamma(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         AQ(this).on('input keyup', function() {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -58,7 +58,7 @@ export function setGamma(rtlAlgorithm = 'advanced_full') {
             return;
         }
         
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true
@@ -67,7 +67,7 @@ export function setGamma(rtlAlgorithm = 'advanced_full') {
 
      
     AQ(".react-renderer .heading , .react-renderer .title ,.chakra-editable ").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });

@@ -1,7 +1,7 @@
 // google.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
 
 // Default config for Google
 const configDefault = {
@@ -54,14 +54,14 @@ export async function setGoogle(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup paste', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
@@ -73,7 +73,7 @@ export async function setGoogle(rtlAlgorithm = 'advanced_full') {
         if (AQ(this).hasClass('CEpIFc') || AQ(this).find('.CEpIFc').length > 0) {
             return;
         }
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSetImportant',
             processedClass: 'AsOk',
             isContainer: true
@@ -86,7 +86,7 @@ export async function setGoogle(rtlAlgorithm = 'advanced_full') {
             // Skip elements with CEpIFc class
        
             if (!AQ(this).hasClass('AsOk')) {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     processedClass: 'AsOk'
                 });

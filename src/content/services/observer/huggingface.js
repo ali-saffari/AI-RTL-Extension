@@ -1,7 +1,7 @@
 // huggingface.js service functions (Hugging Face - huggingface.co)
 import { addCopyright } from '../../utils/copyright.js';
 import { observeDomSections } from '../../utils/domObserver.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/textDirectionUtils.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"], .ProseMirror';
@@ -47,7 +47,7 @@ function processHuggingFaceInput(element, rtlAlgorithm) {
         return;
     }
 
-    setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, INPUT_OPTIONS);
+    applyRtlToElement(element, rtlAlgorithm, INPUT_OPTIONS);
     AQ(ICON_SELECTOR).removeClass('FontSet');
 
     if (AQ(element).data('rtl-listener-added')) {
@@ -57,7 +57,7 @@ function processHuggingFaceInput(element, rtlAlgorithm) {
 
     AQ(element).on('input keyup paste', function () {
         requestAnimationFrame(() => {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, INPUT_OPTIONS);
+            applyRtlToElement(this, rtlAlgorithm, INPUT_OPTIONS);
             AQ(ICON_SELECTOR).removeClass('FontSet');
         });
     });
@@ -68,7 +68,7 @@ function processHuggingFaceMarkdown(element, rtlAlgorithm) {
         return;
     }
 
-    processTextElementsByRtlAlgorithm(element, rtlAlgorithm, MARKDOWN_OPTIONS);
+    applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_OPTIONS);
     AQ(ICON_SELECTOR).removeClass('FontSet');
 }
 

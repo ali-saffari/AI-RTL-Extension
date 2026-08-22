@@ -24,9 +24,11 @@ let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 let applyAlgorithmToCodeCache = false;
 let flipRtlArrowsCache = false;
 
+const KATEX_SELECTOR = '.katex, .katex-html, .katex-display, .katex-mathml';
+
 const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
     'textarea', 'input', 'script', 'style', 'svg', 'math',
-    '.katex', '.katex-html', '.katex-display', '.ProseMirror'
+    KATEX_SELECTOR, '.ProseMirror'
 ].join(', ');
 
 const CODE_SKIP_ARROW_FLIP_SELECTOR = [
@@ -120,28 +122,75 @@ function logIgnoredIfSensed(el, selector) {
     });
 }
 
-function stripNonAnalyzableContent($tempElement, options = {}) {
-    $tempElement.find('a').remove();
-    $tempElement.find('div.rounded-xl').remove();
-    $tempElement.find('pre, code').remove();
-    $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
-    $tempElement.find(CUSTOM_CODE_BLOCK_SELECTOR).remove();
-    $tempElement.find('button').remove();
-    $tempElement.find('[data-copy="false"]').remove();
-    const ignoreSelector = getIgnoreSelector(options);
-    const root = $tempElement && $tempElement[0];
-    if (ignoreSelector && root) {
-        const ignored = queryIgnoredElements(root, ignoreSelector, false);
-        for (let i = ignored.length - 1; i >= 0; i--) {
-            ignored[i].remove();
+const SKIP_ANALYZABLE_SELECTOR = [
+    'a', 'button', 'script', 'style', 'svg', 'math', 'canvas',
+    'textarea', 'input', 'pre', 'code',
+    'div.rounded-xl',
+    '.cm-content', '.cm-editor', '.md-code-block',
+    '[data-copy="false"]',
+    CUSTOM_CODE_BLOCK_SELECTOR,
+    KATEX_SELECTOR
+].join(', ');
+
+const STRUCTURED_MEDIA_SELECTOR = `${KATEX_SELECTOR}, math, svg, .mermaid, [data-code-block-preview-pane]`;
+
+function isNonAnalyzableElement(el, ignoreSelector) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (el.namespaceURI === 'http://www.w3.org/2000/svg') {
+        return true;
+    }
+    try {
+        if (el.matches(SKIP_ANALYZABLE_SELECTOR)) {
+            return true;
         }
+        if (ignoreSelector && el.matches(ignoreSelector)) {
+            return true;
+        }
+    } catch {
+        return false;
+    }
+    return false;
+}
+
+function collectAnalyzableText(node, ignoreSelector, parts) {
+    if (!node) {
+        return;
+    }
+    if (node.nodeType === 3) {
+        if (node.nodeValue) {
+            parts.push(node.nodeValue);
+        }
+        return;
+    }
+    if (node.nodeType !== 1) {
+        return;
+    }
+    if (isNonAnalyzableElement(node, ignoreSelector)) {
+        return;
+    }
+    const children = node.childNodes;
+    for (let i = 0; i < children.length; i++) {
+        collectAnalyzableText(children[i], ignoreSelector, parts);
     }
 }
 
 function getAnalyzableText($element, options = {}) {
-    const $tempElement = $element.clone();
-    stripNonAnalyzableContent($tempElement, options);
-    return $tempElement.text().trim();
+    const root = unwrapElement($element);
+    if (!root) {
+        return '';
+    }
+    if (root.nodeType === 3) {
+        return (root.nodeValue || '').trim();
+    }
+    const ignoreSelector = getIgnoreSelector(options);
+    const parts = [];
+    const children = root.childNodes;
+    for (let i = 0; i < children.length; i++) {
+        collectAnalyzableText(children[i], ignoreSelector, parts);
+    }
+    return parts.join('').trim();
 }
 
 function isolateIgnoredElements($element, selector) {
@@ -166,8 +215,131 @@ const INNER_DIR_SKIP_SELECTOR = [
     'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
     '[data-language]', '[data-streamdown="code-block"]',
-    '.katex', '.katex-html', '.katex-display'
+    KATEX_SELECTOR
 ].join(', ');
+
+function isKatexClassName(className) {
+    if (!className || typeof className !== 'string') {
+        return false;
+    }
+    return className.split(/\s+/).some((name) => name === 'katex' || name.startsWith('katex-'));
+}
+
+function isKatexTreeElement(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (el.tagName && el.tagName.toLowerCase() === 'math') {
+        return true;
+    }
+    if (isKatexClassName(getElementClassName(el))) {
+        return true;
+    }
+    try {
+        return Boolean(el.closest && el.closest(KATEX_SELECTOR));
+    } catch {
+        return false;
+    }
+}
+
+function containsKatexOrMath(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (isKatexTreeElement(el)) {
+        return true;
+    }
+    try {
+        return Boolean(el.querySelector && el.querySelector(`${KATEX_SELECTOR}, math`));
+    } catch {
+        return false;
+    }
+}
+
+function isSvgTreeElement(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (el.namespaceURI === 'http://www.w3.org/2000/svg') {
+        return true;
+    }
+    const tagName = el.tagName && el.tagName.toLowerCase();
+    if (tagName === 'svg') {
+        return true;
+    }
+    try {
+        return Boolean(el.closest && el.closest('svg, .mermaid, [data-code-block-preview-pane]'));
+    } catch {
+        return false;
+    }
+}
+
+function containsStructuredMarkup(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (isKatexTreeElement(el) || isSvgTreeElement(el)) {
+        return true;
+    }
+    try {
+        return Boolean(el.querySelector && el.querySelector(STRUCTURED_MEDIA_SELECTOR));
+    } catch {
+        return false;
+    }
+}
+
+function skipStructuredMedia($element, processedClass) {
+    lockKatexDirection($element, processedClass);
+    const root = unwrapElement($element);
+    if (!root || !root.querySelectorAll) {
+        return;
+    }
+    const nodes = [];
+    if (root.matches && root.matches('svg, .mermaid, [data-code-block-preview-pane]')) {
+        nodes.push(root);
+    }
+    root.querySelectorAll('svg, .mermaid, [data-code-block-preview-pane]').forEach((node) => {
+        nodes.push(node);
+    });
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (node.tagName && node.tagName.toLowerCase() === 'svg') {
+            node.setAttribute('dir', 'ltr');
+        }
+        if (processedClass) {
+            node.classList.add(processedClass);
+            const descendants = node.querySelectorAll('*');
+            for (let j = 0; j < descendants.length; j++) {
+                descendants[j].classList.add(processedClass);
+            }
+        }
+    }
+}
+
+function lockKatexDirection($element, processedClass) {
+    const root = unwrapElement($element);
+    if (!root || !root.querySelectorAll) {
+        return;
+    }
+    const nodes = [];
+    if (root.matches && root.matches(`${KATEX_SELECTOR}, math`)) {
+        nodes.push(root);
+    }
+    root.querySelectorAll(`${KATEX_SELECTOR}, math`).forEach((node) => {
+        nodes.push(node);
+    });
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        node.setAttribute('dir', 'ltr');
+        if (processedClass) {
+            node.classList.add(processedClass);
+            const descendants = node.querySelectorAll('*');
+            for (let j = 0; j < descendants.length; j++) {
+                descendants[j].classList.add(processedClass);
+            }
+        }
+    }
+}
 
 function isRemoveInnerDirEnabled(options = {}) {
     return options.removeInnerDir === true;
@@ -451,7 +623,7 @@ function processCodeLikeElement($element, element, options = {}) {
     }
 
     const text = $element.text();
-    if (isCodeElementContent($element)) {
+    if (!shouldApplyRtlToCodeBlock(text, $element)) {
         setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
         applyForcedCodeLtr($element);
         return;
@@ -665,29 +837,33 @@ function setTextDirectionAndFont(element, options = {}) {
  */
 function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign) {
     const $element = AQ(element);
+    const el = unwrapElement($element);
     
     // Check if already processed using data attribute
     if ($element.data('rtl-processed')) {
         return;
     }
+
+    // KaTeX keeps real newlines in MathML / TeX annotations. Splitting innerHTML
+    // by those newlines destroys the formula. Wrapping the fragments in <div>
+    // inside a <p> then makes the browser close the paragraph and emit extra <p>s.
+    if (containsStructuredMarkup(el)) {
+        setTextDirectionAndFont(element, { fontClass, setTextAlign });
+        skipStructuredMedia($element);
+        $element.data('rtl-processed', true);
+        return;
+    }
     
     // Process each line separated by <br> tags or line break characters
     const htmlContent = $element.html();
+    const hasNestedElements = Boolean(el && el.children && el.children.length > 0);
+    const hasBrTags = Boolean(htmlContent && /<br\b/i.test(htmlContent));
+    // Only treat \n as a visual break in plain text. Nested HTML (KaTeX, SVG, ...)
+    // often contains newlines that are not rendered as line breaks.
+    const hasTextNodeLineBreaks = Boolean(htmlContent && !hasNestedElements && /[\n\r]/.test(htmlContent));
     
-    // Check for <br> tags or line break characters
-    const hasLineBreaks = htmlContent && (
-        htmlContent.includes('<br') || 
-        /[\n\r]/.test(htmlContent)
-    );
-    
-    if (hasLineBreaks) {
-        // Split by <br> tags and line break characters, then process each part
-        let parts = htmlContent.split(/<br[^>]*>/i);
-        
-        // If no <br> tags but has other line break characters, split by them
-        if (parts.length === 1) {
-            parts = htmlContent.split(/[\n\r]/);
-        }
+    if (hasBrTags || hasTextNodeLineBreaks) {
+        let parts = hasBrTags ? htmlContent.split(/<br[^>]*>/i) : htmlContent.split(/[\n\r]/);
         
 
 
@@ -713,7 +889,9 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
             const uniqueDirections = [...new Set(directions)];
             
             if (uniqueDirections.length > 1) {
-                // Create separate elements for each part with different directions
+                // <p> cannot contain <div>; the parser would close the paragraph.
+                const wrapperTag = el && el.tagName && el.tagName.toLowerCase() === 'p' ? 'span' : 'div';
+                const wrapperStyle = wrapperTag === 'span' ? ' style="display:block"' : '';
                 let newHtml = '';
                 parts.forEach((part, index) => {
                     if (part.trim()) {
@@ -723,7 +901,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                         if (cleanText) {
                             const direction = detectTextDirection(cleanText);
                             const divClass = fontClass ? ` class="${fontClass}"` : '';
-                            newHtml += `<div${divClass} dir="${direction}" data-rtl-processed="true">${part}</div>`;
+                            newHtml += `<${wrapperTag}${divClass} dir="${direction}" data-rtl-processed="true"${wrapperStyle}>${part}</${wrapperTag}>`;
                         }
                     }
                 });
@@ -1249,15 +1427,9 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-        // Skip elements with classes starting with katex- (KaTeX math elements)
-        const hasKatexClass = $element.attr('class') && 
-            $element.attr('class').split(' ').some(className => 
-                className.trim().startsWith('katex-')
-            );
-        
-        if (hasKatexClass) {
-            setDebugAttr($element, 'data-debug-mode', 'katex-element-skipped');
-            // Mark all children as processed without processing them
+        // Skip KaTeX / MathML / SVG (Mermaid charts) — do not rewrite their HTML
+        if (isKatexTreeElement(this) || isSvgTreeElement(this)) {
+            setDebugAttr($element, 'data-debug-mode', 'structured-media-skipped');
             $element.attr("dir", "ltr");
             $element.find('*').addClass(processedClass);
             $element.addClass(processedClass);
@@ -1281,6 +1453,14 @@ function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for paragraph or span elements with line breaks
          if (tagName === 'p' || tagName === 'span' ) {
+            if (containsStructuredMarkup(this)) {
+                setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
+                setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                skipStructuredMedia($element, processedClass);
+                $element.addClass(processedClass);
+                return;
+            }
+
             // Check if element only contains line break elements or whitespace
             const children = $element.children();
             const textContent = $element.text().trim();
@@ -1295,9 +1475,10 @@ function processTextElementsAdvanced(container, options = {}) {
             // Check if element contains only whitespace characters (including \n, \r, spaces, tabs)
             const onlyWhitespace = textContent === '' || /^[\s\n\r\t]+$/.test(textContent);
             
-            // Check if element contains line break characters
-            const containsLineBreaks = /[\n\r]/.test(htmlContent);
-            
+            // Nested HTML (KaTeX, pretty-printed spans) often has \n that are not visual breaks.
+            // Only treat newlines as line breaks when there are no nested elements, or when <br> exists.
+            const hasBrTags = /<br\b/i.test(htmlContent);
+            const containsLineBreaks = hasBrTags || (children.length === 0 && /[\n\r]/.test(htmlContent));
 
   
             if (onlyBrElements || onlyWhitespace || containsLineBreaks) {
@@ -1996,8 +2177,9 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
 }
 
 /**
- * Process text elements based on RTL algorithm
- * @param {jQuery|HTMLElement} element - Element to process
+ * Apply RTL to a large container (markdown, message body, prose).
+ * Walks children, tables, code blocks, and nested sections according to the selected mode.
+ * @param {jQuery|HTMLElement} element - Container to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
  * @param {Object} options - Additional options (optional)
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
@@ -2005,7 +2187,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {boolean} [options.processTables] - For advanced_full: process tables even without isContainer; runs independently of shouldProcess
  * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side
  */
-function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
+function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     try {
     const $element = AQ(element);
 
@@ -2079,7 +2261,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
         
         if (shouldProcess) {
-            // console.log("processTextElementsByRtlAlgorithm advanced_section", currentTextLength, storedLength, lengthDifference);
+            // console.log("applyRtlToContainer advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
             processTablesInContainer($element, {
@@ -2107,7 +2289,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         //             reason = 'No stored length (should not happen)';
         //         }
                 
-        //         console.log('processTextElementsByRtlAlgorithm advanced_section: Skipped processing', {
+        //         console.log('applyRtlToContainer advanced_section: Skipped processing', {
         //             element: $element[0],
         //             currentTextLength,
         //             storedLength,
@@ -2136,7 +2318,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         });
         
         if (shouldProcess) {
-            // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
+            // console.log("applyRtlToContainer advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
 
             const codeOptions = {
@@ -2190,7 +2372,7 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             const { shouldProcess, currentTextLength } = shouldProcessElement($element, options.processedClass);
             
             if (shouldProcess) {
-                // console.log("processTextElementsByRtlAlgorithm first_word tables", currentTextLength, storedLength, lengthDifference);
+                // console.log("applyRtlToContainer first_word tables", currentTextLength, storedLength, lengthDifference);
                 processTablesInContainer($element, {
                     fontClass,
                     processedClass: options.processedClass,
@@ -2239,7 +2421,8 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
 }
 
 /**
- * Set text direction and font based on RTL algorithm
+ * Apply RTL to a single element (textarea, input, title, simple text node).
+ * Sets dir and font on that element only; does not walk nested blocks.
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
  * @param {Object} options - Additional options (optional)
@@ -2247,7 +2430,7 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  */
-function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
+function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     const $element = AQ(element);
     
     // Default options for each algorithm
@@ -2342,8 +2525,8 @@ export {
         processParagraphWithBreaks,
         processTextElementsAdvanced,
         getAttributeTextElements,
-        processTextElementsByRtlAlgorithm,
-        setTextDirectionAndFontByRtlAlgorithm,
+        applyRtlToContainer,
+        applyRtlToElement,
         detectDirectionByAlgorithm,
         setMixedTitleDisplayMode,
         setApplyAlgorithmToCode,

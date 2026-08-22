@@ -1,7 +1,7 @@
 // blackbox.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 // BlackBox service functions
 export function setBlackBox(rtlAlgorithm = 'advanced_full') {
@@ -21,7 +21,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
         AQ(this).data('rtl-listener-added', true);
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -29,7 +29,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup paste', function() {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -38,7 +38,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
 
     // Process prose elements using RTL algorithm
     AQ('.prose').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
             isContainer: true
@@ -47,7 +47,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
 
     // Process cmdk-group-items elements using RTL algorithm
     AQ('[cmdk-group-items]').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -66,7 +66,7 @@ export function setBlackBox(rtlAlgorithm = 'advanced_full') {
         // Add blue scroll styling to parent
         AQ(this).parent().addClass('custom-scrollbar');
 
-        processTextElementsByRtlAlgorithm(AQ(this).parent()[0], rtlAlgorithm, {
+        applyRtlToContainer(AQ(this).parent()[0], rtlAlgorithm, {
             fontClass: 'FontSetImportantGPT',
             processedClass: 'AsOkText',
             isContainer: true

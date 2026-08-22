@@ -1,7 +1,7 @@
 // business-gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 // Global WeakSet to track styled shadow roots across all function calls
 const styledShadowRoots = new WeakSet();
@@ -116,7 +116,7 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
             markdownDocuments.forEach(markdownDoc => {
                 if (!markdownDoc.hasAttribute('data-rtl-processed')) {
                     markdownDoc.setAttribute('data-rtl-processed', 'true');
-                    processTextElementsByRtlAlgorithm(markdownDoc, rtlAlgorithm, {
+                    applyRtlToContainer(markdownDoc, rtlAlgorithm, {
                         fontClass: 'FontSet',
                         processedClass: 'AsOk',
                         isContainer: true,
@@ -131,7 +131,7 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
             proseMirrorElements.forEach(proseMirror => {
                 if (!proseMirror.hasAttribute('data-rtl-listener-added')) {
                     proseMirror.setAttribute('data-rtl-listener-added', 'true');
-                    setTextDirectionAndFontByRtlAlgorithm(proseMirror, rtlAlgorithm, {
+                    applyRtlToElement(proseMirror, rtlAlgorithm, {
                         fontClass: 'FontSet',
                         processedClass: 'AsOk'
                     });
@@ -139,21 +139,21 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
                     // Add event listener for real-time text direction detection
                     proseMirror.addEventListener('input', function() {
                         requestAnimationFrame(() => {
-                            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                            applyRtlToElement(this, rtlAlgorithm, {
                                 fontClass: 'FontSet'
                             });
                         });
                     });
                     proseMirror.addEventListener('keyup', function() {
                         requestAnimationFrame(() => {
-                            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                            applyRtlToElement(this, rtlAlgorithm, {
                                 fontClass: 'FontSet'
                             });
                         });
                     });
                     proseMirror.addEventListener('paste', function() {
                         requestAnimationFrame(() => {
-                            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                            applyRtlToElement(this, rtlAlgorithm, {
                                 fontClass: 'FontSet'
                             });
                         });

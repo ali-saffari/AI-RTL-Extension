@@ -1,7 +1,7 @@
 // ChatGPT service functions
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, processCodeMirrorBlocks } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/textDirectionUtils.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
@@ -52,7 +52,7 @@ function processUserMessageNode(node, rtlAlgorithm) {
     );
 
     userMessages.each(function() {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true
@@ -73,7 +73,7 @@ function processSuggestionNode(node, rtlAlgorithm) {
     if ($node.is('ul.divide-token-border-light')) {
         $node.find('.whitespace-pre-wrap').each(function() {
             if (!AQ(this).hasClass('AsOk')) {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSetGPT',
                     processedClass: 'AsOk'
                 });
@@ -83,7 +83,7 @@ function processSuggestionNode(node, rtlAlgorithm) {
 
     suggestionElements.each(function() {
         if (!AQ(this).hasClass('AsOk')) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSetGPT',
                 processedClass: 'AsOk'
             });
@@ -113,7 +113,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         markdownProcessTimes.set(element, now);
 
         AQ(element).addClass('AsSetAlgorithm');
-        processTextElementsByRtlAlgorithm(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
+        applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
         processCodeMirrorBlocks(element, {
             fontClass: 'FontSetCodeBlocksGPT',
             setTextAlign: true
@@ -202,7 +202,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     }
 
     AQ('.hljs-comment').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
@@ -214,7 +214,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[data-message-author-role="user"]').each(function () {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true
@@ -243,7 +243,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     })
 
     AQ(presentation + '#prosemirror-editor-container').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             rtlClass: 'flex-row-reverse'
@@ -257,14 +257,14 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         AQ(this).data('rtl-listener-added', true);
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
         
         AQ(this).on('keyup paste', function() {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSetGPT',
                 });
             });
@@ -273,7 +273,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
     
     AQ('.text-token-text-secondary span').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });

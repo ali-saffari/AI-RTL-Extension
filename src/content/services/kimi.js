@@ -1,7 +1,7 @@
 // kimi.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setKimi(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -11,7 +11,7 @@ export function setKimi(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown-container elements using RTL algorithm
     AQ('.markdown-container').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true
@@ -20,7 +20,7 @@ export function setKimi(rtlAlgorithm = 'advanced_full') {
 
     // Process paragraph elements with RTL algorithm
     AQ(".user-content , .user-name").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -28,7 +28,7 @@ export function setKimi(rtlAlgorithm = 'advanced_full') {
 
     // Process other common text elements with RTL algorithm
     AQ("body span, body h1, body h2, body h3, body h4, body h5, body h6, .chat-input-editor").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });

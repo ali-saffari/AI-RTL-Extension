@@ -1,7 +1,7 @@
 // github-copilot.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -20,14 +20,14 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
 
         
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
@@ -36,7 +36,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown container elements using RTL algorithm
     AQ('.markdown-body').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,
@@ -49,7 +49,7 @@ export function setGitHubCopilot(rtlAlgorithm = 'advanced_full') {
     
     AQ('[class*="UserMessage"] , [class*="ConversationListV2-module__item"]').each(function (each) {
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });

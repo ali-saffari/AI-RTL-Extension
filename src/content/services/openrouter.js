@@ -1,7 +1,7 @@
 // openrouter.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -12,7 +12,7 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     // Process message content
     AQ('.items-stretch .font-normal').each(function() {
 
-            processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToContainer(this, rtlAlgorithm, {
                 fontClass: 'FontSet FontOpenRouter',
                 processedClass: 'AsOkText',
                 isContainer: true
@@ -23,7 +23,7 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     
 
     AQ('.break-words').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
@@ -44,14 +44,14 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
 
         
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
             });

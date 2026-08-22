@@ -1,7 +1,7 @@
 // Z.ai service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 const IGNORE_SELECTOR = '.thinking-chain-container';
 
@@ -24,7 +24,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOK',
             ignoreSelector: IGNORE_SELECTOR,
@@ -33,7 +33,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true,
                 ignoreSelector: IGNORE_SELECTOR,
@@ -44,7 +44,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
 
     // // Process message content elements
     AQ(' .textGradientDark , .chat-user .rounded-xl').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOK',
             rtlClass: 'AsRtl',
@@ -68,7 +68,7 @@ export function setZai(rtlAlgorithm = 'advanced_full') {
 
     // Process conversation elements using RTL algorithm
     AQ('.chat-assistant').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,

@@ -1,6 +1,6 @@
 // pi.js service functions (Pi - pi.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setPi(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#pi-font-style').length) {
@@ -29,7 +29,7 @@ export function setPi(rtlAlgorithm = 'advanced_full') {
     }
 
     AQ('textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]').each(function () {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             setTextAlign: true
         });
@@ -41,7 +41,7 @@ export function setPi(rtlAlgorithm = 'advanced_full') {
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     setTextAlign: true
                 });
@@ -50,7 +50,7 @@ export function setPi(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[class*="markdown"], .break-anywhere .whitespace-pre-wrap').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,

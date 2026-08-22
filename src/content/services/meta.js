@@ -1,6 +1,6 @@
 // meta.js service functions (Meta AI - meta.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 const IGNORE_SELECTOR = '[data-testid="thinking-status"]';
 
@@ -36,7 +36,7 @@ export function setMeta(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             ignoreSelector: IGNORE_SELECTOR
@@ -44,7 +44,7 @@ export function setMeta(rtlAlgorithm = 'advanced_full') {
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     ignoreSelector: IGNORE_SELECTOR
                 });
@@ -53,7 +53,7 @@ export function setMeta(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[class*="ur-markdown"]').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,

@@ -1,7 +1,7 @@
 // grok.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setGrok(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -12,7 +12,7 @@ export function setGrok(rtlAlgorithm = 'advanced_full') {
 
     // Process response content markdown elements using RTL algorithm
     AQ('.response-content-markdown').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'noFont',
             processedClass: 'AsOk',
             isContainer: true,
@@ -99,8 +99,8 @@ export function activateGrok(rtlAlgorithm = 'advanced_full') {
                     $element.attr('dir', direction);
                     console.log('ProseMirror: Set dir based on placeholder first word:', firstWord, '->', direction);
                 } else if (text) {
-                    // If text exists, use setTextDirectionAndFontByRtlAlgorithm
-                    setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    // If text exists, use applyRtlToElement
+                    applyRtlToElement(this, rtlAlgorithm, {
                         fontClass: 'noFont',
                         processedClass: false,
                         setTextAlign: true,

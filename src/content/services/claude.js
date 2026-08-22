@@ -1,7 +1,7 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement, detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
 
 // Claude service functions
 export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
@@ -21,14 +21,14 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         if (!AQ(this).hasClass("AsOk")) {
             AQ(this).addClass('AsOk FontClaude');
             
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOk'
             });
             
             AQ(this).on('keyup paste input', function() {
                 requestAnimationFrame(() => {
-                    setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    applyRtlToElement(this, rtlAlgorithm, {
                         fontClass: 'FontSet'
                     });
                 });
@@ -62,7 +62,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[data-row-key^="chat:"] .flex-1').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -98,7 +98,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     AQ(' .contents .truncate').each(function (each) {
         // AQ(this).addClass('AsOk FontSet FontClaude');
         
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: false
@@ -106,7 +106,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[data-ask-user-input-banner="true"] , [data-testid="ask-user-answers-card"] ').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: true
@@ -116,7 +116,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
 
     AQ(' .contents .font-base-bold , [data-orientation="horizontal"] button').each(function () {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: true
@@ -131,7 +131,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
     AQ('.standard-markdown , .progressive-markdown , .font-claude-response').each(function (each) {
         // AQ(this).addClass('AsOk FontSet FontClaude');
         
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: true
@@ -149,7 +149,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
         AQ(this).addClass('AsOk FontSet FontClaude');
         
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
             isContainer: true
@@ -158,7 +158,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
     // پیام‌های کاربر
     AQ('[data-testid="user-message"]').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -166,7 +166,7 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 
     // بخش مقاله وسط متن ها
     AQ('.artifact-block-cell .leading-tight , .whitespace-pre-wrap.rounded-lg , .group\\/thumbnail p ').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });

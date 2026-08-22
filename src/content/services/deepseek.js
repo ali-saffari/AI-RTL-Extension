@@ -1,7 +1,7 @@
 // deepseek.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#deepseek-font-style').length) {
@@ -29,14 +29,14 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
@@ -46,7 +46,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     AQ('.ds-markdown').each(function () {
         // AQ(this).addClass('AsOk FontSet FontClaude');
 
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true
@@ -60,7 +60,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
             return;
         }
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             rtlClass: 'AsOkRList'
@@ -68,7 +68,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('._546d736 , .afa34042').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             rtlClass: 'AsOkRList'

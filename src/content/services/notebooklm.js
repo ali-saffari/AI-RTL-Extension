@@ -1,7 +1,7 @@
 // NotebookLM service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 // Helper function to detect text direction based on algorithm
 function detectDirectionByAlgorithm(text, rtlAlgorithm) {
@@ -38,14 +38,14 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
         
         
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
             });
@@ -54,7 +54,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
     // Process input elements with RTL algorithm
     AQ('.projects-header , .mat-title-large , .mat-body-medium , [class*="project-button-"] ').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
@@ -123,7 +123,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
     AQ('.message-text-content , .summary-content , .note-editor , .artifact-content , .elements-container').each(function (each) {
 
         AQ(this).addClass('AsOkNotebooklm');
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,
@@ -137,7 +137,7 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
  
     // Process notebook content elements using RTL algorithm
     // AQ('.notebook-content, .notebook-text, .document-content, .source-content, .summary-content, .generated-content').each(function (each) {
-    //     processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+    //     applyRtlToContainer(this, rtlAlgorithm, {
     //         fontClass: 'FontSet',
     //         processedClass: 'AsOk',
     //         isContainer: true,

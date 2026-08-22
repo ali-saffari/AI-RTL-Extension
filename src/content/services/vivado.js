@@ -1,6 +1,6 @@
 // vivado.js service functions (Vivado Doc Search - vivado.amd.com/chat)
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setVivado(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -20,14 +20,14 @@ export function setVivado(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetVivadoInput',
             processedClass: 'AsOk'
         });
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSetVivadoInput'
                 });
             });
@@ -40,7 +40,7 @@ export function setVivado(rtlAlgorithm = 'advanced_full') {
             '--lobe-markdown-line-height': '29.6px'
         });
 
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSetVivado',
             processedClass: 'AsOkText',
             // isContainer: true,

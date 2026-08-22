@@ -1,7 +1,7 @@
 // copilot.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord , analyzeTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced , setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced , setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 
 // Copilot/Bing service functions
@@ -22,7 +22,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
     // Process all text elements using processTextElementsAdvanced
     AQ('[data-content="ai-message"] .break-words').each(function (each) {
     
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk',
             isContainer: true,
@@ -32,7 +32,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
     });
 
     AQ('[data-content="user-message"] .break-words').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk'
         });
@@ -42,7 +42,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
         AQ('[role="listbox"] [role="option"]').each(function (each) {
             const text = AQ(this).text();
             if (text && text.trim()) {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'CopilotFontSet',
                     processedClass: 'AsOk',
                     rtlClass: 'listboxRtlCopilot'
@@ -59,14 +59,14 @@ export function setItems_copilotBing(rtlAlgorithm) {
         AQ(this).data('rtl-listener-added', true);
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'CopilotFontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'CopilotFontSet',
             });
         });

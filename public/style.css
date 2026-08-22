@@ -6,8 +6,22 @@
     background: red !important;
 }
 
-html:not(.ai-rtl-code-algorithm) .FontSet pre {
-    direction: ltr;
+html:not(.ai-rtl-code-algorithm) .FontSet pre,
+html:not(.ai-rtl-code-algorithm) .FontSetGPT pre,
+html:not(.ai-rtl-code-algorithm) .FontSetImportant pre,
+html:not(.ai-rtl-code-algorithm) .FontSetImportantGPT pre,
+html:not(.ai-rtl-code-algorithm) .CopilotFontSet pre,
+html:not(.ai-rtl-code-algorithm) .FontSet .cm-content,
+html:not(.ai-rtl-code-algorithm) .FontSetGPT .cm-content,
+html:not(.ai-rtl-code-algorithm) .FontSet .md-code-block,
+html:not(.ai-rtl-code-algorithm) .FontSetGPT .md-code-block,
+html:not(.ai-rtl-code-algorithm) .FontSet [data-streamdown="code-block"],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-streamdown="code-block"],
+html:not(.ai-rtl-code-algorithm) .FontSet [data-language],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-language] {
+    direction: ltr !important;
+    text-align: left !important;
+    unicode-bidi: isolate;
 }
 
 .FontSet {

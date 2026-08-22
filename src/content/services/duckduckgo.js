@@ -1,7 +1,7 @@
 // duckduckgo.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -19,14 +19,14 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
         AQ(this).data('rtl-listener-added', true);
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
@@ -34,7 +34,7 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
 
     // Process p elements for text direction detection
     AQ(".PMQFURe7WSKqXJk9e3Jn , .decaGrVqUoziItl4Iarp ").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -50,7 +50,7 @@ export function setDuckduckgo(rtlAlgorithm = 'advanced_full') {
         
         AQ(this).addClass('activateDuckduckgo')
 
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true

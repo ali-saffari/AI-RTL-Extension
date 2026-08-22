@@ -1,6 +1,6 @@
 // clickup.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setClickup(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -16,14 +16,14 @@ export function setClickup(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -31,7 +31,7 @@ export function setClickup(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[data-test="ai-chat-message"], [class*="markdown"], [class*="prose"], .ql-editor').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,
@@ -40,7 +40,7 @@ export function setClickup(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[class*="link-text-inner"], [class*="title__overlay"]').each(function () {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             setTextAlign: true

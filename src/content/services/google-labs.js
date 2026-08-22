@@ -1,6 +1,6 @@
 // google-labs.js service functions (Google Labs - labs.google)
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#google-labs-font-style').length) {
@@ -56,14 +56,14 @@ export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -71,7 +71,7 @@ export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[role="dialog"]').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,
@@ -85,7 +85,7 @@ export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
             AQ(this).find('svg, i, md-icon, [class*="material-icons"], [class*="material-symbols"], [class*="google-symbols"]').length > 0
         );
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: isIconButton ? false : 'FontSet',
             processedClass: 'AsOk',
             setTextAlign: !isIconButton
@@ -96,7 +96,7 @@ export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
     // .dwkBgm برای چت ارسالی هست
     // .fRdnLN برای جواب هست
     AQ('[data-content=""], [class*="markdown"], [class*="prose"], [class*="message"], [class*="answer"], [class*="chat"], .msg-content  ,.dwkBgm  ,.fRdnLN').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,

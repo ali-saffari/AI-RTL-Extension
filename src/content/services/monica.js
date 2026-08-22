@@ -1,7 +1,7 @@
 // monica.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setMonica(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -18,7 +18,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
 
         
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',
             rtlClass: 'AsRtl',
@@ -26,7 +26,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true
             });
@@ -36,7 +36,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
     
     // Process paragraph and name wrapper elements with RTL algorithm
     AQ('body p, [class*="name-wrapper-"]').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',
             rtlClass: 'AsRtl',
@@ -46,7 +46,7 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown elements using RTL algorithm
     AQ('[class*="chat-message-"] [class*="markdown-"]').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,

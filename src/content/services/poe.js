@@ -2,7 +2,7 @@
 
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setPoeCom(rtlAlgorithm = 'advanced_full') {
 
@@ -14,7 +14,7 @@ export function setPoeCom(rtlAlgorithm = 'advanced_full') {
 
     // Process text area and button elements with RTL algorithm
     AQ('[class*="GrowingTextArea_textArea"], [class*="ResendRemixFollowupButton_right"], [class*="ChatHistoryListItem_seenTitle"]').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
@@ -23,7 +23,7 @@ export function setPoeCom(rtlAlgorithm = 'advanced_full') {
     
     // Process markdown container elements using RTL algorithm
     AQ('[class*="Markdown_markdownContainer"]').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,

@@ -1,7 +1,7 @@
 // mistral.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setMistral(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
@@ -19,14 +19,14 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
 
         
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
@@ -34,7 +34,7 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
 
     // Process paragraph elements with RTL algorithm
     AQ('.select-text').each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -46,7 +46,7 @@ export function setMistral(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown-container-style elements using RTL algorithm
     AQ('.markdown-container-style').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true
@@ -72,7 +72,7 @@ export function activateMistral(rtlAlgorithm = 'advanced_full') {
     // Additional processing for ProseMirror elements
     setInterval(() => {
         AQ(".ProseMirror-focused").each(function (each) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOk'
             });

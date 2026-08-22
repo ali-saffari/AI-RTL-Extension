@@ -1,6 +1,6 @@
 // digen.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setduckai(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -20,20 +20,20 @@ export function setduckai(rtlAlgorithm = 'advanced_full') {
         }
         inputElement.data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
         
         inputElement.on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet'
             });
         });
     });
 
     AQ('.FXxDlyKogO69URjNUfji , .whitespace-normal ,.e9Mu29Jb8w2BUtuoSuuC').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             setTextAlign: 'important',

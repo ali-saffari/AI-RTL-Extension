@@ -1,7 +1,7 @@
 // Notion.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm , detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement , detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
 
 // Storage key for Notion collection view direction
 const NOTION_COLLECTION_DIRECTION_KEY = 'notion_collection_direction';
@@ -151,7 +151,7 @@ export function setNotionlm(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown prose elements
     AQ('[role="textbox"]').each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true
@@ -269,14 +269,14 @@ export function activateNotion(rtlAlgorithm = 'advanced_full') {
                 
                 // Add event listener for real-time direction detection
                 $element.on('keyup paste input', function() {
-                    setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                    applyRtlToElement(this, rtlAlgorithm, {
                         fontClass: 'FontSet',
                         setTextAlign: true
                     });
                 });
             }
 
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
             });
@@ -358,14 +358,14 @@ export function activateNotion(rtlAlgorithm = 'advanced_full') {
             
             // Add event listener for real-time direction detection
             $element.on('keyup paste input', function() {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet',
                     setTextAlign: true
                 });
             });
         }
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });

@@ -1,6 +1,6 @@
 // consensus.js service functions (Consensus - consensus.app)
 import { addCopyright } from '../utils/copyright.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setConsensus(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -17,14 +17,14 @@ export function setConsensus(rtlAlgorithm = 'advanced_full') {
         }
         AQ(this).data('rtl-listener-added', true);
 
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
 
         AQ(this).on('input keyup paste', function () {
             requestAnimationFrame(() => {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'FontSet'
                 });
             });
@@ -32,7 +32,7 @@ export function setConsensus(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[class*="NavigationButton_textTruncate"] , .break-words , .truncate ').each(function () {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkCON',
             setTextAlign: true
@@ -44,7 +44,7 @@ export function setConsensus(rtlAlgorithm = 'advanced_full') {
 
 
     AQ('[class*="markdown"], [class*="prose"], [class*="result"], [class*="abstract"], [class*="answer"], .whitespace-pre-wrap ,.whitespace-pre-line').each(function () {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
             isContainer: true,

@@ -1,7 +1,7 @@
 // qwen-coder.js service functions (copy of qwen.js for coder.qwen.ai)
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -12,7 +12,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
     }
     // Process chat messages and input elements
     AQ(".chat-assistant , .user-message , #chat-input ").each(function (each) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOK',
                 setTextAlign: true
@@ -28,7 +28,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
         AQ(this).data('rtl-listener-added', true);
 
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             rtlClass: 'rtlEelemt'
@@ -36,7 +36,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
         
         // Add event listener for real-time text direction detection
         AQ(this).on('input keyup', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 setTextAlign: true,
                 rtlClass: 'rtlEelemt'
@@ -48,7 +48,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
     // Process chat item drag elements
     AQ(".chat-item-drag , .chat-item-drag-link , .task-item-name").each(function (each) {
 
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOK'
             });
@@ -58,7 +58,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
 
     
     AQ(".chat-user-message").each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true
@@ -67,7 +67,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown prose elements
     AQ(".qwen-markdown").each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true
@@ -77,7 +77,7 @@ export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
 
     // Process font primary and scrollbar hidden elements
     AQ(".font-primary ,.scrollbar-hidden").each(function (each) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
             });

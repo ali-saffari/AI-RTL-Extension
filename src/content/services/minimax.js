@@ -1,7 +1,7 @@
 // minimax.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setMinimax(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
@@ -12,7 +12,7 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
     // Process message content
     AQ('.message-content, .message-text, .conversation-message, .chat-message, .content').each(function() {
      
-            processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToContainer(this, rtlAlgorithm, {
                 fontClass: 'FontSet FontMinimax',
                 processedClass: 'AsOkText',
                 isContainer: true
@@ -35,14 +35,14 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
 
         
         
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetImportant',
             processedClass: 'AsRtl'
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSetImportant',
                 setTextAlign: true
             });

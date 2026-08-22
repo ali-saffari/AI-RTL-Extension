@@ -1,6 +1,6 @@
 // youcom.js service functions
 
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm, setTextDirectionAndFontOneTime } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFontOneTime } from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';
 
 export function setYouCom(rtlAlgorithm = 'advanced_full') {
@@ -16,7 +16,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
     AQ(".ebfm092").each(function (each) {
         if (!AQ(this).hasClass("AsRtl")) {
             AQ(this).addClass('AsRtl');
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
             });
@@ -26,7 +26,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process title elements
     AQ("._1bxvbd41").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -36,7 +36,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process history elements
     AQ("._1yjdfrt0").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -45,7 +45,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process sources elements
     AQ("._1g72v5i5 , ._1g72v5i6 , _1ynbgno6 , .jj3gyx7").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             setTextAlign: true
@@ -55,7 +55,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process markdown content if it exists
     AQ(".jfuQrJ").each(function (each) {
-        processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
             isContainer: true,
@@ -65,7 +65,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process dINDbt elements
     AQ(".dINDbt").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -86,14 +86,14 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
         
         if (!AQ(this).hasClass("AsOk")) {
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'CopilotFontSet',
                 processedClass: 'AsOk'
             });
             
             // Add event listener for real-time text direction detection
             AQ(this).on('input keyup', function() {
-                setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+                applyRtlToElement(this, rtlAlgorithm, {
                     fontClass: 'CopilotFontSet'
                 });
             });
@@ -102,7 +102,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process answer parser elements
     AQ(".AnswerParser_AnswerParserSharedStyles__0GZUj").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });
@@ -111,7 +111,7 @@ export function setYouCom(rtlAlgorithm = 'advanced_full') {
 
     // Process answer parser content elements
     AQ(".AnswerParser_TextContainer__z_Iiv ,.AnswerParser_AnswerParserUnorderedList__P_1FW ,.AnswerParser_AnswerParserH4__ghxg8").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk'
         });

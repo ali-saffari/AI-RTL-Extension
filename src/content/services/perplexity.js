@@ -1,7 +1,7 @@
 // perplexity.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 export function setPerplexity(rtlAlgorithm = 'advanced_full') {
     // Add copyright using utility function
@@ -28,7 +28,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
         if (parentGroup.length > 0 && !parentGroup.hasClass("AsRtl")) {
             // Apply RTL to parent group using RTL algorithm
             parentGroup.addClass('AsRtl');
-            setTextDirectionAndFontByRtlAlgorithm(parentGroup[0], rtlAlgorithm, {
+            applyRtlToElement(parentGroup[0], rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
             });
@@ -54,7 +54,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
 
         // چت ها
         AQ('.prose').each(function (each) {
-            processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToContainer(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsOk',
                 isContainer: true,
@@ -89,7 +89,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
                         AQ(codeElement).find('span').each(function() {
                             const spanElement = this;
                             if (!AQ(spanElement).hasClass('AsOk')) {
-                                setTextDirectionAndFontByRtlAlgorithm(spanElement, rtlAlgorithm, {
+                                applyRtlToElement(spanElement, rtlAlgorithm, {
                                     fontClass: 'FontSet',
                                     processedClass: 'AsOk',
                                     setTextAlign: true
@@ -127,7 +127,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
             AQ(this).addClass('AsRtl');
             
             // Apply RTL algorithm
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: 'AsRtl'
             });
@@ -160,7 +160,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
 
     // // Process Related list items
     AQ(".group.flex.interactable.py-sm").each(function (each) {
-        setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsRtl'
         });
@@ -168,7 +168,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
 
     // Process typing suggestions
     // AQ(".grow.block .w-full").each(function (each) {
-    //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //     applyRtlToElement(this, rtlAlgorithm, {
     //         fontClass: 'FontSet FontSetImportant',
     //         processedClass: 'AsRtl'
     //     });
@@ -314,14 +314,14 @@ export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
     // Additional processing for specific elements
     setInterval(() => {
     //     // AQ('[role="textbox"]').each(function (each) {
-    //     //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //     //     applyRtlToElement(this, rtlAlgorithm, {
     //     //         fontClass: 'FontSet',
     //     //         processedClass: 'AsRtl'
     //     //     });
     //     // });
 
         // AQ('[role="textbox"] p').each(function (each) {
-        //     setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+        //     applyRtlToElement(this, rtlAlgorithm, {
         //         fontClass: 'FontSet',
         //         processedClass: 'AsOK'
 
@@ -329,7 +329,7 @@ export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
         // });
 
     //     AQ(".will-change-auto").each(function (each) {
-    //             setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+    //             applyRtlToElement(this, rtlAlgorithm, {
     //                 fontClass: 'FontSet FontSetImportant',
     //                 processedClass: 'AsRtl'
     //             });

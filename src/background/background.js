@@ -1223,11 +1223,6 @@ function setupEventListeners() {
             }
         });
     }
-
-    chrome.runtime.onSuspend.addListener(async () => {
-        devLog('[Events] Runtime suspending');
-        // Analytics cleanup is handled in analytics.js
-    });
 }
 
 
