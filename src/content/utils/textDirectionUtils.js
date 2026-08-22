@@ -31,8 +31,13 @@ const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
 
 const CODE_SKIP_ARROW_FLIP_SELECTOR = [
     'pre', 'code', 'kbd', 'samp',
-    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block'
+    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
+    '[data-language]', '[data-streamdown="code-block"]'
 ].join(', ');
+
+const CUSTOM_CODE_BLOCK_SELECTOR = '[data-language], [data-streamdown="code-block"]';
+const STANDARD_CODE_BLOCK_SELECTOR = 'code, pre, .cm-content, .cm-editor, .md-code-block';
+const CODE_BLOCK_SELECTOR = `${STANDARD_CODE_BLOCK_SELECTOR}, ${CUSTOM_CODE_BLOCK_SELECTOR}`;
 
 const UNICODE_ARROW_FLIP_MAP = {
     '→': '←',
@@ -120,6 +125,7 @@ function stripNonAnalyzableContent($tempElement, options = {}) {
     $tempElement.find('div.rounded-xl').remove();
     $tempElement.find('pre, code').remove();
     $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
+    $tempElement.find(CUSTOM_CODE_BLOCK_SELECTOR).remove();
     $tempElement.find('button').remove();
     $tempElement.find('[data-copy="false"]').remove();
     const ignoreSelector = getIgnoreSelector(options);
@@ -159,6 +165,7 @@ const INNER_DIR_TARGET_SELECTOR = [
 const INNER_DIR_SKIP_SELECTOR = [
     'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
+    '[data-language]', '[data-streamdown="code-block"]',
     '.katex', '.katex-html', '.katex-display'
 ].join(', ');
 
@@ -278,6 +285,14 @@ function applyTextAlignByDirection(target, direction, setTextAlign) {
         return;
     }
     applyTextAlignStyle(target, direction === 'rtl' ? 'right' : 'left', setTextAlign);
+}
+
+function isCustomCodeBlock($element) {
+    const el = unwrapElement($element);
+    if (!el || el.nodeType !== 1 || typeof el.hasAttribute !== 'function') {
+        return false;
+    }
+    return el.hasAttribute('data-language') || el.getAttribute('data-streamdown') === 'code-block';
 }
 
 function flipArrowsInText(text) {
@@ -454,6 +469,21 @@ function processCodeLikeElement($element, element, options = {}) {
 
 function isCodeMirrorCodeBlock($element) {
     return $element.hasClass('cm-content') || $element.hasClass('cm-editor') || $element.hasClass('md-code-block');
+}
+
+function processCodeBlockNode($codeElement, options = {}) {
+    if (isCodeMirrorCodeBlock($codeElement)) {
+        processCodeMirrorBlock($codeElement, $codeElement[0], options);
+        return;
+    }
+    processCodeLikeElement($codeElement, $codeElement[0], options);
+}
+
+function processCodeBlocksInContainer($container, options = {}, includeStandard = true) {
+    const selector = includeStandard ? CODE_BLOCK_SELECTOR : CUSTOM_CODE_BLOCK_SELECTOR;
+    $container.find(selector).add($container.filter(selector)).each(function() {
+        processCodeBlockNode(AQ(this), options);
+    });
 }
 
 function getCodeMirrorTargets($element, $content) {
@@ -1140,7 +1170,7 @@ function processTextElementsAdvanced(container, options = {}) {
         // Handle li elements that are inside ol or ul
         if (tagName === 'li' && ($element.parent().is('ol') || $element.parent().is('ul'))) {
             // Check if li contains pre or code elements
-            const hasPreOrCode = $element.find('pre, code, .cm-content, .cm-editor').length > 0;
+            const hasPreOrCode = $element.find(`pre, code, .cm-content, .cm-editor, ${CUSTOM_CODE_BLOCK_SELECTOR}`).length > 0;
             
             if (hasPreOrCode) {
                 processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
@@ -1155,7 +1185,7 @@ function processTextElementsAdvanced(container, options = {}) {
         // Skip div elements with rounded-xl class (for Copilot code sections),
         // unless they wrap a code editor that should follow the code setting
         if (tagName === 'div' && $element.hasClass('rounded-xl')) {
-            const $innerCode = $element.find('.cm-content, .cm-editor, .md-code-block, pre, code');
+            const $innerCode = $element.find(CODE_BLOCK_SELECTOR);
             if ($innerCode.length) {
                 $innerCode.each(function() {
                     const $inner = AQ(this);
@@ -1210,6 +1240,12 @@ function processTextElementsAdvanced(container, options = {}) {
         // CodeMirror / markdown code editors (ChatGPT cm-content, DeepSeek md-code-block, ...)
         if (tagName === 'div' && isCodeMirrorCodeBlock($element)) {
             processCodeMirrorBlock($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+            return;
+        }
+
+        // Custom code boxes that don't use pre/code (data-language, data-streamdown="code-block")
+        if (isCustomCodeBlock($element)) {
+            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
             return;
         }
 
@@ -1341,13 +1377,8 @@ function processTextElementsAdvanced(container, options = {}) {
                                 // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
                             
 
-                                $li.find('pre, code, .cm-content').each(function() {
-                                    const $inner = AQ(this);
-                                    if ($inner.hasClass('cm-content')) {
-                                        processCodeMirrorBlock($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
-                                    } else {
-                                        processCodeLikeElement($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
-                                    }
+                                $li.find(CODE_BLOCK_SELECTOR).each(function() {
+                                    processCodeBlockNode(AQ(this), { fontClass, setTextAlign, processedClass, codeFontClass });
                                 })
 
                             }
@@ -1799,25 +1830,15 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
 
+            const codeOptions = {
+                fontClass: mergedOptions.fontClass,
+                codeFontClass: mergedOptions.codeFontClass,
+                setTextAlign: mergedOptions.setTextAlign,
+                processedClass: mergedOptions.processedClass
+            };
+
             if (mergedOptions.isContainer) {
-                $element.find('code, pre, .cm-content, .md-code-block').each(function() {
-                    const $codeElement = AQ(this);
-                    if ($codeElement.hasClass('cm-content') || $codeElement.hasClass('md-code-block')) {
-                        processCodeMirrorBlock($codeElement, this, {
-                            fontClass: mergedOptions.fontClass,
-                            codeFontClass: mergedOptions.codeFontClass,
-                            setTextAlign: mergedOptions.setTextAlign,
-                            processedClass: mergedOptions.processedClass
-                        });
-                    } else {
-                        processCodeLikeElement($codeElement, this, {
-                            fontClass: mergedOptions.fontClass,
-                            codeFontClass: mergedOptions.codeFontClass,
-                            setTextAlign: mergedOptions.setTextAlign,
-                            processedClass: mergedOptions.processedClass
-                        });
-                    }
-                });
+                processCodeBlocksInContainer($element, codeOptions, true);
             }
             
             $element.attr('data-algorithm-rtl', 'advanced_full');
@@ -1825,6 +1846,13 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             $element.attr('data-text-length', currentTextLength.toString());
             flipRtlArrowsInTree($element);
         }
+
+        processCodeBlocksInContainer($element, {
+            fontClass: mergedOptions.fontClass,
+            codeFontClass: mergedOptions.codeFontClass,
+            setTextAlign: mergedOptions.setTextAlign,
+            processedClass: mergedOptions.processedClass
+        }, false);
 
         if (mergedOptions.processTables || mergedOptions.isContainer) {
             processTablesInContainer($element, {
