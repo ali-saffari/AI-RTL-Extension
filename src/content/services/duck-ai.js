@@ -36,7 +36,8 @@ export function setduckai(rtlAlgorithm = 'advanced_full') {
         processTextElementsByRtlAlgorithm(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
-            setTextAlign: true
+            setTextAlign: 'important',
+            processTables: true
         });
     });
 }

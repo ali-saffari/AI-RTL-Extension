@@ -241,6 +241,45 @@ function unwrapElement(element) {
     return null;
 }
 
+function isTextAlignEnabled(setTextAlign) {
+    return Boolean(setTextAlign);
+}
+
+function isTextAlignImportant(setTextAlign) {
+    return setTextAlign === 'important';
+}
+
+function applyTextAlignStyle(target, align, setTextAlign) {
+    if (!isTextAlignEnabled(setTextAlign) || !align) {
+        return;
+    }
+    const priority = isTextAlignImportant(setTextAlign) ? 'important' : '';
+    const applyOne = (el) => {
+        if (el && el.nodeType === 1 && el.style) {
+            el.style.setProperty('text-align', align, priority);
+        }
+    };
+
+    if (target && target.nodeType === 1) {
+        applyOne(target);
+        return;
+    }
+    if (target && typeof target.each === 'function') {
+        target.each(function() {
+            applyOne(this);
+        });
+        return;
+    }
+    applyOne(unwrapElement(target));
+}
+
+function applyTextAlignByDirection(target, direction, setTextAlign) {
+    if (direction !== 'rtl' && direction !== 'ltr') {
+        return;
+    }
+    applyTextAlignStyle(target, direction === 'rtl' ? 'right' : 'left', setTextAlign);
+}
+
 function flipArrowsInText(text) {
     if (!text || !FLIPPABLE_ARROW_RE.test(text)) {
         return text;
@@ -487,7 +526,7 @@ function processCodeMirrorBlocks(container, options = {}) {
  * @param {string} options.processedClass - Class to mark processed elements (default: 'AsSet')
  * @param {string} options.fontClass - Font class to apply (optional)
  * @param {string} options.text - Text content to analyze (optional)
- * @param {boolean} options.setTextAlign - Whether to set text alignment (optional)
+ * @param {boolean|'important'} options.setTextAlign - Whether to set text alignment; pass 'important' to use !important
  */
 function setTextDirectionAndFontOneTime(element, options = {}) {
     const {
@@ -521,6 +560,7 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
  * @param {Object} options - Options object
  * @param {string} options.fontClass - Font class to apply (optional)
  * @param {string} options.text - Text content to analyze (optional)
+ * @param {boolean|'important'} options.setTextAlign - Off: false, On: true, with !important: 'important'
  */
 function setTextDirectionAndFont(element, options = {}) {
     const {
@@ -576,13 +616,9 @@ function setTextDirectionAndFont(element, options = {}) {
         }
     }
     
-    // Set text alignment if setTextAlign is enabled
-    if (setTextAlign && finalDirection !== 'auto') {
-        if (finalDirection === 'rtl') {
-            AQ(element).css('text-align', 'right');
-        } else {
-            AQ(element).css('text-align', 'left');
-        }
+    // Set text alignment if setTextAlign is enabled (true or 'important')
+    if (finalDirection !== 'auto') {
+        applyTextAlignByDirection(element, finalDirection, setTextAlign);
     }
 
     if (finalDirection === 'rtl') {
@@ -700,12 +736,14 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
  * @param {string} options.fontClass - Font class to apply (optional, default: 'FontSet')
  * @param {string} options.processedClass - Class to mark processed elements (optional, default: 'AsOk')
  * @param {string} options.siteConfig - Site configuration for specific optimizations (optional)
+ * @param {boolean|'important'} options.setTextAlign - Whether to set text alignment (default: true); pass 'important' to use !important
  */
 export function processTablesInContainer(container, options = {}) {
     const {
         fontClass = 'FontSet',
         processedClass = 'AsOk',
-        siteConfig = null
+        siteConfig = null,
+        setTextAlign = true
     } = options;
     // Find all table elements in the container
 
@@ -802,12 +840,10 @@ export function processTablesInContainer(container, options = {}) {
             }
             
             // Set text alignment for all cells based on table direction
+            applyTextAlignByDirection($table.find('th, td'), tableDirection, setTextAlign);
             if (tableDirection === 'rtl') {
-                $table.find('th, td').css('text-align', 'right');
                 $table.find('.text-left').removeClass('text-left');
                 $table.removeClass('text-left');
-            } else {
-                $table.find('th, td').css('text-align', 'left');
             }
             
             
@@ -875,15 +911,14 @@ export function processTablesInContainer(container, options = {}) {
             }
             
             // Set text alignment for all cells based on table direction
+            applyTextAlignByDirection(
+                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]'),
+                tableDirection,
+                setTextAlign
+            );
             if (tableDirection === 'rtl') {
-                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'right');
-
-
                 $table.find('.text-left').removeClass('text-left');
                 $table.removeClass('text-left');
-
-            } else {
-                $table.find('[role="cell"], [role="columnheader"], [role="rowheader"]').css('text-align', 'left');
             }
             
             // Apply font class to all table elements
@@ -1006,14 +1041,7 @@ function processTextElementsAdvanced(container, options = {}) {
                 $element.addClass(fontClass);
             }
             
-            // Set text alignment if setTextAlign is enabled
-            if (setTextAlign) {
-                if (direction === 'rtl') {
-                    $element.css('text-align', 'right');
-                } else {
-                    $element.css('text-align', 'left');
-                }
-            }
+            applyTextAlignByDirection($element, direction, setTextAlign);
 
 
 
@@ -1062,13 +1090,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         mainContainer.find(tagName).each(function() {
                             AQ(this).attr('dir', majorityDir);
                 
-                            if (setTextAlign) {
-                                if (majorityDir === 'rtl') {
-                                    AQ(this).css('text-align', 'right');
-                                } else {
-                                    AQ(this).css('text-align', 'left');
-                                }
-                            }
+                            applyTextAlignByDirection(this, majorityDir, setTextAlign);
                         });
                         
                         console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount}) - Unified mode`);
@@ -1393,14 +1415,7 @@ function processTextElementsAdvanced(container, options = {}) {
                            
                             AQ(this).attr('dir', listDirection);
                             
-                            // Set text alignment for list items if setTextAlign is enabled
-                            if (setTextAlign) {
-                                if (listDirection === 'rtl') {
-                                    AQ(this).css('text-align', 'right');
-                                } else {
-                                    AQ(this).css('text-align', 'left');
-                                }
-                            }
+                            applyTextAlignByDirection(this, listDirection, setTextAlign);
                            
                         });
                         
@@ -1408,14 +1423,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         setDebugAttr($element, 'data-debug-reason', debugReason);
                         setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
                         
-                        // Set text alignment for the list itself if setTextAlign is enabled
-                        if (setTextAlign) {
-                            if (listDirection === 'rtl') {
-                                $element.css('text-align', 'right');
-                            } else {
-                                $element.css('text-align', 'left');
-                            }
-                        }
+                        applyTextAlignByDirection($element, listDirection, setTextAlign);
                         
                     } else {
                         // برای سایر المان‌ها، پردازش بازگشتی انجام بده
@@ -1548,7 +1556,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     }
 
     const fontClass = options.fontClass || 'FontSet';
-    const setTextAlign = options.setTextAlign === true;
+    const setTextAlign = isTextAlignEnabled(options.setTextAlign);
     const $element = AQ(el);
 
     $element.addClass(`AsSetAlgorithm ${fontClass}`);
@@ -1655,6 +1663,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {Object} options - Additional options (optional)
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
+ * @param {boolean} [options.processTables] - For advanced_full: process tables even without isContainer; runs independently of shouldProcess
  */
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
     try {
@@ -1736,7 +1745,8 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             processTablesInContainer($element, {
                 fontClass: mergedOptions.fontClass,
                 processedClass: mergedOptions.processedClass,
-                siteConfig: mergedOptions.siteConfig
+                siteConfig: mergedOptions.siteConfig,
+                setTextAlign: mergedOptions.setTextAlign
             });
 
             $element.attr('data-algorithm-rtl', 'advanced_section');
@@ -1788,15 +1798,8 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
         if (shouldProcess) {
             // console.log("processTextElementsByRtlAlgorithm advanced_full", currentTextLength, storedLength, lengthDifference);
             setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
-            
-            // Process tables in container for advanced_full algorithm (only if isContainer is true)
-            if (mergedOptions.isContainer) {
-                processTablesInContainer($element, {
-                    fontClass: mergedOptions.fontClass,
-                    processedClass: mergedOptions.processedClass,
-                    siteConfig: mergedOptions.siteConfig
-                });
 
+            if (mergedOptions.isContainer) {
                 $element.find('code, pre, .cm-content, .md-code-block').each(function() {
                     const $codeElement = AQ(this);
                     if ($codeElement.hasClass('cm-content') || $codeElement.hasClass('md-code-block')) {
@@ -1823,6 +1826,15 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             flipRtlArrowsInTree($element);
         }
 
+        if (mergedOptions.processTables || mergedOptions.isContainer) {
+            processTablesInContainer($element, {
+                fontClass: mergedOptions.fontClass,
+                processedClass: mergedOptions.processedClass,
+                siteConfig: mergedOptions.siteConfig,
+                setTextAlign: mergedOptions.setTextAlign
+            });
+        }
+
         applyRemoveInnerDir($element, rtlAlgorithm, mergedOptions);
         if (ignoreSelector) {
             isolateIgnoredElements($element, ignoreSelector);
@@ -1845,7 +1857,8 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
                 processTablesInContainer($element, {
                     fontClass,
                     processedClass: options.processedClass,
-                    siteConfig: options.siteConfig
+                    siteConfig: options.siteConfig,
+                    setTextAlign: options.setTextAlign
                 });
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
@@ -1957,14 +1970,7 @@ function setTextDirectionAndFontByRtlAlgorithm(element, rtlAlgorithm, options = 
                 if (text && text.trim()) {
                     const direction = analyzeTextDirectionFirstWord(text);
                     
-                    // Set text alignment if setTextAlign is enabled
-                    if (options.setTextAlign) {
-                        if (direction === 'rtl') {
-                            $element.css('text-align', 'right');
-                        } else {
-                            $element.css('text-align', 'left');
-                        }
-                    }
+                    applyTextAlignByDirection($element, direction, options.setTextAlign);
                     
                     // Add RTL-specific class if direction is RTL
                     if (rtlClass && direction === 'rtl') {
