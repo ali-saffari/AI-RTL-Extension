@@ -31,6 +31,7 @@ import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_F
 import {
     getDefaultPinOpenSiteMode,
     normalizePinOpenSiteMode,
+    applyPendingFullPinOpenSite,
     PIN_OPEN_SITE_STORAGE_KEY,
     PinOpenSiteMode,
 } from '../utils/pinOpenSite';
@@ -260,6 +261,11 @@ function App() {
                 if (result[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
                     setPinOpenSiteMode(normalizePinOpenSiteMode(result[PIN_OPEN_SITE_STORAGE_KEY]));
                 }
+                void applyPendingFullPinOpenSite().then((applied) => {
+                    if (applied) {
+                        setPinOpenSiteMode('full');
+                    }
+                });
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
                 }

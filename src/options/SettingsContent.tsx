@@ -12,7 +12,7 @@ import OtherSettingsTab from './tabs/OtherSettingsTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
-import { getDefaultPinOpenSiteMode, normalizePinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY, PinOpenSiteMode } from '../utils/pinOpenSite';
+import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, normalizePinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY, PinOpenSiteMode } from '../utils/pinOpenSite';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -100,6 +100,11 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (result[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
                     setPinOpenSiteMode(normalizePinOpenSiteMode(result[PIN_OPEN_SITE_STORAGE_KEY]));
                 }
+                void applyPendingFullPinOpenSite().then((applied) => {
+                    if (applied) {
+                        setPinOpenSiteMode('full');
+                    }
+                });
                 // Use manualRtlSettings
                 const settings = result.manualRtlSettings;
                 if (settings) {

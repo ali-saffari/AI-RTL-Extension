@@ -2,6 +2,7 @@
 import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
 import { hasHostPermission } from '../utils/hasHostPermission.js';
+import { applyPendingFullPinOpenSite } from '../utils/pinOpenSite';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -1205,6 +1206,13 @@ function setupEventListeners() {
 
     if (chrome.permissions?.onAdded) {
         chrome.permissions.onAdded.addListener(async (perms) => {
+            if (perms?.permissions?.includes('tabs')) {
+                try {
+                    await applyPendingFullPinOpenSite();
+                } catch (error) {
+                    devError('[Background] Error applying pin-open-site after tabs permission:', error);
+                }
+            }
             if (!perms?.origins?.length) {
                 return;
             }

@@ -483,64 +483,6 @@ const Settings: React.FC<SettingsProps> = ({
                     </Box>
                 </Paper>
 
-                {/* تنظیمات متن حمایت */}
-                <Paper elevation={0} sx={{ 
-                    m: 2, 
-                    p: 2, 
-                    borderRadius: 1,
-                    background: isDarkMode ? '#2f2f41' : '#ffffff'
-                }}>
-                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
-                        <Typography variant="h6" sx={{ 
-                            fontWeight: 600, 
-                            color: 'primary.main',
-                            mb: 0.5
-                        }}>
-                            تنظیمات نمایش متن حمایت
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                            color: 'text.secondary',
-                            fontSize: '0.8rem'
-                        }}>
-                            .این متن نشان‌دهنده فعال بودن افزونه روی سایت است. اگر نمایش آن باعث اذیت شدن شما می‌شود، می‌توانید آن را غیرفعال کنید
-                        </Typography>
-                    </Box>
-                    
-                    <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
-                    }}>
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="body1" sx={{ 
-                                fontWeight: 500, 
-                                fontSize: '0.95rem',
-                                color: 'text.primary'
-                            }}>
-                                مخفی کردن متن حمایت
-                            </Typography>
-                     
-                        </Box>
-                        <Switch
-                            checked={supportHide}
-                            onChange={(e) => onSupportChange(e.target.checked)}
-                            data-settings-switch="true"
-                            sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                },
-                            }}
-                        />
-                    </Box>
-                </Paper>
-
                 {/* تنظیمات چینش دستی */}
                 <Paper elevation={0} sx={{ 
                     m: 2, 
@@ -710,6 +652,64 @@ const Settings: React.FC<SettingsProps> = ({
                             </Button>
                             {' '}مراجعه کنید
                         </Typography>
+                    </Box>
+                </Paper>
+
+                {/* تنظیمات متن حمایت */}
+                <Paper elevation={0} sx={{ 
+                    m: 2, 
+                    p: 2, 
+                    borderRadius: 1,
+                    background: isDarkMode ? '#2f2f41' : '#ffffff'
+                }}>
+                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ 
+                            fontWeight: 600, 
+                            color: 'primary.main',
+                            mb: 0.5
+                        }}>
+                            تنظیمات نمایش متن حمایت
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                            color: 'text.secondary',
+                            fontSize: '0.8rem'
+                        }}>
+                            .این متن نشان‌دهنده فعال بودن افزونه روی سایت است. اگر نمایش آن باعث اذیت شدن شما می‌شود، می‌توانید آن را غیرفعال کنید
+                        </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                    }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="body1" sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.95rem',
+                                color: 'text.primary'
+                            }}>
+                                مخفی کردن متن حمایت
+                            </Typography>
+                     
+                        </Box>
+                        <Switch
+                            checked={supportHide}
+                            onChange={(e) => onSupportChange(e.target.checked)}
+                            data-settings-switch="true"
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                            }}
+                        />
                     </Box>
                 </Paper>
                 

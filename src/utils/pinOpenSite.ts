@@ -1,6 +1,7 @@
 import { isFirefoxRuntime } from './isFirefox';
 
 export const PIN_OPEN_SITE_STORAGE_KEY = 'pinOpenSiteInList';
+export const PIN_OPEN_SITE_PENDING_FULL_KEY = 'pinOpenSitePendingFull';
 
 export type PinOpenSiteMode = 'off' | 'limited' | 'full';
 
@@ -79,6 +80,50 @@ export async function requestTabsPermission() {
 
     try {
         return await chrome.permissions.request({ permissions: ['tabs'] });
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Persist "full" before chrome.permissions.request().
+ * The extension popup closes when Chrome shows the permission prompt, so the
+ * click-handler never gets to save the setting after a successful grant.
+ */
+export function rememberFullPinOpenSiteIntent() {
+    try {
+        void chrome.storage.sync.set({ [PIN_OPEN_SITE_STORAGE_KEY]: 'full' });
+        void chrome.storage.local.set({ [PIN_OPEN_SITE_PENDING_FULL_KEY]: true });
+    } catch {
+        // ignore
+    }
+}
+
+export async function clearFullPinOpenSiteIntent() {
+    try {
+        await chrome.storage.local.remove(PIN_OPEN_SITE_PENDING_FULL_KEY);
+    } catch {
+        // ignore
+    }
+}
+
+export async function applyPendingFullPinOpenSite(): Promise<boolean> {
+    if (isFirefoxRuntime()) {
+        return false;
+    }
+
+    try {
+        const [hasTabs, local] = await Promise.all([
+            hasTabsPermission(),
+            chrome.storage.local.get(PIN_OPEN_SITE_PENDING_FULL_KEY),
+        ]);
+        if (!hasTabs || local[PIN_OPEN_SITE_PENDING_FULL_KEY] !== true) {
+            return false;
+        }
+
+        await chrome.storage.sync.set({ [PIN_OPEN_SITE_STORAGE_KEY]: 'full' });
+        await clearFullPinOpenSiteIntent();
+        return true;
     } catch {
         return false;
     }

@@ -34,6 +34,8 @@ import {
     PinOpenSiteMode,
     hasTabsPermission,
     normalizePinOpenSiteMode,
+    rememberFullPinOpenSiteIntent,
+    clearFullPinOpenSiteIntent,
     requestTabsPermission,
 } from '../../utils/pinOpenSite';
 import PinOpenSiteModeSelect from '../../components/PinOpenSiteModeSelect';
@@ -82,13 +84,18 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     };
 
     const handleRequestPinSitePermission = async () => {
+        const previousMode = pinOpenSiteMode;
+        rememberFullPinOpenSiteIntent();
+        onPinOpenSiteModeChange('full');
         const granted = await requestTabsPermission();
         if (granted) {
             setPinSitePermissionOpen(false);
-            onPinOpenSiteModeChange('full');
+            void clearFullPinOpenSiteIntent();
             return;
         }
         setPinSitePermissionOpen(false);
+        onPinOpenSiteModeChange(previousMode);
+        void clearFullPinOpenSiteIntent();
     };
 
     // Export settings

@@ -23,6 +23,8 @@ import { isFirefoxRuntime } from '../utils/isFirefox';
 import {
     PinOpenSiteMode,
     hasTabsPermission as checkTabsPermission,
+    rememberFullPinOpenSiteIntent,
+    clearFullPinOpenSiteIntent,
     requestTabsPermission,
 } from '../utils/pinOpenSite';
 import PinOpenSiteModeSelect from '../components/PinOpenSiteModeSelect';
@@ -221,14 +223,19 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     };
 
     const handleRequestPinSitePermission = async () => {
+        const previousMode = pinOpenSiteMode;
+        rememberFullPinOpenSiteIntent();
+        onPinOpenSiteModeChange('full');
         const granted = await requestTabsPermission();
         if (granted) {
             setHasTabsPermission(true);
             setPinSitePermissionOpen(false);
-            onPinOpenSiteModeChange('full');
+            void clearFullPinOpenSiteIntent();
             return;
         }
         setPinSitePermissionOpen(false);
+        onPinOpenSiteModeChange(previousMode);
+        void clearFullPinOpenSiteIntent();
     };
 
     return (
@@ -850,44 +857,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography className="quick-settings-label">مخفی کردن متن حمایت</Typography>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 0.35, lineHeight: 1.55 }}>
-                                نشان‌دهنده فعال بودن افزونه
-                            </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
-                            <Typography
-                                sx={{
-                                    fontSize: '0.65rem',
-                                    fontWeight: 600,
-                                    color: supportHide ? muted : accent,
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {supportHide ? 'مخفی شده' : 'در حال نمایش'}
-                            </Typography>
-                            <Switch
-                                size="small"
-                                checked={supportHide}
-                                onChange={(event) => onSupportChange(event.target.checked)}
-                                data-settings-switch="true"
-                                sx={switchSx}
-                                inputProps={{ 'aria-label': 'مخفی کردن متن حمایت' }}
-                            />
-                        </Box>
-                    </Box>
-                </Box>
-
-                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                        }}
-                    >
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
                                 <Typography className="quick-settings-label">چینش دستی</Typography>
                                 <ExperimentalBadge isDarkMode={isDarkMode} />
@@ -936,6 +905,44 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 فعال‌سازی
                             </Button>
                         )}
+                    </Box>
+                </Box>
+
+                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                        }}
+                    >
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography className="quick-settings-label">مخفی کردن متن حمایت</Typography>
+                            <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 0.35, lineHeight: 1.55 }}>
+                                نشان‌دهنده فعال بودن افزونه
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                            <Typography
+                                sx={{
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    color: supportHide ? muted : accent,
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {supportHide ? 'مخفی شده' : 'در حال نمایش'}
+                            </Typography>
+                            <Switch
+                                size="small"
+                                checked={supportHide}
+                                onChange={(event) => onSupportChange(event.target.checked)}
+                                data-settings-switch="true"
+                                sx={switchSx}
+                                inputProps={{ 'aria-label': 'مخفی کردن متن حمایت' }}
+                            />
+                        </Box>
                     </Box>
                 </Box>
             </Box>
