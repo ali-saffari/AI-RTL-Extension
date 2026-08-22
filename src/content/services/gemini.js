@@ -1,7 +1,7 @@
 // gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { observeDomSections } from '../utils/domObserver.js';
-import { processTextElementsByRtlAlgorithm, setTextDirectionAndFontByRtlAlgorithm } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
 const MARKDOWN_SELECTOR = [
     '.markdown-main-panel',
@@ -9,13 +9,13 @@ const MARKDOWN_SELECTOR = [
     '.research-step-description'
 ].join(', ');
 
-const FOLLOW_UP_SELECTOR = '.follow-up-container.hide-from-message-actions';
-
-const FOLLOW_UP_TEXT_SELECTOR = [
-    '.follow-up-container.hide-from-message-actions button',
-    '.follow-up-container.hide-from-message-actions p',
-    '.follow-up-container.hide-from-message-actions span'
+const FOLLOW_UP_SELECTOR = [
+    '.follow-up-text',
+    '.follow-up-container.hide-from-message-actions'
 ].join(', ');
+
+const FOLLOW_UP_TEXT_SELECTOR = '.follow-up-text';
+const FOLLOW_UP_INNER_SELECTOR = 'button, p, span, .follow-up-text';
 
 const INPUT_SELECTOR = '.ql-editor, .ql-editor p';
 const FONT_SELECTOR = [
@@ -90,22 +90,35 @@ function invalidateStaleGeminiRtl(element) {
     }
 }
 
+function collectFollowUpTextTargets(element) {
+    const $el = AQ(element);
+
+    if ($el.is(FOLLOW_UP_TEXT_SELECTOR)) {
+        return $el;
+    }
+
+    const $texts = $el.find(FOLLOW_UP_TEXT_SELECTOR);
+    if ($texts.length) {
+        return $texts;
+    }
+
+    return $el.is(FOLLOW_UP_INNER_SELECTOR)
+        ? $el
+        : $el.find(FOLLOW_UP_INNER_SELECTOR);
+}
+
 function processGeminiFollowUp(element, rtlAlgorithm) {
     runSafely(() => {
-        const $el = AQ(element);
-        const $targets = $el.is(FOLLOW_UP_TEXT_SELECTOR)
-            ? $el
-            : $el.find(FOLLOW_UP_TEXT_SELECTOR).add($el.filter(FOLLOW_UP_TEXT_SELECTOR));
-
-        $targets.each(function () {
-            const text = AQ(this).text().trim();
+        collectFollowUpTextTargets(element).each(function () {
+            const $target = AQ(this);
+            const text = $target.text().trim();
             if (!text) {
                 return;
             }
             invalidateStaleGeminiRtl(this);
-            setTextDirectionAndFontByRtlAlgorithm(this, rtlAlgorithm, {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                processedClass: 'AsOk',
+                processedClass: false,
                 setTextAlign: true
             });
         });
@@ -115,7 +128,7 @@ function processGeminiFollowUp(element, rtlAlgorithm) {
 function processGeminiMarkdown(element, rtlAlgorithm) {
     runSafely(() => {
         invalidateStaleGeminiRtl(element);
-        processTextElementsByRtlAlgorithm(element, rtlAlgorithm, MARKDOWN_OPTIONS);
+        applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_OPTIONS);
     });
 }
 
@@ -128,7 +141,7 @@ function processGeminiInput(element, rtlAlgorithm) {
         }
 
         const applyInputDir = (node) => {
-            setTextDirectionAndFontByRtlAlgorithm(node, rtlAlgorithm, {
+            applyRtlToElement(node, rtlAlgorithm, {
                 fontClass: 'FontSet',
                 processedClass: false,
                 setTextAlign: true
