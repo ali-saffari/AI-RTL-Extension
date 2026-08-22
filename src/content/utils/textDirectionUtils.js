@@ -5,6 +5,7 @@
 
 // Import analysis functions from analyzeDirection.js
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
+import { isRtlEngineActive, restoreTrackedElement, runWhileRestoring } from './originalState.js';
 
 // Debug flag - set to false for release builds
 const DEBUG_MODE = false;
@@ -23,6 +24,9 @@ const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
 let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 let applyAlgorithmToCodeCache = false;
 let flipRtlArrowsCache = false;
+let activeRtlAlgorithmCache = 'advanced_full';
+const flippedArrowOriginals = new WeakMap();
+const flippedArrowNodes = new Set();
 
 const KATEX_SELECTOR = '.katex, .katex-html, .katex-display, .katex-mathml';
 
@@ -388,6 +392,33 @@ function setMixedTitleDisplayMode(mode) {
     mixedTitleDisplayModeCache = mode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 }
 
+function setActiveRtlAlgorithm(mode) {
+    activeRtlAlgorithmCache = mode || 'advanced_full';
+}
+
+function getActiveRtlAlgorithm() {
+    return activeRtlAlgorithmCache || 'advanced_full';
+}
+
+function resolveRtlAlgorithm(passed) {
+    return activeRtlAlgorithmCache || passed || 'advanced_full';
+}
+
+function resetRtlDomCaches() {
+    lockedEditorCssById.clear();
+    lockedBlockquoteOriginals.clear();
+    lockedEditorSeq = 0;
+    flippedArrowNodes.clear();
+    const lockedStyle = typeof document !== 'undefined' && document.getElementById(LOCKED_EDITOR_STYLE_ID);
+    if (lockedStyle && lockedStyle.parentNode) {
+        lockedStyle.parentNode.removeChild(lockedStyle);
+    }
+    const cmStyle = typeof document !== 'undefined' && document.getElementById(CM_DIR_STYLE_ID);
+    if (cmStyle && cmStyle.parentNode) {
+        cmStyle.parentNode.removeChild(cmStyle);
+    }
+}
+
 function setApplyAlgorithmToCode(enabled) {
     applyAlgorithmToCodeCache = enabled === true;
     if (typeof document !== 'undefined' && document.documentElement) {
@@ -562,16 +593,139 @@ function flipRtlArrowsInTree(element) {
     for (const node of nodes) {
         const next = flipArrowsInText(node.nodeValue);
         if (next !== node.nodeValue) {
+            if (!flippedArrowOriginals.has(node)) {
+                flippedArrowOriginals.set(node, node.nodeValue);
+                flippedArrowNodes.add(node);
+            }
             node.nodeValue = next;
         }
     }
 }
 
+function restoreFlippedArrowsInPage() {
+    flippedArrowNodes.forEach((node) => {
+        const original = flippedArrowOriginals.get(node);
+        if (original !== undefined && node.parentNode) {
+            node.nodeValue = original;
+        }
+        flippedArrowOriginals.delete(node);
+    });
+    flippedArrowNodes.clear();
+}
+
+function applyLiveFlipRtlArrowsSetting(enabled) {
+    setFlipRtlArrows(enabled);
+    if (typeof document === 'undefined' || !document.body || !isRtlEngineActive()) {
+        return;
+    }
+    if (enabled) {
+        flipRtlArrowsInTree(document.body);
+        return;
+    }
+    restoreFlippedArrowsInPage();
+}
+
+function getLiveCodeProcessOptions() {
+    const isGpt = Boolean(document.body && document.body.classList.contains('FontSetGPT'));
+    return {
+        fontClass: isGpt ? 'FontSetGPT' : 'FontSet',
+        codeFontClass: isGpt ? 'FontSetCodeBlocksGPT' : 'FontSet',
+        setTextAlign: true
+    };
+}
+
+function refreshLockedEditorsForCodeSetting() {
+    if (typeof document === 'undefined' || !document.body) {
+        return;
+    }
+    const options = getLiveCodeProcessOptions();
+    document.querySelectorAll('.ProseMirror.markdown[contenteditable]').forEach((el) => {
+        const editorId = el.getAttribute('data-ai-rtl-editor');
+        if (editorId) {
+            lockedEditorCssById.delete(editorId);
+            el.removeAttribute('data-ai-rtl-sig');
+        }
+        processLockedEditorByCss(el, getActiveRtlAlgorithm(), options);
+    });
+}
+
 function applyForcedCodeLtr($element) {
     $element.attr('dir', 'ltr');
+    $element.attr('data-direction', 'ltr');
     $element.css('text-align', 'left');
     $element.addClass('AsSetLtr');
     $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT');
+    const el = unwrapElement($element);
+    if (el && el.style) {
+        el.style.setProperty('text-align', 'left');
+    }
+}
+
+function restoreCodeElementToOriginal(el) {
+    if (!el || el.nodeType !== 1) {
+        return;
+    }
+    if (restoreTrackedElement(el, { skipInnerHTML: true })) {
+        return;
+    }
+    runWhileRestoring(() => {
+        if (el.hasAttribute('data-ai-rtl-orig-dir')) {
+            const originalDir = el.getAttribute('data-ai-rtl-orig-dir');
+            if (originalDir) {
+                el.setAttribute('dir', originalDir);
+            } else {
+                el.removeAttribute('dir');
+            }
+            el.removeAttribute('data-ai-rtl-orig-dir');
+        } else {
+            el.removeAttribute('dir');
+        }
+        el.removeAttribute('data-direction');
+        el.classList.remove('AsSetLtr', 'FontSetCode', 'FontSetCodeBlocksGPT');
+        if (el.style) {
+            el.style.removeProperty('text-align');
+        }
+        if (el.hasAttribute('class') && !String(el.getAttribute('class') || '').trim()) {
+            el.removeAttribute('class');
+        }
+        if (el.hasAttribute('style') && !String(el.getAttribute('style') || '').trim()) {
+            el.removeAttribute('style');
+        }
+    });
+}
+
+function restoreCodeBlocksToOriginal() {
+    if (typeof document === 'undefined' || !document.body) {
+        return;
+    }
+
+    const blocks = document.body.querySelectorAll(CODE_BLOCK_SELECTOR);
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        restoreCodeElementToOriginal(block);
+        const nested = block.querySelectorAll('[dir], [data-direction], [data-ai-rtl-orig-dir], .AsSetLtr, .cm-line, code, pre');
+        for (let j = 0; j < nested.length; j++) {
+            restoreCodeElementToOriginal(nested[j]);
+        }
+    }
+
+    document.body.querySelectorAll('.cm-line[dir], .cm-content[dir], code.AsSetLtr, pre.AsSetLtr').forEach(restoreCodeElementToOriginal);
+}
+
+function applyLiveCodeAlgorithmSetting(enabled) {
+    setApplyAlgorithmToCode(enabled);
+    if (typeof document === 'undefined' || !document.body || !isRtlEngineActive()) {
+        return;
+    }
+    if (!enabled) {
+        restoreCodeBlocksToOriginal();
+        refreshLockedEditorsForCodeSetting();
+        return;
+    }
+    const options = getLiveCodeProcessOptions();
+    processCodeBlocksInContainer(AQ(document.body), options, true);
+    processCodeMirrorBlocks(document.body, options);
+    refreshLockedEditorsForCodeSetting();
 }
 
 const CM_DIR_STYLE_ID = 'ai-rtl-cm-code-direction';
@@ -617,6 +771,9 @@ function shouldApplyRtlToCodeBlock(text, $element) {
 }
 
 function processCodeLikeElement($element, element, options = {}) {
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        return;
+    }
     const { fontClass, setTextAlign, processedClass } = options;
     if (processedClass) {
         $element.addClass(processedClass);
@@ -652,6 +809,9 @@ function processCodeBlockNode($codeElement, options = {}) {
 }
 
 function processCodeBlocksInContainer($container, options = {}, includeStandard = true) {
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        return;
+    }
     const selector = includeStandard ? CODE_BLOCK_SELECTOR : CUSTOM_CODE_BLOCK_SELECTOR;
     $container.find(selector).add($container.filter(selector)).each(function() {
         processCodeBlockNode(AQ(this), options);
@@ -687,6 +847,9 @@ function applyCodeBlockDirection($targets, direction, fontClass) {
 }
 
 function processCodeMirrorBlock($element, element, options = {}) {
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        return;
+    }
     const { fontClass, processedClass, codeFontClass } = options;
     const blockFontClass = codeFontClass || fontClass;
     const $content = $element.hasClass('cm-content')
@@ -714,6 +877,9 @@ function processCodeMirrorBlock($element, element, options = {}) {
 }
 
 function processCodeMirrorBlocks(container, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     const $root = container ? AQ(container) : AQ(document);
     $root.find('.cm-content, .md-code-block').add($root.filter('.cm-content, .md-code-block')).each(function() {
         processCodeMirrorBlock(AQ(this), this, options);
@@ -731,6 +897,9 @@ function processCodeMirrorBlocks(container, options = {}) {
  * @param {boolean|'important'} options.setTextAlign - Whether to set text alignment; pass 'important' to use !important
  */
 function setTextDirectionAndFontOneTime(element, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     const {
         processedClass = 'AsSet',
         fontClass = 'FontSet',
@@ -765,6 +934,9 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
  * @param {boolean|'important'} options.setTextAlign - Off: false, On: true, with !important: 'important'
  */
 function setTextDirectionAndFont(element, options = {}) {
+    if (!isRtlEngineActive()) {
+        return 'auto';
+    }
     const {
         fontClass = 'FontSet',
         text: providedText = null,
@@ -836,6 +1008,9 @@ function setTextDirectionAndFont(element, options = {}) {
  * @param {string} fontClass - Font class to apply (optional)
  */
 function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     const $element = AQ(element);
     const el = unwrapElement($element);
     
@@ -947,6 +1122,9 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
  * @param {boolean|'important'} options.setTextAlign - Whether to set text alignment (default: true); pass 'important' to use !important
  */
 export function processTablesInContainer(container, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     const {
         fontClass = 'FontSet',
         processedClass = 'AsOk',
@@ -1150,6 +1328,9 @@ export function processTablesInContainer(container, options = {}) {
  * @param {boolean} isContainer - Whether this is a container element (optional)
  */
 function processTextElementsAdvanced(container, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     try {
     let {
         fontClass = 'FontSet',
@@ -2067,6 +2248,10 @@ function majorityDirection(directions) {
  * Assigns an id on the root, then targets p:nth-of-type, h3:nth-of-type, ...
  */
 function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
+    if (!isRtlEngineActive()) {
+        return false;
+    }
+    rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     const el = element && element.jquery ? element[0] : element;
     if (!isLockedMarkdownEditor(el) || rtlAlgorithm !== 'advanced_section') {
         return false;
@@ -2188,6 +2373,10 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side
  */
 function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
+    rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     try {
     const $element = AQ(element);
 
@@ -2431,6 +2620,10 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
  * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  */
 function applyRtlToElement(element, rtlAlgorithm, options = {}) {
+    if (!isRtlEngineActive()) {
+        return;
+    }
+    rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     const $element = AQ(element);
     
     // Default options for each algorithm
@@ -2531,6 +2724,11 @@ export {
         setMixedTitleDisplayMode,
         setApplyAlgorithmToCode,
         setFlipRtlArrows,
+        applyLiveCodeAlgorithmSetting,
+        applyLiveFlipRtlArrowsSetting,
+        setActiveRtlAlgorithm,
+        getActiveRtlAlgorithm,
+        resetRtlDomCaches,
         processCodeMirrorBlocks,
         isLockedMarkdownEditor,
         processLockedEditorByCss

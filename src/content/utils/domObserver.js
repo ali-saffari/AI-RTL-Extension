@@ -4,6 +4,8 @@ const DEFAULT_OBSERVE = {
     characterData: true,
 };
 
+const liveHandles = new Set();
+
 function toElement(node) {
     if (!node) {
         return null;
@@ -160,8 +162,12 @@ export function observeDomSections(sections, options = {}) {
         idleMs: section.idleMs ?? idleMs,
     }));
     let active = false;
+    let alive = true;
 
     const flushSection = (index, { fromIdle = false } = {}) => {
+        if (!alive) {
+            return;
+        }
         const section = sections[index];
         const state = states[index];
         const source = state.pending.size ? state.pending : fromIdle ? state.lastElements : [];
@@ -304,8 +310,9 @@ export function observeDomSections(sections, options = {}) {
         document.addEventListener('DOMContentLoaded', tryStart, { once: true });
     }
 
-    return {
+    const handle = {
         disconnect() {
+            alive = false;
             active = false;
             states.forEach((state) => {
                 clearTimeout(state.debounceTimer);
@@ -315,7 +322,21 @@ export function observeDomSections(sections, options = {}) {
                 state.lastElements = [];
             });
             observer.disconnect();
+            liveHandles.delete(handle);
         },
         observer,
     };
+    liveHandles.add(handle);
+    return handle;
+}
+
+export function disconnectAllDomObservers() {
+    Array.from(liveHandles).forEach((handle) => {
+        try {
+            handle.disconnect();
+        } catch {
+            // Ignore
+        }
+    });
+    liveHandles.clear();
 }

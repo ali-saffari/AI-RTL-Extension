@@ -11,14 +11,25 @@ html:not(.ai-rtl-code-algorithm) .FontSetGPT pre,
 html:not(.ai-rtl-code-algorithm) .FontSetImportant pre,
 html:not(.ai-rtl-code-algorithm) .FontSetImportantGPT pre,
 html:not(.ai-rtl-code-algorithm) .CopilotFontSet pre,
+html:not(.ai-rtl-code-algorithm) .FontSet code,
+html:not(.ai-rtl-code-algorithm) .FontSetGPT code,
+html:not(.ai-rtl-code-algorithm) .FontSetImportant code,
+html:not(.ai-rtl-code-algorithm) .FontSetImportantGPT code,
+html:not(.ai-rtl-code-algorithm) .CopilotFontSet code,
 html:not(.ai-rtl-code-algorithm) .FontSet .cm-content,
 html:not(.ai-rtl-code-algorithm) .FontSetGPT .cm-content,
+html:not(.ai-rtl-code-algorithm) .FontSet .cm-line,
+html:not(.ai-rtl-code-algorithm) .FontSetGPT .cm-line,
 html:not(.ai-rtl-code-algorithm) .FontSet .md-code-block,
 html:not(.ai-rtl-code-algorithm) .FontSetGPT .md-code-block,
 html:not(.ai-rtl-code-algorithm) .FontSet [data-streamdown="code-block"],
 html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-streamdown="code-block"],
 html:not(.ai-rtl-code-algorithm) .FontSet [data-language],
-html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-language] {
+html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-language],
+html:not(.ai-rtl-code-algorithm) .FontSet pre [dir],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT pre [dir],
+html:not(.ai-rtl-code-algorithm) .FontSet code [dir],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir] {
     direction: ltr !important;
     text-align: left !important;
     unicode-bidi: isolate;

@@ -2,6 +2,7 @@
 import { addCopyright } from '../utils/copyright.js';
 import { observeDomSections } from '../utils/domObserver.js';
 import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { isRtlEngineActive } from '../utils/originalState.js';
 
 const MARKDOWN_SELECTOR = [
     '.markdown-main-panel',
@@ -65,7 +66,7 @@ function isInvalidatedError(error) {
 
 function runSafely(fn) {
     try {
-        if (!isExtensionContextValid()) {
+        if (!isExtensionContextValid() || !isRtlEngineActive()) {
             return;
         }
         fn();
@@ -265,7 +266,7 @@ export function activateGemini(rtlAlgorithm = 'advanced_full') {
     ]);
 
     geminiDirObserver = new MutationObserver((mutations) => {
-        if (!isExtensionContextValid()) {
+        if (!isExtensionContextValid() || !isRtlEngineActive()) {
             stopGeminiObservers();
             return;
         }

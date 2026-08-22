@@ -2,6 +2,7 @@
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/textDirectionUtils.js';
+import { isRtlEngineActive } from '../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
@@ -104,6 +105,9 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     const pendingMarkdown = new Set();
 
     const processMarkdownElement = (element) => {
+        if (!isRtlEngineActive()) {
+            return;
+        }
         const throttleMs = isLockedMarkdownEditorEl(element) ? 150 : 500;
         const now = Date.now();
         const last = markdownProcessTimes.get(element) || 0;
@@ -192,6 +196,9 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     if (document.querySelector('[data-reactroot]') && !document.querySelector('[data-reactroot]').__reactInternalInstance) {
         console.log('React is still hydrating, skipping...');
         return;
@@ -283,6 +290,9 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 }
 
 export function initializeChatGptHistory() {
+    if (!isRtlEngineActive()) {
+        return;
+    }
     AQ('#history .__menu-item').each(function (each) {
         const text = AQ(this).text()
         let p = isRTL(text);

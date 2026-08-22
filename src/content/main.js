@@ -44,7 +44,9 @@ import { activateGenspark } from './services/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { SessionManager } from './utils/session.js';
-import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows } from './utils/textDirectionUtils.js';
+import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting } from './utils/textDirectionUtils.js';
+import { startRtlEngine, stopRtlEngine, isRtlEngineActive } from './utils/originalState.js';
+import { disconnectAllDomObservers } from './utils/domObserver.js';
 import { activateDuckai } from './services/duck-ai.js';
 import { activateClickup } from './services/clickup.js';
 import { activateT3chat } from './services/t3chat.js';
@@ -99,13 +101,13 @@ window.addEventListener('contentScriptActivate', async () => {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', async () => {
                 console.log('[Content] DOMContentLoaded event received, initializing services');
-                await initializeAllServices();
+                await enqueueRtlTask(() => initializeAllServices(applyToken));
             });
         } else {
             console.log('[Content] DOM already ready, initializing services');
             // Small delay to ensure everything is loaded
             setTimeout(async () => {
-                await initializeAllServices();
+                await enqueueRtlTask(() => initializeAllServices(applyToken));
             }, 200);
         }
     } catch (error) {
@@ -377,6 +379,131 @@ function isCurrentSiteInServiceConfig() {
 
 const sessionManager = new SessionManager();
 
+let applyToken = 0;
+let rtlTaskChain = Promise.resolve();
+
+function enqueueRtlTask(task) {
+    rtlTaskChain = rtlTaskChain.then(task).catch((error) => {
+        console.warn('[Content] RTL toggle task failed:', error);
+    });
+    return rtlTaskChain;
+}
+
+function deactivateCurrentRtl() {
+    applyToken += 1;
+    disconnectAllDomObservers();
+    stopRtlEngine();
+    resetRtlDomCaches();
+}
+
+async function initializeAllServices(token = applyToken) {
+    if (token !== applyToken) {
+        return;
+    }
+
+    if (isRtlEngineActive() && document.body && document.body.classList.contains('rtl-algorithm-active')) {
+        console.log('[Content] Algorithm already active, skipping initialization...');
+        return;
+    }
+    
+    let results = {};
+    let rtlAlgorithm = 'advanced_full';
+    
+    try {
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows']);
+    } catch (error) {
+        console.log('Storage access failed:', error);
+    }
+
+    if (token !== applyToken) {
+        return;
+    }
+
+    rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
+    setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
+    setApplyAlgorithmToCode(results.applyAlgorithmToCode);
+    setFlipRtlArrows(results.flipRtlArrows);
+    
+    let activeService = null;
+    
+    for (const [serviceKey, config] of Object.entries(serviceConfig)) {
+        if (results[serviceKey] !== false && isCurrentSite(config.urls)) {
+            activeService = serviceKey;
+            if (typeof window.AQ !== 'undefined') {
+                if (token !== applyToken) {
+                    return;
+                }
+                setActiveRtlAlgorithm(rtlAlgorithm);
+                startRtlEngine();
+                if (document.body) {
+                    document.body.classList.add('rtl-algorithm-active');
+                }
+                config.activate(rtlAlgorithm);
+                if (token !== applyToken) {
+                    deactivateCurrentRtl();
+                    return;
+                }
+                setTimeout(() => {
+                    if (token === applyToken && isRtlEngineActive()) {
+                        showUpdateModal();
+                    }
+                }, 1000);
+            } else {
+                console.log('config.activate(rtlAlgorithm) - AQ is not defined');
+            }
+            break;
+        }
+    }
+
+    if (token !== applyToken) {
+        return;
+    }
+
+    if (activeService && activeService !== lastTrackedService) {
+        await sessionManager.start(activeService, site);
+        lastTrackedService = activeService;
+    } else if (!activeService && lastTrackedService) {
+        await sessionManager.stop();
+        lastTrackedService = null;
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
+    }
+}
+
+async function reapplyCurrentRtl() {
+    await requestRtlEnable();
+}
+
+function requestRtlDisable() {
+    const token = ++applyToken;
+    return enqueueRtlTask(async () => {
+        if (token !== applyToken) {
+            return;
+        }
+        disconnectAllDomObservers();
+        stopRtlEngine();
+        resetRtlDomCaches();
+        if (lastTrackedService) {
+            await sessionManager.stop();
+            lastTrackedService = null;
+        }
+    });
+}
+
+function requestRtlEnable() {
+    const token = ++applyToken;
+    return enqueueRtlTask(async () => {
+        if (token !== applyToken) {
+            return;
+        }
+        disconnectAllDomObservers();
+        stopRtlEngine();
+        resetRtlDomCaches();
+        await initializeAllServices(token);
+    });
+}
+
 // Listen for storage changes
 chrome.storage.sync.onChanged.addListener(async (changes) => {
     if (changes.analyticsEnabled) {
@@ -388,48 +515,27 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     
     if (!isCurrentSiteInServiceConfig()) return;
     
-    if (changes.rtlAlgorithm || changes.rtlAlgorithmMode) {
-        // Remove class from body when algorithm changes
-        if (document.body) {
-            document.body.classList.remove('rtl-algorithm-active');
-        }
-        location.reload();
+    if (changes.rtlAlgorithm || changes.rtlAlgorithmMode || changes.mixedTitleDisplayMode) {
+        await requestRtlEnable();
         return;
     }
 
-    if (changes.mixedTitleDisplayMode) {
-        // Remove class from body when mixed title display mode changes
-        if (document.body) {
-            document.body.classList.remove('rtl-algorithm-active');
+    if (changes.applyAlgorithmToCode || changes.flipRtlArrows) {
+        if (changes.applyAlgorithmToCode) {
+            applyLiveCodeAlgorithmSetting(changes.applyAlgorithmToCode.newValue === true);
         }
-        location.reload();
-        return;
-    }
-
-    if (changes.applyAlgorithmToCode) {
-        if (document.body) {
-            document.body.classList.remove('rtl-algorithm-active');
+        if (changes.flipRtlArrows) {
+            applyLiveFlipRtlArrowsSetting(changes.flipRtlArrows.newValue === true);
         }
-        location.reload();
-        return;
-    }
-
-    if (changes.flipRtlArrows) {
-        if (document.body) {
-            document.body.classList.remove('rtl-algorithm-active');
-        }
-        location.reload();
         return;
     }
 
     if (changes.supportHide) {
         const hide = changes.supportHide.newValue === true;
-        // Wait for AQ to be available
         const checkAQ = () => {
             if (typeof window.AQ !== 'undefined') {
                 AQ('.AsBox')[hide ? 'hide' : 'show']();
             } else {
-                // Retry after a short delay
                 setTimeout(checkAQ, 100);
             }
         };
@@ -439,76 +545,15 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     
     for (const serviceKey of Object.keys(serviceConfig)) {
         if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls)) {
-            // Remove class from body when service is disabled
-            if (changes[serviceKey].newValue === false && document.body) {
-                document.body.classList.remove('rtl-algorithm-active');
+            if (changes[serviceKey].newValue === false) {
+                await requestRtlDisable();
+            } else {
+                await requestRtlEnable();
             }
-            location.reload();
             return;
         }
     }
 });
-
-
-// Initialize all services
-async function initializeAllServices() {
-    // Check if algorithm is already active by checking for class on body
-    if (document.body && document.body.classList.contains('rtl-algorithm-active')) {
-        console.log('[Content] Algorithm already active (class exists on body), skipping initialization...');
-        return;
-    }
-    
-    let results = {};
-    let rtlAlgorithm = 'advanced_full';
-    
-    try {
-        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows']);
-        rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
-        setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
-        setApplyAlgorithmToCode(results.applyAlgorithmToCode);
-        setFlipRtlArrows(results.flipRtlArrows);
-    } catch (error) {
-        console.log('Storage access failed:', error);
-    }
-    
-    let activeService = null;
-    
-    for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (results[serviceKey] !== false && isCurrentSite(config.urls)) {
-            activeService = serviceKey;
-            if (typeof window.AQ !== 'undefined') {
-                config.activate(rtlAlgorithm);
-                // Add class to body to mark as active
-
-                setTimeout(() => {
-                    showUpdateModal();
-                }, 1000);
-                if (document.body) {
-                    document.body.classList.add('rtl-algorithm-active');
-                }
-            } else {
-                console.log('config.activate(rtlAlgorithm) - AQ is not defined');
-            }
-            break;
-        }
-    }
-
-    if (activeService && activeService !== lastTrackedService) {
-        await sessionManager.start(activeService, site);
-        lastTrackedService = activeService;
-        
-        // Show update modal if service is active
-        // Wait a bit to ensure DOM is ready
-     
-    } else if (!activeService && lastTrackedService) {
-        await sessionManager.stop();
-        lastTrackedService = null;
-        // Remove class from body when no service is active
-        if (document.body) {
-            document.body.classList.remove('rtl-algorithm-active');
-        }
-    }
-}
 
 // Make initializeAllServices available globally for scripting injection
 window.initializeAllServices = initializeAllServices;
@@ -561,12 +606,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-        await initializeAllServices();
+        await enqueueRtlTask(() => initializeAllServices(applyToken));
     });
 } else {
-    (async () => {
-        await initializeAllServices();
-    })();
+    enqueueRtlTask(() => initializeAllServices(applyToken));
 }
 
 
