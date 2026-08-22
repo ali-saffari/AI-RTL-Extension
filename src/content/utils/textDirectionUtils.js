@@ -1521,7 +1521,309 @@ const LOCKED_EDITOR_STYLE_ID = 'ai-rtl-locked-editor-css';
 const LOCKED_EDITOR_BLOCK_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'ul', 'ol'];
 const LOCKED_EDITOR_HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 const lockedEditorCssById = new Map();
+const lockedBlockquoteOriginals = new Map();
 let lockedEditorSeq = 0;
+
+const BLOCKQUOTE_MIRROR_ATTR = 'data-ai-rtl-bq-mirrored';
+const BLOCKQUOTE_TW_CLASS_ATTR = 'data-ai-rtl-bq-tw';
+const BLOCKQUOTE_BOX_PROPS = [
+    'padding-left', 'padding-right',
+    'border-left-width', 'border-right-width',
+    'border-left-style', 'border-right-style',
+    'border-left-color', 'border-right-color'
+];
+const BLOCKQUOTE_TW_SKIP_TAGS = {
+    ul: true, ol: true, li: true, pre: true, code: true,
+    table: true, thead: true, tbody: true, tfoot: true,
+    tr: true, th: true, td: true, svg: true, math: true
+};
+const TW_BOX_SIDE_UTIL_RE = /^(?:p|m|scroll-p|scroll-m)(l|r)-/;
+const TW_BORDER_SIDE_UTIL_RE = /^border-(l|r)(?:-|$)/;
+
+function readBlockquoteBoxSides(el) {
+    const cs = getComputedStyle(el);
+    return {
+        paddingLeft: cs.paddingLeft,
+        paddingRight: cs.paddingRight,
+        borderLeftWidth: cs.borderLeftWidth,
+        borderRightWidth: cs.borderRightWidth,
+        borderLeftStyle: cs.borderLeftStyle,
+        borderRightStyle: cs.borderRightStyle,
+        borderLeftColor: cs.borderLeftColor,
+        borderRightColor: cs.borderRightColor
+    };
+}
+
+function blockquoteHasQuoteBarOnLeft(sides) {
+    const leftBorder = parseFloat(sides.borderLeftWidth) || 0;
+    const rightBorder = parseFloat(sides.borderRightWidth) || 0;
+    const leftPadding = parseFloat(sides.paddingLeft) || 0;
+    const rightPadding = parseFloat(sides.paddingRight) || 0;
+    return leftBorder > rightBorder || (leftBorder === rightBorder && leftPadding > rightPadding);
+}
+
+function mirroredBlockquoteDeclarations(sides) {
+    return [
+        `padding-left:${sides.paddingRight}!important`,
+        `padding-right:${sides.paddingLeft}!important`,
+        `border-left-width:${sides.borderRightWidth}!important`,
+        `border-right-width:${sides.borderLeftWidth}!important`,
+        `border-left-style:${sides.borderRightStyle}!important`,
+        `border-right-style:${sides.borderLeftStyle}!important`,
+        `border-left-color:${sides.borderRightColor}!important`,
+        `border-right-color:${sides.borderLeftColor}!important`
+    ].join(';') + ';';
+}
+
+function buildMirroredBlockquoteCss(el, cacheKey) {
+    try {
+        let original = lockedBlockquoteOriginals.get(cacheKey);
+        if (!original) {
+            original = readBlockquoteBoxSides(el);
+            lockedBlockquoteOriginals.set(cacheKey, original);
+        }
+        if (!blockquoteHasQuoteBarOnLeft(original)) {
+            return '';
+        }
+        return mirroredBlockquoteDeclarations(original);
+    } catch {
+        return '';
+    }
+}
+
+function isElementDirectionRtl(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    const dirAttr = (el.getAttribute('dir') || el.getAttribute('data-direction') || '').toLowerCase();
+    if (dirAttr === 'rtl') {
+        return true;
+    }
+    if (dirAttr === 'ltr') {
+        return false;
+    }
+    try {
+        return getComputedStyle(el).direction === 'rtl';
+    } catch {
+        return false;
+    }
+}
+
+function splitTailwindClass(token) {
+    let depth = 0;
+    let lastColon = -1;
+    for (let i = 0; i < token.length; i++) {
+        const ch = token[i];
+        if (ch === '[') {
+            depth += 1;
+        } else if (ch === ']') {
+            depth -= 1;
+        } else if (ch === ':' && depth === 0) {
+            lastColon = i;
+        }
+    }
+    if (lastColon === -1) {
+        return { prefix: '', utility: token };
+    }
+    return {
+        prefix: token.slice(0, lastColon + 1),
+        utility: token.slice(lastColon + 1)
+    };
+}
+
+function swapTailwindBoxSideUtility(utility) {
+    let important = '';
+    let value = utility;
+    if (value.charAt(0) === '!') {
+        important = '!';
+        value = value.slice(1);
+    }
+
+    let match = value.match(TW_BOX_SIDE_UTIL_RE);
+    if (match) {
+        const side = match[1] === 'l' ? 'r' : 'l';
+        return important + value.slice(0, match[0].length - 2) + side + '-' + value.slice(match[0].length);
+    }
+
+    match = value.match(TW_BORDER_SIDE_UTIL_RE);
+    if (match) {
+        const side = match[1] === 'l' ? 'r' : 'l';
+        return important + 'border-' + side + value.slice(match[0].length);
+    }
+
+    return utility;
+}
+
+function swapTailwindBoxSideToken(token) {
+    const { prefix, utility } = splitTailwindClass(token);
+    const swapped = swapTailwindBoxSideUtility(utility);
+    if (swapped === utility) {
+        return token;
+    }
+    return prefix + swapped;
+}
+
+function getTailwindBoxSide(token) {
+    const { utility } = splitTailwindClass(token);
+    const value = utility.charAt(0) === '!' ? utility.slice(1) : utility;
+    const boxMatch = value.match(TW_BOX_SIDE_UTIL_RE);
+    if (boxMatch) {
+        return boxMatch[1];
+    }
+    const borderMatch = value.match(TW_BORDER_SIDE_UTIL_RE);
+    if (borderMatch) {
+        return borderMatch[1];
+    }
+    return '';
+}
+
+function inspectTailwindBoxSides(className) {
+    const result = { hasLeft: false, hasRight: false, hasAny: false };
+    if (!className) {
+        return result;
+    }
+    const tokens = className.split(/\s+/);
+    for (let i = 0; i < tokens.length; i++) {
+        const side = getTailwindBoxSide(tokens[i]);
+        if (!side) {
+            continue;
+        }
+        result.hasAny = true;
+        if (side === 'l') {
+            result.hasLeft = true;
+        } else {
+            result.hasRight = true;
+        }
+    }
+    return result;
+}
+
+function swapTailwindBoxSideClassName(className) {
+    if (!className) {
+        return className;
+    }
+    return className.split(/\s+/).filter(Boolean).map(swapTailwindBoxSideToken).join(' ');
+}
+
+function applyMirroredBlockquoteStyles(el, sides) {
+    el.style.setProperty('padding-left', sides.paddingRight, 'important');
+    el.style.setProperty('padding-right', sides.paddingLeft, 'important');
+    el.style.setProperty('border-left-width', sides.borderRightWidth, 'important');
+    el.style.setProperty('border-right-width', sides.borderLeftWidth, 'important');
+    el.style.setProperty('border-left-style', sides.borderRightStyle, 'important');
+    el.style.setProperty('border-right-style', sides.borderLeftStyle, 'important');
+    el.style.setProperty('border-left-color', sides.borderRightColor, 'important');
+    el.style.setProperty('border-right-color', sides.borderLeftColor, 'important');
+}
+
+function restoreBlockquoteClassName(el) {
+    if (!el.hasAttribute(BLOCKQUOTE_TW_CLASS_ATTR)) {
+        return;
+    }
+    el.setAttribute('class', el.getAttribute(BLOCKQUOTE_TW_CLASS_ATTR) || '');
+    el.removeAttribute(BLOCKQUOTE_TW_CLASS_ATTR);
+}
+
+function clearMirroredBlockquoteStyles(el) {
+    restoreBlockquoteClassName(el);
+    for (let i = 0; i < BLOCKQUOTE_BOX_PROPS.length; i++) {
+        el.style.removeProperty(BLOCKQUOTE_BOX_PROPS[i]);
+    }
+    el.removeAttribute(BLOCKQUOTE_MIRROR_ATTR);
+}
+
+function applyTailwindBlockquoteClassSwap(el) {
+    const className = getElementClassName(el);
+    const nextClassName = swapTailwindBoxSideClassName(className);
+    if (nextClassName === className) {
+        return false;
+    }
+    if (!el.hasAttribute(BLOCKQUOTE_TW_CLASS_ATTR)) {
+        el.setAttribute(BLOCKQUOTE_TW_CLASS_ATTR, className);
+    }
+    el.setAttribute('class', nextClassName);
+    el.setAttribute(BLOCKQUOTE_MIRROR_ATTR, '1');
+    return true;
+}
+
+function isInsideNestedBlockquote(node, rootBlockquote) {
+    let parent = node.parentElement;
+    while (parent && parent !== rootBlockquote) {
+        if (parent.tagName === 'BLOCKQUOTE') {
+            return true;
+        }
+        parent = parent.parentElement;
+    }
+    return false;
+}
+
+function forEachBlockquoteBoxTarget(blockquote, callback) {
+    callback(blockquote);
+    const nodes = blockquote.querySelectorAll('[class]');
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (BLOCKQUOTE_TW_SKIP_TAGS[node.tagName.toLowerCase()]) {
+            continue;
+        }
+        if (isInsideNestedBlockquote(node, blockquote)) {
+            continue;
+        }
+        if (!inspectTailwindBoxSides(getElementClassName(node)).hasAny) {
+            continue;
+        }
+        callback(node);
+    }
+}
+
+function mirrorRtlBlockquoteTarget(el) {
+    const alreadyMirrored = el.getAttribute(BLOCKQUOTE_MIRROR_ATTR) === '1';
+    const isRtl = isElementDirectionRtl(el);
+    const twSides = inspectTailwindBoxSides(getElementClassName(el));
+
+    if (!isRtl) {
+        if (alreadyMirrored || el.hasAttribute(BLOCKQUOTE_TW_CLASS_ATTR)) {
+            clearMirroredBlockquoteStyles(el);
+        }
+        return;
+    }
+
+    if (twSides.hasLeft) {
+        applyTailwindBlockquoteClassSwap(el);
+        return;
+    }
+
+    if (alreadyMirrored || twSides.hasRight) {
+        return;
+    }
+
+    const sides = readBlockquoteBoxSides(el);
+    if (!blockquoteHasQuoteBarOnLeft(sides)) {
+        return;
+    }
+
+    applyMirroredBlockquoteStyles(el, sides);
+    el.setAttribute(BLOCKQUOTE_MIRROR_ATTR, '1');
+}
+
+function mirrorRtlBlockquote(el) {
+    forEachBlockquoteBoxTarget(el, mirrorRtlBlockquoteTarget);
+}
+
+function mirrorRtlBlockquotesInTree(element) {
+    const root = element && element.jquery ? element[0] : element;
+    if (!root || root.nodeType !== 1) {
+        return;
+    }
+
+    if (root.tagName && root.tagName.toLowerCase() === 'blockquote') {
+        mirrorRtlBlockquote(root);
+    }
+
+    const quotes = root.getElementsByTagName('blockquote');
+    for (let i = 0; i < quotes.length; i++) {
+        mirrorRtlBlockquote(quotes[i]);
+    }
+}
 
 function isLockedMarkdownEditor(element) {
     const el = element && element.jquery ? element[0] : element;
@@ -1548,7 +1850,7 @@ function flushLockedEditorStyles() {
     styleEl.textContent = Array.from(lockedEditorCssById.values()).join('\n');
 }
 
-function lockedEditorDirRule(selector, direction, setTextAlign) {
+function lockedEditorDirRule(selector, direction, setTextAlign, extraCss = '') {
     const align = direction === 'rtl' ? 'right' : 'left';
     let rule = `${selector}{direction:${direction}!important;unicode-bidi:isolate;`;
     if (setTextAlign) {
@@ -1556,6 +1858,9 @@ function lockedEditorDirRule(selector, direction, setTextAlign) {
     }
     if (selector.includes('>pre:') && direction !== 'rtl') {
         rule += 'font-family:revert!important;';
+    }
+    if (extraCss) {
+        rule += extraCss;
     }
     return `${rule}}`;
 }
@@ -1655,7 +1960,10 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
             return;
         }
 
-        blockRules.push({ selector, direction });
+        const extraCss = tagName === 'blockquote' && direction === 'rtl'
+            ? buildMirroredBlockquoteCss(child, selector)
+            : '';
+        blockRules.push({ selector, direction, extraCss });
     });
 
     const applyRules = (headingMode) => {
@@ -1673,7 +1981,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
 
         const css = rules.map((item) => {
             const alignForRule = setTextAlign || item.selector.includes('>pre:');
-            return lockedEditorDirRule(item.selector, item.direction, alignForRule);
+            return lockedEditorDirRule(item.selector, item.direction, alignForRule, item.extraCss || '');
         }).join('');
         if (lockedEditorCssById.get(editorId) !== css) {
             lockedEditorCssById.set(editorId, css);
@@ -1695,6 +2003,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  * @param {boolean} [options.processTables] - For advanced_full: process tables even without isContainer; runs independently of shouldProcess
+ * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side
  */
 function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) {
     try {
@@ -1902,6 +2211,8 @@ function processTextElementsByRtlAlgorithm(element, rtlAlgorithm, options = {}) 
             isolateIgnoredElements($element, firstWordIgnoreSelector);
         }
     }
+
+    mirrorRtlBlockquotesInTree($element);
     } catch (error) {
         if (isInvalidatedError(error)) {
             return;
