@@ -75,6 +75,13 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+    AQ('text').each(function (each) {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOkText'
+        });
+    });
+
 }
 
 // Main activation function for DeepSeek

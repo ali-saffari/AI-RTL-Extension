@@ -172,6 +172,13 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+    AQ('text').each(function (each) {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontClaude',
+            processedClass: 'AsOkText'
+        });
+    });
+
     applyClaudeFontWeights();
 }
 

@@ -5,7 +5,7 @@
 
 // Import analysis functions from analyzeDirection.js
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
-import { isRtlEngineActive, restoreTrackedElement, runWhileRestoring } from './originalState.js';
+import { isRtlEngineActive, restoreElementFromSelf } from './originalState.js';
 
 // Debug flag - set to false for release builds
 const DEBUG_MODE = false;
@@ -662,36 +662,7 @@ function applyForcedCodeLtr($element) {
 }
 
 function restoreCodeElementToOriginal(el) {
-    if (!el || el.nodeType !== 1) {
-        return;
-    }
-    if (restoreTrackedElement(el, { skipInnerHTML: true })) {
-        return;
-    }
-    runWhileRestoring(() => {
-        if (el.hasAttribute('data-ai-rtl-orig-dir')) {
-            const originalDir = el.getAttribute('data-ai-rtl-orig-dir');
-            if (originalDir) {
-                el.setAttribute('dir', originalDir);
-            } else {
-                el.removeAttribute('dir');
-            }
-            el.removeAttribute('data-ai-rtl-orig-dir');
-        } else {
-            el.removeAttribute('dir');
-        }
-        el.removeAttribute('data-direction');
-        el.classList.remove('AsSetLtr', 'FontSetCode', 'FontSetCodeBlocksGPT');
-        if (el.style) {
-            el.style.removeProperty('text-align');
-        }
-        if (el.hasAttribute('class') && !String(el.getAttribute('class') || '').trim()) {
-            el.removeAttribute('class');
-        }
-        if (el.hasAttribute('style') && !String(el.getAttribute('style') || '').trim()) {
-            el.removeAttribute('style');
-        }
-    });
+    restoreElementFromSelf(el);
 }
 
 function restoreCodeBlocksToOriginal() {
@@ -1633,7 +1604,7 @@ function processTextElementsAdvanced(container, options = {}) {
 
         
         // Special handling for paragraph or span elements with line breaks
-         if (tagName === 'p' || tagName === 'span' ) {
+         if (tagName === 'p' || tagName === 'span' || tagName === 'text') {
             if (containsStructuredMarkup(this)) {
                 setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
                 setTextDirectionAndFont(this, { fontClass, setTextAlign });
@@ -2633,6 +2604,15 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     
     const processedClass = options.processedClass || false;
     const rtlClass = options.rtlClass || false;
+    const storedAlgorithm = $element.attr('data-algorithm-rtl');
+    if (storedAlgorithm !== rtlAlgorithm) {
+        if (processedClass) {
+            $element.removeClass(processedClass);
+        }
+        if (rtlClass) {
+            $element.removeClass(rtlClass);
+        }
+    }
 
     if (rtlAlgorithm === 'advanced_section' || rtlAlgorithm === 'advanced_full') {
         // Check processedClass only if it's not false
@@ -2700,6 +2680,8 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
         
 
     }
+
+    $element.attr('data-algorithm-rtl', rtlAlgorithm);
 
     applyRemoveInnerDir($element, rtlAlgorithm, options);
     const ignoreSelector = getIgnoreSelector(options);

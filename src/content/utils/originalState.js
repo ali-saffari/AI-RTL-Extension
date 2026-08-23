@@ -1,7 +1,10 @@
 /**
- * Snapshot page DOM before the extension mutates it, then restore
- * those originals when RTL is turned off or the algorithm changes.
+ * Keep original dir/text-align on the element itself, then restore
+ * those values when RTL is turned off or a setting is reverted.
  */
+
+const ORIG_DIR_ATTR = 'data-ai-rtl-orig-dir';
+const ORIG_ALIGN_ATTR = 'data-ai-rtl-orig-align';
 
 const SKIP_STYLE_IDS = new Set([
     'ai-rtl-selected-font-style',
@@ -22,16 +25,12 @@ const INJECTED_SELECTORS = [
 
 const JQUERY_DATA_KEYS = ['rtl-processed'];
 
-const originals = new WeakMap();
-const trackedElements = new Set();
-const trackedTextNodes = new Set();
 const trackedObservers = new Set();
 const trackedIntervals = new Set();
 const trackedTimeouts = new Set();
 const trackedRafs = new Set();
 const injectedNodes = new Set();
 const styleOwners = new WeakMap();
-const classListOwners = new WeakMap();
 
 const nativeSetTimeout = window.setTimeout.bind(window);
 const nativeClearTimeout = window.clearTimeout.bind(window);
@@ -39,8 +38,10 @@ const nativeSetInterval = window.setInterval.bind(window);
 const nativeClearInterval = window.clearInterval.bind(window);
 const nativeRaf = window.requestAnimationFrame.bind(window);
 const nativeCancelRaf = window.cancelAnimationFrame.bind(window);
-
-const addedExtensionClasses = new Set();
+const nativeSetAttribute = Element.prototype.setAttribute;
+const nativeRemoveAttribute = Element.prototype.removeAttribute;
+const nativeSetProperty = CSSStyleDeclaration.prototype.setProperty;
+const nativeRemoveProperty = CSSStyleDeclaration.prototype.removeProperty;
 
 const KNOWN_EXTENSION_CLASSES = new Set([
     'AsOk', 'AsOK', 'Asok', 'AsOk2', 'AsOkText', 'AsOkList', 'AsOkList_absolute',
@@ -82,7 +83,7 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 
 const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
-    'data-ai-rtl-orig-dir', 'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
+    ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, 'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
     'data-org-dir', 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',
     'data-debug-reason', 'data-debug-processed', 'data-skip-log-sent'
 ];
@@ -106,134 +107,26 @@ function isSkippableRoot(el) {
     return false;
 }
 
-function canCapture(node) {
-    if (!capturing || restoring || !node) {
-        return false;
-    }
-    if (node.nodeType === 1) {
-        return node.isConnected && !isSkippableRoot(node);
-    }
-    if (node.nodeType === 3) {
-        return Boolean(node.parentNode && node.parentNode.isConnected);
-    }
-    return false;
+function canStamp(el) {
+    return capturing && !restoring && el && el.nodeType === 1 && el.isConnected && !isSkippableRoot(el);
 }
 
-function getRecord(node) {
-    let rec = originals.get(node);
-    if (!rec) {
-        rec = {
-            attrs: new Map(),
-            classAdded: new Set(),
-            classRemoved: new Set(),
-            styles: new Map(),
-            innerHTML: undefined,
-            nodeValue: undefined
-        };
-        originals.set(node, rec);
+function stampOrigDir(el) {
+    if (!canStamp(el) || el.hasAttribute(ORIG_DIR_ATTR)) {
+        return;
     }
-    if (node.nodeType === 1) {
-        trackedElements.add(node);
-    } else {
-        trackedTextNodes.add(node);
-    }
-    return rec;
+    nativeSetAttribute.call(el, ORIG_DIR_ATTR, el.hasAttribute('dir') ? (el.getAttribute('dir') || '') : '');
 }
 
-function rememberAttr(el, name) {
-    if (!canCapture(el) || el.nodeType !== 1 || !name) {
+function stampOrigAlign(el) {
+    if (!canStamp(el) || !el.style || el.hasAttribute(ORIG_ALIGN_ATTR)) {
         return;
     }
-    const rec = getRecord(el);
-    if (!rec.attrs.has(name)) {
-        rec.attrs.set(name, {
-            existed: el.hasAttribute(name),
-            value: el.getAttribute(name)
-        });
-    }
-    if (name === 'dir' && !el.hasAttribute('data-ai-rtl-orig-dir')) {
-        const originalDir = el.hasAttribute('dir') ? (el.getAttribute('dir') || '') : '';
-        el.setAttribute('data-ai-rtl-orig-dir', originalDir);
-    }
+    nativeSetAttribute.call(el, ORIG_ALIGN_ATTR, el.style.getPropertyValue('text-align') || '');
 }
 
-function rememberClassTokens(el, tokens, adding) {
-    if (!canCapture(el) || el.nodeType !== 1) {
-        return;
-    }
-    const rec = getRecord(el);
-    for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
-        if (!token) {
-            continue;
-        }
-        if (adding) {
-            if (rec.classRemoved.has(token)) {
-                rec.classRemoved.delete(token);
-            } else if (!el.classList.contains(token)) {
-                rec.classAdded.add(token);
-                addedExtensionClasses.add(token);
-            }
-        } else if (rec.classAdded.has(token)) {
-            rec.classAdded.delete(token);
-        } else if (el.classList.contains(token)) {
-            rec.classRemoved.add(token);
-        }
-    }
-}
-
-function rememberStyle(el, prop) {
-    if (!canCapture(el) || !el.style || !prop) {
-        return;
-    }
-    const rec = getRecord(el);
-    if (!rec.styles.has(prop)) {
-        rec.styles.set(prop, {
-            value: el.style.getPropertyValue(prop),
-            priority: el.style.getPropertyPriority(prop)
-        });
-    }
-}
-
-function rememberInnerHTML(el) {
-    if (!canCapture(el) || el.nodeType !== 1) {
-        return;
-    }
-    const rec = getRecord(el);
-    if (rec.innerHTML === undefined) {
-        rec.innerHTML = el.innerHTML;
-    }
-}
-
-function rememberText(node) {
-    if (!canCapture(node) || node.nodeType !== 3) {
-        return;
-    }
-    const rec = getRecord(node);
-    if (rec.nodeValue === undefined) {
-        rec.nodeValue = node.nodeValue;
-    }
-}
-
-function rememberInjected(node) {
-    if (!capturing || restoring || !node || node.nodeType !== 1) {
-        return;
-    }
-    if (SKIP_STYLE_IDS.has(node.id)) {
-        return;
-    }
-    const tag = node.tagName && node.tagName.toLowerCase();
-    if (tag === 'style') {
-        injectedNodes.add(node);
-        return;
-    }
-    if (node.id === 'Asmodal' || node.id === 'AsUpdateModal') {
-        injectedNodes.add(node);
-        return;
-    }
-    if (node.classList && (node.classList.contains('AsBox') || node.classList.contains('As-modal-backdrop'))) {
-        injectedNodes.add(node);
-    }
+function isTextAlignProp(prop) {
+    return prop === 'text-align' || prop === 'textAlign';
 }
 
 function wrapMethod(object, key, wrapper) {
@@ -246,24 +139,6 @@ function wrapMethod(object, key, wrapper) {
     };
     wrapped.__aiRtlWrapped = true;
     object[key] = wrapped;
-}
-
-function wrapSetter(proto, key, beforeSet) {
-    const desc = Object.getOwnPropertyDescriptor(proto, key);
-    if (!desc || typeof desc.set !== 'function' || desc.set.__aiRtlWrapped) {
-        return;
-    }
-    const wrapped = function (value) {
-        beforeSet(this, value);
-        return desc.set.call(this, value);
-    };
-    wrapped.__aiRtlWrapped = true;
-    Object.defineProperty(proto, key, {
-        configurable: true,
-        enumerable: desc.enumerable,
-        get: desc.get,
-        set: wrapped
-    });
 }
 
 function wrapGetterMap(proto, key, map) {
@@ -287,83 +162,87 @@ function wrapGetterMap(proto, key, map) {
     });
 }
 
+function wrapSetter(proto, key, beforeSet) {
+    const desc = Object.getOwnPropertyDescriptor(proto, key);
+    if (!desc || typeof desc.set !== 'function' || desc.set.__aiRtlWrapped) {
+        return;
+    }
+    const wrapped = function (value) {
+        beforeSet(this, value);
+        return desc.set.call(this, value);
+    };
+    wrapped.__aiRtlWrapped = true;
+    Object.defineProperty(proto, key, {
+        configurable: true,
+        enumerable: desc.enumerable,
+        get: desc.get,
+        set: wrapped
+    });
+}
+
+function rememberInjected(node) {
+    if (!capturing || restoring || !node || node.nodeType !== 1) {
+        return;
+    }
+    if (SKIP_STYLE_IDS.has(node.id)) {
+        return;
+    }
+    const tag = node.tagName && node.tagName.toLowerCase();
+    if (tag === 'style') {
+        injectedNodes.add(node);
+        return;
+    }
+    if (node.id === 'Asmodal' || node.id === 'AsUpdateModal') {
+        injectedNodes.add(node);
+        return;
+    }
+    if (node.classList && (node.classList.contains('AsBox') || node.classList.contains('As-modal-backdrop'))) {
+        injectedNodes.add(node);
+    }
+}
+
 function installDomHooks() {
     wrapMethod(Element.prototype, 'setAttribute', function (original, args) {
-        rememberAttr(this, args[0]);
+        if (args[0] === 'dir') {
+            stampOrigDir(this);
+        }
         return original.apply(this, args);
     });
     wrapMethod(Element.prototype, 'removeAttribute', function (original, args) {
-        rememberAttr(this, args[0]);
+        if (args[0] === 'dir') {
+            stampOrigDir(this);
+        }
         return original.apply(this, args);
     });
     wrapMethod(Element.prototype, 'toggleAttribute', function (original, args) {
-        rememberAttr(this, args[0]);
+        if (args[0] === 'dir') {
+            stampOrigDir(this);
+        }
         return original.apply(this, args);
     });
 
-    wrapGetterMap(Element.prototype, 'classList', classListOwners);
-    wrapMethod(DOMTokenList.prototype, 'add', function (original, args) {
-        const el = classListOwners.get(this);
-        if (el) {
-            rememberClassTokens(el, args, true);
-        }
-        return original.apply(this, args);
-    });
-    wrapMethod(DOMTokenList.prototype, 'remove', function (original, args) {
-        const el = classListOwners.get(this);
-        if (el) {
-            rememberClassTokens(el, args, false);
-        }
-        return original.apply(this, args);
-    });
-    wrapMethod(DOMTokenList.prototype, 'toggle', function (original, args) {
-        const el = classListOwners.get(this);
-        const token = args[0];
-        if (el && token) {
-            const force = args.length > 1 ? Boolean(args[1]) : !this.contains(token);
-            rememberClassTokens(el, [token], force);
-        }
-        return original.apply(this, args);
-    });
-    wrapMethod(DOMTokenList.prototype, 'replace', function (original, args) {
-        const el = classListOwners.get(this);
-        if (el) {
-            rememberClassTokens(el, [args[0]], false);
-            rememberClassTokens(el, [args[1]], true);
-        }
-        return original.apply(this, args);
+    wrapSetter(HTMLElement.prototype, 'dir', function (el) {
+        stampOrigDir(el);
     });
 
     wrapGetterMap(HTMLElement.prototype, 'style', styleOwners);
-    if (typeof SVGElement !== 'undefined') {
-        wrapGetterMap(SVGElement.prototype, 'style', styleOwners);
-    }
     wrapMethod(CSSStyleDeclaration.prototype, 'setProperty', function (original, args) {
-        const el = styleOwners.get(this);
-        if (el) {
-            rememberStyle(el, args[0]);
+        if (isTextAlignProp(args[0])) {
+            const el = styleOwners.get(this);
+            if (el) {
+                stampOrigAlign(el);
+            }
         }
         return original.apply(this, args);
     });
     wrapMethod(CSSStyleDeclaration.prototype, 'removeProperty', function (original, args) {
-        const el = styleOwners.get(this);
-        if (el) {
-            rememberStyle(el, args[0]);
+        if (isTextAlignProp(args[0])) {
+            const el = styleOwners.get(this);
+            if (el) {
+                stampOrigAlign(el);
+            }
         }
         return original.apply(this, args);
-    });
-
-    wrapSetter(Element.prototype, 'innerHTML', function (el) {
-        rememberInnerHTML(el);
-    });
-    wrapSetter(CharacterData.prototype, 'data', function (node) {
-        rememberText(node);
-    });
-    wrapSetter(CharacterData.prototype, 'nodeValue', function (node) {
-        rememberText(node);
-    });
-    wrapSetter(Node.prototype, 'nodeValue', function (node) {
-        rememberText(node);
     });
 
     wrapMethod(Node.prototype, 'appendChild', function (original, args) {
@@ -375,14 +254,6 @@ function installDomHooks() {
         const result = original.apply(this, args);
         rememberInjected(args[0]);
         return result;
-    });
-    wrapMethod(Element.prototype, 'prepend', function (original, args) {
-        args.forEach((node) => rememberInjected(node));
-        return original.apply(this, args);
-    });
-    wrapMethod(Element.prototype, 'append', function (original, args) {
-        args.forEach((node) => rememberInjected(node));
-        return original.apply(this, args);
     });
 }
 
@@ -459,16 +330,6 @@ function installTimerHooks() {
     }
 }
 
-function splitClassNames(value) {
-    if (!value) {
-        return [];
-    }
-    if (Array.isArray(value)) {
-        return value.flatMap(splitClassNames);
-    }
-    return String(value).match(/\S+/g) || [];
-}
-
 function installJqueryHooks() {
     const jq = typeof window.AQ === 'function' ? window.AQ : null;
     if (!jq || !jq.fn || jq.fn.attr.__aiRtlWrapped) {
@@ -477,14 +338,13 @@ function installJqueryHooks() {
 
     const origAttr = jq.fn.attr;
     jq.fn.attr = function (name, value) {
-        if (typeof name === 'string' && arguments.length >= 2) {
+        if (typeof name === 'string' && name === 'dir' && arguments.length >= 2) {
             this.each(function () {
-                rememberAttr(this, name);
+                stampOrigDir(this);
             });
-        } else if (name && typeof name === 'object') {
-            const keys = Object.keys(name);
+        } else if (name && typeof name === 'object' && Object.prototype.hasOwnProperty.call(name, 'dir')) {
             this.each(function () {
-                keys.forEach((key) => rememberAttr(this, key));
+                stampOrigDir(this);
             });
         }
         return origAttr.apply(this, arguments);
@@ -493,58 +353,26 @@ function installJqueryHooks() {
 
     const origRemoveAttr = jq.fn.removeAttr;
     jq.fn.removeAttr = function (name) {
-        const names = splitClassNames(name);
-        this.each(function () {
-            names.forEach((key) => rememberAttr(this, key));
-        });
+        if (String(name).split(/\s+/).includes('dir')) {
+            this.each(function () {
+                stampOrigDir(this);
+            });
+        }
         return origRemoveAttr.apply(this, arguments);
-    };
-
-    const origAddClass = jq.fn.addClass;
-    jq.fn.addClass = function (value) {
-        if (typeof value === 'string' || Array.isArray(value)) {
-            const tokens = splitClassNames(value);
-            this.each(function () {
-                rememberClassTokens(this, tokens, true);
-            });
-        }
-        return origAddClass.apply(this, arguments);
-    };
-
-    const origRemoveClass = jq.fn.removeClass;
-    jq.fn.removeClass = function (value) {
-        if (typeof value === 'string' || Array.isArray(value)) {
-            const tokens = splitClassNames(value);
-            this.each(function () {
-                rememberClassTokens(this, tokens, false);
-            });
-        }
-        return origRemoveClass.apply(this, arguments);
     };
 
     const origCss = jq.fn.css;
     jq.fn.css = function (name, value) {
-        if (typeof name === 'string' && arguments.length >= 2) {
+        if (typeof name === 'string' && isTextAlignProp(name) && arguments.length >= 2) {
             this.each(function () {
-                rememberStyle(this, name);
+                stampOrigAlign(this);
             });
-        } else if (name && typeof name === 'object') {
-            const keys = Object.keys(name);
+        } else if (name && typeof name === 'object' && (name['text-align'] != null || name.textAlign != null)) {
             this.each(function () {
-                keys.forEach((key) => rememberStyle(this, key));
+                stampOrigAlign(this);
             });
         }
         return origCss.apply(this, arguments);
-    };
-
-    const origHtml = jq.fn.html;
-    jq.fn.html = function (value) {
-        if (arguments.length > 0) {
-            this.each(function () {
-                rememberInnerHTML(this);
-            });
-        }
-        return origHtml.apply(this, arguments);
     };
 }
 
@@ -565,87 +393,102 @@ function cleanupEmptyClassAndStyle(el) {
         return;
     }
     if (el.hasAttribute('class') && !String(el.getAttribute('class') || '').trim()) {
-        el.removeAttribute('class');
+        nativeRemoveAttribute.call(el, 'class');
     }
     if (el.hasAttribute('style') && !String(el.getAttribute('style') || '').trim()) {
-        el.removeAttribute('style');
+        nativeRemoveAttribute.call(el, 'style');
     }
 }
 
-function restoreOrigDirOn(el) {
-    if (!el || !el.hasAttribute('data-ai-rtl-orig-dir')) {
-        return;
-    }
-    const originalDir = el.getAttribute('data-ai-rtl-orig-dir');
-    if (originalDir) {
-        el.setAttribute('dir', originalDir);
-    } else {
-        el.removeAttribute('dir');
-    }
-    el.removeAttribute('data-ai-rtl-orig-dir');
-}
-
-function restoreElement(el, options = {}) {
-    const rec = originals.get(el);
-    if (!rec || !el.isConnected) {
+function isExtensionClassName(name) {
+    if (!name) {
         return false;
     }
-
-    if (!options.skipInnerHTML && rec.innerHTML !== undefined) {
-        el.innerHTML = rec.innerHTML;
-    }
-
-    rec.attrs.forEach((orig, name) => {
-        if (orig.existed) {
-            el.setAttribute(name, orig.value == null ? '' : orig.value);
-        } else {
-            el.removeAttribute(name);
-        }
-    });
-
-    if (!rec.attrs.has('class')) {
-        rec.classAdded.forEach((token) => el.classList.remove(token));
-        rec.classRemoved.forEach((token) => el.classList.add(token));
-    }
-
-    rec.styles.forEach((orig, prop) => {
-        if (orig.value) {
-            el.style.setProperty(prop, orig.value, orig.priority || undefined);
-        } else {
-            el.style.removeProperty(prop);
-        }
-    });
-
-    rec.classAdded.forEach((token) => el.classList.remove(token));
-    stripExtensionClassesFrom(el);
-    clearJqueryData(el);
-    cleanupEmptyClassAndStyle(el);
-    return true;
+    return KNOWN_EXTENSION_CLASSES.has(name) || EXTENSION_CLASS_RE.test(name);
 }
 
-export function restoreTrackedElement(el, options = {}) {
+function stripExtensionClassesFrom(el) {
+    if (!el || el.nodeType !== 1 || !el.classList) {
+        return;
+    }
+    if (el === document.documentElement || el === document.head) {
+        return;
+    }
+
+    const toRemove = [];
+    el.classList.forEach((name) => {
+        if (isExtensionClassName(name)) {
+            toRemove.push(name);
+        }
+    });
+    if (toRemove.length) {
+        el.classList.remove(...toRemove);
+    }
+}
+
+function restoreDirFromSelf(el) {
+    if (!el.hasAttribute(ORIG_DIR_ATTR)) {
+        return;
+    }
+    const originalDir = el.getAttribute(ORIG_DIR_ATTR);
+    if (originalDir) {
+        nativeSetAttribute.call(el, 'dir', originalDir);
+    } else {
+        nativeRemoveAttribute.call(el, 'dir');
+    }
+    nativeRemoveAttribute.call(el, ORIG_DIR_ATTR);
+}
+
+function restoreAlignFromSelf(el) {
+    if (!el.hasAttribute(ORIG_ALIGN_ATTR) || !el.style) {
+        if (el.hasAttribute(ORIG_ALIGN_ATTR)) {
+            nativeRemoveAttribute.call(el, ORIG_ALIGN_ATTR);
+        }
+        return;
+    }
+    const originalAlign = el.getAttribute(ORIG_ALIGN_ATTR);
+    if (originalAlign) {
+        nativeSetProperty.call(el.style, 'text-align', originalAlign);
+    } else {
+        nativeRemoveProperty.call(el.style, 'text-align');
+    }
+    nativeRemoveAttribute.call(el, ORIG_ALIGN_ATTR);
+}
+
+export function restoreElementFromSelf(el) {
     if (!el || el.nodeType !== 1) {
         return false;
     }
+
     const prevRestoring = restoring;
     restoring = true;
     try {
-        const restored = restoreElement(el, options);
-        restoreOrigDirOn(el);
+        const hasOrigDir = el.hasAttribute(ORIG_DIR_ATTR);
+        const hasOrigAlign = el.hasAttribute(ORIG_ALIGN_ATTR);
+        const touched = hasOrigDir || hasOrigAlign || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
+        if (!touched) {
+            return false;
+        }
+
+        restoreDirFromSelf(el);
+        restoreAlignFromSelf(el);
+        nativeRemoveAttribute.call(el, 'data-direction');
+        stripExtensionClassesFrom(el);
+        clearJqueryData(el);
         cleanupEmptyClassAndStyle(el);
-        return restored;
+        return true;
     } finally {
         restoring = prevRestoring;
     }
 }
 
-export function runWhileRestoring(fn) {
-    const prevRestoring = restoring;
-    restoring = true;
+function restoreMarkedElements() {
     try {
-        return fn();
-    } finally {
-        restoring = prevRestoring;
+        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
+            restoreElementFromSelf(el);
+        });
+    } catch {
+        // Ignore
     }
 }
 
@@ -703,42 +546,6 @@ function stopTrackedJobs() {
     rafs.forEach((id) => nativeCancelRaf(id));
 }
 
-function clearOriginalRecords() {
-    trackedElements.forEach((el) => originals.delete(el));
-    trackedTextNodes.forEach((node) => originals.delete(node));
-    trackedElements.clear();
-    trackedTextNodes.clear();
-    injectedNodes.clear();
-}
-
-function isExtensionClassName(name) {
-    if (!name) {
-        return false;
-    }
-    return KNOWN_EXTENSION_CLASSES.has(name)
-        || addedExtensionClasses.has(name)
-        || EXTENSION_CLASS_RE.test(name);
-}
-
-function stripExtensionClassesFrom(el) {
-    if (!el || el.nodeType !== 1 || !el.classList) {
-        return;
-    }
-    if (el === document.documentElement || el === document.head) {
-        return;
-    }
-
-    const toRemove = [];
-    el.classList.forEach((name) => {
-        if (isExtensionClassName(name)) {
-            toRemove.push(name);
-        }
-    });
-    if (toRemove.length) {
-        el.classList.remove(...toRemove);
-    }
-}
-
 function stripExtensionArtifacts() {
     try {
         document.querySelectorAll(EXTENSION_CLASS_SWEEP_SELECTOR).forEach(stripExtensionClassesFrom);
@@ -746,25 +553,13 @@ function stripExtensionArtifacts() {
         document.querySelectorAll('[class]').forEach(stripExtensionClassesFrom);
     }
 
-    trackedElements.forEach((el) => {
-        const rec = originals.get(el);
-        if (rec && rec.classAdded.size) {
-            rec.classAdded.forEach((name) => {
-                if (el.classList) {
-                    el.classList.remove(name);
-                }
-            });
-        }
-        stripExtensionClassesFrom(el);
-    });
-
     FALLBACK_ATTRS.forEach((name) => {
         try {
             document.querySelectorAll(`[${name}]`).forEach((el) => {
                 if (el === document.documentElement || el === document.head) {
                     return;
                 }
-                el.removeAttribute(name);
+                nativeRemoveAttribute.call(el, name);
                 if (typeof window.AQ === 'function') {
                     window.AQ(el).removeData('rtl-processed');
                 }
@@ -792,39 +587,16 @@ export function isRtlEngineActive() {
 export function startRtlEngine() {
     installJqueryHooks();
     restorePass += 1;
-    clearOriginalRecords();
+    injectedNodes.clear();
     rtlEngineActive = true;
     capturing = true;
 }
 
-function restoreLeftoverOrigDir() {
-    try {
-        document.querySelectorAll('[data-ai-rtl-orig-dir]').forEach((el) => {
-            const originalDir = el.getAttribute('data-ai-rtl-orig-dir');
-            if (originalDir) {
-                el.setAttribute('dir', originalDir);
-            } else {
-                el.removeAttribute('dir');
-            }
-            el.removeAttribute('data-ai-rtl-orig-dir');
-        });
-    } catch {
-        // Ignore
-    }
-}
-
-export function restoreAllOriginals(options = {}) {
+export function restoreAllOriginals() {
     restoring = true;
     capturing = false;
     try {
-        trackedElements.forEach((el) => restoreElement(el));
-        trackedTextNodes.forEach((node) => {
-            const rec = originals.get(node);
-            if (rec && rec.nodeValue !== undefined && node.parentNode) {
-                node.nodeValue = rec.nodeValue;
-            }
-        });
-        restoreLeftoverOrigDir();
+        restoreMarkedElements();
         removeInjectedUi();
         if (document.body) {
             document.body.classList.remove('rtl-algorithm-active', 'AsDonateOk');
@@ -833,9 +605,6 @@ export function restoreAllOriginals(options = {}) {
             document.documentElement.classList.remove('ai-rtl-code-algorithm');
         }
     } finally {
-        if (!options.keepRecords) {
-            clearOriginalRecords();
-        }
         restoring = false;
     }
 }
@@ -845,7 +614,7 @@ function scheduleFollowupRestore(pass) {
         if (rtlEngineActive || pass !== restorePass) {
             return;
         }
-        restoreAllOriginals({ keepRecords: true });
+        restoreAllOriginals();
         stripExtensionArtifacts();
     };
     queueMicrotask(rerun);
@@ -858,7 +627,7 @@ export function stopRtlEngine() {
     capturing = false;
     const pass = ++restorePass;
     stopTrackedJobs();
-    restoreAllOriginals({ keepRecords: true });
+    restoreAllOriginals();
     stripExtensionArtifacts();
     scheduleFollowupRestore(pass);
 }
