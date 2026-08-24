@@ -488,6 +488,9 @@ function requestRtlDisable() {
             await sessionManager.stop();
             lastTrackedService = null;
         }
+        if (document.body) {
+            document.body.classList.remove('rtl-algorithm-active');
+        }
     });
 }
 

@@ -15,7 +15,8 @@ const CODE_SAMPLE_MAX = 4000;
 function isCode(text) {
     if (!text || typeof text !== 'string') return false;
 
-    const sample = text.length > CODE_SAMPLE_MAX ? text.slice(0, CODE_SAMPLE_MAX) : text;
+    const prose = stripMarkdown(text);
+    const sample = prose.length > CODE_SAMPLE_MAX ? prose.slice(0, CODE_SAMPLE_MAX) : prose;
     const trimmed = sample.trim();
     if (!trimmed) return false;
 
