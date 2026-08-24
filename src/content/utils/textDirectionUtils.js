@@ -1083,6 +1083,31 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
 
 
 
+const TABLE_STRUCTURE_SELECTOR = 'table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col';
+const TABLE_CELL_SELECTOR = 'th, td, caption';
+const ARIA_TABLE_STRUCTURE_SELECTOR = '[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]';
+const ARIA_TABLE_CELL_SELECTOR = '[role="cell"], [role="columnheader"], [role="rowheader"]';
+const TABLE_FONT_SKIP_SELECTOR = `${CODE_BLOCK_SELECTOR}, ${KATEX_SELECTOR}, svg, math`;
+
+function applyFontClassToTableContents($table, fontClass, structureSelector, cellSelector) {
+    if (!fontClass || !$table || !$table.length) {
+        return;
+    }
+
+    $table.addClass(fontClass);
+    $table.find(structureSelector).addClass(fontClass);
+    $table.find(cellSelector).find(INNER_DIR_TARGET_SELECTOR).each(function() {
+        try {
+            if (this.closest(TABLE_FONT_SKIP_SELECTOR)) {
+                return;
+            }
+        } catch {
+            return;
+        }
+        AQ(this).addClass(fontClass);
+    });
+}
+
 /**
  * Process tables in container with unified direction decision
  * @param {jQuery} container - Container to search in
@@ -1124,8 +1149,9 @@ export function processTablesInContainer(container, options = {}) {
             return !AQ(this).hasClass(processedClass);
         });
         
-        // If there are unprocessed items, skip this table for now
+        // If all structural items are processed, still ensure FontSet on inner sections
         if (unprocessedItems.length === 0) {
+            applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
             return;
         }
         
@@ -1207,10 +1233,7 @@ export function processTablesInContainer(container, options = {}) {
 
 
 
-            // Apply font class to all table elements
-            if (fontClass) {
-                $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(fontClass);
-            }
+            applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
             
             // Mark all table elements as processed
             $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').addClass(processedClass);
@@ -1229,8 +1252,8 @@ export function processTablesInContainer(container, options = {}) {
             return !AQ(this).hasClass(processedClass);
         });
         
-        // If there are unprocessed items, skip this table for now
         if (unprocessedAriaItems.length === 0) {
+            applyFontClassToTableContents($table, fontClass, ARIA_TABLE_STRUCTURE_SELECTOR, ARIA_TABLE_CELL_SELECTOR);
             return;
         }
         
@@ -1278,10 +1301,7 @@ export function processTablesInContainer(container, options = {}) {
                 $table.removeClass('text-left');
             }
             
-            // Apply font class to all table elements
-            if (fontClass) {
-                $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').addClass(fontClass);
-            }
+            applyFontClassToTableContents($table, fontClass, ARIA_TABLE_STRUCTURE_SELECTOR, ARIA_TABLE_CELL_SELECTOR);
             
             // Mark all table elements as processed
             $table.find('[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]').addClass(processedClass);
@@ -2488,13 +2508,6 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             // console.log("applyRtlToContainer advanced_section", currentTextLength, storedLength, lengthDifference);
             processTextElementsAdvanced($element, mergedOptions);
 
-            processTablesInContainer($element, {
-                fontClass: mergedOptions.fontClass,
-                processedClass: mergedOptions.processedClass,
-                siteConfig: mergedOptions.siteConfig,
-                setTextAlign: mergedOptions.setTextAlign
-            });
-
             $element.attr('data-algorithm-rtl', 'advanced_section');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
@@ -2502,6 +2515,13 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             $element.removeAttr('data-skip-log-sent');
             flipRtlArrowsInTree($element);
         }
+
+        processTablesInContainer($element, {
+            fontClass: mergedOptions.fontClass,
+            processedClass: mergedOptions.processedClass,
+            siteConfig: mergedOptions.siteConfig,
+            setTextAlign: mergedOptions.setTextAlign
+        });
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
