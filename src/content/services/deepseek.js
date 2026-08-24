@@ -6,6 +6,10 @@ import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } f
 export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#deepseek-font-style').length) {
         AQ(`<style id="deepseek-font-style">
+            html.ai-rtl-has-font {
+                --dsw-font-markdown-table: 15px / 25px var(--ai-rtl-font, iranyekan, sans-serif) !important;
+                --dsw-font-markdown-table-font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            }
             html.ai-rtl-has-font .ds-markdown h1,
             html.ai-rtl-has-font .ds-markdown h2,
             html.ai-rtl-has-font .ds-markdown h3,

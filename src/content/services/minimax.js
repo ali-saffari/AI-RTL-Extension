@@ -9,18 +9,42 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
         addCopyright(AQ('.relative.hidden .drag-wrapper'), 'AsBoxMinimax AsBoxB', 'margin-top: 5px;margin-bottom: -2px;');
     }
 
-    // Process message content
+    const composerCssOptions = {
+        fontClass: 'FontSetImportant',
+        processedClass: 'AsRtl',
+        setTextAlign: true,
+        onlyCss: true
+    };
+
+    // Message bodies: DOM RTL, nested TipTap composer via CSS
     AQ('.message-content, .message-text, .conversation-message, .chat-message, .content').each(function() {
-     
-            applyRtlToContainer(this, rtlAlgorithm, {
-                fontClass: 'FontSet FontMinimax',
-                processedClass: 'AsOkText',
-                isContainer: true
-            });
-        
+        applyRtlToContainer(this, rtlAlgorithm, {
+            fontClass: 'FontSet FontMinimax',
+            processedClass: 'AsOkText',
+            isContainer: true,
+            onlyCss: '.tiptap.ProseMirror'
+        });
     });
 
-    // Process input fields
+    AQ('.rich-text-wrapper .tiptap, .tiptap.ProseMirror, .rich-text-editor').each(function() {
+        if (!AQ(this).hasClass("FontSetImportant")) {
+            AQ(this).addClass('FontSetImportant');
+        }
+
+        applyRtlToContainer(this, rtlAlgorithm, composerCssOptions);
+
+        if (AQ(this).data('rtl-listener-added')) {
+            return;
+        }
+        AQ(this).data('rtl-listener-added', true);
+
+        AQ(this).on('keyup paste input', function() {
+            applyRtlToContainer(this, rtlAlgorithm, composerCssOptions);
+        });
+    });
+
+
+
     AQ('textarea, input[type="text"], .input-field').each(function() {
 
         
@@ -37,13 +61,15 @@ export function setMinimax(rtlAlgorithm = 'advanced_full') {
         
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetImportant',
-            processedClass: 'AsRtl'
+            processedClass: 'AsRtl',
+            setTextAlign: true
         });
         
         // Add event listener for real-time direction detection
         AQ(this).on('keyup paste input', function() {
             applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSetImportant',
+                processedClass: 'AsRtl',
                 setTextAlign: true
             });
         });

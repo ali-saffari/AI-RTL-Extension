@@ -7,13 +7,21 @@ import { isRtlEngineActive } from '../utils/originalState.js';
 let markdownObserver = null;
 let markdownFlushRaf = 0;
 const markdownProcessTimes = new WeakMap();
+const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
     codeFontClass: 'FontSetCodeBlocksGPT',
     processedClass: 'AsOkText',
     isContainer: true,
     siteConfig: 'chatgpt',
-    setTextAlign: true
+    setTextAlign: true,
+    onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
+};
+const COMPOSER_CSS_OPTIONS = {
+    fontClass: 'FontSetGPT',
+    processedClass: 'AsOk',
+    setTextAlign: true,
+    onlyCss: true
 };
 
 function isLockedMarkdownEditorEl(element) {
