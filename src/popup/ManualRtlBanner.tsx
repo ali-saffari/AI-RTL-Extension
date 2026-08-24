@@ -9,6 +9,7 @@ import {
 import { mdiCog } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import SiteActivationSection, { ActiveTabInfoSnapshot } from './SiteActivationSection';
+import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 
 interface ManualRtlBannerProps {
@@ -79,21 +80,16 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
         };
 
         const fetchActiveTabInfo = () => {
-            try {
-                chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
-                    if (!isMounted) return;
-                    if (chrome.runtime.lastError) {
-                        return;
-                    }
-                    if (response?.success) {
-                        setActiveTabInfo(response.tabInfo || null);
-                    } else {
-                        setActiveTabInfo(null);
-                    }
-                });
-            } catch (error) {
-                // Silently handle errors
-            }
+            void sendRuntimeMessage({ action: 'getActiveTabInfo' }).then((response) => {
+                if (!isMounted) {
+                    return;
+                }
+                if (response?.success) {
+                    setActiveTabInfo(response.tabInfo || null);
+                } else {
+                    setActiveTabInfo(null);
+                }
+            });
         };
 
         fetchActiveTabInfo();

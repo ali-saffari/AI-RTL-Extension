@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
+import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
 import { hasHostPermission } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
@@ -96,7 +97,7 @@ const services: Service[] = [
     { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
     { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', hosts: ['lovable.dev'], keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
-    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://ernie.baidu.com/', hosts: ['ernie.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin'] },
+    { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://wenxin.baidu.com/', hosts: ['ernie.baidu.com', 'wenxin.baidu.com', 'chat.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin', 'ونشین'] },
     { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', hosts: ['gamma.app'], keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
     { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', hosts: ['synaps.app', 'my.synaps.app'], helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
     { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', hosts: ['notion.so'], keywords: ['notion', 'نوشن'] },
@@ -309,13 +310,9 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
                 if (!tab.id || isExtensionPage(tab.url)) {
                     continue;
                 }
-                try {
-                    const pageInfo = await chrome.tabs.sendMessage(tab.id, { action: 'getPageInfo' });
-                    if (pageInfo?.success && pageInfo.hostname) {
-                        return applyHostname(pageInfo.hostname);
-                    }
-                } catch {
-                    // Content script is not injected on this tab
+                const pageInfo = await sendTabMessage(tab.id, { action: 'getPageInfo' });
+                if (pageInfo?.success && pageInfo.hostname) {
+                    return applyHostname(pageInfo.hostname);
                 }
             }
             return false;
@@ -356,16 +353,12 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
         };
 
         const detectFromBackground = () => {
-            try {
-                chrome.runtime.sendMessage({ action: 'getActiveTabInfo' }, (response) => {
-                    if (!isMounted || chrome.runtime.lastError) {
-                        return;
-                    }
-                    void applyHostname(response?.tabInfo?.hostname);
-                });
-            } catch {
-                // Ignore
-            }
+            void sendRuntimeMessage({ action: 'getActiveTabInfo' }).then((response) => {
+                if (!isMounted) {
+                    return;
+                }
+                void applyHostname(response?.tabInfo?.hostname);
+            });
         };
 
         const handleActiveTabUpdate = (message: any) => {
@@ -993,24 +986,19 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
                                 
                                 // Send message to background to request permissions and enable service
                                 try {
-                                    chrome.runtime.sendMessage({
+                                    const response = await sendRuntimeMessage({
                                         action: 'requestPermissionsAndEnableService',
                                         serviceKey: key
-                                    }, (response) => {
-                                        if (chrome.runtime.lastError) {
-                                            // Silently handle connection errors
-                                            return;
-                                        }
-                                        
-                                        if (response?.success) {
-                                            setChecked(prev => ({ ...prev, [key]: true }));
-                                            setPermissionModalOpen(false);
-                                        } else if (response?.granted === false) {
-                                            alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
-                                        } else {
-                                            alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
-                                        }
                                     });
+                                    
+                                    if (response?.success) {
+                                        setChecked(prev => ({ ...prev, [key]: true }));
+                                        setPermissionModalOpen(false);
+                                    } else if (response?.granted === false) {
+                                        alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
+                                    } else if (response) {
+                                        alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                                    }
                                 } catch (error) {
                                     // Silently handle connection errors
                                 }

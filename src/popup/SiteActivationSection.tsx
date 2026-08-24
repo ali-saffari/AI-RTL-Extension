@@ -14,6 +14,7 @@ import {
 import { mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../types/manualRtl';
 import { hasHostPermission } from '../utils/hasHostPermission';
+import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 
 interface ActiveTabInfoSnapshot {
     tabId: number | null;
@@ -458,18 +459,10 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                             
                             // Request permission through background script
                             try {
-                                const response = await new Promise<any>((resolve, reject) => {
-                                    chrome.runtime.sendMessage({
-                                        action: 'toggleManualRtlSite',
-                                        hostname: activeHostname,
-                                        favicon: faviconSrc || undefined
-                                    }, (response) => {
-                                        if (chrome.runtime.lastError) {
-                                            reject(new Error(chrome.runtime.lastError.message));
-                                            return;
-                                        }
-                                        resolve(response);
-                                    });
+                                const response = await sendRuntimeMessage({
+                                    action: 'toggleManualRtlSite',
+                                    hostname: activeHostname,
+                                    favicon: faviconSrc || undefined
                                 });
                                 
                                 if (!response || !response.success) {

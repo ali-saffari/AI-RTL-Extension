@@ -49,6 +49,8 @@ function getAISitesList() {
         'my.synaps.app',
         'app.writesonic.com',
         'ernie.baidu.com',
+        'wenxin.baidu.com',
+        'chat.baidu.com',
         'app.clickup.com',
         't3.chat',
         'www.t3.chat',

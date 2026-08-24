@@ -2,6 +2,8 @@
 // Analytics Session Manager (Content Script)
 // ============================================
 
+import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
+
 export class SessionManager {
     constructor() {
         this.service = null;
@@ -63,7 +65,7 @@ export class SessionManager {
         this.isActive = true;
         
         try {
-            await chrome.runtime.sendMessage({
+            await sendRuntimeMessage({
                 type: 'SESSION_START',
                 serviceName: serviceKey,
                 hostname: hostname
@@ -78,7 +80,7 @@ export class SessionManager {
     async pause() {
         if (!this.isActive) return;
         try {
-            await chrome.runtime.sendMessage({ type: 'SESSION_PAUSE' });
+            await sendRuntimeMessage({ type: 'SESSION_PAUSE' });
         } catch (error) {
             if (this.isContextInvalidated(error)) {
                 this.reset();
@@ -89,7 +91,7 @@ export class SessionManager {
     async resume() {
         if (!this.isActive) return;
         try {
-            await chrome.runtime.sendMessage({ type: 'SESSION_RESUME' });
+            await sendRuntimeMessage({ type: 'SESSION_RESUME' });
         } catch (error) {
             if (this.isContextInvalidated(error)) {
                 this.reset();
@@ -107,7 +109,7 @@ export class SessionManager {
         this.hostname = null;
         
         try {
-            await chrome.runtime.sendMessage({ type: 'SESSION_END' });
+            await sendRuntimeMessage({ type: 'SESSION_END' });
         } catch (error) {
             // Ignore errors when stopping (context might be invalidated)
         }

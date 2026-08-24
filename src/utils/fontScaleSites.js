@@ -51,6 +51,8 @@ export const FONT_SCALE_SITE_MODES = {
     'synaps.app': 'zoom',
     'app.writesonic.com': 'zoom',
     'ernie.baidu.com': 'zoom',
+    'wenxin.baidu.com': 'zoom',
+    'chat.baidu.com': 'zoom',
     'gamma.app': 'zoom',
     'notion.so': 'zoom',
     'genspark.ai': 'zoom',

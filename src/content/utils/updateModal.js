@@ -1,5 +1,6 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
 import { versionChanges, previousChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 
 let isModalShowing = false;
 
@@ -773,11 +774,7 @@ function setupUpdateModalListeners(modalId, persistClose = true) {
         chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: modalId }, function() {
             closeUpdateModalElement(modal);
 
-            chrome.runtime.sendMessage({ action: 'closeUpdateModalInAllTabs' }, () => {
-                if (chrome.runtime.lastError) {
-                    console.log('[UpdateModal] Error sending close message:', chrome.runtime.lastError);
-                }
-            });
+            void sendRuntimeMessage({ action: 'closeUpdateModalInAllTabs' });
         });
     });
 }

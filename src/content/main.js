@@ -250,7 +250,7 @@ const serviceConfig = {
         activate: activateChatsonic
     },
     ernie: {
-        urls: ["ernie.baidu.com", "www.ernie.baidu.com"],
+        urls: ["ernie.baidu.com", "www.ernie.baidu.com", "wenxin.baidu.com", "www.wenxin.baidu.com", "chat.baidu.com", "www.chat.baidu.com"],
         activate: activateErnie
     },
     gamma: {

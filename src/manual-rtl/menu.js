@@ -5,6 +5,7 @@ import { applyLogoDisplayToElement } from './logo.js';
 import { getExtensionLogoUrl, getManualLogoUrl } from './assets.js';
 import { LOGO_ICON_OFFSET, LOGO_ICON_SIZE } from './constants.js';
 import { findBestContainer } from './dom.js';
+import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 
 export function handleMenuDisplayForElement(element, range, options = {}) {
     if (!element || !range) {
@@ -175,16 +176,7 @@ export function showPopupMenu(range, element, options = {}) {
         event.stopImmediatePropagation();
 
         if (chrome.runtime && chrome.runtime.sendMessage) {
-            try {
-                chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        // Silently handle connection errors
-                        return;
-                    }
-                });
-            } catch (error) {
-                // Silently handle connection errors
-            }
+            void sendRuntimeMessage({ action: 'openOptionsPage' });
         }
 
         updateElementHighlight(null, false);

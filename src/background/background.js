@@ -1,6 +1,12 @@
 // Import dynamic services configuration
 import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
+import {
+    consumeLastError,
+    hasExtensionPageListeners,
+    sendRuntimeMessage,
+    sendTabMessage
+} from '../utils/chromeMessaging.js';
 import { hasHostPermission } from '../utils/hasHostPermission.js';
 import { applyPendingFullPinOpenSite } from '../utils/pinOpenSite';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
@@ -361,20 +367,20 @@ function broadcastActiveTabInfo(reason = 'unknown') {
 
     const snapshot = getActiveTabSnapshot();
 
-    try {
-        chrome.runtime.sendMessage({
-            action: 'activeTabInfoUpdated',
-            payload: snapshot
-        }, (response) => {
-            // Check for errors silently
-            if (chrome.runtime.lastError) {
-                // Receiving end does not exist - this is normal when no listeners are available
+    (async () => {
+        try {
+            if (!(await hasExtensionPageListeners())) {
                 return;
             }
+        } catch {
+            // Fall through and send; lastError is swallowed
+        }
+
+        await sendRuntimeMessage({
+            action: 'activeTabInfoUpdated',
+            payload: snapshot
         });
-    } catch (error) {
-        // Ignore broadcast errors
-    }
+    })();
 }
 
 function resetActiveTabInfo(tabId) {
@@ -399,11 +405,7 @@ function resetActiveTabInfo(tabId) {
 
     try {
         chrome.tabs.get(tabId, (tab) => {
-            if (!activeTabInfo || activeTabInfo.tabId !== tabId) {
-                return;
-            }
-
-            if (chrome.runtime.lastError) {
+            if (consumeLastError() || !activeTabInfo || activeTabInfo.tabId !== tabId) {
                 return;
             }
 
@@ -428,22 +430,18 @@ function resetActiveTabInfo(tabId) {
 
             // Limited mode has no tabs permission, so tab.url is often hidden.
             // Ask the content script — it is already injected on supported sites.
-            try {
-                chrome.tabs.sendMessage(tabId, { action: 'getPageInfo' }, (pageInfo) => {
-                    if (!activeTabInfo || activeTabInfo.tabId !== tabId) {
-                        return;
-                    }
-                    if (chrome.runtime.lastError || !pageInfo?.success || !pageInfo.hostname) {
-                        return;
-                    }
-                    activeTabInfo.hostname = pageInfo.hostname || '';
-                    activeTabInfo.favicon = pageInfo.favicon || activeTabInfo.favicon || '';
-                    activeTabInfo.lastUpdatedAt = Date.now();
-                    broadcastActiveTabInfo('reset-page-info');
-                });
-            } catch (err) {
-                // Content script may not be injected
-            }
+            sendTabMessage(tabId, { action: 'getPageInfo' }).then((pageInfo) => {
+                if (!activeTabInfo || activeTabInfo.tabId !== tabId) {
+                    return;
+                }
+                if (!pageInfo?.success || !pageInfo.hostname) {
+                    return;
+                }
+                activeTabInfo.hostname = pageInfo.hostname || '';
+                activeTabInfo.favicon = pageInfo.favicon || activeTabInfo.favicon || '';
+                activeTabInfo.lastUpdatedAt = Date.now();
+                broadcastActiveTabInfo('reset-page-info');
+            });
         });
     } catch (error) {
         // Ignore tab access errors
@@ -585,10 +583,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     if (!tab.id || isRestrictedBrowserUrl(tab.url)) {
                         return Promise.resolve();
                     }
-                    return chrome.tabs.sendMessage(tab.id, {
+                    return sendTabMessage(tab.id, {
                         action: 'previewFontScale',
                         scale
-                    }).catch(() => {});
+                    });
                 }));
             } catch (error) {
                 // Tabs permission may be missing; preview is optional
@@ -618,33 +616,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
 
             if (activeTabId && chrome?.tabs?.sendMessage) {
-                try {
-                    const pageInfo = await chrome.tabs.sendMessage(activeTabId, { action: 'getPageInfo' });
+                const pageInfo = await sendTabMessage(activeTabId, { action: 'getPageInfo' });
 
-                    if (pageInfo && pageInfo.success && pageInfo.hostname) {
-                        const enhancedSnapshot = {
-                            tabId: activeTabId,
-                            hostname: pageInfo.hostname || '',
-                            favicon: pageInfo.favicon || '',
-                            hasHostname: Boolean(pageInfo.hostname),
-                            activatedAt: (snapshot?.tabId === activeTabId ? snapshot.activatedAt : Date.now()) || Date.now(),
-                            lastUpdatedAt: Date.now()
-                        };
+                if (pageInfo && pageInfo.success && pageInfo.hostname) {
+                    const enhancedSnapshot = {
+                        tabId: activeTabId,
+                        hostname: pageInfo.hostname || '',
+                        favicon: pageInfo.favicon || '',
+                        hasHostname: Boolean(pageInfo.hostname),
+                        activatedAt: (snapshot?.tabId === activeTabId ? snapshot.activatedAt : Date.now()) || Date.now(),
+                        lastUpdatedAt: Date.now()
+                    };
 
-                        activeTabInfo = enhancedSnapshot;
+                    activeTabInfo = enhancedSnapshot;
 
-                        sendResponse?.({
-                            success: true,
-                            tabInfo: enhancedSnapshot,
-                            tabHostname: enhancedSnapshot.hostname || '',
-                            session: null
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    if (e.message && !e.message.includes('Receiving end does not exist')) {
-                        devLog('[ActiveTab] Failed to get info from content script:', e.message);
-                    }
+                    sendResponse?.({
+                        success: true,
+                        tabInfo: enhancedSnapshot,
+                        tabHostname: enhancedSnapshot.hostname || '',
+                        session: null
+                    });
+                    return;
                 }
             }
 
@@ -780,10 +772,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 const tabs = await chrome.tabs.query({});
                 const promises = tabs.map(tab => {
                     if (tab.id && tab.url && (tab.url.startsWith('http://') || tab.url.startsWith('https://'))) {
-                        return chrome.tabs.sendMessage(tab.id, { action: 'closeUpdateModal' }).catch(() => {
-                            // Ignore errors (tab might not have content script)
-                        });
+                        return sendTabMessage(tab.id, { action: 'closeUpdateModal' });
                     }
+                    return Promise.resolve();
                 });
                 await Promise.all(promises);
                 sendResponse?.({ success: true });
@@ -815,6 +806,7 @@ const AI_SITES = [
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
+    'wenxin.baidu.com', 'chat.baidu.com',
     'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
     't3.chat', 'www.t3.chat',
     'vivado.amd.com',

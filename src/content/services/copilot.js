@@ -3,11 +3,41 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord , analyzeTextDirection } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced , setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
+const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
+const ELEMENT_OPTIONS = {
+    fontClass: 'CopilotFontSet',
+    processedClass: 'AsOk'
+};
+
+function applyCopilotFont() {
+    if (!AQ('#copilot-font-style').length) {
+        AQ(`<style id="copilot-font-style">
+            html.ai-rtl-has-font, html.ai-rtl-has-font body,
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            }
+            code, pre, kbd, samp, code *, pre * {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            }
+        </style>`).appendTo('head');
+    }
+
+    AQ('body').each(function () {
+        if (!AQ(this).hasClass('CopilotFontSet')) {
+            AQ(this).addClass('CopilotFontSet');
+        }
+    });
+
+    AQ(ICON_SELECTOR).removeClass('CopilotFontSet FontSet');
+}
+
 
 // Copilot/Bing service functions
 export function setItems_copilotBing(rtlAlgorithm) {
     let fo = `.relative.max-h-full.w-expanded-composer.max-w-chat`
     console.log("setItems_copilotBing")
+
+    applyCopilotFont();
 
     if (chrome.runtime?.id) {
         // Add copyright using utility function
@@ -31,11 +61,21 @@ export function setItems_copilotBing(rtlAlgorithm) {
            
     });
 
-    AQ('[data-content="user-message"] .break-words').each(function (each) {
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'CopilotFontSet',
-            processedClass: 'AsOk'
-        });
+    AQ('[data-content="user-message"], [data-content="user-message"] .break-words').each(function (each) {
+        applyRtlToElement(this, rtlAlgorithm, ELEMENT_OPTIONS);
+    });
+
+    AQ('[role="link"]').each(function () {
+        if (AQ(this).is(ICON_SELECTOR)) {
+            return;
+        }
+
+        const text = AQ(this).text();
+        if (!text || !text.trim()) {
+            return;
+        }
+
+        applyRtlToElement(this, rtlAlgorithm, ELEMENT_OPTIONS);
     });
 
         // Process listbox options for text direction detection
@@ -43,8 +83,7 @@ export function setItems_copilotBing(rtlAlgorithm) {
             const text = AQ(this).text();
             if (text && text.trim()) {
                 applyRtlToElement(this, rtlAlgorithm, {
-                    fontClass: 'CopilotFontSet',
-                    processedClass: 'AsOk',
+                    ...ELEMENT_OPTIONS,
                     rtlClass: 'listboxRtlCopilot'
                 });
             }
@@ -71,6 +110,8 @@ export function setItems_copilotBing(rtlAlgorithm) {
             });
         });
     });
+
+    applyCopilotFont();
 
 
     

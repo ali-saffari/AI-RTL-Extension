@@ -1,3 +1,4 @@
+import { sendRuntimeMessage } from './chromeMessaging.js';
 import { isFirefoxRuntime } from './isFirefox.js';
 
 const ALL_URLS_PATTERNS = ['<all_urls>', '*://*/*', 'http://*/*', 'https://*/*'];
@@ -79,8 +80,8 @@ export function injectCurrentTabOnPopupOpen() {
     if (!isFirefoxRuntime()) {
         return;
     }
-    chrome.runtime.sendMessage({
+    void sendRuntimeMessage({
         action: 'activateCurrentTab',
         activateAllTabs: false
-    }).catch(() => {});
+    });
 }

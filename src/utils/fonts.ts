@@ -1,3 +1,5 @@
+import { sendRuntimeMessage, sendTabMessage } from './chromeMessaging.js';
+
 export const NONE_FONT_ID = 'none';
 export const DEFAULT_FONT_ID = 'iranyekan';
 export const SELECTED_FONT_STORAGE_KEY = 'selectedFont';
@@ -143,28 +145,19 @@ export function previewFontScaleOnTabs(scale: number): void {
         fontScalePreviewFrame = 0;
         try {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                void chrome.runtime.lastError;
                 const tabId = tabs && tabs[0] && tabs[0].id;
                 if (!tabId) {
                     return;
                 }
-                const sent = chrome.tabs.sendMessage(tabId, {
+                void sendTabMessage(tabId, {
                     action: 'previewFontScale',
                     scale: value,
                 });
-                if (sent && typeof (sent as Promise<unknown>).catch === 'function') {
-                    (sent as Promise<unknown>).catch(() => {});
-                }
             });
         } catch (error) {
             // tabs API may be unavailable
         }
-        try {
-            const result = chrome.runtime.sendMessage({ action: 'previewFontScale', scale: value });
-            if (result && typeof (result as Promise<unknown>).catch === 'function') {
-                (result as Promise<unknown>).catch(() => {});
-            }
-        } catch (error) {
-            // Popup/options may close before the preview message is delivered
-        }
+        void sendRuntimeMessage({ action: 'previewFontScale', scale: value });
     });
 }
