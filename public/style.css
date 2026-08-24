@@ -282,6 +282,16 @@ code.AsSetLtr , pre.AsSetLtr {
     direction: ltr;
 }
 
+html.ai-rtl-code-algorithm pre[dir="rtl"],
+html.ai-rtl-code-algorithm code[dir="rtl"],
+html.ai-rtl-code-algorithm .cm-content[dir="rtl"],
+html.ai-rtl-code-algorithm .cm-line[dir="rtl"],
+html.ai-rtl-code-algorithm .md-code-block[dir="rtl"] {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: isolate;
+}
+
 .language-plaintext.FontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
