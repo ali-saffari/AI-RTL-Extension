@@ -810,7 +810,7 @@ const AI_SITES = [
     'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
     // 'google.com', 'www.google.com',
-    'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'www.blackbox.ai',
+    'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'kimi.com', 'www.kimi.ai', 'kimi.ai', 'www.blackbox.ai',
     'notebooklm.google.com', 'notebook.google.com', 'chat.z.ai', 'arena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',

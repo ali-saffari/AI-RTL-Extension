@@ -198,7 +198,7 @@ const serviceConfig = {
         activate: activateManus
     },
     kimi: {
-        urls: ["www.kimi.com"],
+        urls: ["kimi.ai", "www.kimi.ai", "kimi.com", "www.kimi.com"],
         activate: activateKimi
     },
     blackbox: {

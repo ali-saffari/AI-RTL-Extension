@@ -145,6 +145,11 @@ export const DYNAMIC_SERVICES = {
         name: 'QWEN CODER',
         origins: ['*://coder.qwen.ai/*'],
         hostnames: ['coder.qwen.ai']
+    },
+    kimi: {
+        name: 'Kimi',
+        origins: ['*://kimi.ai/*', '*://www.kimi.ai/*'],
+        hostnames: ['kimi.ai', 'www.kimi.ai']
     }
 };
 

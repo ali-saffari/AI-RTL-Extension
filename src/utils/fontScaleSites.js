@@ -34,6 +34,7 @@ export const FONT_SCALE_SITE_MODES = {
     'chat.mistral.ai': 'zoom',
     'manus.im': 'zoom',
     'kimi.com': 'zoom',
+    'kimi.ai': 'zoom',
     'blackbox.ai': 'zoom',
     'notebooklm.google.com': 'zoom',
     'notebook.google.com': 'zoom',
