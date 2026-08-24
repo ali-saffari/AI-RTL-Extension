@@ -15,6 +15,8 @@ export const versionChanges = [
     { id: '4', text: 'افزودن سایت fal.ai', shortName: 'fal.ai', icon: 'sites/fal.png', type: 'add', group: 'site' },
     { id: '5', text: 'آپدیت Gemini', shortName: 'Gemini', icon: 'sites/Gemini.png', type: 'fix', group: 'site' },
     { id: '23', text: 'آپدیت ChatGPT', shortName: 'ChatGPT', icon: 'sites/openAi-icon.png', type: 'fix', group: 'site' },
+    { id: '29', text: 'آپدیت Claude', shortName: 'Claude', icon: 'sites/claude-icon.png', type: 'fix', group: 'site' },
+    { id: '28', text: 'آپدیت Minimax', shortName: 'Minimax', icon: 'sites/minimax.png', type: 'fix', group: 'site' },
     { id: '27', text: 'آپدیت Duck AI', shortName: 'Duck AI', icon: 'sites/duckduckgo.png', type: 'fix', group: 'site' },
     { id: '6', text: 'افزودن سایت Black Forest', shortName: 'Black Forest', icon: 'sites/bfl.png', type: 'add', group: 'site' },
     { id: '7', text: 'افزودن سایت Character.AI', shortName: 'Character.AI', icon: 'sites/character-ai.png', type: 'add', group: 'site' },

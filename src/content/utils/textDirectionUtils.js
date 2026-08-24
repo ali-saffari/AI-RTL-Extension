@@ -722,17 +722,8 @@ function ensureCodeMirrorDirectionStyles() {
     (document.head || document.documentElement).appendChild(style);
 }
 
-function isCodeElementContent($element) {
-    const text = $element.text();
-    const hasLanguageTextClass = $element.hasClass('language-text') || $element.find('.language-text').length > 0;
-    return !hasLanguageTextClass && isCode(text);
-}
-
-function shouldApplyRtlToCodeBlock(text, $element) {
+function shouldApplyRtlToCodeBlock(text) {
     if (!isApplyAlgorithmToCodeEnabled()) {
-        return false;
-    }
-    if ($element && isCodeElementContent($element)) {
         return false;
     }
     if (isCode(text)) {
@@ -741,30 +732,33 @@ function shouldApplyRtlToCodeBlock(text, $element) {
     return detectTextDirection(text) === 'rtl';
 }
 
+function getCodeBlockDirectionTargets($element) {
+    const $inner = $element.find('pre, code');
+    return $inner.length ? $element.add($inner) : $element;
+}
+
 function processCodeLikeElement($element, element, options = {}) {
     if (!isApplyAlgorithmToCodeEnabled()) {
         return;
     }
-    const { fontClass, setTextAlign, processedClass } = options;
+    const { fontClass, processedClass } = options;
     if (processedClass) {
         $element.addClass(processedClass);
     }
 
     const text = $element.text();
-    if (!shouldApplyRtlToCodeBlock(text, $element)) {
+    const $targets = getCodeBlockDirectionTargets($element);
+    if (!shouldApplyRtlToCodeBlock(text)) {
         setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
-        applyForcedCodeLtr($element);
+        $targets.each(function() {
+            applyForcedCodeLtr(AQ(this));
+        });
         return;
     }
 
     setDebugAttr($element, 'data-debug-mode', 'code-element-normal');
     $element.find('*').removeAttr('dir');
-    setTextDirectionAndFont(element, {
-        fontClass,
-        setTextAlign,
-        text,
-        applyFontIfRtl: false
-    });
+    applyCodeBlockDirection($targets, 'rtl', fontClass);
 }
 
 function isCodeMirrorCodeBlock($element) {
@@ -837,7 +831,7 @@ function processCodeMirrorBlock($element, element, options = {}) {
     const $targets = getCodeMirrorTargets($element, $content);
 
     const blockText = $content.text();
-    if (!shouldApplyRtlToCodeBlock(blockText, $content)) {
+    if (!shouldApplyRtlToCodeBlock(blockText)) {
         setDebugAttr($element, 'data-debug-mode', 'cm-code-block-ltr');
         applyCodeBlockDirection($targets, 'ltr', blockFontClass);
         return;
@@ -2522,6 +2516,12 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             siteConfig: mergedOptions.siteConfig,
             setTextAlign: mergedOptions.setTextAlign
         });
+        processCodeBlocksInContainer($element, {
+            fontClass: mergedOptions.fontClass,
+            codeFontClass: mergedOptions.codeFontClass,
+            setTextAlign: mergedOptions.setTextAlign,
+            processedClass: mergedOptions.processedClass
+        }, true);
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
