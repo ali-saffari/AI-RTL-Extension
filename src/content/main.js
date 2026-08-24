@@ -26,7 +26,7 @@ import { activateArena } from './services/arena.js';
 import { activateOpenRouter } from './services/openrouter.js';
 import { activateMinimax } from './services/minimax.js';
 import { activateJules } from './services/jules.js';
-import { activate1minai } from './services/1minai.js';
+import { activate1minai } from './services/observer/1minai.js';
 import { activateDigen } from './services/digen.js';
 import { activateLovable } from './services/lovable.js';
 import { activateSynaps } from './services/synaps.js';

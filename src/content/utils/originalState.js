@@ -19,6 +19,7 @@ const INJECTED_SELECTORS = [
     '#ai-rtl-cm-code-direction',
     '#ai-rtl-claude-font-weights',
     '#1minai-ant-input-style',
+    '#1minai-font-style',
     '#google-rtl-style',
     'style[data-rtl-business-gemini]'
 ];
