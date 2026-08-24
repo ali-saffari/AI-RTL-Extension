@@ -639,13 +639,13 @@ function refreshLockedEditorsForCodeSetting() {
         return;
     }
     const options = getLiveCodeProcessOptions();
-    document.querySelectorAll('.ProseMirror.markdown[contenteditable]').forEach((el) => {
+    document.querySelectorAll(`[data-ai-rtl-editor], ${DEFAULT_LOCKED_EDITOR_SELECTOR}`).forEach((el) => {
         const editorId = el.getAttribute('data-ai-rtl-editor');
         if (editorId) {
             lockedEditorCssById.delete(editorId);
             el.removeAttribute('data-ai-rtl-sig');
         }
-        processLockedEditorByCss(el, getActiveRtlAlgorithm(), options);
+        processLockedEditorByCss(el, getActiveRtlAlgorithm(), { ...options, onlyCss: true });
     });
 }
 
@@ -1542,7 +1542,7 @@ function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-        if (this.matches && this.matches('.ProseMirror.markdown[contenteditable]')) {
+        if (isLockedMarkdownEditor(this, options.onlyCss)) {
             setDebugAttr($element, 'data-debug-mode', 'locked-markdown-editor-skipped');
             return;
         }
@@ -1851,6 +1851,7 @@ function getAttributeTextElements() {
  * Style them from a stylesheet keyed by an id on the editor root.
  */
 const LOCKED_EDITOR_STYLE_ID = 'ai-rtl-locked-editor-css';
+const DEFAULT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
 const LOCKED_EDITOR_BLOCK_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'ul', 'ol'];
 const LOCKED_EDITOR_HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 const lockedEditorCssById = new Map();
@@ -2158,9 +2159,54 @@ function mirrorRtlBlockquotesInTree(element) {
     }
 }
 
-function isLockedMarkdownEditor(element) {
+function normalizeOnlyCssOption(onlyCss) {
+    if (onlyCss === true) {
+        return true;
+    }
+    if (!onlyCss) {
+        return '';
+    }
+    if (Array.isArray(onlyCss)) {
+        return onlyCss.filter((item) => typeof item === 'string' && item.trim()).join(', ');
+    }
+    if (typeof onlyCss === 'string') {
+        return onlyCss.trim();
+    }
+    return '';
+}
+
+function getLockedEditorSelector(onlyCss) {
+    const normalized = normalizeOnlyCssOption(onlyCss);
+    if (normalized === true) {
+        return true;
+    }
+    if (normalized) {
+        return normalized;
+    }
+    return DEFAULT_LOCKED_EDITOR_SELECTOR;
+}
+
+function shouldHandleElementByCss(element, onlyCss) {
     const el = element && element.jquery ? element[0] : element;
-    return Boolean(el && el.nodeType === Node.ELEMENT_NODE && el.matches && el.matches('.ProseMirror.markdown[contenteditable]'));
+    if (!el || el.nodeType !== Node.ELEMENT_NODE || !el.matches) {
+        return false;
+    }
+    if (el.getAttribute('data-ai-rtl-editor')) {
+        return true;
+    }
+    const selector = getLockedEditorSelector(onlyCss);
+    if (selector === true) {
+        return true;
+    }
+    try {
+        return el.matches(selector);
+    } catch {
+        return false;
+    }
+}
+
+function isLockedMarkdownEditor(element, onlyCss) {
+    return shouldHandleElementByCss(element, onlyCss);
 }
 
 function getLockedEditorId(element) {
@@ -2224,21 +2270,28 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     }
     rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     const el = element && element.jquery ? element[0] : element;
-    if (!isLockedMarkdownEditor(el) || rtlAlgorithm !== 'advanced_section') {
+    if (!shouldHandleElementByCss(el, options.onlyCss)) {
         return false;
     }
 
     const fontClass = options.fontClass || 'FontSet';
     const setTextAlign = isTextAlignEnabled(options.setTextAlign);
     const $element = AQ(el);
+    const processedClass = options.processedClass;
+    const unifiedDirection = rtlAlgorithm === 'advanced_section'
+        ? null
+        : detectDirectionByAlgorithm(el.textContent || '', rtlAlgorithm);
 
     $element.addClass(`AsSetAlgorithm ${fontClass}`);
+    if (processedClass) {
+        $element.addClass(processedClass);
+    }
     el.removeAttribute('dir');
     el.removeAttribute('data-direction');
     el.style.removeProperty('text-align');
 
     const editorId = getLockedEditorId(el);
-    let contentSig = '';
+    let contentSig = `${rtlAlgorithm}:${setTextAlign}:${mixedTitleDisplayModeCache || ''}|`;
     for (let i = 0; i < el.children.length; i++) {
         const child = el.children[i];
         const text = (child.textContent || '').trim();
@@ -2277,19 +2330,19 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
                 if (item.tagName.toLowerCase() !== 'li') {
                     return;
                 }
-                const itemDirection = detectDirectionByAlgorithm(item.textContent || '', rtlAlgorithm);
+                const itemDirection = unifiedDirection || detectDirectionByAlgorithm(item.textContent || '', rtlAlgorithm);
                 itemDirs.push(itemDirection);
                 blockRules.push({
                     selector: `${selector}>li:nth-of-type(${itemIndex + 1})`,
                     direction: itemDirection
                 });
             });
-            blockRules.push({ selector, direction: majorityDirection(itemDirs) });
+            blockRules.push({ selector, direction: unifiedDirection || majorityDirection(itemDirs) });
             return;
         }
 
-        const direction = detectDirectionByAlgorithm(child.textContent || '', rtlAlgorithm);
-        if (LOCKED_EDITOR_HEADING_TAGS.includes(tagName)) {
+        const direction = unifiedDirection || detectDirectionByAlgorithm(child.textContent || '', rtlAlgorithm);
+        if (!unifiedDirection && LOCKED_EDITOR_HEADING_TAGS.includes(tagName)) {
             if (!headingDirs[tagName]) {
                 headingDirs[tagName] = [];
             }
@@ -2307,14 +2360,17 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
         const rules = blockRules.slice();
         Object.keys(headingDirs).forEach((tagName) => {
             const headings = headingDirs[tagName];
-            const unifiedDirection = majorityDirection(headings.map((item) => item.direction));
+            const headingUnified = majorityDirection(headings.map((item) => item.direction));
             headings.forEach((item) => {
                 rules.push({
                     selector: item.selector,
-                    direction: headingMode === 'unified' ? unifiedDirection : item.direction
+                    direction: headingMode === 'unified' ? headingUnified : item.direction
                 });
             });
         });
+
+        const rootDirection = unifiedDirection || majorityDirection(rules.map((item) => item.direction));
+        rules.unshift({ selector: rootSelector, direction: rootDirection });
 
         const css = rules.map((item) => {
             const alignForRule = setTextAlign || item.selector.includes('>pre:');
@@ -2325,7 +2381,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
             flushLockedEditorStyles();
         }
 
-        $element.attr('data-algorithm-rtl', 'advanced_section');
+        $element.attr('data-algorithm-rtl', rtlAlgorithm);
     };
 
     applyRules(mixedTitleDisplayModeCache || DEFAULT_MIXED_TITLE_DISPLAY_MODE);
@@ -2341,6 +2397,8 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
  * @param {boolean} [options.processTables] - For advanced_full: process tables even without isContainer; runs independently of shouldProcess
+ * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM.
+ *   `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) becomes LOCKED_EDITOR_SELECTOR for this call.
  * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side
  */
 function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
@@ -2350,13 +2408,23 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     try {
     const $element = AQ(element);
+    const el = $element[0];
+    const onlyCss = options.onlyCss;
 
-    if (isLockedMarkdownEditor($element[0]) && rtlAlgorithm !== 'advanced_section') {
-        const editorId = $element[0].getAttribute('data-ai-rtl-editor');
-        if (editorId && lockedEditorCssById.has(editorId)) {
-            lockedEditorCssById.delete(editorId);
-            flushLockedEditorStyles();
-        }
+    if (onlyCss === true) {
+        processLockedEditorByCss(el, rtlAlgorithm, options);
+        return;
+    }
+
+    if (processLockedEditorByCss(el, rtlAlgorithm, options)) {
+        return;
+    }
+
+    const nestedSelector = normalizeOnlyCssOption(onlyCss);
+    if (nestedSelector && el && el.querySelectorAll) {
+        el.querySelectorAll(nestedSelector).forEach((child) => {
+            processLockedEditorByCss(child, rtlAlgorithm, { ...options, onlyCss: true });
+        });
     }
     
     // Default options for each algorithm
@@ -2413,10 +2481,6 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
-
-        if (processLockedEditorByCss($element[0], rtlAlgorithm, mergedOptions)) {
-            return;
-        }
         
         const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
         
@@ -2596,6 +2660,10 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     }
     rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     const $element = AQ(element);
+
+    if (processLockedEditorByCss($element[0], rtlAlgorithm, options)) {
+        return;
+    }
     
     // Default options for each algorithm
     const defaultOptions = {
