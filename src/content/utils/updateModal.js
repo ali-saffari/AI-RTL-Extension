@@ -146,15 +146,22 @@ export function showUpdateModal(options = {}) {
         return;
     }
 
-    chrome.storage.local.get([UPDATE_MODAL_STORAGE_KEY], function(result) {
-        const closedId = result[UPDATE_MODAL_STORAGE_KEY];
-
-        if (closedId === UPDATE_MODAL_ID) {
+    try {
+        if (!chrome?.storage?.local?.get) {
             return;
         }
+        chrome.storage.local.get([UPDATE_MODAL_STORAGE_KEY], function(result) {
+            const closedId = result?.[UPDATE_MODAL_STORAGE_KEY];
 
-        mountUpdateModal(true);
-    });
+            if (closedId === UPDATE_MODAL_ID) {
+                return;
+            }
+
+            mountUpdateModal(true);
+        });
+    } catch (error) {
+        console.warn('[Content] Update modal storage read failed:', error);
+    }
 }
 
 function setupCapsuleAnimation(capsuleId, toggleId, panelId) {
@@ -771,10 +778,19 @@ function setupUpdateModalListeners(modalId, persistClose = true) {
             return;
         }
 
-        chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: modalId }, function() {
-            closeUpdateModalElement(modal);
+        try {
+            if (!chrome?.storage?.local?.set) {
+                closeUpdateModalElement(modal);
+                return;
+            }
+            chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: modalId }, function() {
+                closeUpdateModalElement(modal);
 
-            void sendRuntimeMessage({ action: 'closeUpdateModalInAllTabs' });
-        });
+                void sendRuntimeMessage({ action: 'closeUpdateModalInAllTabs' });
+            });
+        } catch (error) {
+            console.warn('[Content] Update modal storage write failed:', error);
+            closeUpdateModalElement(modal);
+        }
     });
 }
