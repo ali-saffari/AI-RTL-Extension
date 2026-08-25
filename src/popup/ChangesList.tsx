@@ -200,7 +200,7 @@ const ChangesList: React.FC = () => {
                                         }}>
                                             سایت‌های آپدیت‌شده
                                             <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#ff8c00' : '#ef6c00' }}>
-                                                {updatedSites.length}
+                                                {updatedSites.length} سایت
                                             </Box>
                                         </Typography>
                                         {renderSiteGrid(updatedSites)}
@@ -220,7 +220,7 @@ const ChangesList: React.FC = () => {
                                         }}>
                                             سایت‌های اضافه‌شده
                                             <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
-                                                {addedSites.length} جدید
+                                                {addedSites.length} سایت
                                             </Box>
                                         </Typography>
                                         {renderSiteGrid(addedSites)}

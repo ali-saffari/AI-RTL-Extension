@@ -1233,13 +1233,13 @@ function App() {
                                         <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>راه‌حل چیست؟</strong>
                                         <br />
                                         اگر افزونه روی سایتی کار نمی‌کند، این کاملاً طبیعی است! 
-                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://ai-rtl.ir/report/?source=extension-popup-telegram-help" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
+                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
                                         <br /><br />
                                         همچنین پیشنهادات و ایده‌های شما برای بهبود افزونه بسیار ارزشمند است و از ارسال آن‌ها استقبال می‌کنیم.
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                                            <a href="https://ai-rtl.ir/report/?source=extension-popup-telegram-contact" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                            <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                                 <Typography variant="body2" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1e40af', 
                                                     '&:hover': { textDecoration: 'underline' }, 

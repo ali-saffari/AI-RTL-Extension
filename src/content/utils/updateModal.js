@@ -33,19 +33,19 @@ function renderChangeItems(changes) {
     const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(changes);
 
     return `
-        ${menuChanges.length ? `
-            <div class="As-change-group">
-                <div class="As-change-group-title">تغییرات منوی افزونه</div>
-                <div class="As-change-list">
-                    ${renderFeatureItems(menuChanges)}
-                </div>
-            </div>
-        ` : ''}
         ${features.length ? `
             <div class="As-change-group">
                 <div class="As-change-group-title">قابلیت‌های جدید برای همه سایت‌ها</div>
                 <div class="As-change-list">
                     ${renderFeatureItems(features)}
+                </div>
+            </div>
+        ` : ''}
+        ${menuChanges.length ? `
+            <div class="As-change-group">
+                <div class="As-change-group-title">تغییرات منوی افزونه</div>
+                <div class="As-change-list">
+                    ${renderFeatureItems(menuChanges)}
                 </div>
             </div>
         ` : ''}
@@ -55,7 +55,7 @@ function renderChangeItems(changes) {
                     <div class="As-site-subgroup">
                         <div class="As-change-group-title">
                             سایت‌های آپدیت‌شده
-                            <span class="As-change-group-count">${updatedSites.length}</span>
+                            <span class="As-change-group-count">${updatedSites.length} سایت</span>
                         </div>
                         <div class="As-site-grid">
                             ${renderSiteChips(updatedSites)}
@@ -66,7 +66,7 @@ function renderChangeItems(changes) {
                     <div class="As-site-subgroup">
                         <div class="As-change-group-title">
                             سایت‌های اضافه‌شده
-                            <span class="As-change-group-count">${addedSites.length} جدید</span>
+                            <span class="As-change-group-count">${addedSites.length} سایت</span>
                         </div>
                         <div class="As-sites-note">
                             <span class="As-sites-note-icon">!</span>
@@ -312,12 +312,18 @@ function createUpdateModalHTML() {
                 #AsUpdateModal .As-header {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
+                    justify-content: space-between;
                     gap: 8px;
                     margin-bottom: 12px;
                     padding: 0 20px 10px;
                     border-bottom: 1px solid rgba(0, 234, 255, 0.2);
                     direction: rtl;
+                }
+                #AsUpdateModal .As-header-brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    min-width: 0;
                     flex-direction: row-reverse;
                 }
                 #AsUpdateModal .As-logo {
@@ -379,12 +385,57 @@ function createUpdateModalHTML() {
                     background-clip: padding-box;
                 }
                 #AsUpdateModal .As-title {
-                    margin: 0 0 12px 0;
+                    margin: 0 0 8px 0;
                     color: #00e9ff;
                     font-size: 19px;
                     font-weight: 700;
                     text-align: center;
                     text-shadow: 0 1px 8px rgba(0, 233, 255, 0.3);
+                }
+                #AsUpdateModal .As-update-summary {
+                    margin: 0 0 10px 0;
+                    color: #ffc24a;
+                    font-size: 13px;
+                    font-weight: 700;
+                    line-height: 1.85;
+                    text-align: center;
+                    text-shadow: 0 0 10px rgba(255, 176, 46, 0.28);
+                }
+                #AsUpdateModal .As-update-summary-lead {
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 15px;
+                    font-weight: 800;
+                }
+                #AsUpdateModal .As-update-summary-hint {
+                    display: block;
+                    margin-top: 4px;
+                    color: rgba(255, 194, 74, 0.78);
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                #AsUpdateModal .As-major-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 5px 11px 5px 9px;
+                    border-radius: 999px;
+                    font-size: 11px;
+                    font-weight: 800;
+                    letter-spacing: 0.2px;
+                    line-height: 1.3;
+                    color: #2a1a04;
+                    background: linear-gradient(135deg, #ffe27a 0%, #ffb02e 100%);
+                    box-shadow: 0 0 14px rgba(255, 176, 46, 0.38);
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                }
+                #AsUpdateModal .As-major-badge-dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background: #2a1a04;
+                    box-shadow: 0 0 0 3px rgba(42, 26, 4, 0.12);
                 }
                 #AsUpdateModal .As-sites-note {
                     margin: 0;
@@ -716,14 +767,20 @@ function createUpdateModalHTML() {
             <div class="As-modal">
                 <div class="As-content">
                     <div class="As-header">
-                        <img class="As-logo" src="${iconUrl}" alt="${extensionName}">
-                        <div class="As-ext-info">
-                            <div class="As-version">
-                                نسخه ${currentVersion}
+                        <span class="As-major-badge">
+                            <span class="As-major-badge-dot"></span>
+                            یه آپدیتِ حسابی
+                        </span>
+                        <div class="As-header-brand">
+                            <img class="As-logo" src="${iconUrl}" alt="${extensionName}">
+                            <div class="As-ext-info">
+                                <div class="As-version">
+                                    نسخه ${currentVersion}
+                                </div>
+                                <h2 class="As-ext-name">
+                                    AI RTL (Persian/Farsi)
+                                </h2>
                             </div>
-                            <h2 class="As-ext-name">
-                                AI RTL (Persian/Farsi)
-                            </h2>
                         </div>
                     </div>
 
@@ -731,6 +788,11 @@ function createUpdateModalHTML() {
                         <h3 class="As-title">
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
+                        <p class="As-update-summary">
+                            <span class="As-update-summary-lead">🎉 ۴۰ هزار نفری شدیم!</span>
+                            به پاس همراهی شما، یک آپدیت بزرگ آماده کردیم؛
+                            <span class="As-update-summary-hint">برای جزئیات بیشتر، لیست زیر را مشاهده کنید.</span>
+                        </p>
                         <div class="As-changes As-version-changes">
                             ${renderChangeItems(versionChanges)}
                         </div>
