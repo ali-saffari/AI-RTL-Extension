@@ -292,6 +292,24 @@ html.ai-rtl-code-algorithm .md-code-block[dir="rtl"] {
     unicode-bidi: isolate;
 }
 
+/* Persian/RTL code boxes: override site monospace on the block and nested spans */
+html.ai-rtl-code-algorithm code.FontSet,
+html.ai-rtl-code-algorithm code.FontSet *,
+html.ai-rtl-code-algorithm pre.FontSet,
+html.ai-rtl-code-algorithm pre.FontSet *,
+html.ai-rtl-code-algorithm .cm-content.FontSet,
+html.ai-rtl-code-algorithm .cm-content.FontSet *,
+html.ai-rtl-code-algorithm .cm-line.FontSet,
+html.ai-rtl-code-algorithm .cm-line.FontSet *,
+html.ai-rtl-code-algorithm .md-code-block.FontSet,
+html.ai-rtl-code-algorithm .md-code-block.FontSet *,
+html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet,
+html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet *,
+html.ai-rtl-code-algorithm [data-language].FontSet,
+html.ai-rtl-code-algorithm [data-language].FontSet * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
 .language-plaintext.FontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
@@ -614,8 +632,13 @@ copilot
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetPerplexity code {
+html:not(.ai-rtl-code-algorithm) .FontSetPerplexity code {
     direction: ltr !important;
+}
+
+html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
+html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 .FontSetImportant .font-display {

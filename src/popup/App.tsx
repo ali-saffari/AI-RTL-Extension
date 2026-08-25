@@ -201,8 +201,8 @@ function App() {
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
-    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
-    const [flipRtlArrows, setFlipRtlArrows] = React.useState(false);
+    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(true);
+    const [flipRtlArrows, setFlipRtlArrows] = React.useState(true);
     const [supportHide, setSupportHide] = React.useState(false);
     const [pinOpenSiteMode, setPinOpenSiteMode] = React.useState<PinOpenSiteMode>(getDefaultPinOpenSiteMode());
     const [isDarkMode, setIsDarkMode] = React.useState(true);

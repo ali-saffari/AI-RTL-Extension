@@ -5,6 +5,8 @@
 
 const ORIG_DIR_ATTR = 'data-ai-rtl-orig-dir';
 const ORIG_ALIGN_ATTR = 'data-ai-rtl-orig-align';
+const ORIG_FONT_ATTR = 'data-ai-rtl-orig-font';
+const CODE_FONT_ATTR = 'data-ai-rtl-code-font';
 
 const SKIP_STYLE_IDS = new Set([
     'ai-rtl-selected-font-style',
@@ -84,7 +86,8 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 
 const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
-    ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, 'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
+    ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
+    'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
     'data-org-dir', 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',
     'data-debug-reason', 'data-debug-processed', 'data-skip-log-sent'
 ];
@@ -456,6 +459,22 @@ function restoreAlignFromSelf(el) {
     nativeRemoveAttribute.call(el, ORIG_ALIGN_ATTR);
 }
 
+function restoreFontFromSelf(el) {
+    if (!el.hasAttribute(ORIG_FONT_ATTR) && !el.hasAttribute(CODE_FONT_ATTR)) {
+        return;
+    }
+    if (el.style) {
+        const originalFont = el.getAttribute(ORIG_FONT_ATTR);
+        if (originalFont) {
+            nativeSetProperty.call(el.style, 'font-family', originalFont);
+        } else {
+            nativeRemoveProperty.call(el.style, 'font-family');
+        }
+    }
+    nativeRemoveAttribute.call(el, ORIG_FONT_ATTR);
+    nativeRemoveAttribute.call(el, CODE_FONT_ATTR);
+}
+
 export function restoreElementFromSelf(el) {
     if (!el || el.nodeType !== 1) {
         return false;
@@ -466,13 +485,15 @@ export function restoreElementFromSelf(el) {
     try {
         const hasOrigDir = el.hasAttribute(ORIG_DIR_ATTR);
         const hasOrigAlign = el.hasAttribute(ORIG_ALIGN_ATTR);
-        const touched = hasOrigDir || hasOrigAlign || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
+        const hasOrigFont = el.hasAttribute(ORIG_FONT_ATTR) || el.hasAttribute(CODE_FONT_ATTR);
+        const touched = hasOrigDir || hasOrigAlign || hasOrigFont || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
         if (!touched) {
             return false;
         }
 
         restoreDirFromSelf(el);
         restoreAlignFromSelf(el);
+        restoreFontFromSelf(el);
         nativeRemoveAttribute.call(el, 'data-direction');
         stripExtensionClassesFrom(el);
         clearJqueryData(el);
@@ -485,7 +506,7 @@ export function restoreElementFromSelf(el) {
 
 function restoreMarkedElements() {
     try {
-        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
+        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_FONT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
             restoreElementFromSelf(el);
         });
     } catch {

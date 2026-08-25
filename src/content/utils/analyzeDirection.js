@@ -327,6 +327,52 @@ function tokenizeForDirection(text) {
     return { words, rtlFlags };
 }
 
+// Minimum consecutive RTL words to treat as a real passage (not a short term).
+const RTL_PASSAGE_MIN = 4;
+
+/**
+ * Single pass over rtlFlags: totals, longest RTL run, trailing LTR closer.
+ * @param {boolean[]} rtlFlags
+ */
+function scanDirectionStats(rtlFlags) {
+    const n = rtlFlags.length;
+    let totalRTL = 0;
+    let longestRtlRun = 0;
+    let run = 0;
+    let trailingLtrCount = 0;
+
+    for (let i = 0; i < n; i++) {
+        if (rtlFlags[i]) {
+            totalRTL++;
+            run++;
+            if (run > longestRtlRun) longestRtlRun = run;
+            trailingLtrCount = 0;
+        } else {
+            run = 0;
+            trailingLtrCount++;
+        }
+    }
+
+    return {
+        firstRTL: rtlFlags[0],
+        lastRTL: rtlFlags[n - 1],
+        totalRTL,
+        longestRtlRun,
+        trailingLtrCount
+    };
+}
+
+/**
+ * LTR-framed text (starts and ends LTR): RTL only when a real RTL passage
+ * is the body and the trailing LTR is just a short closer ("world"),
+ * not an English continuation ("for you to read...").
+ */
+function isRtlPassageInLtrFrame(totalRTL, totalLTR, longestRtlRun, trailingLtrCount) {
+    if (longestRtlRun < RTL_PASSAGE_MIN) return false;
+    if (longestRtlRun > (trailingLtrCount << 1)) return true;
+    return totalRTL > totalLTR;
+}
+
 /**
  * MAIN DECISION FUNCTION - Single source of truth
  * @param {string} text
@@ -338,48 +384,33 @@ function analyzeTextDirection(text) {
     // Fast path for pure RTL or pure non-RTL texts (no mixed Latin+RTL)
     const probe = quickScriptProbe(text);
     if (probe === 1) return 'rtl';
-    if (probe === -1) {
-        // May still include only digits/symbols/latin — ltr
-        // But markdown-only latin is ltr anyway.
-        // Exception: texts with only neutrals/latin → ltr (matches previous behavior)
-        return 'ltr';
-    }
+    if (probe === -1) return 'ltr';
 
-    const { words, rtlFlags } = tokenizeForDirection(text);
-    const wordCount = words.length;
+    const { rtlFlags } = tokenizeForDirection(text);
+    const wordCount = rtlFlags.length;
     if (wordCount === 0) return 'ltr';
 
+    const { firstRTL, lastRTL, totalRTL, longestRtlRun, trailingLtrCount } =
+        scanDirectionStats(rtlFlags);
+
     if (wordCount >= 2) {
-        const firstWordIsRTL = rtlFlags[0];
-        const lastWordIsRTL = rtlFlags[wordCount - 1];
+        if (firstRTL && lastRTL) return 'rtl';
 
-        if (firstWordIsRTL && lastWordIsRTL) {
-            return 'rtl';
-        }
-
-        if (!firstWordIsRTL && !lastWordIsRTL && wordCount <= 3) {
-            let hasAnyRTLWord = false;
-            for (let i = 0; i < wordCount; i++) {
-                if (rtlFlags[i]) {
-                    hasAnyRTLWord = true;
-                    break;
-                }
-            }
-            if (!hasAnyRTLWord) return 'ltr';
+        if (!firstRTL && !lastRTL) {
+            return isRtlPassageInLtrFrame(
+                totalRTL,
+                wordCount - totalRTL,
+                longestRtlRun,
+                trailingLtrCount
+            ) ? 'rtl' : 'ltr';
         }
     }
 
     if (wordCount < 5) {
-        let rtlWordsCount = 0;
-        let ltrWordsCount = 0;
-        for (let i = 0; i < wordCount; i++) {
-            if (rtlFlags[i]) rtlWordsCount++;
-            else ltrWordsCount++;
-        }
-        if (rtlWordsCount === 0) return 'ltr';
-        if (rtlFlags[0]) return 'rtl';
-        if (ltrWordsCount === 0) return 'rtl';
-        return rtlWordsCount >= ltrWordsCount ? 'rtl' : 'ltr';
+        if (totalRTL === 0) return 'ltr';
+        if (firstRTL) return 'rtl';
+        if (totalRTL === wordCount) return 'rtl';
+        return totalRTL >= (wordCount - totalRTL) ? 'rtl' : 'ltr';
     }
 
     if (wordCount <= 10) {
@@ -391,44 +422,23 @@ function analyzeTextDirection(text) {
 
         if (rtlWordsCount > checkWordsCount / 2) return 'rtl';
         if (rtlWordsCount < checkWordsCount / 2) return 'ltr';
-
-        let totalRTLWords = 0;
-        for (let i = 0; i < wordCount; i++) {
-            if (rtlFlags[i]) totalRTLWords++;
-        }
-        return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
+        return totalRTL > wordCount / 2 ? 'rtl' : 'ltr';
     }
 
-    let totalRTLWords = 0;
-    for (let i = 0; i < wordCount; i++) {
-        if (rtlFlags[i]) totalRTLWords++;
-    }
-
-    const firstWordIsRTL = rtlFlags[0];
-    const lastWordIsRTL = rtlFlags[wordCount - 1];
-
-    if (firstWordIsRTL && lastWordIsRTL) return 'rtl';
-    if (!firstWordIsRTL && !lastWordIsRTL) return 'ltr';
-
-    const ltrWords = wordCount - totalRTLWords;
-    const difference = totalRTLWords > ltrWords ? totalRTLWords - ltrWords : ltrWords - totalRTLWords;
-    const rtlPercentage = (totalRTLWords / wordCount) * 100;
+    const ltrWords = wordCount - totalRTL;
+    const rtlPercentage = (totalRTL / wordCount) * 100;
 
     if (rtlPercentage >= 70 || rtlPercentage <= 30) {
-        return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
+        return totalRTL > wordCount / 2 ? 'rtl' : 'ltr';
     }
 
     // English-first mixed text that is still Persian-majority and ends RTL
-    // should stay RTL (e.g. "dfdfdfsd fsdf یبکخن ... حن م")
-    if (lastWordIsRTL && totalRTLWords > wordCount / 2) {
-        return 'rtl';
-    }
+    if (lastRTL && totalRTL > wordCount / 2) return 'rtl';
 
-    if (difference <= 10) {
-        return firstWordIsRTL ? 'rtl' : 'ltr';
-    }
+    const difference = totalRTL > ltrWords ? totalRTL - ltrWords : ltrWords - totalRTL;
+    if (difference <= 10) return firstRTL ? 'rtl' : 'ltr';
 
-    return totalRTLWords > wordCount / 2 ? 'rtl' : 'ltr';
+    return totalRTL > wordCount / 2 ? 'rtl' : 'ltr';
 }
 
 

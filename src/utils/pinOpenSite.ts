@@ -31,7 +31,7 @@ export const PIN_OPEN_SITE_MODE_OPTIONS: Array<{
 ];
 
 export function getDefaultPinOpenSiteMode(): PinOpenSiteMode {
-    return isFirefoxRuntime() ? 'full' : 'off';
+    return isFirefoxRuntime() ? 'full' : 'limited';
 }
 
 export function getPinOpenSiteModeOptions() {

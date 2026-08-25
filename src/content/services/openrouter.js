@@ -15,7 +15,8 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
             applyRtlToContainer(this, rtlAlgorithm, {
                 fontClass: 'FontSet FontOpenRouter',
                 processedClass: 'AsOkText',
-                isContainer: true
+                isContainer: true,
+                setTextAlign: true
             });
     
     });
@@ -25,7 +26,8 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
     AQ('.break-words').each(function (each) {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsRtl'
+            processedClass: 'AsRtl',
+            setTextAlign: true
         });
         
     
@@ -46,7 +48,8 @@ export function setOpenRouter(rtlAlgorithm = 'advanced_full') {
 
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsRtl'
+            processedClass: 'AsRtl',
+            setTextAlign: true
         });
         
         // Add event listener for real-time direction detection

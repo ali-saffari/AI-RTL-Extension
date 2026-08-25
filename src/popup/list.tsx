@@ -24,9 +24,9 @@ import {
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
-import { hasHostPermission } from '../utils/hasHostPermission';
+import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
-import { isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
+import { getDefaultPinOpenSiteMode, isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
 import SitePermissionsHint from './SitePermissionsHint';
 
 interface Service {
@@ -93,7 +93,7 @@ const services: Service[] = [
     { key: 'manus', name: 'Manus', icon: '/images/sites/manus.png', url: 'https://manus.im/', hosts: ['manus.im'], keywords: ['manus', 'مانوس'] },
     { key: 'blackbox', name: 'Black Box', icon: '/images/sites/blackbox.png', url: 'https://www.blackbox.ai/', hosts: ['blackbox.ai'], keywords: ['blackbox', 'بلک باکس', 'بلک‌باکس', 'کد'] },
     { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/openAi-icon.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
-    { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://digen.ai/', hosts: ['digen.ai'], keywords: ['digen', 'دیجن'] },
+    { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://agent.digen.ai/', hosts: ['digen.ai', 'agent.digen.ai'], keywords: ['digen', 'دیجن'] },
     { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
     { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', hosts: ['lovable.dev'], keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
@@ -131,7 +131,7 @@ interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
 }
 
-export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProps) {
+export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMode() }: ServiceListProps) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -160,7 +160,7 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
         minimax: true,
         jules: true,
         oneMinai: true,
-        digen: true,
+        digen: false,
         lovable: true,
         synaps: true,
         writesonic: true,
@@ -431,13 +431,34 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
         try {
             chrome.storage.sync.get(
                 services.map(service => service.key),
-                (data) => {
+                async (data) => {
                     const updatedData = { ...data };
                     // If Edge, force Copilot to be disabled
                     if (isEdge) {
                         updatedData.copilot = false;
                         chrome.storage.sync.set({ copilot: false });
                     }
+
+                    if (!isFirefoxRuntime()) {
+                        const storageFixes: CheckedState = {};
+                        for (const key of Object.keys(DYNAMIC_SERVICES)) {
+                            if (updatedData[key] !== true) {
+                                continue;
+                            }
+                            const service = DYNAMIC_SERVICES[key as keyof typeof DYNAMIC_SERVICES];
+                            if (!service?.origins) {
+                                continue;
+                            }
+                            if (!(await hasServicePermissions(service.origins))) {
+                                updatedData[key] = false;
+                                storageFixes[key] = false;
+                            }
+                        }
+                        if (Object.keys(storageFixes).length) {
+                            chrome.storage.sync.set(storageFixes);
+                        }
+                    }
+
                     setChecked(updatedData);
                 }
             );
@@ -465,10 +486,7 @@ export default function ServiceList({ pinOpenSiteMode = 'off' }: ServiceListProp
             if (service && service.origins) {
                 const origins = service.origins;
                 try {
-                    const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
-                    const hasOrigins = await hasHostPermission(origins);
-                    
-                    if (!hasScripting || !hasOrigins) {
+                    if (!(await hasServicePermissions(origins))) {
                         // Show permission dialog
                         const serviceName = services.find(s => s.key === key)?.name || key;
                         setPermissionServiceName(serviceName);

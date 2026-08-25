@@ -3,7 +3,122 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 
+const RTL_CODE_FONT = 'var(--ai-rtl-font, iranyekan, sans-serif)';
+const ORIG_FONT_ATTR = 'data-ai-rtl-orig-font';
+const CODE_FONT_ATTR = 'data-ai-rtl-code-font';
+const SKIP_CODE_FONT_SELECTOR = 'svg, svg *, img, path, button, i';
+let applyingCodeFont = false;
+
+function shouldSkipCodeFontNode(el) {
+    if (!el || el.nodeType !== 1 || !el.style) {
+        return true;
+    }
+    try {
+        return el.matches(SKIP_CODE_FONT_SELECTOR);
+    } catch {
+        return false;
+    }
+}
+
+function applyInlineCodeFont(el) {
+    if (shouldSkipCodeFontNode(el)) {
+        return;
+    }
+    if (el.style.getPropertyValue('font-family') === RTL_CODE_FONT
+        && el.style.getPropertyPriority('font-family') === 'important') {
+        el.setAttribute(CODE_FONT_ATTR, '1');
+        return;
+    }
+    if (!el.hasAttribute(ORIG_FONT_ATTR)) {
+        el.setAttribute(ORIG_FONT_ATTR, el.style.getPropertyValue('font-family') || '');
+    }
+    el.style.setProperty('font-family', RTL_CODE_FONT, 'important');
+    el.setAttribute(CODE_FONT_ATTR, '1');
+}
+
+function applyInlineCodeFontTree(root) {
+    if (applyingCodeFont || !root || root.nodeType !== 1) {
+        return;
+    }
+    if (document.documentElement.classList.contains('ai-rtl-font-none')) {
+        return;
+    }
+    applyingCodeFont = true;
+    try {
+        applyInlineCodeFont(root);
+        const nodes = root.querySelectorAll('*');
+        for (let i = 0; i < nodes.length; i++) {
+            applyInlineCodeFont(nodes[i]);
+        }
+    } finally {
+        applyingCodeFont = false;
+    }
+}
+
+function applyPerplexityRtlCodeFonts() {
+    document.querySelectorAll('code[dir="rtl"], pre[dir="rtl"]').forEach(applyInlineCodeFontTree);
+}
+
+function observePerplexityCodeFonts() {
+    if (document.body.dataset.aiRtlPerplexityFontObs === '1') {
+        applyPerplexityRtlCodeFonts();
+        return;
+    }
+    document.body.dataset.aiRtlPerplexityFontObs = '1';
+
+    const observer = new MutationObserver((mutations) => {
+        for (let i = 0; i < mutations.length; i++) {
+            const mutation = mutations[i];
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType !== 1) {
+                        return;
+                    }
+                    if (node.matches?.('code[dir="rtl"], pre[dir="rtl"]')) {
+                        applyInlineCodeFontTree(node);
+                        return;
+                    }
+                    node.querySelectorAll?.('code[dir="rtl"], pre[dir="rtl"]').forEach(applyInlineCodeFontTree);
+                    const parentCode = node.closest?.('code[dir="rtl"], pre[dir="rtl"]');
+                    if (parentCode) {
+                        applyInlineCodeFontTree(parentCode);
+                    }
+                });
+            } else if (mutation.type === 'attributes') {
+                const el = mutation.target;
+                if (el.nodeType !== 1) {
+                    continue;
+                }
+                const code = el.closest?.('code[dir="rtl"], pre[dir="rtl"]');
+                if (code) {
+                    applyInlineCodeFontTree(code);
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style']
+    });
+
+    applyPerplexityRtlCodeFonts();
+}
+
 export function setPerplexity(rtlAlgorithm = 'advanced_full') {
+    if (!AQ('#perplexity-font-style').length) {
+        AQ(`<style id="perplexity-font-style">
+            html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
+            html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet *,
+            html.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet,
+            html.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet * {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            }
+        </style>`).appendTo('head');
+    }
+
     // Add copyright using utility function
     if (chrome.runtime?.id) {
         let fo2 = `.bottom-safeAreaInsetBottom .pointer-events-auto .grow`
@@ -184,8 +299,7 @@ export function setPerplexity(rtlAlgorithm = 'advanced_full') {
         
         });
 
-
-
+    applyPerplexityRtlCodeFonts();
 }
 
 
@@ -302,6 +416,7 @@ export function activatePerplexity(rtlAlgorithm = 'advanced_full') {
     
     // Initial setup
     setPerplexity(rtlAlgorithm);
+    observePerplexityCodeFonts();
     
     // Monitor changes to elements with data-type="portal"
     observePortalElements(rtlAlgorithm);

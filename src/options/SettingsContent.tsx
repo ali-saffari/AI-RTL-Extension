@@ -55,8 +55,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
-    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(false);
-    const [flipRtlArrows, setFlipRtlArrows] = React.useState(false);
+    const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(true);
+    const [flipRtlArrows, setFlipRtlArrows] = React.useState(true);
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,

@@ -47,6 +47,7 @@ export const FONT_SCALE_SITE_MODES = {
     '1min.ai': 'zoom',
     'app.1min.ai': 'zoom',
     'digen.ai': 'zoom',
+    'agent.digen.ai': 'zoom',
     'lovable.dev': 'zoom',
     'synaps.app': 'zoom',
     'app.writesonic.com': 'zoom',

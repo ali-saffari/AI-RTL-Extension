@@ -741,7 +741,8 @@ function processCodeLikeElement($element, element, options = {}) {
     if (!isApplyAlgorithmToCodeEnabled()) {
         return;
     }
-    const { fontClass, processedClass } = options;
+    const { fontClass, processedClass, codeFontClass } = options;
+    const blockFontClass = codeFontClass || fontClass;
     if (processedClass) {
         $element.addClass(processedClass);
     }
@@ -758,7 +759,7 @@ function processCodeLikeElement($element, element, options = {}) {
 
     setDebugAttr($element, 'data-debug-mode', 'code-element-normal');
     $element.find('*').removeAttr('dir');
-    applyCodeBlockDirection($targets, 'rtl', fontClass);
+    applyCodeBlockDirection($targets, 'rtl', blockFontClass);
 }
 
 function isCodeMirrorCodeBlock($element) {

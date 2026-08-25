@@ -234,7 +234,7 @@ const serviceConfig = {
         activate: activate1minai
     },
     digen: {
-        urls: ["digen.ai"],
+        urls: ["digen.ai", "agent.digen.ai"],
         activate: activateDigen
     },
     lovable: {
@@ -421,8 +421,8 @@ async function initializeAllServices(token = applyToken) {
 
     rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
     setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
-    setApplyAlgorithmToCode(results.applyAlgorithmToCode);
-    setFlipRtlArrows(results.flipRtlArrows);
+    setApplyAlgorithmToCode(results.applyAlgorithmToCode !== false);
+    setFlipRtlArrows(results.flipRtlArrows !== false);
     
     let activeService = null;
     

@@ -76,6 +76,21 @@ export async function hasHostPermission(origins) {
     }
 }
 
+/**
+ * Dynamic services need both scripting and every listed origin.
+ */
+export async function hasServicePermissions(origins) {
+    try {
+        const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+        if (!hasScripting) {
+            return false;
+        }
+        return hasHostPermission(origins);
+    } catch {
+        return false;
+    }
+}
+
 export function injectCurrentTabOnPopupOpen() {
     if (!isFirefoxRuntime()) {
         return;

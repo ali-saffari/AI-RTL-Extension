@@ -42,6 +42,7 @@ function getAISitesList() {
         '1min.ai',
         'app.1min.ai',
         'digen.ai',
+        'agent.digen.ai',
         'lovable.dev',
         'www.lovable.dev',
         'synaps.app',

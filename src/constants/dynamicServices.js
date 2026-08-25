@@ -150,6 +150,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Kimi',
         origins: ['*://kimi.ai/*', '*://www.kimi.ai/*'],
         hostnames: ['kimi.ai', 'www.kimi.ai']
+    },
+    digen: {
+        name: 'Digen',
+        origins: ['*://digen.ai/*', '*://*.digen.ai/*'],
+        hostnames: ['digen.ai', 'www.digen.ai', 'agent.digen.ai']
     }
 };
 
@@ -161,8 +166,9 @@ export const DYNAMIC_SERVICES = {
 
 // Helper function to get service name from hostname (for background script)
 export function getServiceNameFromHostname(hostname) {
+    const host = String(hostname || '').toLowerCase();
     for (const [key, service] of Object.entries(DYNAMIC_SERVICES)) {
-        if (service.hostnames.includes(hostname)) {
+        if (service.hostnames.some((allowed) => host === allowed || host.endsWith('.' + allowed))) {
             return key;
         }
     }

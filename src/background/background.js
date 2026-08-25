@@ -7,8 +7,8 @@ import {
     sendRuntimeMessage,
     sendTabMessage
 } from '../utils/chromeMessaging.js';
-import { hasHostPermission } from '../utils/hasHostPermission.js';
-import { applyPendingFullPinOpenSite } from '../utils/pinOpenSite';
+import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission.js';
+import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY } from '../utils/pinOpenSite';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -25,7 +25,7 @@ const SERVICE_FLAGS = {
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
     googleNotebook: false, jules: true, zai: true, arena: false, openrouter: true, minimax: true, 
-    oneMinai: true, digen: true, writesonic: true, lovable: true, ernie: true, gamma: true
+    oneMinai: true, writesonic: true, lovable: true, ernie: true, gamma: true
 };
 
 
@@ -161,8 +161,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             fontScale: 100,
             manualRtlSettings: defaultManualRtlSettings,
             mixedTitleDisplayMode: 'unified',
-            applyAlgorithmToCode: false,
-            flipRtlArrows: false,
+            applyAlgorithmToCode: true,
+            flipRtlArrows: true,
+            experimentalAlgoDefaultOn: true,
+            [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
             activationHintDismissed: false,
             troubleshootingHintDismissed: true
         });
@@ -212,6 +214,24 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                         updates[service] = false; // Dynamic services default to disabled
                     }
                 });
+
+                if (!isFirefoxRuntime()) {
+                    for (const serviceKey of allDynamicServices) {
+                        const enabled = updates.hasOwnProperty(serviceKey)
+                            ? updates[serviceKey]
+                            : storedData[serviceKey];
+                        if (enabled !== true) {
+                            continue;
+                        }
+                        const service = DYNAMIC_SERVICES[serviceKey];
+                        if (!service?.origins) {
+                            continue;
+                        }
+                        if (!(await hasServicePermissions(service.origins))) {
+                            updates[serviceKey] = false;
+                        }
+                    }
+                }
                 
                 if (!storedData.hasOwnProperty('rtlAlgorithmMode')) {
                     updates.rtlAlgorithmMode = storedData.rtlAlgorithm === 'first_word' ? 'first_word' : 'advanced_full';
@@ -231,11 +251,21 @@ chrome.runtime.onInstalled.addListener(async (details) => {
                 }
 
                 if (!storedData.hasOwnProperty('applyAlgorithmToCode')) {
-                    updates.applyAlgorithmToCode = false;
+                    updates.applyAlgorithmToCode = true;
                 }
 
                 if (!storedData.hasOwnProperty('flipRtlArrows')) {
-                    updates.flipRtlArrows = false;
+                    updates.flipRtlArrows = true;
+                }
+
+                if (!storedData.hasOwnProperty(PIN_OPEN_SITE_STORAGE_KEY)) {
+                    updates[PIN_OPEN_SITE_STORAGE_KEY] = getDefaultPinOpenSiteMode();
+                }
+
+                if (storedData.experimentalAlgoDefaultOn !== true) {
+                    updates.applyAlgorithmToCode = true;
+                    updates.flipRtlArrows = true;
+                    updates.experimentalAlgoDefaultOn = true;
                 }
                 
                 // Check and initialize manual RTL settings
@@ -547,6 +577,13 @@ function isRestrictedBrowserUrl(url) {
     );
 }
 
+function isMissingTabError(error) {
+    const message = error?.message || String(error || '');
+    return /No tab with id/i.test(message)
+        || /Invalid tab ID/i.test(message)
+        || /The tab was closed/i.test(message);
+}
+
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -804,7 +841,7 @@ const AI_SITES = [
     'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'kimi.com', 'www.kimi.ai', 'kimi.ai', 'www.blackbox.ai',
     'notebooklm.google.com', 'notebook.google.com', 'chat.z.ai', 'arena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
-    'digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
+    'digen.ai', 'agent.digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
     'wenxin.baidu.com', 'chat.baidu.com',
     'gamma.app', 'www.gamma.app', 'duck.ai', 'app.clickup.com',
@@ -962,7 +999,9 @@ async function activateManualRtlForSite(tabId, options = {}) {
             devLog(`[Background] Manual RTL injected for ${hostname} (tab ${tabId})`);
         } catch (injectError) {
             // Ignore errors for error pages or invalid tabs
-            if (injectError.message && injectError.message.includes('error page')) {
+            if (isMissingTabError(injectError)) {
+                return;
+            } else if (injectError.message && injectError.message.includes('error page')) {
                 devLog('[Background] Tab is showing error page, skipping manual RTL injection');
             } else if (injectError.message && injectError.message.includes('extensions gallery cannot be scripted')) {
                 // Store error for this hostname so popup can display appropriate message
@@ -978,7 +1017,9 @@ async function activateManualRtlForSite(tabId, options = {}) {
             }
         }
     } catch (error) {
-        // Tab might not be accessible, ignore
+        if (isMissingTabError(error)) {
+            return;
+        }
         devError('[Background] Error in activateManualRtlForSite:', error);
     }
 }
@@ -1044,14 +1085,18 @@ async function activateContentScriptForDynamicSites(tabId) {
             await injectContentFiles(tabId);
             devLog(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
-            if (injectError.message && injectError.message.includes('error page')) {
+            if (isMissingTabError(injectError)) {
+                return;
+            } else if (injectError.message && injectError.message.includes('error page')) {
                 devLog('[Background] Tab is showing error page, skipping injection');
             } else {
                 devError('[Background] Error injecting files:', injectError);
             }
         }
     } catch (error) {
-        // Tab might not be accessible, ignore
+        if (isMissingTabError(error)) {
+            return;
+        }
         devError('[Background] Error injecting content script:', error);
     }
 }
@@ -1067,7 +1112,7 @@ async function injectTabNow(tabId, options = {}) {
         try {
             await injectContentFiles(tabId);
         } catch (injectError) {
-            if (injectError.message && injectError.message.includes('error page')) {
+            if (isMissingTabError(injectError) || (injectError.message && injectError.message.includes('error page'))) {
                 return;
             }
             await activateContentScriptForDynamicSites(tabId);
@@ -1078,6 +1123,9 @@ async function injectTabNow(tabId, options = {}) {
             ignoreComplete: true
         });
     } catch (error) {
+        if (isMissingTabError(error)) {
+            return;
+        }
         devError('[Background] Error in injectTabNow:', error);
     }
 }
