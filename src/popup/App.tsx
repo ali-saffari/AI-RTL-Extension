@@ -1013,9 +1013,10 @@ function App() {
                     <AppBar 
                         position="sticky"
                         sx={{
+                            top: 0,
                             backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
                             color: '#ffffff',
-                            zIndex: 2,
+                            zIndex: 4,
                         }}
                     >
                         <Tabs

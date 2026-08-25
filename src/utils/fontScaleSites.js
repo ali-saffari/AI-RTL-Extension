@@ -54,7 +54,7 @@ export const FONT_SCALE_SITE_MODES = {
     'ernie.baidu.com': 'zoom',
     'wenxin.baidu.com': 'zoom',
     'chat.baidu.com': 'zoom',
-    'gamma.app': 'zoom',
+    'gamma.app': 'font-size',
     'notion.so': 'zoom',
     'genspark.ai': 'zoom',
     'duck.ai': 'zoom',

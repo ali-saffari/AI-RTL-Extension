@@ -22,6 +22,8 @@ export const versionChanges = [
     { id: '33', text: 'آپدیت Kimi', shortName: 'Kimi', icon: 'sites/kimi.png', type: 'fix', group: 'site' },
     { id: '28', text: 'آپدیت Minimax', shortName: 'Minimax', icon: 'sites/minimax.png', type: 'fix', group: 'site' },
     { id: '27', text: 'آپدیت Duck AI', shortName: 'Duck AI', icon: 'sites/duckduckgo.png', type: 'fix', group: 'site' },
+    { id: '34', text: 'آپدیت Grok', shortName: 'Grok', icon: 'sites/gork.png', type: 'fix', group: 'site' },
+    { id: '35', text: 'آپدیت Gamma', shortName: 'Gamma', icon: 'sites/gama.png', type: 'fix', group: 'site' },
     { id: '6', text: 'افزودن سایت Black Forest', shortName: 'Black Forest', icon: 'sites/bfl.png', type: 'add', group: 'site' },
     { id: '7', text: 'افزودن سایت Character.AI', shortName: 'Character.AI', icon: 'sites/character-ai.png', type: 'add', group: 'site' },
     { id: '8', text: 'افزودن سایت Pi', shortName: 'Pi', icon: 'sites/pi.png', type: 'add', group: 'site' },

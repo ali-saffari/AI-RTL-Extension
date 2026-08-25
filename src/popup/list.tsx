@@ -86,7 +86,7 @@ const services: Service[] = [
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
     { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
     { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', hosts: ['duckduckgo.com'], keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
-    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], keywords: ['you', 'یو'] },
+    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['you', 'یو'] },
     { key: 'poeCom', name: 'poe.com', icon: '/images/sites/poe.png', url: 'https://poe.com/', hosts: ['poe.com'], keywords: ['poe', 'پو', 'quora'] },
     { key: 'monica', name: 'Monica', icon: '/images/sites/monica.png', url: 'https://monica.im/', hosts: ['monica.im'], keywords: ['monica', 'مونیکا'] },
     { key: 'mistral', name: 'Mistral', icon: '/images/sites/chat-mistral.png', url: 'https://chat.mistral.ai', hosts: ['chat.mistral.ai'], keywords: ['mistral', 'میسترال', 'le chat'] },
@@ -95,7 +95,7 @@ const services: Service[] = [
     { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/openAi-icon.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
     { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://agent.digen.ai/', hosts: ['digen.ai', 'agent.digen.ai'], keywords: ['digen', 'دیجن'] },
     { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
     { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', hosts: ['lovable.dev'], keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
     { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://wenxin.baidu.com/', hosts: ['ernie.baidu.com', 'wenxin.baidu.com', 'chat.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin', 'ونشین'] },
     { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', hosts: ['gamma.app'], keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
@@ -630,7 +630,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         sx={{ 
                             textAlign: 'center',
                             position: 'sticky',
-                            top: 0,
+                            top: 48,
                             zIndex: 3,
                             height: 48,
                             minHeight: 48,
@@ -708,7 +708,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 style={{ direction: 'ltr' }}
                                 sx={pinned ? {
                                     position: 'sticky',
-                                    top: 48,
+                                    top: 96,
                                     zIndex: 2,
                                     backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                                     boxShadow: isDarkMode
