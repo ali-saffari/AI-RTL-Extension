@@ -34,14 +34,20 @@ export function setMonica(rtlAlgorithm = 'advanced_full') {
     });
 
     
-    // Process paragraph and name wrapper elements with RTL algorithm
-    AQ('body p, [class*="name-wrapper-"]').each(function (each) {
+    // Process paragraph, name wrapper, and text-content elements with RTL algorithm
+    AQ('body p, [class*="name-wrapper-"], [class*="text-content--"]').each(function (each) {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'Asok',
             rtlClass: 'AsRtl',
             setTextAlign: true
         });
+    });
+
+    AQ('[class*="question-nav-item-"]').each(function () {
+        if (!AQ(this).hasClass('FontSet')) {
+            AQ(this).addClass('FontSet');
+        }
     });
 
     // Process markdown elements using RTL algorithm

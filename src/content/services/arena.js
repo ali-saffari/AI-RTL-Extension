@@ -71,17 +71,23 @@ export function setArena(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    // Process message content elements
-    AQ(' [data-sidebar="menu-item"] ').each(function (each) {
-        if (!AQ(this).hasClass("AsOkText")) {
-            AQ(this).addClass('AsOkText');
-            const text = AQ(this).val() || AQ(this).text();
+    // Sidebar chat titles: Arena's .body-sm sets its own font-family, so
+    // FontSet on the <li> does not reach the inner <span>.
+    AQ('[data-sidebar="menu-item"]').each(function () {
+        const $item = AQ(this);
+
+        if (!$item.hasClass('AsOkText')) {
+            $item.addClass('AsOkText');
+            const text = $item.val() || $item.text();
             const direction = detectDirectionByAlgorithm(text, rtlAlgorithm);
-            AQ(this).attr('dir' , direction);
+            $item.attr('dir', direction);
             if (direction === 'rtl') {
-                AQ(this).addClass('FontSet');
+                $item.addClass('FontSet');
             }
-          
+        }
+
+        if ($item.hasClass('FontSet')) {
+            $item.find('span.body-sm, span.truncate').addClass('FontSet');
         }
     });
 
