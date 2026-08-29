@@ -872,7 +872,8 @@ const AI_SITES = [
     'coder.qwen.ai',
     'chat.sakana.ai', 'www.chat.sakana.ai',
     'genspark.ai', 'www.genspark.ai',
-    'docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com'
+    'docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com',
+    'm365.cloud.microsoft', 'copilot.cloud.microsoft'
 ];
 
 function isAISite(hostname) {

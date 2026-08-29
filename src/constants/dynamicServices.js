@@ -187,6 +187,11 @@ export const DYNAMIC_SERVICES = {
         name: 'Sakana Chat',
         origins: ['*://chat.sakana.ai/*', '*://www.chat.sakana.ai/*'],
         hostnames: ['chat.sakana.ai', 'www.chat.sakana.ai']
+    },
+    m365: {
+        name: 'Microsoft 365 Copilot',
+        origins: ['*://m365.cloud.microsoft/*', '*://copilot.cloud.microsoft/*'],
+        hostnames: ['m365.cloud.microsoft', 'copilot.cloud.microsoft']
     }
 };
 

@@ -52,6 +52,8 @@ const hostMatches = (tabHost: string, serviceHost: string) => {
     return a === b || a.endsWith('.' + b);
 };
 
+const EDGE_BLOCKED_SERVICE_KEYS = new Set(['copilot', 'm365']);
+
 const getServiceHosts = (service: Service) => {
     const hosts = new Set<string>();
     try {
@@ -68,6 +70,7 @@ const services: Service[] = [
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', hosts: ['chatgpt.com', 'chat.openai.com'], keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', hosts: ['chat.deepseek.com'], keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
     { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.microsoft.com/', hosts: ['copilot.microsoft.com', 'bing.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
+    { key: 'm365', name: '365 Copilot', icon: '/images/sites/m365.png', url: 'https://m365.cloud.microsoft/', new: true, hosts: ['m365.cloud.microsoft', 'copilot.cloud.microsoft'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Microsoft 365 Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی این سایت، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['m365', 'microsoft 365', 'مایکروسافت 365', 'کوپایلوت', 'copilot', 'آفیس', 'office', 'outlook', 'teams'] },
     { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', hosts: ['claude.ai'], keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
     { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', hosts: ['gemini.google.com'], keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
     // { key: 'google', name: 'Google AI Mode', icon: '/images/sites/google.png', url: 'https://google.com/', new: true },
@@ -435,10 +438,11 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                 services.map(service => service.key),
                 async (data) => {
                     const updatedData = { ...data };
-                    // If Edge, force Copilot to be disabled
+                    // If Edge, force Microsoft sites to be disabled
                     if (isEdge) {
                         updatedData.copilot = false;
-                        chrome.storage.sync.set({ copilot: false });
+                        updatedData.m365 = false;
+                        chrome.storage.sync.set({ copilot: false, m365: false });
                     }
 
                     if (!isFirefoxRuntime()) {
@@ -466,9 +470,9 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             );
         } catch (error) {
             // Extension context invalidated or other error - use default values
-            // If Edge, ensure Copilot is disabled
+            // If Edge, ensure Microsoft sites are disabled
             if (isEdge) {
-                setChecked(prev => ({ ...prev, copilot: false }));
+                setChecked(prev => ({ ...prev, copilot: false, m365: false }));
             }
         }
     }, [isEdge]);
@@ -477,8 +481,8 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const dynamicServices = Object.keys(DYNAMIC_SERVICES);
 
     const handleChange = (key: string) => async (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-        // Prevent enabling Copilot in Edge
-        if (key === 'copilot' && isEdge) {
+        // Prevent enabling Microsoft sites in Edge
+        if (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(key)) {
             return;
         }
         
@@ -818,7 +822,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                         }
                                     />
                                     
-                                    {service.helpText && !(service.key === 'copilot' && isEdge) && (
+                                    {service.helpText && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
                                         <IconButton 
                                             size="small" 
                                             sx={{ 
@@ -851,7 +855,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                     
                                         onChange={handleChange(service.key)}
                                         checked={checked?.[service.key] || false}
-                                        disabled={service.key === 'copilot' && isEdge}
+                                        disabled={isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)}
                                         data-list-switch="true"
                                         inputProps={{
                                             'aria-labelledby': `switch-list-label-${service.key}`,
@@ -871,7 +875,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                     />
                                 </ListItemButton>
                             </ListItem>
-                        {service.key === 'copilot' && isEdge && (
+                        {isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key) && (
                             <Box sx={{ px: 2, py: 1.5 }} style={{ direction: 'rtl' }}>
                                 <Paper 
                                     elevation={0}
@@ -894,7 +898,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                             lineHeight: 1.6,
                                         }}
                                     >
-                                        برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله Copilot) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
+                                        برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله {service.name}) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی {service.name}، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
                                     </Typography>
                                 </Paper>
                             </Box>

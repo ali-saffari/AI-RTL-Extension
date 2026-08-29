@@ -61,15 +61,20 @@ const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
     KATEX_SELECTOR, '.ProseMirror'
 ].join(', ');
 
+const CUSTOM_CODE_BLOCK_SELECTOR = [
+    '[data-language]',
+    '[data-streamdown="code-block"]',
+    '.scriptor-component-code-block'
+].join(', ');
+
 const CODE_BLOCK_HOST_SELECTOR = [
     'pre',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
-    '[data-language]', '[data-streamdown="code-block"]'
+    CUSTOM_CODE_BLOCK_SELECTOR
 ].join(', ');
 
 const CODE_SKIP_ARROW_FLIP_SELECTOR = CODE_BLOCK_HOST_SELECTOR;
 
-const CUSTOM_CODE_BLOCK_SELECTOR = '[data-language], [data-streamdown="code-block"]';
 const STANDARD_CODE_BLOCK_SELECTOR = 'code, pre, .cm-content, .cm-editor, .md-code-block';
 const CODE_BLOCK_SELECTOR = `${STANDARD_CODE_BLOCK_SELECTOR}, ${CUSTOM_CODE_BLOCK_SELECTOR}`;
 const INLINE_CODE_TAGS = new Set(['code', 'kbd', 'samp']);
@@ -273,7 +278,7 @@ const INNER_DIR_TARGET_SELECTOR = [
 const INNER_DIR_SKIP_SELECTOR = [
     'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
-    '[data-language]', '[data-streamdown="code-block"]',
+    CUSTOM_CODE_BLOCK_SELECTOR,
     KATEX_SELECTOR
 ].join(', ');
 
@@ -648,10 +653,14 @@ function applyUnicodeBidiByDirection(target, direction, setUnicodeBidi) {
 
 function isCustomCodeBlock($element) {
     const el = unwrapElement($element);
-    if (!el || el.nodeType !== 1 || typeof el.hasAttribute !== 'function') {
+    if (!el || el.nodeType !== 1 || typeof el.matches !== 'function') {
         return false;
     }
-    return el.hasAttribute('data-language') || el.getAttribute('data-streamdown') === 'code-block';
+    try {
+        return el.matches(CUSTOM_CODE_BLOCK_SELECTOR);
+    } catch {
+        return false;
+    }
 }
 
 function flipArrowsInText(text) {
@@ -831,12 +840,12 @@ function refreshLockedEditorsForCodeSetting() {
 function applyForcedCodeLtr($element) {
     $element.attr('dir', 'ltr');
     $element.attr('data-direction', 'ltr');
-    $element.css('text-align', 'left');
     $element.addClass('AsSetLtr');
-    $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT');
+    $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT AsRtl');
     const el = unwrapElement($element);
     if (el && el.style) {
-        el.style.setProperty('text-align', 'left');
+        el.style.setProperty('direction', 'ltr', 'important');
+        el.style.setProperty('text-align', 'left', 'important');
     }
 }
 
@@ -913,7 +922,7 @@ function shouldApplyRtlToCodeBlock(text) {
 }
 
 function getCodeBlockDirectionTargets($element) {
-    const $inner = $element.find('pre, code');
+    const $inner = $element.find('pre, code, [role="textbox"], [aria-label="Code editor"]');
     return $inner.length ? $element.add($inner) : $element;
 }
 
@@ -1133,7 +1142,7 @@ function setTextDirectionAndFont(element, options = {}) {
         // AQ(element).attr('data-text', textToUse)
         AQ(element).attr('data-direction', finalDirection)
 
-    AQ(element).attr("dir", finalDirection);
+    applyDirectionMarker(AQ(element), finalDirection, options);
     if (fontClass) {
         if (!applyFontIfRtl || finalDirection === 'rtl') {
             AQ(element).addClass(fontClass);
@@ -1155,12 +1164,50 @@ function setTextDirectionAndFont(element, options = {}) {
     return finalDirection;
 }
 
+function usesDirectionClasses(options = {}) {
+    return Boolean(options.rtlClass || options.ltrClass);
+}
+
+function applyDirectionMarker($element, direction, options = {}) {
+    if (!$element || !$element.length) {
+        return;
+    }
+
+    const rtlClass = options.rtlClass;
+    const ltrClass = options.ltrClass;
+    const dir = direction || $element.attr('data-direction') || $element.attr('dir');
+
+    if (rtlClass) {
+        if (dir === 'rtl') {
+            $element.addClass(rtlClass);
+        } else {
+            $element.removeClass(rtlClass);
+        }
+    }
+
+    if (ltrClass) {
+        if (dir === 'ltr') {
+            $element.addClass(ltrClass);
+        } else {
+            $element.removeClass(ltrClass);
+        }
+    }
+
+    if (usesDirectionClasses(options)) {
+        return;
+    }
+
+    if (dir) {
+        $element.attr('dir', dir);
+    }
+}
+
 /**
  * Process paragraph elements that may contain <br> tags
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} fontClass - Font class to apply (optional)
  */
-function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign, setUnicodeBidi = false) {
+function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign, setUnicodeBidi = false, directionClassOptions = {}) {
     if (!isRtlEngineActive()) {
         return;
     }
@@ -1176,7 +1223,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
     // by those newlines destroys the formula. Wrapping the fragments in <div>
     // inside a <p> then makes the browser close the paragraph and emit extra <p>s.
     if (containsStructuredMarkup(el)) {
-        setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi });
+        setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi, ...directionClassOptions });
         skipStructuredMedia($element);
         $element.data('rtl-processed', true);
         return;
@@ -1227,14 +1274,24 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                         
                         if (cleanText) {
                             const direction = detectTextDirection(cleanText);
-                            const divClass = fontClass ? ` class="${fontClass}"` : '';
+                            const dirClasses = [fontClass];
+                            if (direction === 'rtl' && directionClassOptions.rtlClass) {
+                                dirClasses.push(directionClassOptions.rtlClass);
+                            } else if (direction === 'ltr' && directionClassOptions.ltrClass) {
+                                dirClasses.push(directionClassOptions.ltrClass);
+                            }
+                            const divClass = dirClasses.filter(Boolean).length ? ` class="${dirClasses.filter(Boolean).join(' ')}"` : '';
+                            const dirAttr = usesDirectionClasses(directionClassOptions) ? '' : ` dir="${direction}"`;
                             const bidiParsed = parseUnicodeBidiOption(setUnicodeBidi);
                             const bidiStyle = bidiParsed.enabled && direction === 'rtl'
                                 ? `unicode-bidi:${bidiParsed.value}${bidiParsed.important ? ' !important' : ''}`
                                 : '';
-                            const styleAttr = [wrapperTag === 'span' ? 'display:block' : '', bidiStyle].filter(Boolean).join(';');
+                            const align = isTextAlignEnabled(setTextAlign)
+                                ? `text-align:${direction === 'rtl' ? 'right' : 'left'}${isTextAlignImportant(setTextAlign) ? ' !important' : ''}`
+                                : '';
+                            const styleAttr = [wrapperTag === 'span' ? 'display:block' : '', bidiStyle, align].filter(Boolean).join(';');
                             const wrapperStyle = styleAttr ? ` style="${styleAttr}"` : '';
-                            newHtml += `<${wrapperTag}${divClass} dir="${direction}" data-rtl-processed="true"${wrapperStyle}>${part}</${wrapperTag}>`;
+                            newHtml += `<${wrapperTag}${divClass}${dirAttr} data-rtl-processed="true"${wrapperStyle}>${part}</${wrapperTag}>`;
                         }
                     }
                 });
@@ -1245,8 +1302,10 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                 $element.data('rtl-processed', true);
             } else {
                 // All parts have the same direction, apply to the main element
-                $element.attr("dir", directions[0]);
+                $element.attr('data-direction', directions[0]);
+                applyDirectionMarker($element, directions[0], directionClassOptions);
                 $element.addClass(fontClass);
+                applyTextAlignByDirection($element, directions[0], setTextAlign);
                 applyUnicodeBidiByDirection($element, directions[0], setUnicodeBidi);
                 $element.data('rtl-processed', true);
             }
@@ -1254,7 +1313,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
             // Single part, process normally
             const mainText = $element.text();
             if (mainText && mainText.trim()) {
-                setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi });
+                setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi, ...directionClassOptions });
                 $element.data('rtl-processed', true);
             }
         }
@@ -1262,7 +1321,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
         // No <br> tags, process normally
         const mainText = $element.text();
         if (mainText && mainText.trim()) {
-            setTextDirectionAndFont(element, { fontClass, text: mainText, setTextAlign, setUnicodeBidi });
+            setTextDirectionAndFont(element, { fontClass, text: mainText, setTextAlign, setUnicodeBidi, ...directionClassOptions });
             $element.data('rtl-processed', true);
         }
     }
@@ -1523,8 +1582,11 @@ function processTextElementsAdvanced(container, options = {}) {
         setUnicodeBidi = false,
         removeDirAuto = false,
         endTyping = false,
-        codeFontClass
+        codeFontClass,
+        rtlClass = false,
+        ltrClass = false
     } = options;
+    const directionClassOptions = { rtlClass, ltrClass };
     // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
     //     isContainer
@@ -1610,7 +1672,8 @@ function processTextElementsAdvanced(container, options = {}) {
 
             console.log('textToUse', textToUse , 'direction', direction);
 
-             $element.attr("dir", direction);
+             $element.attr('data-direction', direction);
+            applyDirectionMarker($element, direction, directionClassOptions);
             if (fontClass) {
                 $element.addClass(fontClass);
             }
@@ -1663,7 +1726,8 @@ function processTextElementsAdvanced(container, options = {}) {
                     // Apply majority direction to all headers if we have a majority
                     if (majorityDir) {
                         mainContainer.find(tagName).each(function() {
-                            AQ(this).attr('dir', majorityDir);
+                            AQ(this).attr('data-direction', majorityDir);
+                            applyDirectionMarker(AQ(this), majorityDir, directionClassOptions);
                 
                             applyTextAlignByDirection(this, majorityDir, setTextAlign);
                             applyUnicodeBidiByDirection(this, majorityDir, setUnicodeBidi);
@@ -1771,7 +1835,8 @@ function processTextElementsAdvanced(container, options = {}) {
             const text = $element.text();
             if (text && text.trim()) {
                 const direction = detectTextDirection(text);
-                $element.attr('dir', direction);
+                $element.attr('data-direction', direction);
+                applyDirectionMarker($element, direction, directionClassOptions);
                 if (fontClass) {
                     $element.addClass(fontClass);
                 }
@@ -1823,7 +1888,7 @@ function processTextElementsAdvanced(container, options = {}) {
          if (tagName === 'p' || tagName === 'span' || tagName === 'text') {
             if (containsStructuredMarkup(this)) {
                 setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
-                setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
+                setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 skipStructuredMedia($element, processedClass);
                 $element.addClass(processedClass);
                 return;
@@ -1851,7 +1916,7 @@ function processTextElementsAdvanced(container, options = {}) {
   
             if (onlyBrElements || onlyWhitespace || containsLineBreaks) {
                 $element.addClass(processedClass);
-                processParagraphWithBreaks(this, fontClass, setTextAlign, setUnicodeBidi);
+            processParagraphWithBreaks(this, fontClass, setTextAlign, setUnicodeBidi, directionClassOptions);
 
                 return;
             } 
@@ -1876,13 +1941,13 @@ function processTextElementsAdvanced(container, options = {}) {
                     // حالت 2: همه فرزندان allSkipTags هستند
                         setDebugAttr($element, 'data-debug-mode', 'all-formatting-tags');
                 
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                      $element.addClass(processedClass);
                 } else if (formattingChildren.length > 0) {
                     // حالت 3: فقط بعضی از فرزندان allSkipTags هستند
                     setDebugAttr($element, 'data-debug-mode', 'mixed-children');
                    
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 
 
                     $element.addClass(processedClass);
@@ -1921,6 +1986,8 @@ function processTextElementsAdvanced(container, options = {}) {
                                     fontClass, 
                                     setTextAlign,
                                     setUnicodeBidi,
+                                    rtlClass,
+                                    ltrClass
                                     // text: textForDirection 
                                 });
                                 
@@ -1958,7 +2025,7 @@ function processTextElementsAdvanced(container, options = {}) {
                             debugReason = `list-ltr-majority-${ltrCount}-${rtlCount}`;
                         } else {
                             // اگر تعداد مساوی باشه، به المنت قبل نگاه کن
-                            const prevElementDir = $element.prev().attr('dir');
+                            const prevElementDir = $element.prev().attr('data-direction') || $element.prev().attr('dir');
                             if (prevElementDir && (prevElementDir === 'rtl' || prevElementDir === 'ltr')) {
                                 listDirection = prevElementDir;
                                 debugReason = `list-prev-dir-${prevElementDir}`;
@@ -1990,18 +2057,19 @@ function processTextElementsAdvanced(container, options = {}) {
                         // جهت آیتم‌ها رو به جهت لیست تغییر بده
                         processedItems.each(function() {
 
-                            AQ(this).attr('data-org-dir',  AQ(this).attr('dir'));
+                            AQ(this).attr('data-org-dir',  AQ(this).attr('data-direction') || AQ(this).attr('dir'));
 
                             // AQ(this).attr('data-dir', listDirection);
                            
-                            AQ(this).attr('dir', listDirection);
+                            applyDirectionMarker(AQ(this), listDirection, directionClassOptions);
                             
                             applyTextAlignByDirection(this, listDirection, setTextAlign);
                             applyUnicodeBidiByDirection(this, listDirection, setUnicodeBidi);
                            
                         });
                         
-                        $element.attr('dir', listDirection);
+                        $element.attr('data-direction', listDirection);
+                        applyDirectionMarker($element, listDirection, directionClassOptions);
                         setDebugAttr($element, 'data-debug-reason', debugReason);
                         setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
                         
@@ -2017,12 +2085,14 @@ function processTextElementsAdvanced(container, options = {}) {
                             skipTags,
                             removeSkipTags,
                             setTextAlign,
-                            setUnicodeBidi
+                            setUnicodeBidi,
+                            rtlClass,
+                            ltrClass
                         });
 
                         // برای خود المان هم تصمیم بگیر
                     
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                         
 
                         setDebugAttr($element, 'data-debug-mode', 'no-formatting-children');
@@ -2040,7 +2110,7 @@ function processTextElementsAdvanced(container, options = {}) {
                 // console.log("setTextDirectionAndFont no-children", $element , setTextAlign);
                 
              $element.addClass(processedClass);
-                 setTextDirectionAndFont($element, { fontClass, setTextAlign, setUnicodeBidi });
+                 setTextDirectionAndFont($element, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 
             }
         
@@ -2643,6 +2713,8 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
  * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from descendants (advanced_section)
  * @param {boolean} [options.applyFontIfRtl] - advanced_full: add fontClass only when detected direction is RTL
  * @param {boolean} [options.endTyping] - advanced_section: process headers only after typing has settled
+ * @param {string} [options.rtlClass] - If set (with optional ltrClass), apply this class for RTL instead of setting dir
+ * @param {string} [options.ltrClass] - If set (with optional rtlClass), apply this class for LTR instead of setting dir
  */
 function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     if (!isRtlEngineActive()) {
@@ -2837,7 +2909,9 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         }
 
     } else if (rtlAlgorithm === 'first_word') {
-        $element.attr("dir", "auto");
+        if (!usesDirectionClasses(options)) {
+            $element.attr("dir", "auto");
+        }
         
         const fontClass = options.fontClass || defaultOptions.first_word.fontClass;
         if (!$element.hasClass(fontClass)) {
@@ -2870,6 +2944,7 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         }
     }
 
+    applyDirectionMarker($element, $element.attr('data-direction'), options);
     mirrorRtlBlockquotesInTree($element);
     } catch (error) {
         if (isInvalidatedError(error)) {
@@ -2902,7 +2977,8 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
  * @param {Object} options - Additional options (optional)
- * @param {string} options.rtlClass - Class to add when direction is RTL (optional, defaults to null)
+ * @param {string} [options.rtlClass] - If set, apply this class for RTL instead of setting dir
+ * @param {string} [options.ltrClass] - If set, apply this class for LTR instead of setting dir
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off.
@@ -2925,6 +3001,7 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     
     const processedClass = options.processedClass || false;
     const rtlClass = options.rtlClass || false;
+    const ltrClass = options.ltrClass || false;
     const storedAlgorithm = $element.attr('data-algorithm-rtl');
     if (storedAlgorithm !== rtlAlgorithm) {
         if (processedClass) {
@@ -2932,6 +3009,9 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
         }
         if (rtlClass) {
             $element.removeClass(rtlClass);
+        }
+        if (ltrClass) {
+            $element.removeClass(ltrClass);
         }
     }
 
@@ -2950,11 +3030,6 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
             if (processedClass) {
                 $element.addClass(processedClass);
             }
-            
-            // Add RTL-specific class if direction is RTL
-            if (rtlClass && direction === 'rtl') {
-                $element.addClass(rtlClass);
-            }
 
             if (direction === 'rtl') {
                 flipRtlArrowsInTree($element);
@@ -2964,7 +3039,9 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     } else if (rtlAlgorithm === 'first_word') {
         // Check processedClass only if it's not false
         if (!processedClass || !$element.hasClass(processedClass)) {
-            $element.attr("dir", "auto");
+            if (!usesDirectionClasses(options)) {
+                $element.attr("dir", "auto");
+            }
             const fontClass = options.fontClass || defaultOptions.fontClass;
             $element.addClass(fontClass);
             
@@ -2973,8 +3050,8 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
                 $element.addClass(processedClass);
             }
             
-            // Get text content once for both textAlign and rtlClass operations
-            if (options.setTextAlign || rtlClass) {
+            // Get text content once for both textAlign and direction-class operations
+            if (options.setTextAlign || rtlClass || ltrClass) {
                 let text = $element.text();
                 if (!text || !text.trim()) {
                     text = $element.val();
@@ -2985,14 +3062,11 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
                 
                 if (text && text.trim()) {
                     const direction = analyzeTextDirectionFirstWord(text);
+                    $element.attr('data-direction', direction);
                     
                     applyTextAlignByDirection($element, direction, options.setTextAlign);
                     applyUnicodeBidiByDirection($element, direction, options.setUnicodeBidi);
-                    
-                    // Add RTL-specific class if direction is RTL
-                    if (rtlClass && direction === 'rtl') {
-                        $element.addClass(rtlClass);
-                    }
+                    applyDirectionMarker($element, direction, options);
                 }
             }
 

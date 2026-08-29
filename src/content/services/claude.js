@@ -187,12 +187,28 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
 }
 
 const CLAUDE_FONT_WEIGHT_STYLE_ID = 'ai-rtl-claude-font-weights';
+const CLAUDE_MARKDOWN_RTL_SELECTOR = ':is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)';
 const CLAUDE_FONT_WEIGHT_CSS = `
 * {
     --cds-font-weight-regular: 350 !important;
     --cds-font-weight-medium: 500 !important;
     --cds-font-weight-semibold: 680 !important;
     --cds-font-weight-bold: 700 !important;
+}
+
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[dir="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+[dir="rtl"] ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
+    padding-left: calc(var(--spacing) * 8) !important;
+    padding-right: 0 !important;
+}
+
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[dir="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+[dir="rtl"] ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
+    padding-right: var(--msg-text-inset, .5rem) !important;
 }
 `;
 
@@ -201,6 +217,8 @@ function applyClaudeFontWeights() {
     if (!style) {
         style = document.createElement('style');
         style.id = CLAUDE_FONT_WEIGHT_STYLE_ID;
+    }
+    if (style.textContent !== CLAUDE_FONT_WEIGHT_CSS) {
         style.textContent = CLAUDE_FONT_WEIGHT_CSS;
     }
     const parent = document.head || document.documentElement;

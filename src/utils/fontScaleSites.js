@@ -86,6 +86,8 @@ export const FONT_SCALE_SITE_MODES = {
     'dash0.com': 'zoom',
     'zerve.ai': 'zoom',
     'chat.sakana.ai': 'zoom',
+    'm365.cloud.microsoft': 'zoom',
+    'copilot.cloud.microsoft': 'zoom',
 };
 
 function normalizeHostname(hostname) {

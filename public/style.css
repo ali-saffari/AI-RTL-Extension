@@ -159,6 +159,12 @@ textarea.FontSetImportant{
 
 .AsRtl {
     direction: rtl !important;
+    text-align: right !important;
+}
+
+.AsLtr {
+    direction: ltr !important;
+    text-align: left !important;
 }
 
 textarea.AsRtl {
@@ -455,6 +461,21 @@ html.ai-rtl-code-algorithm [data-language].FontSet * {
 
 .FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif);
+}
+
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+[dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
+    padding-left: calc(var(--spacing) * 8) !important;
+    padding-right: 0 !important;
+}
+
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+[dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown) :is(p, blockquote, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
+    padding-right: var(--msg-text-inset, .5rem) !important;
 }
 
 

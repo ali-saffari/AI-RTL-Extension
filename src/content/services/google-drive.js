@@ -20,6 +20,18 @@ const INPUT_OPTIONS = {
     setUnicodeBidi: 'isolate'
 };
 
+const GEMINI_TEXT_SELECTOR = [
+    `${GEMINI_ROOT} .appsElementsSidekickHeaderTitle`,
+    `${GEMINI_ROOT} [role="menuitem"]`,
+    `${GEMINI_ROOT} .javascriptMaterialdesignGm3WizListShared-list-item__primary-text`
+].join(', ');
+
+const GEMINI_TEXT_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: false,
+    setTextAlign: 'important'
+};
+
 // Gemini markdown body in Drive. TZy0Wb stays after dir changes; dir=auto is only the first paint.
 const MARKDOWN_SELECTOR = [
     '[jscontroller="TZy0Wb"]',
@@ -64,17 +76,26 @@ function applyGoogleDriveChrome() {
         [jscontroller="TZy0Wb"][dir="rtl"],
         [jscontroller="TZy0Wb"] [dir="rtl"],
         .appsElementsSidekickUserMessageBubbleContent[dir="rtl"],
-        .appsElementsSidekickUserMessageBubbleContent [dir="rtl"] {
+        .appsElementsSidekickUserMessageBubbleContent [dir="rtl"],
+        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle[dir="rtl"],
+        ${GEMINI_ROOT} [role="menuitem"][dir="rtl"] {
             text-align: right !important;
         }
         [jscontroller="TZy0Wb"][dir="ltr"],
         [jscontroller="TZy0Wb"] [dir="ltr"],
         .appsElementsSidekickUserMessageBubbleContent[dir="ltr"],
-        .appsElementsSidekickUserMessageBubbleContent [dir="ltr"] {
+        .appsElementsSidekickUserMessageBubbleContent [dir="ltr"],
+        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle[dir="ltr"],
+        ${GEMINI_ROOT} [role="menuitem"][dir="ltr"] {
             text-align: left !important;
         }
         [jscontroller="TZy0Wb"] > span[jsname="t1Rade"] {
             display: block;
+        }
+
+        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle,
+        ${GEMINI_ROOT} .javascriptMaterialdesignGm3WizListShared-list-item__primary-text {
+            font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
     </style>`).appendTo('head');
 }
@@ -122,6 +143,10 @@ export function setGoogleDrive(rtlAlgorithm = 'advanced_full') {
 
     AQ(MARKDOWN_SELECTOR).each(function () {
         applyRtlToContainer(this, rtlAlgorithm, MARKDOWN_OPTIONS);
+    });
+
+    AQ(GEMINI_TEXT_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, GEMINI_TEXT_OPTIONS);
     });
 
     AQ(INPUT_SELECTOR).each(function () {
