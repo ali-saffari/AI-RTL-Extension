@@ -5,7 +5,7 @@ const { execSync } = require('child_process');
 const rootPath = path.join(__dirname, '..');
 const distFirefoxPath = path.join(rootPath, 'dist-firefox');
 const firefoxManifestPath = path.join(rootPath, 'public/manifest.firefox.json');
-const outputPath = path.join(rootPath, 'releases');
+const outputPath = path.join(rootPath, 'releases/firefox');
 
 const colors = {
     reset: '\x1b[0m',

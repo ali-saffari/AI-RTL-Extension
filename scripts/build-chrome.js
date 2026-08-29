@@ -8,7 +8,7 @@ const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json'
 const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
 const packagePath = path.join(__dirname, '../package.json');
 const distPath = path.join(__dirname, '../dist');
-const outputPath = path.join(__dirname, '../releases');
+const outputPath = path.join(__dirname, '../releases/chrome');
 
 // Colors for console output
 const colors = {
@@ -107,7 +107,7 @@ async function main() {
         // Ensure output directory exists
         if (!fs.existsSync(outputPath)) {
             fs.mkdirSync(outputPath, { recursive: true });
-            logSuccess('Created releases directory');
+            logSuccess('Created releases/chrome directory');
         }
         
         const zipFileName = `chrome-extension-v${newVersion}.zip`;

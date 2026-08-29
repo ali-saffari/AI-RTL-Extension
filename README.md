@@ -53,7 +53,7 @@ npm run build:chrome:release
 Outputs:
 
 - Unpacked extension: `dist/`
-- Zip package: `releases/chrome-extension-vX.Y.Z.zip` (from `build:chrome:release`)
+- Zip package: `releases/chrome/chrome-extension-vX.Y.Z.zip` (from `build:chrome:release`)
 
 Load unpacked in Chrome: `chrome://extensions` → Developer mode → Load unpacked → select `dist/`.
 
@@ -77,7 +77,7 @@ npm run build-for-amo
 Outputs:
 
 - Unpacked extension: `dist-firefox/`
-- Zip package: `releases/firefox-extension-vX.Y.Z.zip`
+- Zip package: `releases/firefox/firefox-extension-vX.Y.Z.zip`
 
 Load temporary add-on in Firefox: `about:debugging` → This Firefox → Load Temporary Add-on → select `dist-firefox/manifest.json`.
 

@@ -2,7 +2,7 @@
     "update_url": "https://clients2.google.com/service/update2/crx",
     "default_locale": "fa",
     "name": "__MSG_extension_name__",
-    "version": "4.0.5",
+    "version": "4.0.9",
     "short_name": "__MSG_extension_short_name__",
     "background": {
         "service_worker": "js/background.js"
@@ -28,10 +28,10 @@
     "description": "__MSG_extension_description__",
     "manifest_version": 3,
     "icons": {
-        "16": "images/logo/icon-16.png",
-        "32": "images/logo/icon-32.png",
-        "48": "images/logo/icon-48.png",
-        "128": "images/logo/icon-128.png"
+        "16": "images/icon-16.png",
+        "32": "images/icon-32.png",
+        "48": "images/icon-48.png",
+        "128": "images/icon-128.png"
     },
     "content_scripts": [
         {
@@ -75,18 +75,17 @@
                 "https://jules.google.com/*",
                 "https://ai-rtl.ir/*",
                 "https://api.ai-rtl.ir/*",
+                "https://shop.ai-rtl.ir/*",
                 "https://chatgpt-rtl.ir/*",
                 "https://api.chatgpt-rtl.ir/*",
+                "https://shop.chatgpt-rtl.ir/*",
                 "https://1min.ai/*",
                 "https://app.1min.ai/*",
+                "https://digen.ai/*",
                 "https://lovable.dev/*",
                 "https://www.lovable.dev/*",
                 "https://ernie.baidu.com/*",
                 "https://www.ernie.baidu.com/*",
-                "https://wenxin.baidu.com/*",
-                "https://www.wenxin.baidu.com/*",
-                "https://chat.baidu.com/*",
-                "https://www.chat.baidu.com/*",
                 "https://app.writesonic.com/*",
                 "https://www.app.writesonic.com/*",
                 "https://gamma.app/*",
@@ -107,13 +106,7 @@
     ],
     "action": {
         "default_popup": "index.html",
-        "default_title": "__MSG_extension_action_title__",
-        "default_icon": {
-            "16": "images/logo/icon-16.png",
-            "32": "images/logo/icon-32.png",
-            "48": "images/logo/icon-48.png",
-            "128": "images/logo/icon-128.png"
-        }
+        "default_title": "__MSG_extension_action_title__"
     },
     "options_ui": {
         "page": "options.html",

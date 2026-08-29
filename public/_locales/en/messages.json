@@ -8,7 +8,7 @@
     "description": "Short extension name"
   },
   "extension_description": {
-    "message": "RTL extension for 50+ AI tools: Persian RTL alignment, Farsi font support, RTL optimization for Gemini, DeepSeek, Claude, Copilot, Perplexity, Grok and other AI chatbots",
+    "message": "AI RTL (Persian/Farsi): Smart RTL extension for AI chatbot websites. Smart RTL detection, mixed Persian-English text handling, and Farsi font support for 50+ popular AI chat tools and assistants.",
     "description": "Extension description"
   },
   "extension_action_title": {
