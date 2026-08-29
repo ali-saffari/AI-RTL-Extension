@@ -101,7 +101,8 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
-            isContainer: false
+            isContainer: false,
+            removeInnerDir: true
         });
     });
 
@@ -109,7 +110,8 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
-            isContainer: true
+            isContainer: true,
+            removeInnerDir: true
         });
     });
 
@@ -134,7 +136,8 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
-            isContainer: true
+            isContainer: true,
+            removeInnerDir: true
         });
     });
 
@@ -152,7 +155,8 @@ export function setItems_Claude(rtlAlgorithm = 'advanced_full') {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet FontClaude',
             processedClass: 'AsOkText',
-            isContainer: true
+            isContainer: true,
+            removeInnerDir: true
         });
     });
 

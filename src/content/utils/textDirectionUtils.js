@@ -5,7 +5,7 @@
 
 // Import analysis functions from analyzeDirection.js
 import { analyzeTextDirection, detectTextDirection, isRTL, isCode, analyzeTextDirectionFirstWord } from './analyzeDirection.js';
-import { isRtlEngineActive, restoreElementFromSelf } from './originalState.js';
+import { isRtlEngineActive, restoreElementFromSelf, preserveOriginalDir } from './originalState.js';
 
 // Debug flag - set to false for release builds
 const DEBUG_MODE = false;
@@ -19,6 +19,32 @@ function setDebugAttr($element, attrName, value) {
 
 // Common formatting tags array - defined once for consistency
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
+
+function normalizeTagNameList(tags) {
+    if (!Array.isArray(tags)) {
+        return [];
+    }
+    return tags
+        .map((tag) => String(tag || '').trim().toLowerCase())
+        .filter(Boolean);
+}
+
+function resolveAdjustedTagList(defaults, addTags, removeTags) {
+    const extraTags = normalizeTagNameList(addTags);
+    const removeSet = new Set(normalizeTagNameList(removeTags));
+    const seen = new Set();
+    const resolved = [];
+
+    [...defaults, ...extraTags].forEach((tag) => {
+        if (removeSet.has(tag) || seen.has(tag)) {
+            return;
+        }
+        seen.add(tag);
+        resolved.push(tag);
+    });
+
+    return resolved;
+}
 
 const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
 let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
@@ -386,19 +412,23 @@ function shouldSkipInnerDirStrip(el) {
 }
 
 function stripInnerDirAttributes($element) {
-    if (!$element || !$element.length) {
+    const root = unwrapElement($element);
+    if (!root || !root.querySelectorAll) {
         return;
     }
-    $element.find(INNER_DIR_TARGET_SELECTOR).each(function() {
-        if (!this.hasAttribute('dir') || shouldSkipInnerDirStrip(this)) {
-            return;
+    const nodes = root.querySelectorAll('[dir]');
+    for (let i = 0; i < nodes.length; i++) {
+        const el = nodes[i];
+        if (shouldSkipInnerDirStrip(el) || el.hasAttribute('data-ai-rtl-orig-dir')) {
+            continue;
         }
-        AQ(this).removeAttr('dir');
-    });
+        preserveOriginalDir(el);
+        el.removeAttribute('dir');
+    }
 }
 
-function applyRemoveInnerDir($element, rtlAlgorithm, options = {}) {
-    if (rtlAlgorithm === 'advanced_section' || !isRemoveInnerDirEnabled(options)) {
+function applyRemoveInnerDir($element, options = {}) {
+    if (!isRemoveInnerDirEnabled(options)) {
         return;
     }
     stripInnerDirAttributes($element);
@@ -517,6 +547,103 @@ function applyTextAlignByDirection(target, direction, setTextAlign) {
         return;
     }
     applyTextAlignStyle(target, direction === 'rtl' ? 'right' : 'left', setTextAlign);
+}
+
+const UNICODE_BIDI_KEYWORDS = new Set([
+    'isolate',
+    'plaintext',
+    'embed',
+    'bidi-override',
+    'isolate-override',
+    'normal'
+]);
+const ORIG_BIDI_ATTR = 'data-ai-rtl-orig-bidi';
+
+function parseUnicodeBidiOption(setUnicodeBidi) {
+    if (!setUnicodeBidi) {
+        return { enabled: false, value: 'isolate', important: false };
+    }
+
+    if (setUnicodeBidi === true) {
+        return { enabled: true, value: 'isolate', important: false };
+    }
+
+    if (typeof setUnicodeBidi !== 'string') {
+        return { enabled: true, value: 'isolate', important: false };
+    }
+
+    const normalized = setUnicodeBidi.trim().toLowerCase().replace(/\s+/g, ' ');
+    const important = normalized.includes('important');
+    const withoutImportant = normalized.replace(/!?\s*important/g, '').trim();
+    const value = UNICODE_BIDI_KEYWORDS.has(withoutImportant) ? withoutImportant : 'isolate';
+
+    return { enabled: true, value, important };
+}
+
+function isUnicodeBidiEnabled(setUnicodeBidi) {
+    return parseUnicodeBidiOption(setUnicodeBidi).enabled;
+}
+
+function applyUnicodeBidiStyle(target, setUnicodeBidi) {
+    const parsed = parseUnicodeBidiOption(setUnicodeBidi);
+    if (!parsed.enabled) {
+        return;
+    }
+    const priority = parsed.important ? 'important' : '';
+    const applyOne = (el) => {
+        if (el && el.nodeType === 1 && el.style) {
+            el.style.setProperty('unicode-bidi', parsed.value, priority);
+        }
+    };
+
+    if (target && target.nodeType === 1) {
+        applyOne(target);
+        return;
+    }
+    if (target && typeof target.each === 'function') {
+        target.each(function() {
+            applyOne(this);
+        });
+        return;
+    }
+    applyOne(unwrapElement(target));
+}
+
+function restoreUnicodeBidiStyle(target) {
+    const applyOne = (el) => {
+        if (!el || el.nodeType !== 1 || !el.style || !el.hasAttribute(ORIG_BIDI_ATTR)) {
+            return;
+        }
+        const original = el.getAttribute(ORIG_BIDI_ATTR);
+        if (original) {
+            el.style.setProperty('unicode-bidi', original);
+        } else {
+            el.style.removeProperty('unicode-bidi');
+        }
+    };
+
+    if (target && target.nodeType === 1) {
+        applyOne(target);
+        return;
+    }
+    if (target && typeof target.each === 'function') {
+        target.each(function() {
+            applyOne(this);
+        });
+        return;
+    }
+    applyOne(unwrapElement(target));
+}
+
+function applyUnicodeBidiByDirection(target, direction, setUnicodeBidi) {
+    if (!isUnicodeBidiEnabled(setUnicodeBidi)) {
+        return;
+    }
+    if (direction === 'rtl') {
+        applyUnicodeBidiStyle(target, setUnicodeBidi);
+        return;
+    }
+    restoreUnicodeBidiStyle(target);
 }
 
 function isCustomCodeBlock($element) {
@@ -915,6 +1042,7 @@ function processCodeMirrorBlocks(container, options = {}) {
  * @param {string} options.fontClass - Font class to apply (optional)
  * @param {string} options.text - Text content to analyze (optional)
  * @param {boolean|'important'} options.setTextAlign - Whether to set text alignment; pass 'important' to use !important
+ * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} options.setUnicodeBidi - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`.
  */
 function setTextDirectionAndFontOneTime(element, options = {}) {
     if (!isRtlEngineActive()) {
@@ -924,7 +1052,8 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
         processedClass = 'AsSet',
         fontClass = 'FontSet',
         text: providedText = null,
-        setTextAlign = false
+        setTextAlign = false,
+        setUnicodeBidi = false
     } = options;
     
     const $element = AQ(element);
@@ -941,7 +1070,8 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
     setTextDirectionAndFont(element, {
         fontClass,
         text: providedText,
-        setTextAlign
+        setTextAlign,
+        setUnicodeBidi
     });
 }
 
@@ -952,6 +1082,7 @@ function setTextDirectionAndFontOneTime(element, options = {}) {
  * @param {string} options.fontClass - Font class to apply (optional)
  * @param {string} options.text - Text content to analyze (optional)
  * @param {boolean|'important'} options.setTextAlign - Off: false, On: true, with !important: 'important'
+ * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} options.setUnicodeBidi - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`.
  */
 function setTextDirectionAndFont(element, options = {}) {
     if (!isRtlEngineActive()) {
@@ -961,6 +1092,7 @@ function setTextDirectionAndFont(element, options = {}) {
         fontClass = 'FontSet',
         text: providedText = null,
         setTextAlign = false,
+        setUnicodeBidi = false,
         applyFontIfRtl = false
     } = options;
     const ignoreSelector = getIgnoreSelector(options);
@@ -1013,6 +1145,7 @@ function setTextDirectionAndFont(element, options = {}) {
     // Set text alignment if setTextAlign is enabled (true or 'important')
     if (finalDirection !== 'auto') {
         applyTextAlignByDirection(element, finalDirection, setTextAlign);
+        applyUnicodeBidiByDirection(element, finalDirection, setUnicodeBidi);
     }
 
     if (finalDirection === 'rtl') {
@@ -1027,7 +1160,7 @@ function setTextDirectionAndFont(element, options = {}) {
  * @param {jQuery|HTMLElement} element - Element to process
  * @param {string} fontClass - Font class to apply (optional)
  */
-function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign) {
+function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlign, setUnicodeBidi = false) {
     if (!isRtlEngineActive()) {
         return;
     }
@@ -1043,7 +1176,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
     // by those newlines destroys the formula. Wrapping the fragments in <div>
     // inside a <p> then makes the browser close the paragraph and emit extra <p>s.
     if (containsStructuredMarkup(el)) {
-        setTextDirectionAndFont(element, { fontClass, setTextAlign });
+        setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi });
         skipStructuredMedia($element);
         $element.data('rtl-processed', true);
         return;
@@ -1086,7 +1219,6 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
             if (uniqueDirections.length > 1) {
                 // <p> cannot contain <div>; the parser would close the paragraph.
                 const wrapperTag = el && el.tagName && el.tagName.toLowerCase() === 'p' ? 'span' : 'div';
-                const wrapperStyle = wrapperTag === 'span' ? ' style="display:block"' : '';
                 let newHtml = '';
                 parts.forEach((part, index) => {
                     if (part.trim()) {
@@ -1096,6 +1228,12 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                         if (cleanText) {
                             const direction = detectTextDirection(cleanText);
                             const divClass = fontClass ? ` class="${fontClass}"` : '';
+                            const bidiParsed = parseUnicodeBidiOption(setUnicodeBidi);
+                            const bidiStyle = bidiParsed.enabled && direction === 'rtl'
+                                ? `unicode-bidi:${bidiParsed.value}${bidiParsed.important ? ' !important' : ''}`
+                                : '';
+                            const styleAttr = [wrapperTag === 'span' ? 'display:block' : '', bidiStyle].filter(Boolean).join(';');
+                            const wrapperStyle = styleAttr ? ` style="${styleAttr}"` : '';
                             newHtml += `<${wrapperTag}${divClass} dir="${direction}" data-rtl-processed="true"${wrapperStyle}>${part}</${wrapperTag}>`;
                         }
                     }
@@ -1109,13 +1247,14 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
                 // All parts have the same direction, apply to the main element
                 $element.attr("dir", directions[0]);
                 $element.addClass(fontClass);
+                applyUnicodeBidiByDirection($element, directions[0], setUnicodeBidi);
                 $element.data('rtl-processed', true);
             }
         } else {
             // Single part, process normally
             const mainText = $element.text();
             if (mainText && mainText.trim()) {
-                setTextDirectionAndFont(element, { fontClass, setTextAlign });
+                setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi });
                 $element.data('rtl-processed', true);
             }
         }
@@ -1123,7 +1262,7 @@ function processParagraphWithBreaks(element, fontClass = 'FontSet' , setTextAlig
         // No <br> tags, process normally
         const mainText = $element.text();
         if (mainText && mainText.trim()) {
-            setTextDirectionAndFont(element, { fontClass, text: mainText, setTextAlign });
+            setTextDirectionAndFont(element, { fontClass, text: mainText, setTextAlign, setUnicodeBidi });
             $element.data('rtl-processed', true);
         }
     }
@@ -1378,7 +1517,10 @@ function processTextElementsAdvanced(container, options = {}) {
         isContainer = false,
         skipTags = [],
         removeSkipTags = [],
+        includeTags = [],
+        excludeTags = [],
         setTextAlign = false,
+        setUnicodeBidi = false,
         removeDirAuto = false,
         endTyping = false,
         codeFontClass
@@ -1424,9 +1566,12 @@ function processTextElementsAdvanced(container, options = {}) {
     }
 
 
+    const extraBlockTags = normalizeTagNameList(includeTags);
+    const removedBlockTags = normalizeTagNameList(excludeTags);
+
     // Combine FORMATTING_TAGS with skipTags, then remove specified tags
-    const allSkipTags = [...FORMATTING_TAGS, ...skipTags].filter(tag => 
-        !removeSkipTags.includes(tag)
+    const allSkipTags = [...FORMATTING_TAGS, ...skipTags, ...removedBlockTags].filter(tag =>
+        !removeSkipTags.includes(tag) && !extraBlockTags.includes(tag)
     );
 
     // Get only direct children of the container
@@ -1471,6 +1616,7 @@ function processTextElementsAdvanced(container, options = {}) {
             }
             
             applyTextAlignByDirection($element, direction, setTextAlign);
+            applyUnicodeBidiByDirection($element, direction, setUnicodeBidi);
 
 
 
@@ -1520,6 +1666,7 @@ function processTextElementsAdvanced(container, options = {}) {
                             AQ(this).attr('dir', majorityDir);
                 
                             applyTextAlignByDirection(this, majorityDir, setTextAlign);
+                            applyUnicodeBidiByDirection(this, majorityDir, setUnicodeBidi);
                         });
                         
                         console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount}) - Unified mode`);
@@ -1676,7 +1823,7 @@ function processTextElementsAdvanced(container, options = {}) {
          if (tagName === 'p' || tagName === 'span' || tagName === 'text') {
             if (containsStructuredMarkup(this)) {
                 setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
-                setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
                 skipStructuredMedia($element, processedClass);
                 $element.addClass(processedClass);
                 return;
@@ -1704,7 +1851,7 @@ function processTextElementsAdvanced(container, options = {}) {
   
             if (onlyBrElements || onlyWhitespace || containsLineBreaks) {
                 $element.addClass(processedClass);
-                processParagraphWithBreaks(this, fontClass, setTextAlign);
+                processParagraphWithBreaks(this, fontClass, setTextAlign, setUnicodeBidi);
 
                 return;
             } 
@@ -1729,13 +1876,13 @@ function processTextElementsAdvanced(container, options = {}) {
                     // حالت 2: همه فرزندان allSkipTags هستند
                         setDebugAttr($element, 'data-debug-mode', 'all-formatting-tags');
                 
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
                      $element.addClass(processedClass);
                 } else if (formattingChildren.length > 0) {
                     // حالت 3: فقط بعضی از فرزندان allSkipTags هستند
                     setDebugAttr($element, 'data-debug-mode', 'mixed-children');
                    
-                        setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                        setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
                 
 
                     $element.addClass(processedClass);
@@ -1773,6 +1920,7 @@ function processTextElementsAdvanced(container, options = {}) {
                                 setTextDirectionAndFont(this, { 
                                     fontClass, 
                                     setTextAlign,
+                                    setUnicodeBidi,
                                     // text: textForDirection 
                                 });
                                 
@@ -1849,6 +1997,7 @@ function processTextElementsAdvanced(container, options = {}) {
                             AQ(this).attr('dir', listDirection);
                             
                             applyTextAlignByDirection(this, listDirection, setTextAlign);
+                            applyUnicodeBidiByDirection(this, listDirection, setUnicodeBidi);
                            
                         });
                         
@@ -1857,6 +2006,7 @@ function processTextElementsAdvanced(container, options = {}) {
                         setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
                         
                         applyTextAlignByDirection($element, listDirection, setTextAlign);
+                        applyUnicodeBidiByDirection($element, listDirection, setUnicodeBidi);
                         
                     } else {
                         // برای سایر المان‌ها، پردازش بازگشتی انجام بده
@@ -1866,12 +2016,13 @@ function processTextElementsAdvanced(container, options = {}) {
                             isContainer: false,
                             skipTags,
                             removeSkipTags,
-                            setTextAlign
+                            setTextAlign,
+                            setUnicodeBidi
                         });
 
                         // برای خود المان هم تصمیم بگیر
                     
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi });
                         
 
                         setDebugAttr($element, 'data-debug-mode', 'no-formatting-children');
@@ -1889,7 +2040,7 @@ function processTextElementsAdvanced(container, options = {}) {
                 // console.log("setTextDirectionAndFont no-children", $element , setTextAlign);
                 
              $element.addClass(processedClass);
-                 setTextDirectionAndFont($element, { fontClass, setTextAlign });
+                 setTextDirectionAndFont($element, { fontClass, setTextAlign, setUnicodeBidi });
                 
             }
         
@@ -1902,8 +2053,6 @@ function processTextElementsAdvanced(container, options = {}) {
         throw error;
     }
 }
-
-
 
 /**
  * Get common attribute selectors for text content
@@ -1926,6 +2075,14 @@ const LOCKED_EDITOR_HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 const lockedEditorCssById = new Map();
 const lockedBlockquoteOriginals = new Map();
 let lockedEditorSeq = 0;
+
+function resolveLockedEditorBlockTags(options = {}) {
+    return resolveAdjustedTagList(
+        LOCKED_EDITOR_BLOCK_TAGS,
+        options.includeTags,
+        options.excludeTags
+    );
+}
 
 const BLOCKQUOTE_MIRROR_ATTR = 'data-ai-rtl-bq-mirrored';
 const BLOCKQUOTE_TW_CLASS_ATTR = 'data-ai-rtl-bq-tw';
@@ -2359,8 +2516,11 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     el.removeAttribute('data-direction');
     el.style.removeProperty('text-align');
 
+    const extraCssTags = new Set(normalizeTagNameList(options.includeTags));
+    const blockTags = resolveLockedEditorBlockTags(options);
+
     const editorId = getLockedEditorId(el);
-    let contentSig = `${rtlAlgorithm}:${setTextAlign}:${mixedTitleDisplayModeCache || ''}|`;
+    let contentSig = `${rtlAlgorithm}:${setTextAlign}:${mixedTitleDisplayModeCache || ''}:${blockTags.join(',')}|`;
     for (let i = 0; i < el.children.length; i++) {
         const child = el.children[i];
         const text = (child.textContent || '').trim();
@@ -2378,7 +2538,7 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
 
     Array.from(el.children).forEach((child) => {
         const tagName = child.tagName.toLowerCase();
-        if (!LOCKED_EDITOR_BLOCK_TAGS.includes(tagName)) {
+        if (!blockTags.includes(tagName)) {
             return;
         }
 
@@ -2419,9 +2579,10 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
             return;
         }
 
-        const extraCss = tagName === 'blockquote' && direction === 'rtl'
-            ? buildMirroredBlockquoteCss(child, selector)
-            : '';
+        let extraCss = extraCssTags.has(tagName) ? 'display:block;' : '';
+        if (tagName === 'blockquote' && direction === 'rtl') {
+            extraCss += buildMirroredBlockquoteCss(child, selector);
+        }
         blockRules.push({ selector, direction, extraCss });
     });
 
@@ -2460,15 +2621,28 @@ function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
 /**
  * Apply RTL to a large container (markdown, message body, prose).
  * Walks children, tables, code blocks, and nested sections according to the selected mode.
+ * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side.
  * @param {jQuery|HTMLElement} element - Container to process
  * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
- * @param {Object} options - Additional options (optional)
- * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
- * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
- * @param {boolean} [options.processTables] - For advanced_full: process tables even without isContainer; runs independently of shouldProcess
- * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM.
- *   `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) becomes LOCKED_EDITOR_SELECTOR for this call.
- * RTL blockquotes get left/right padding and border swapped so the quote bar sits on the start side
+ * @param {Object} [options] - Additional options (optional)
+ * @param {string} [options.fontClass='FontSet'] - Font class to apply on processed elements
+ * @param {string} [options.processedClass] - Class that marks already-processed nodes. Default `'AsOk'` for advanced_section; used to skip reprocessing and to count processed children
+ * @param {boolean} [options.isContainer] - Treat as a nested container. Default `true` for advanced_section. advanced_full: also process inner code blocks on first pass. first_word: also process tables
+ * @param {string} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted
+ * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
+ * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
+ * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
+ * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess
+ * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore when analyzing text; skipped if omitted
+ * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
+ * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM. `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) targets matching descendants as locked editors
+ * @param {string[]} [options.includeTags] - Add tag names to the default block list (p, h1–h6, blockquote, pre, ul, ol). Extra tags get display:block in onlyCss
+ * @param {string[]} [options.excludeTags] - Remove tag names from the default block list (onlyCss) or skip them while walking children
+ * @param {string[]} [options.skipTags] - Extra tag names to skip while walking children (advanced_section → processTextElementsAdvanced)
+ * @param {string[]} [options.removeSkipTags] - Tag names to remove from the default skip list (advanced_section)
+ * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from descendants (advanced_section)
+ * @param {boolean} [options.applyFontIfRtl] - advanced_full: add fontClass only when detected direction is RTL
+ * @param {boolean} [options.endTyping] - advanced_section: process headers only after typing has settled
  */
 function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     if (!isRtlEngineActive()) {
@@ -2495,6 +2669,8 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             processLockedEditorByCss(child, rtlAlgorithm, { ...options, onlyCss: true });
         });
     }
+
+    applyRemoveInnerDir($element, options);
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -2656,7 +2832,6 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
 
         flipRtlArrowsInTree($element);
 
-        applyRemoveInnerDir($element, rtlAlgorithm, mergedOptions);
         if (ignoreSelector) {
             isolateIgnoredElements($element, ignoreSelector);
         }
@@ -2689,7 +2864,6 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         $element.attr('data-algorithm-rtl', 'first_word');
         flipRtlArrowsInTree($element);
 
-        applyRemoveInnerDir($element, rtlAlgorithm, options);
         const firstWordIgnoreSelector = getIgnoreSelector(options);
         if (firstWordIgnoreSelector) {
             isolateIgnoredElements($element, firstWordIgnoreSelector);
@@ -2730,7 +2904,8 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
  * @param {Object} options - Additional options (optional)
  * @param {string} options.rtlClass - Class to add when direction is RTL (optional, defaults to null)
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
- * @param {boolean} [options.removeInnerDir] - If true and algorithm is not advanced_section, strip dir from inner paragraphs/sections
+ * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
+ * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off.
  */
 function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     if (!isRtlEngineActive()) {
@@ -2812,6 +2987,7 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
                     const direction = analyzeTextDirectionFirstWord(text);
                     
                     applyTextAlignByDirection($element, direction, options.setTextAlign);
+                    applyUnicodeBidiByDirection($element, direction, options.setUnicodeBidi);
                     
                     // Add RTL-specific class if direction is RTL
                     if (rtlClass && direction === 'rtl') {
@@ -2829,7 +3005,7 @@ function applyRtlToElement(element, rtlAlgorithm, options = {}) {
 
     $element.attr('data-algorithm-rtl', rtlAlgorithm);
 
-    applyRemoveInnerDir($element, rtlAlgorithm, options);
+    applyRemoveInnerDir($element, options);
     const ignoreSelector = getIgnoreSelector(options);
     if (ignoreSelector) {
         isolateIgnoredElements($element, ignoreSelector);

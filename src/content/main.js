@@ -69,7 +69,7 @@ import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
-import { activateGoogleDrive } from './services/observer/google-drive.js';
+import { activateGoogleDrive } from './services/google-drive.js';
 
 // Global variables
 let site = window.location.hostname;

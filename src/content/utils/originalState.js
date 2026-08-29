@@ -5,6 +5,7 @@
 
 const ORIG_DIR_ATTR = 'data-ai-rtl-orig-dir';
 const ORIG_ALIGN_ATTR = 'data-ai-rtl-orig-align';
+const ORIG_BIDI_ATTR = 'data-ai-rtl-orig-bidi';
 const ORIG_FONT_ATTR = 'data-ai-rtl-orig-font';
 const CODE_FONT_ATTR = 'data-ai-rtl-code-font';
 
@@ -86,7 +87,7 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 
 const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
-    ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
+    ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_BIDI_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
     'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
     'data-org-dir', 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',
     'data-debug-reason', 'data-debug-processed', 'data-skip-log-sent'
@@ -115,11 +116,18 @@ function canStamp(el) {
     return capturing && !restoring && el && el.nodeType === 1 && el.isConnected && !isSkippableRoot(el);
 }
 
-function stampOrigDir(el) {
-    if (!canStamp(el) || el.hasAttribute(ORIG_DIR_ATTR)) {
+export function preserveOriginalDir(el) {
+    if (restoring || !el || el.nodeType !== 1 || el.hasAttribute(ORIG_DIR_ATTR)) {
         return;
     }
     nativeSetAttribute.call(el, ORIG_DIR_ATTR, el.hasAttribute('dir') ? (el.getAttribute('dir') || '') : '');
+}
+
+function stampOrigDir(el) {
+    if (!canStamp(el)) {
+        return;
+    }
+    preserveOriginalDir(el);
 }
 
 function stampOrigAlign(el) {
@@ -129,8 +137,19 @@ function stampOrigAlign(el) {
     nativeSetAttribute.call(el, ORIG_ALIGN_ATTR, el.style.getPropertyValue('text-align') || '');
 }
 
+function stampOrigBidi(el) {
+    if (!canStamp(el) || !el.style || el.hasAttribute(ORIG_BIDI_ATTR)) {
+        return;
+    }
+    nativeSetAttribute.call(el, ORIG_BIDI_ATTR, el.style.getPropertyValue('unicode-bidi') || '');
+}
+
 function isTextAlignProp(prop) {
     return prop === 'text-align' || prop === 'textAlign';
+}
+
+function isUnicodeBidiProp(prop) {
+    return prop === 'unicode-bidi' || prop === 'unicodeBidi';
 }
 
 function wrapMethod(object, key, wrapper) {
@@ -231,19 +250,27 @@ function installDomHooks() {
 
     wrapGetterMap(HTMLElement.prototype, 'style', styleOwners);
     wrapMethod(CSSStyleDeclaration.prototype, 'setProperty', function (original, args) {
-        if (isTextAlignProp(args[0])) {
+        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0])) {
             const el = styleOwners.get(this);
             if (el) {
-                stampOrigAlign(el);
+                if (isTextAlignProp(args[0])) {
+                    stampOrigAlign(el);
+                } else {
+                    stampOrigBidi(el);
+                }
             }
         }
         return original.apply(this, args);
     });
     wrapMethod(CSSStyleDeclaration.prototype, 'removeProperty', function (original, args) {
-        if (isTextAlignProp(args[0])) {
+        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0])) {
             const el = styleOwners.get(this);
             if (el) {
-                stampOrigAlign(el);
+                if (isTextAlignProp(args[0])) {
+                    stampOrigAlign(el);
+                } else {
+                    stampOrigBidi(el);
+                }
             }
         }
         return original.apply(this, args);
@@ -459,6 +486,22 @@ function restoreAlignFromSelf(el) {
     nativeRemoveAttribute.call(el, ORIG_ALIGN_ATTR);
 }
 
+function restoreBidiFromSelf(el) {
+    if (!el.hasAttribute(ORIG_BIDI_ATTR) || !el.style) {
+        if (el.hasAttribute(ORIG_BIDI_ATTR)) {
+            nativeRemoveAttribute.call(el, ORIG_BIDI_ATTR);
+        }
+        return;
+    }
+    const originalBidi = el.getAttribute(ORIG_BIDI_ATTR);
+    if (originalBidi) {
+        nativeSetProperty.call(el.style, 'unicode-bidi', originalBidi);
+    } else {
+        nativeRemoveProperty.call(el.style, 'unicode-bidi');
+    }
+    nativeRemoveAttribute.call(el, ORIG_BIDI_ATTR);
+}
+
 function restoreFontFromSelf(el) {
     if (!el.hasAttribute(ORIG_FONT_ATTR) && !el.hasAttribute(CODE_FONT_ATTR)) {
         return;
@@ -485,14 +528,16 @@ export function restoreElementFromSelf(el) {
     try {
         const hasOrigDir = el.hasAttribute(ORIG_DIR_ATTR);
         const hasOrigAlign = el.hasAttribute(ORIG_ALIGN_ATTR);
+        const hasOrigBidi = el.hasAttribute(ORIG_BIDI_ATTR);
         const hasOrigFont = el.hasAttribute(ORIG_FONT_ATTR) || el.hasAttribute(CODE_FONT_ATTR);
-        const touched = hasOrigDir || hasOrigAlign || hasOrigFont || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
+        const touched = hasOrigDir || hasOrigAlign || hasOrigBidi || hasOrigFont || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
         if (!touched) {
             return false;
         }
 
         restoreDirFromSelf(el);
         restoreAlignFromSelf(el);
+        restoreBidiFromSelf(el);
         restoreFontFromSelf(el);
         nativeRemoveAttribute.call(el, 'data-direction');
         stripExtensionClassesFrom(el);
@@ -506,7 +551,7 @@ export function restoreElementFromSelf(el) {
 
 function restoreMarkedElements() {
     try {
-        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_FONT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
+        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_BIDI_ATTR}], [${ORIG_FONT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
             restoreElementFromSelf(el);
         });
     } catch {
