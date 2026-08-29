@@ -121,7 +121,8 @@ const services: Service[] = [
     { key: 'typingmind', name: 'TypingMind', icon: '/images/sites/typingmind.png', url: 'https://www.typingmind.com/', new: true, hosts: ['typingmind.com'], keywords: ['typingmind', 'تایپینگ مایند', 'تایپینگ‌مایند'] },
     { key: 'huggingface', name: 'Hugging Face', icon: '/images/sites/huggingface.png', url: 'https://huggingface.co/', new: true, hosts: ['huggingface.co', 'hf.co'], keywords: ['huggingface', 'هاگینگ فیس', 'هاگینگ‌فیس', 'hf', 'مدل'] },
     { key: 'dash0', name: 'Dash0', icon: '/images/sites/dash0.png', url: 'https://app.dash0.com/', new: true, hosts: ['dash0.com', 'app.dash0.com'], keywords: ['dash0', 'دش صفر', 'دش'] },
-    { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, hosts: ['zerve.ai', 'app.zerve.ai'], keywords: ['zerve', 'زرو'] }
+    { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, hosts: ['zerve.ai', 'app.zerve.ai'], keywords: ['zerve', 'زرو'] },
+    { key: 'sakana', name: 'Sakana Chat', icon: '/images/sites/sakana.png', url: 'https://chat.sakana.ai/', new: true, hosts: ['chat.sakana.ai'], keywords: ['sakana', 'ساکانا', 'namazu', 'fugu', 'ژاپن', 'japan'] }
 ];
 
 

@@ -37,6 +37,8 @@ export const versionChanges = [
     { id: '13', text: 'افزودن سایت Dash0', shortName: 'Dash0', icon: 'sites/dash0.png', type: 'add', group: 'site' },
     { id: '14', text: 'افزودن سایت Zerve', shortName: 'Zerve', icon: 'sites/zerve.png', type: 'add', group: 'site' },
     { id: '15', text: 'افزودن سایت Qwen Coder', shortName: 'Qwen Coder', icon: 'sites/qwen.png', type: 'add', group: 'site' },
+    { id: '37', text: 'افزودن سایت Sakana Chat', shortName: 'Sakana Chat', icon: 'sites/sakana.png', type: 'add', group: 'site' },
+    { id: '38', text: 'آپدیت Genspark', shortName: 'Genspark', icon: 'sites/genspark.png', type: 'fix', group: 'site' },
 ];
 
 export function getSiteShortName(change) {

@@ -95,7 +95,11 @@ function getAISitesList() {
         'zerve.ai',
         'www.zerve.ai',
         'app.zerve.ai',
-        'coder.qwen.ai'
+        'coder.qwen.ai',
+        'chat.sakana.ai',
+        'www.chat.sakana.ai',
+        'genspark.ai',
+        'www.genspark.ai'
     ];
 
     return manualRtlState.aiSitesList;

@@ -155,6 +155,21 @@ export const DYNAMIC_SERVICES = {
         name: 'Digen',
         origins: ['*://digen.ai/*', '*://*.digen.ai/*'],
         hostnames: ['digen.ai', 'www.digen.ai', 'agent.digen.ai']
+    },
+    ernie: {
+        name: 'Ernie (Baidu)',
+        origins: [
+            '*://wenxin.baidu.com/*',
+            '*://www.wenxin.baidu.com/*',
+            '*://chat.baidu.com/*',
+            '*://www.chat.baidu.com/*'
+        ],
+        hostnames: ['wenxin.baidu.com', 'www.wenxin.baidu.com', 'chat.baidu.com', 'www.chat.baidu.com']
+    },
+    sakana: {
+        name: 'Sakana Chat',
+        origins: ['*://chat.sakana.ai/*', '*://www.chat.sakana.ai/*'],
+        hostnames: ['chat.sakana.ai', 'www.chat.sakana.ai']
     }
 };
 

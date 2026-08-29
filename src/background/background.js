@@ -217,6 +217,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!isFirefoxRuntime()) {
                     for (const serviceKey of allDynamicServices) {
+                        // Hybrid services (e.g. kimi, ernie) stay on even if extra-host
+                        // optional permissions are missing; only fully-dynamic keys can be forced off.
+                        if (Object.prototype.hasOwnProperty.call(SERVICE_FLAGS, serviceKey)) {
+                            continue;
+                        }
                         const enabled = updates.hasOwnProperty(serviceKey)
                             ? updates[serviceKey]
                             : storedData[serviceKey];
@@ -864,7 +869,9 @@ const AI_SITES = [
     'huggingface.co', 'www.huggingface.co', 'hf.co', 'www.hf.co',
     'dash0.com', 'www.dash0.com', 'app.dash0.com',
     'zerve.ai', 'www.zerve.ai', 'app.zerve.ai',
-    'coder.qwen.ai'
+    'coder.qwen.ai',
+    'chat.sakana.ai', 'www.chat.sakana.ai',
+    'genspark.ai', 'www.genspark.ai'
 ];
 
 function isAISite(hostname) {

@@ -80,6 +80,7 @@ export const FONT_SCALE_SITE_MODES = {
     'hf.co': 'zoom',
     'dash0.com': 'zoom',
     'zerve.ai': 'zoom',
+    'chat.sakana.ai': 'zoom',
 };
 
 function normalizeHostname(hostname) {

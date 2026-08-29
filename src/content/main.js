@@ -40,7 +40,7 @@ window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
 import { activateGamma } from './services/gamma.js';
 import { activateNotion } from './services/notion.js';
-import { activateGenspark } from './services/genspark.js';
+import { activateGenspark } from './services/observer/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { SessionManager } from './utils/session.js';
@@ -68,6 +68,7 @@ import { activateTypingMind } from './services/observer/typingmind.js';
 import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
+import { activateSakana } from './services/observer/sakana.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -348,6 +349,10 @@ const serviceConfig = {
     zerve: {
         urls: ["zerve.ai", "www.zerve.ai", "app.zerve.ai"],
         activate: activateZerve
+    },
+    sakana: {
+        urls: ["chat.sakana.ai", "www.chat.sakana.ai"],
+        activate: activateSakana
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],
