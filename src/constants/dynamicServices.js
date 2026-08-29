@@ -91,6 +91,23 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://labs.google/*', '*://www.labs.google/*'],
         hostnames: ['labs.google', 'www.labs.google']
     },
+    googleDrive: {
+        name: 'Google Drive',
+        origins: [
+            '*://docs.google.com/*',
+            '*://drive.google.com/*',
+            '*://sheets.google.com/*',
+            '*://slides.google.com/*',
+            '*://forms.google.com/*'
+        ],
+        hostnames: [
+            'docs.google.com',
+            'drive.google.com',
+            'sheets.google.com',
+            'slides.google.com',
+            'forms.google.com'
+        ]
+    },
     veo3: {
         name: 'Veo 3',
         origins: ['*://www-veo3.com/*'],

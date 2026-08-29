@@ -35,15 +35,40 @@ const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
     KATEX_SELECTOR, '.ProseMirror'
 ].join(', ');
 
-const CODE_SKIP_ARROW_FLIP_SELECTOR = [
-    'pre', 'code', 'kbd', 'samp',
+const CODE_BLOCK_HOST_SELECTOR = [
+    'pre',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
     '[data-language]', '[data-streamdown="code-block"]'
 ].join(', ');
 
+const CODE_SKIP_ARROW_FLIP_SELECTOR = CODE_BLOCK_HOST_SELECTOR;
+
 const CUSTOM_CODE_BLOCK_SELECTOR = '[data-language], [data-streamdown="code-block"]';
 const STANDARD_CODE_BLOCK_SELECTOR = 'code, pre, .cm-content, .cm-editor, .md-code-block';
 const CODE_BLOCK_SELECTOR = `${STANDARD_CODE_BLOCK_SELECTOR}, ${CUSTOM_CODE_BLOCK_SELECTOR}`;
+const INLINE_CODE_TAGS = new Set(['code', 'kbd', 'samp']);
+
+function isInsideCodeBlock(el) {
+    if (!el || typeof el.closest !== 'function') {
+        return false;
+    }
+    try {
+        return Boolean(el.closest(CODE_BLOCK_HOST_SELECTOR));
+    } catch {
+        return false;
+    }
+}
+
+function isInlineCodeElement(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    const tag = el.tagName && el.tagName.toLowerCase();
+    if (!INLINE_CODE_TAGS.has(tag)) {
+        return false;
+    }
+    return !isInsideCodeBlock(el);
+}
 
 const UNICODE_ARROW_FLIP_MAP = {
     '→': '←',
@@ -147,6 +172,10 @@ function isNonAnalyzableElement(el, ignoreSelector) {
     }
     try {
         if (el.matches(SKIP_ANALYZABLE_SELECTOR)) {
+            // Inline markdown `code` is UI/prose (e.g. Settings → System), not a fenced block.
+            if (isInlineCodeElement(el)) {
+                return false;
+            }
             return true;
         }
         if (ignoreSelector && el.matches(ignoreSelector)) {
@@ -510,6 +539,24 @@ function flipArrowsInText(text) {
         .replace(UNICODE_ARROW_FLIP_RE, (ch) => UNICODE_ARROW_FLIP_MAP[ch] || ch);
 }
 
+function isRtlCodeLikeHost(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    const dir = el.getAttribute('dir');
+    if (dir === 'rtl') {
+        return true;
+    }
+    if (dir === 'ltr') {
+        return false;
+    }
+    const text = (el.textContent || '').trim();
+    if (!text || isCode(text)) {
+        return false;
+    }
+    return detectTextDirection(text) === 'rtl';
+}
+
 function shouldSkipArrowFlip(parent) {
     if (!parent || typeof parent.closest !== 'function') {
         return true;
@@ -517,10 +564,15 @@ function shouldSkipArrowFlip(parent) {
     if (parent.closest(ALWAYS_SKIP_ARROW_FLIP_SELECTOR)) {
         return true;
     }
-    if (parent.closest(CODE_SKIP_ARROW_FLIP_SELECTOR)) {
-        return true;
+    if (isInlineCodeElement(parent)) {
+        return false;
     }
-    return false;
+    const codeHost = parent.closest(CODE_SKIP_ARROW_FLIP_SELECTOR);
+    if (!codeHost) {
+        return false;
+    }
+    // Persian markdown code boxes already marked RTL should still flip process arrows.
+    return !isRtlCodeLikeHost(parent) && !isRtlCodeLikeHost(codeHost);
 }
 
 function isTextNodeInRtlContext(textNode) {
@@ -697,6 +749,7 @@ function applyLiveCodeAlgorithmSetting(enabled) {
     processCodeBlocksInContainer(AQ(document.body), options, true);
     processCodeMirrorBlocks(document.body, options);
     refreshLockedEditorsForCodeSetting();
+    flipRtlArrowsInTree(document.body);
 }
 
 const CM_DIR_STYLE_ID = 'ai-rtl-cm-code-direction';
@@ -767,11 +820,12 @@ function isCodeMirrorCodeBlock($element) {
 }
 
 function processCodeBlockNode($codeElement, options = {}) {
+    const el = $codeElement[0];
     if (isCodeMirrorCodeBlock($codeElement)) {
-        processCodeMirrorBlock($codeElement, $codeElement[0], options);
+        processCodeMirrorBlock($codeElement, el, options);
         return;
     }
-    processCodeLikeElement($codeElement, $codeElement[0], options);
+    processCodeLikeElement($codeElement, el, options);
 }
 
 function processCodeBlocksInContainer($container, options = {}, includeStandard = true) {
@@ -2523,6 +2577,7 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             setTextAlign: mergedOptions.setTextAlign,
             processedClass: mergedOptions.processedClass
         }, true);
+        flipRtlArrowsInTree($element);
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
@@ -2598,6 +2653,8 @@ function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 setTextAlign: mergedOptions.setTextAlign
             });
         }
+
+        flipRtlArrowsInTree($element);
 
         applyRemoveInnerDir($element, rtlAlgorithm, mergedOptions);
         if (ignoreSelector) {

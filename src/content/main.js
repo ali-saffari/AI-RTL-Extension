@@ -69,6 +69,7 @@ import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
+import { activateGoogleDrive } from './services/observer/google-drive.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -353,6 +354,10 @@ const serviceConfig = {
     sakana: {
         urls: ["chat.sakana.ai", "www.chat.sakana.ai"],
         activate: activateSakana
+    },
+    googleDrive: {
+        urls: ["docs.google.com", "drive.google.com", "sheets.google.com", "slides.google.com", "forms.google.com"],
+        activate: activateGoogleDrive
     },
     // google: {
     //     urls: ["google.com", "www.google.com"],

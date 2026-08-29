@@ -99,7 +99,12 @@ function getAISitesList() {
         'chat.sakana.ai',
         'www.chat.sakana.ai',
         'genspark.ai',
-        'www.genspark.ai'
+        'www.genspark.ai',
+        'docs.google.com',
+        'drive.google.com',
+        'sheets.google.com',
+        'slides.google.com',
+        'forms.google.com'
     ];
 
     return manualRtlState.aiSitesList;

@@ -871,7 +871,8 @@ const AI_SITES = [
     'zerve.ai', 'www.zerve.ai', 'app.zerve.ai',
     'coder.qwen.ai',
     'chat.sakana.ai', 'www.chat.sakana.ai',
-    'genspark.ai', 'www.genspark.ai'
+    'genspark.ai', 'www.genspark.ai',
+    'docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com'
 ];
 
 function isAISite(hostname) {

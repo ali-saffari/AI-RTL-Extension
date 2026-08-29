@@ -17,7 +17,7 @@ export const versionChanges = [
     { id: '5', text: 'آپدیت Gemini', shortName: 'Gemini', icon: 'sites/Gemini.png', type: 'fix', group: 'site' },
     { id: '23', text: 'آپدیت ChatGPT', shortName: 'ChatGPT', icon: 'sites/openAi-icon.png', type: 'fix', group: 'site' },
     { id: '29', text: 'آپدیت Claude', shortName: 'Claude', icon: 'sites/claude-icon.png', type: 'fix', group: 'site' },
-    { id: '30', text: 'آپدیت Ernie (Baidu)', shortName: 'Ernie', icon: 'sites/ernie.png', type: 'fix', group: 'site' },
+    { id: '30', text: 'آپدیت Ernie (Baidu) — wenxin.baidu.com و chat.baidu.com', shortName: 'Ernie', icon: 'sites/ernie.png', type: 'fix', group: 'site' },
     { id: '31', text: 'آپدیت Copilot', shortName: 'Copilot', icon: 'sites/copilot-icon.png', type: 'fix', group: 'site' },
     { id: '32', text: 'آپدیت Digen', shortName: 'Digen', icon: 'sites/digen.png', type: 'fix', group: 'site' },
     { id: '33', text: 'آپدیت Kimi', shortName: 'Kimi', icon: 'sites/kimi.png', type: 'fix', group: 'site' },
@@ -39,6 +39,7 @@ export const versionChanges = [
     { id: '15', text: 'افزودن سایت Qwen Coder', shortName: 'Qwen Coder', icon: 'sites/qwen.png', type: 'add', group: 'site' },
     { id: '37', text: 'افزودن سایت Sakana Chat', shortName: 'Sakana Chat', icon: 'sites/sakana.png', type: 'add', group: 'site' },
     { id: '38', text: 'آپدیت Genspark', shortName: 'Genspark', icon: 'sites/genspark.png', type: 'fix', group: 'site' },
+    { id: '39', text: 'افزودن سایت Google Drive', shortName: 'Google Drive', icon: 'sites/google-docs.png', type: 'add', group: 'site' },
 ];
 
 export function getSiteShortName(change) {

@@ -49,6 +49,14 @@ const MARKDOWN_OPTIONS = {
     setTextAlign: true
 };
 
+const MARKDOWN_BLOCK_SELECTOR = 'p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote';
+
+const MARKDOWN_BLOCK_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: false,
+    setTextAlign: true
+};
+
 let geminiDomObserver = null;
 let geminiDirObserver = null;
 
@@ -126,10 +134,20 @@ function processGeminiFollowUp(element, rtlAlgorithm) {
     });
 }
 
+function processGeminiMarkdownBlocks(element, rtlAlgorithm) {
+    if (rtlAlgorithm !== 'advanced_full') {
+        return;
+    }
+    AQ(element).children(MARKDOWN_BLOCK_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, MARKDOWN_BLOCK_OPTIONS);
+    });
+}
+
 function processGeminiMarkdown(element, rtlAlgorithm) {
     runSafely(() => {
         invalidateStaleGeminiRtl(element);
         applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_OPTIONS);
+        processGeminiMarkdownBlocks(element, rtlAlgorithm);
     });
 }
 
