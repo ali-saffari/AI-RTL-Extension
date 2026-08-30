@@ -1,6 +1,6 @@
 {
   "name": "react-chrome-ext",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.4",
