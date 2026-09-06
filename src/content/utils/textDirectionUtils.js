@@ -472,7 +472,7 @@ function resetRtlDomCaches() {
     lockedEditorCssById.clear();
     lockedBlockquoteOriginals.clear();
     lockedEditorSeq = 0;
-    flippedArrowNodes.clear();
+    restoreFlippedArrowsInPage();
     const lockedStyle = typeof document !== 'undefined' && document.getElementById(LOCKED_EDITOR_STYLE_ID);
     if (lockedStyle && lockedStyle.parentNode) {
         lockedStyle.parentNode.removeChild(lockedStyle);
