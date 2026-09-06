@@ -23,20 +23,23 @@ export function setArena(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
 
                 
-        let fo3 = AQ('.relative .flex.flex-col.items-center.px-4')
-        fo3.addClass('pb-12');
-        fo3.removeClass('pb-6');
+        // let fo3 = AQ('.relative .flex.flex-col.items-center.px-4')
+        // fo3.addClass('pb-12');
+        // fo3.removeClass('pb-6');
 
-        let fo4 = AQ('.bg-surface-primary .bg-surface-secondary .absolute')
-        fo4.css('bottom', '-2.8rem');
-        fo4.css('text-align', 'center');
-
-
-        addCopyright('.bg-surface-primary .bg-surface-secondary .absolute  p');
+        // let fo4 = AQ('.bg-surface-primary .bg-surface-secondary .absolute')
+        // fo4.css('bottom', '-2.8rem');
+        // fo4.css('text-align', 'center');
 
 
-   
+        // addCopyright('.bg-surface-primary .bg-surface-secondary .absolute  p');
 
+
+        addCopyright(
+            '[role="presentation"].relative' ,
+            'AsBoxGemini AsBoxB',
+            'margin-top: 6px; margin-bottom: -10px; font-size: 13px;'
+        );
 
 
     }
@@ -90,6 +93,18 @@ export function setArena(rtlAlgorithm = 'advanced_full') {
             $item.find('span.body-sm, span.truncate').addClass('FontSet');
         }
     });
+
+    
+    AQ('.relative.overflow-hidden.bg-surface-primary.w-full .border-border-faint , .relative.overflow-hidden.bg-surface-primary.w-full .body-base').each(function (each) {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            setTextAlign: true
+        });
+    });
+
+
+
+    
 
     AQ('.prose').each(function (each) {
         applyRtlToContainer(this, rtlAlgorithm, {
