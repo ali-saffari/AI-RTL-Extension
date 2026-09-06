@@ -1,5 +1,6 @@
 // gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
+import { observeDomSections } from '../utils/domObserver.js';
 import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
@@ -13,6 +14,65 @@ function isExtensionContextValid() {
 
 export function setGemini(rtlAlgorithm = 'advanced_full') {
 
+    // Font
+    if (!AQ('#gemini-font-style').length) {
+        AQ(`<style id="gemini-font-style">
+            html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body * {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            }
+            html.ai-rtl-has-font body code,
+            html.ai-rtl-has-font body code *,
+            html.ai-rtl-has-font body pre,
+            html.ai-rtl-has-font body pre *,
+            html.ai-rtl-has-font body kbd,
+            html.ai-rtl-has-font body kbd *,
+            html.ai-rtl-has-font body samp,
+            html.ai-rtl-has-font body samp *,
+            html.ai-rtl-has-font body [class*="code-block"],
+            html.ai-rtl-has-font body [class*="code-block"] *,
+            html.ai-rtl-has-font body .cm-editor,
+            html.ai-rtl-has-font body .cm-editor *,
+            html.ai-rtl-has-font body .cm-content,
+            html.ai-rtl-has-font body .cm-content *,
+            html.ai-rtl-has-font body .cm-line,
+            html.ai-rtl-has-font body .hljs,
+            html.ai-rtl-has-font body .hljs * {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            }
+            html.ai-rtl-has-font body i,
+            html.ai-rtl-has-font body svg,
+            html.ai-rtl-has-font body mat-icon,
+            html.ai-rtl-has-font body md-icon,
+            html.ai-rtl-has-font body .mat-icon,
+            html.ai-rtl-has-font body .mat-ligature-font,
+            html.ai-rtl-has-font body .lumi-symbols,
+            html.ai-rtl-has-font body .lm-icon-l,
+            html.ai-rtl-has-font body .material-icons,
+            html.ai-rtl-has-font body .material-icons-outlined,
+            html.ai-rtl-has-font body .material-icons-round,
+            html.ai-rtl-has-font body .material-icons-sharp,
+            html.ai-rtl-has-font body .material-icons-two-tone,
+            html.ai-rtl-has-font body .material-symbols-outlined,
+            html.ai-rtl-has-font body .material-symbols-rounded,
+            html.ai-rtl-has-font body .material-symbols-sharp,
+            html.ai-rtl-has-font body .google-symbols,
+            html.ai-rtl-has-font body [class*="mat-icon"],
+            html.ai-rtl-has-font body [class*="lumi-symbols"],
+            html.ai-rtl-has-font body [class*="material-icons"],
+            html.ai-rtl-has-font body [class*="material-symbols"],
+            html.ai-rtl-has-font body [class*="google-symbols"],
+            html.ai-rtl-has-font body [data-mat-icon-type="font"] {
+                font-family: 'Luminous Symbols', lumi-symbols, 'lumi-symbols', 'Google Symbols', 'google-symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons', 'Material Icons Outlined' !important;
+            }
+        </style>`).appendTo('head');
+    }
+
+    if (document.body && !document.body.classList.contains('FontSet')) {
+        document.body.classList.add('FontSet');
+    }
+
+    AQ('i, svg, mat-icon, md-icon, .mat-icon, .mat-ligature-font, .lumi-symbols, [class*="mat-icon"], [class*="lumi-symbols"], [class*="material-icons"], [class*="material-symbols"], [class*="google-symbols"], [data-mat-icon-type="font"]').removeClass('FontSet');
+
     // Copyright
     if (chrome.runtime?.id) {
         addCopyright(
@@ -23,35 +83,6 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
     
     }
 
-
-        // Markdown
-        AQ('.markdown-main-panel, .immersive-editor, .research-step-description').each(function () {
-            const $el = AQ(this);
-            const intended = $el.attr('data-direction');
-            const dir = $el.attr('dir');
-            if (intended && dir !== intended) {
-                $el.removeAttr('data-text-length');
-                $el.removeClass('AsOk');
-                $el.find('.AsOk').removeClass('AsOk');
-            }
-
-            applyRtlToContainer(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
-                processedClass: 'AsOk',
-                isContainer: true,
-                setTextAlign: true
-            });
-
-            if (rtlAlgorithm === 'advanced_full') {
-                $el.children('p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote').each(function () {
-                    applyRtlToElement(this, rtlAlgorithm, {
-                        fontClass: 'FontSet',
-                        processedClass: false,
-                        setTextAlign: true
-                    });
-                });
-            }
-        });
 
         // Follow-up
         AQ('.follow-up-text, .follow-up-container.hide-from-message-actions').each(function () {
@@ -124,10 +155,57 @@ export function activateGemini(rtlAlgorithm = 'advanced_full') {
 
     let fontInterval;
     let geminiInterval;
+    let markdownObserver;
     const stopGeminiTimers = () => {
         clearInterval(fontInterval);
         clearInterval(geminiInterval);
+        if (markdownObserver) {
+            markdownObserver.disconnect();
+            markdownObserver = null;
+        }
     };
+
+    // Markdown
+    markdownObserver = observeDomSections([
+        {
+            selector: '.markdown-main-panel, .immersive-editor, .research-step-description',
+            process: (el) => {
+                if (!isExtensionContextValid() || !isRtlEngineActive()) {
+                    stopGeminiTimers();
+                    return;
+                }
+
+                const $el = AQ(el);
+                const intended = $el.attr('data-direction');
+                const dir = $el.attr('dir');
+                if (intended && dir !== intended) {
+                    $el.removeAttr('data-text-length');
+                    $el.removeClass('AsOk');
+                    $el.find('.AsOk').removeClass('AsOk');
+                }
+
+                applyRtlToContainer(el, rtlAlgorithm, {
+                    fontClass: 'FontSet',
+                    processedClass: 'AsOk',
+                    isContainer: true,
+                    setTextAlign: true
+                });
+
+                if (rtlAlgorithm === 'advanced_full') {
+                    $el.children('p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote').each(function () {
+                        applyRtlToElement(this, rtlAlgorithm, {
+                            fontClass: 'FontSet',
+                            processedClass: false,
+                            setTextAlign: true
+                        });
+                    });
+                }
+            },
+            debounceMs: 150,
+            throttleMs: 400,
+            idleMs: 800
+        }
+    ]);
 
     // Input + font
     fontInterval = setInterval(() => {
