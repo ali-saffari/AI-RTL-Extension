@@ -1037,8 +1037,57 @@ async function activateManualRtlForSite(tabId, options = {}) {
 // EVENT LISTENERS
 // ============================================
 
-async function activateContentScriptForDynamicSites(tabId) {
+async function pingOrInjectDynamicRtl(tabId) {
     if (!tabId) return;
+
+    const ping = await sendTabMessage(tabId, { action: 'enableRtl' });
+    if (ping?.success) {
+        return;
+    }
+
+    await activateContentScriptForDynamicSites(tabId, { ignoreComplete: true });
+}
+
+async function activateDynamicServiceOnMatchingTabs(serviceKey) {
+    const service = DYNAMIC_SERVICES[serviceKey];
+    if (!service?.origins?.length) {
+        return;
+    }
+
+    let tabs = [];
+    try {
+        tabs = await chrome.tabs.query({ url: service.origins });
+    } catch (error) {
+        devError('[Background] Error querying tabs for dynamic service:', error);
+        try {
+            tabs = await chrome.tabs.query({});
+        } catch (fallbackError) {
+            devError('[Background] Error querying all tabs for dynamic service:', fallbackError);
+            return;
+        }
+    }
+
+    for (const tab of tabs) {
+        if (!tab?.id || !tab.url || isRestrictedBrowserUrl(tab.url) || !isValidHttpPage(tab.url)) {
+            continue;
+        }
+
+        try {
+            const hostname = new URL(tab.url).hostname;
+            if (getServiceNameFromHostname(hostname) !== serviceKey) {
+                continue;
+            }
+        } catch {
+            continue;
+        }
+
+        await pingOrInjectDynamicRtl(tab.id);
+    }
+}
+
+async function activateContentScriptForDynamicSites(tabId, options = {}) {
+    if (!tabId) return;
+    const ignoreComplete = options.ignoreComplete === true;
     
     devLog('[Background] activateContentScriptForDynamicSites', tabId);
     try {
@@ -1047,7 +1096,7 @@ async function activateContentScriptForDynamicSites(tabId) {
         if (!tab.url) return;
         
         // Check if tab is in a valid state (not error page, not browser internal pages)
-        if (isRestrictedBrowserUrl(tab.url) || tab.status !== 'complete') {
+        if (isRestrictedBrowserUrl(tab.url) || (!ignoreComplete && tab.status !== 'complete')) {
             return;
         }
         
@@ -1249,6 +1298,17 @@ function setupEventListeners() {
                 }
             } catch (error) {
                 devError('[Background] Error updating manual RTL after storage change:', error);
+            }
+        }
+
+        for (const serviceKey of Object.keys(DYNAMIC_SERVICES)) {
+            if (!changes[serviceKey] || changes[serviceKey].newValue !== true) {
+                continue;
+            }
+            try {
+                await activateDynamicServiceOnMatchingTabs(serviceKey);
+            } catch (error) {
+                devError(`[Background] Error enabling dynamic service ${serviceKey}:`, error);
             }
         }
     });

@@ -605,6 +605,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         }
         return true; // Keep channel open for async response
+    } else if (message.action === 'enableRtl') {
+        requestRtlEnable()
+            .then(() => sendResponse({ success: true }))
+            .catch((error) => sendResponse({ success: false, error: error?.message }));
+        return true;
+    } else if (message.action === 'disableRtl') {
+        requestRtlDisable()
+            .then(() => sendResponse({ success: true }))
+            .catch((error) => sendResponse({ success: false, error: error?.message }));
+        return true;
     } else if (message.action === 'closeUpdateModal') {
         // Close update modal in this tab
         const modal = document.getElementById('AsUpdateModal');
