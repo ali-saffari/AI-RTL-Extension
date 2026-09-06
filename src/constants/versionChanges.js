@@ -41,6 +41,8 @@ export const versionChanges = [
     { id: '38', text: 'آپدیت Genspark', shortName: 'Genspark', icon: 'sites/genspark.png', type: 'fix', group: 'site' },
     { id: '39', text: 'افزودن سایت Google Drive', shortName: 'Google Drive', icon: 'sites/google-docs.png', type: 'add', group: 'site' },
     { id: '40', text: 'افزودن سایت Microsoft 365 Copilot', shortName: 'Microsoft 365', icon: 'sites/m365.png', type: 'add', group: 'site' },
+    { id: '41', text: 'آپدیت AI Studio', shortName: 'AI Studio', icon: 'sites/aistudio.png', type: 'fix', group: 'site' },
+    { id: '42', text: 'آپدیت Arena', shortName: 'Arena', icon: 'sites/arena.png', type: 'fix', group: 'site' },
 ];
 
 export function getSiteShortName(change) {

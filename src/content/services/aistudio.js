@@ -1,347 +1,194 @@
-// aistudio.js service functions
-import { 
-    analyzeTextDirection
-} from '../utils/analyzeDirection.js';
-import { 
-    processTextElementsAdvanced,
-    processTablesInContainer,
-    getAttributeTextElements,
-    setTextDirectionAndFont
-} from '../utils/textDirectionUtils.js';
 import { addCopyright } from '../utils/copyright.js';
+import { observeDomSections } from '../utils/domObserver.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { isRtlEngineActive } from '../utils/originalState.js';
 
+const MESSAGE_SELECTOR = [
+    'ms-cmark-node',
+    'ms-text-chunk',
+    'ms-prompt-chunk',
+    'ms-thought-chunk',
+    'ms-thought-accordion .markdown-content',
+    '[data-turn-role="User"] .turn-content',
+    '[data-turn-role="Model"] .turn-content'
+].join(', ');
 
+const INPUT_SELECTOR = [
+    'ms-prompt-box textarea',
+    'ms-prompt-input-wrapper textarea',
+    'ms-chunk-input textarea',
+    'ms-autosize-textarea textarea',
+    'textarea.textarea',
+    'textarea[aria-label*="prompt" i]',
+    '[contenteditable="true"]'
+].join(', ');
 
-// Recurring tasks that need to run periodically
-export function setAiStudio() {
-    // Add copyright to footer sections
-    if (chrome.runtime?.id) {
-        let fo2 = `section footer`;
-        addCopyright(AQ(fo2), 'AsBoxB', 'margin-top: 14px');
+const RTL_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOk',
+    isContainer: true,
+    setTextAlign: true,
+    siteConfig: 'aistudio',
+    ignoreSelector: 'ms-code-block, ms-function-call-chunk, .cm-editor, pre, code, mat-icon, .google-symbols, [class*="material-symbols"]'
+};
+
+function isExtensionContextValid() {
+    try {
+        return typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
+    } catch {
+        return false;
+    }
+}
+
+function resetIfDirectionChanged($el) {
+    const intended = $el.attr('data-direction');
+    const dir = $el.attr('dir');
+    if (intended && dir !== intended) {
+        $el.removeAttr('data-text-length');
+        $el.removeClass('AsOk');
+        $el.find('.AsOk').removeClass('AsOk');
+    }
+}
+
+function processMessageNode(el, rtlAlgorithm) {
+    if (!el || el.closest?.('ms-code-block, ms-function-call-chunk, .cm-editor')) {
+        return;
     }
 
-    
+    const $el = AQ(el);
+    resetIfDirectionChanged($el);
 
+    applyRtlToContainer(el, rtlAlgorithm, RTL_OPTIONS);
 
-    AQ('.hljs-comment').each(function (each) {
-        const $element = AQ(this);
-        
-        // اگر قبلاً پردازش شده، رد شو
-        if ($element.hasClass('AsOk')) {
-            return;
-        }
-        
-        // علامت‌گذاری به عنوان پردازش شده
-        $element.addClass('AsOk');
-        
-        // دریافت متن
-        let text = $element.text() || $element.html() || '';
-        
-        if (!text || !text.trim()) {
-            return;
-        }
-        
-        const originalText = text.trim();
-        let commentPrefix = '';
-        let commentSuffix = '';
-        let cleanedText = originalText;
-        
-        // شناسایی و ذخیره علامت کامنت از ابتدا
-        if (cleanedText.startsWith('///')) {
-            // کامنت‌های سه‌خطی (مثل /// در C#)
-            commentPrefix = '///';
-            cleanedText = cleanedText.replace(/^\/\/\/\s*/, '');
-            
-            // برای کامنت‌های چندخطی با ///، حذف /// از ابتدای هر خط
-            const lines = cleanedText.split('\n');
-            const cleanedLines = lines.map(line => {
-                // حذف /// از ابتدای خط (با فاصله‌های اختیاری)
-                return line.replace(/^\s*\/\/\/\s*/, '').trim();
-            });
-            cleanedText = cleanedLines.join('\n').trim();
-        } else if (cleanedText.startsWith('//')) {
-            commentPrefix = '//';
-            cleanedText = cleanedText.replace(/^\/\/\s*/, '');
-        } else if (cleanedText.startsWith('/*')) {
-            commentPrefix = '/*';
-            if (cleanedText.endsWith('*/')) {
-                commentSuffix = '*/';
-                // حذف /* از ابتدا و */ از انتها
-                cleanedText = cleanedText.replace(/^\/\*\s*/, '').replace(/\s*\*\/$/, '');
-                
-                // برای کامنت‌های چندخطی، حذف * از ابتدای هر خط
-                const lines = cleanedText.split('\n');
-                const cleanedLines = lines.map(line => {
-                    // حذف * از ابتدای خط (با فاصله‌های اختیاری)
-                    return line.replace(/^\s*\*\s*/, '').trim();
-                });
-                cleanedText = cleanedLines.join('\n').trim();
-            } else {
-                cleanedText = cleanedText.replace(/^\/\*\s*/, '');
-                // حذف * از ابتدای هر خط
-                const lines = cleanedText.split('\n');
-                const cleanedLines = lines.map(line => {
-                    return line.replace(/^\s*\*\s*/, '').trim();
-                });
-                cleanedText = cleanedLines.join('\n').trim();
-            }
-        } else if (cleanedText.startsWith('#')) {
-            commentPrefix = '#';
-            cleanedText = cleanedText.replace(/^#\s*/, '');
-        } else if (cleanedText.startsWith('<!--')) {
-            commentPrefix = '<!--';
-            if (cleanedText.endsWith('-->')) {
-                commentSuffix = '-->';
-                cleanedText = cleanedText.replace(/^<!--\s*/, '').replace(/\s*-->$/, '');
-            } else {
-                cleanedText = cleanedText.replace(/^<!--\s*/, '');
-            }
-        } else if (cleanedText.startsWith('--')) {
-            commentPrefix = '--';
-            cleanedText = cleanedText.replace(/^--\s*/, '');
-        } else if (cleanedText.startsWith('%')) {
-            commentPrefix = '%';
-            cleanedText = cleanedText.replace(/^%\s*/, '');
-        } else if (cleanedText.startsWith(';')) {
-            commentPrefix = ';';
-            cleanedText = cleanedText.replace(/^;\s*/, '');
-        }
-        
-        // حذف فاصله‌های اضافی
-        cleanedText = cleanedText.trim();
-        
-        // اگر بعد از حذف کامنت‌ها متنی باقی ماند، بررسی راست‌چین بودن
-        if (cleanedText && cleanedText.length > 0) {
-            const direction = analyzeTextDirection(cleanedText);
-            
-            if (direction === 'rtl') {
-                // اگر علامت کامنت وجود دارد، آن را در سمت چپ نگه دار
-                if (commentPrefix) {
-                    // برای کامنت‌های چندخطی، باید خطوط را حفظ کنیم
-                    const isMultiline = cleanedText.includes('\n');
-                    
-                    if (isMultiline && commentPrefix === '/*') {
-                        // برای کامنت‌های چندخطی، هر خط را جداگانه پردازش می‌کنیم
-                        const lines = cleanedText.split('\n');
-                        const processedLines = lines.map((line, index) => {
-                            const trimmedLine = line.trim();
-                            // برای خط اول، علامت /* را اضافه می‌کنیم
-                            if (index === 0) {
-                                if (!trimmedLine) {
-                                    return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">/*</span>`;
-                                }
-                                return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">/*</span> <span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-                            }
-                            // برای خط آخر، علامت */ را اضافه می‌کنیم
-                            if (index === lines.length - 1) {
-                                if (!trimmedLine) {
-                                    return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">*/</span>`;
-                                }
-                                return `<span dir="rtl" class="FontSet">${trimmedLine}</span> <span dir="ltr" style="unicode-bidi: embed; display: inline-block;">*/</span>`;
-                            }
-                            // برای خطوط میانی
-                            if (!trimmedLine) {
-                                return '';
-                            }
-                            return `<span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-                        });
-                        // فیلتر کردن خطوط خالی و join کردن با <br>
-                        const htmlContent = processedLines.filter(line => line !== '').join('<br>');
-                        $element.html(htmlContent);
-                    } else if (isMultiline && commentPrefix === '///') {
-                        // برای کامنت‌های سه‌خطی چندخطی، هر خط را جداگانه پردازش می‌کنیم
-                        const lines = cleanedText.split('\n');
-                        const processedLines = lines.map((line) => {
-                            const trimmedLine = line.trim();
-                            if (!trimmedLine) {
-                                return '';
-                            }
-                            return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">///</span> <span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-                        });
-                        // فیلتر کردن خطوط خالی و join کردن با <br>
-                        const htmlContent = processedLines.filter(line => line !== '').join('<br>');
-                        $element.html(htmlContent);
-                    } else {
-                        // برای کامنت‌های تک خطی
-                        const prefixSpan = `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">${commentPrefix}</span>`;
-                        const contentSpan = `<span dir="rtl" class="FontSet">${cleanedText}</span>`;
-                        const suffixSpan = commentSuffix ? `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">${commentSuffix}</span>` : '';
-                        const htmlContent = prefixSpan + ' ' + contentSpan + suffixSpan;
-                        $element.html(htmlContent);
-                    }
-                } else {
-                    // اگر علامت کامنت نداریم، فقط dir را تنظیم کن
-                    $element.attr('dir', 'rtl');
-                    $element.addClass('FontSet');
-                }
-            }
-        }
-    });
-
-    AQ("ms-code-block").each(function (each) {
-        var $codeBlock = AQ(this);
-        
-
-        if ($codeBlock.hasClass('AsOkCode')) {
-            return;
-        }
-        
-        // علامت‌گذاری به عنوان پردازش شده
-        $codeBlock.addClass('AsOkCode');
-        
-        $codeBlock.removeClass('AsOk');
-
-        // بررسی mat-panel-title داخل ms-code-block
-        console.log("mat-panel-title");
-        var $panelTitle = $codeBlock.find('mat-panel-title');
-        if ($panelTitle.length > 0) {
-            var $spans = $panelTitle.find('span');
-
-            // console.log("spans:", $spans);
-
-            if ($spans.length > 0) {
-                // بررسی همه span‌ها
-                var foundText = false;
-                $spans.each(function() {
-                    var $span = AQ(this);
-                    var spanText = $span.text() || $span.html() || '';
-
-                    console.log("spanText:", spanText);
-
-                    if (spanText && spanText.trim() === 'Text') {
-                        foundText = true;
-                        // console.log("text found in span:", $span);
-                        return false; // break loop
-                    }
-                });
-                
-                    if (foundText) {
-                        console.log("----------------------:");
-                    // شرط: اگر span متن برابر با "text" بود
-                    // جستجوی code داخل ms-code-block
-                    var $codeElements = $codeBlock.find('code');
-                    if ($codeElements.length > 0) {
-                        $codeElements.each(function() {
-                            var $codeElement = AQ(this);
-                            
-                            // حذف کلاس‌های قبلی
-                            $codeElement.removeClass('AsOk');
-                            
-                            // بررسی اگر قبلاً پردازش شده
-                            if ($codeElement.hasClass('AsOkCodeBlock')) {
-                                return;
-                            }
-                            
-                            // علامت‌گذاری به عنوان پردازش شده
-                            $codeElement.addClass('AsOkCodeBlock');
-                            
-                            // تنظیم عرض به 100%
-                            $codeElement.css('width', '100%');
-                            
-                            // دریافت متن
-                            var codeText = $codeElement.text() || $codeElement.html() || '';
-                            
-                            if (codeText && codeText.trim()) {
-                                // بررسی راست‌چین بودن با analyzeTextDirection
-                                var direction = analyzeTextDirection(codeText);
-                                
-                                if (direction === 'rtl') {
-                                    $codeElement.attr('dir', 'rtl');
-                                    $codeElement.addClass('FontSet');
-                                } else {
-                                    $codeElement.attr('dir', 'ltr');
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-        }
-    });
-
-    AQ("ms-chat-turn").each(function (each) {
-        if (!AQ(this).hasClass("FontSet")) {
-            AQ(this).addClass('FontSet');
-        }
-    });
-
-    AQ("ms-text-chunk").each(function (each) {
-        // پردازش پیشرفته تمام عناصر متنی
-        processTablesInContainer(AQ(this), {
-            fontClass: 'FontSet',
-            processedClass: 'AsOk',
-            siteConfig: 'aistudio'
-        });
-    });
-
-    
-
-    AQ("ms-text-chunk , .above-carousel , .below-carousel p ").each(function (each) {
-        // پردازش پیشرفته تمام عناصر متنی
-        processTextElementsAdvanced(AQ(this), {
-            fontClass: 'FontSet',
-            processedClass: 'AsOk',
-            isContainer: false
-        });
-    });
-
-    AQ(".turn-container").each(function (each) {
-        var $turnContainer = AQ(this);
-        // پیدا کردن اولین ms-cmark-node داخل turn-container
-        var $firstCmarkNode = $turnContainer.find('ms-cmark-node').first();
-        if ($firstCmarkNode.length > 0) {
-            processTextElementsAdvanced($firstCmarkNode, {
+    if (rtlAlgorithm === 'advanced_full') {
+        $el.children('p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote, ms-cmark-node').each(function () {
+            applyRtlToElement(this, rtlAlgorithm, {
                 fontClass: 'FontSet',
-                processedClass: 'AsOk',
-                isContainer: false
+                processedClass: false,
+                setTextAlign: true
+            });
+        });
+    }
+}
+
+function processTextLabeledCodeBlocks(rtlAlgorithm) {
+    AQ('ms-code-block').each(function () {
+        const $codeBlock = AQ(this);
+        $codeBlock.attr('dir', 'ltr');
+
+        const title = ($codeBlock.find('mat-panel-title, .mat-expansion-panel-header-title').text() || '').trim();
+        if (!/^text$/i.test(title)) {
+            return;
+        }
+
+        $codeBlock.find('code, pre').each(function () {
+            applyRtlToElement(this, rtlAlgorithm, {
+                fontClass: 'FontSet',
+                processedClass: false,
+                setTextAlign: true
+            });
+        });
+    });
+}
+
+function bindPromptInputs(rtlAlgorithm) {
+    AQ(INPUT_SELECTOR).each(function () {
+        const $input = AQ(this);
+        if ($input.closest('ms-code-block, .cm-editor').length) {
+            return;
+        }
+
+        if (!$input.data('rtl-listener-added')) {
+            $input.data('rtl-listener-added', true);
+            $input.on('input keyup paste', function () {
+                requestAnimationFrame(() => {
+                    applyRtlToElement(this, rtlAlgorithm, {
+                        fontClass: 'FontSet',
+                        setTextAlign: true
+                    });
+                });
             });
         }
+
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: false,
+            setTextAlign: true
+        });
+    });
+}
+
+export function setAiStudio(rtlAlgorithm = 'advanced_full') {
+    if (isExtensionContextValid()) {
+        addCopyright(
+            AQ('section footer, .disclaimer, ms-prompt-box, .chat-session-content footer'),
+            'AsBoxB',
+            'margin-top: 14px'
+        );
+    }
+
+    AQ(MESSAGE_SELECTOR).each(function () {
+        processMessageNode(this, rtlAlgorithm);
     });
 
-    AQ('[data-test-id="suggestion-chip"]').each(function (each) {
-        setTextDirectionAndFont(AQ(this), {
+    AQ('[data-test-id="suggestion-chip"], .above-carousel, .below-carousel p').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
-            processedClass: 'AsOk'
+            processedClass: 'AsOk',
+            setTextAlign: true
         });
     });
 
-    AQ("textarea").each(function (each) {
-        
-        if (AQ(this).data('rtl-listener-added')) {
+    processTextLabeledCodeBlocks(rtlAlgorithm);
+    bindPromptInputs(rtlAlgorithm);
+}
+
+export function activateAistudio(rtlAlgorithm = 'advanced_full') {
+    console.log('AI Studio RTL activated with algorithm:', rtlAlgorithm);
+
+    setAiStudio(rtlAlgorithm);
+
+    let refreshInterval;
+    let markdownObserver;
+    const stopAiStudioTimers = () => {
+        clearInterval(refreshInterval);
+        if (markdownObserver) {
+            markdownObserver.disconnect();
+            markdownObserver = null;
+        }
+    };
+
+    markdownObserver = observeDomSections([
+        {
+            selector: MESSAGE_SELECTOR,
+            ignore: 'ms-code-block, ms-function-call-chunk, .cm-editor',
+            process: (el) => {
+                if (!isExtensionContextValid() || !isRtlEngineActive()) {
+                    stopAiStudioTimers();
+                    return;
+                }
+                processMessageNode(el, rtlAlgorithm);
+            },
+            debounceMs: 150,
+            throttleMs: 400,
+            idleMs: 800
+        }
+    ]);
+
+    refreshInterval = setInterval(() => {
+        if (!isExtensionContextValid() || !isRtlEngineActive()) {
+            stopAiStudioTimers();
             return;
         }
-        AQ(this).data('rtl-listener-added', true);
-        
-        if (!AQ(this).hasClass("FontSet")) {
-            AQ(this).addClass('FontSet');
-            AQ(this).addClass('FontSetImportant2');
-            
-            const text = AQ(this).val() || AQ(this).text();
 
-            if (text && text.trim()) {
-                AQ(this).attr("dir", analyzeTextDirection(text));
+        try {
+            setAiStudio(rtlAlgorithm);
+        } catch (error) {
+            if (!isExtensionContextValid() || String(error?.message || error).includes('Extension context invalidated')) {
+                stopAiStudioTimers();
+                return;
             }
-
-            // Add input event listener for real-time direction detection
-            AQ(this).on('input keyup paste', function() {
-                const currentText = AQ(this).val();
-                if (currentText && currentText.trim()) {
-                    AQ(this).attr("dir", analyzeTextDirection(currentText));
-                }
-            });
+            throw error;
         }
-    });
+    }, 1000);
 }
-
-// Main activation function for Aistudio
-export function activateAistudio() {
-
-    // Run initial setup
-    setAiStudio();
-    
-    // Continue running setAiStudio every 100ms for other tasks
-    let interval = setInterval(() => {
-        setAiStudio();
-    }, 500);
-}
-
