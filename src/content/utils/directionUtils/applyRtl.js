@@ -7,6 +7,7 @@
 import { analyzeTextDirectionFirstWord } from '../analyzeDirection.js';
 import { isRtlEngineActive, preserveOriginalDir } from '../originalState.js';
 import { flipRtlArrowsInTree, restoreFlippedArrowsInPage } from './arrows.js';
+import { isolateMixedPhrasesInTree, MIXED_LTR_ATTR, restoreMixedPhrasesInPage } from './mixedPhrases.js';
 import {
     getAnalyzableText,
     getIgnoreSelector,
@@ -57,7 +58,11 @@ function stripInnerDirAttributes($element) {
     const nodes = root.querySelectorAll('[dir]');
     for (let i = 0; i < nodes.length; i++) {
         const el = nodes[i];
-        if (shouldSkipInnerDirStrip(el) || el.hasAttribute('data-ai-rtl-orig-dir')) {
+        if (
+            shouldSkipInnerDirStrip(el)
+            || el.hasAttribute('data-ai-rtl-orig-dir')
+            || el.hasAttribute(MIXED_LTR_ATTR)
+        ) {
             continue;
         }
         preserveOriginalDir(el);
@@ -75,6 +80,7 @@ function applyRemoveInnerDir($element, options = {}) {
 export function resetRtlDomCaches() {
     resetLockedEditorCaches();
     restoreFlippedArrowsInPage();
+    restoreMixedPhrasesInPage();
     resetCodeMirrorDirectionStyles();
 }
 
@@ -346,6 +352,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
 
     applyDirectionMarker($element, $element.attr('data-direction'), options);
     mirrorRtlBlockquotesInTree($element);
+    isolateMixedPhrasesInTree($element);
     } catch (error) {
         if (isInvalidatedError(error)) {
             return;
@@ -467,4 +474,5 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     if (ignoreSelector) {
         isolateIgnoredElements($element, ignoreSelector);
     }
+    isolateMixedPhrasesInTree($element);
 }

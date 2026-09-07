@@ -14,6 +14,10 @@ export {
     setFlipRtlArrows
 } from './arrows.js';
 export {
+    applyLiveFixMixedTextSetting,
+    setFixMixedText
+} from './mixedPhrases.js';
+export {
     processParagraphWithBreaks,
     setTextDirectionAndFont,
     setTextDirectionAndFontOneTime

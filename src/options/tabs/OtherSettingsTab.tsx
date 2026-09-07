@@ -115,6 +115,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     [PIN_OPEN_SITE_STORAGE_KEY]: allSettings[PIN_OPEN_SITE_STORAGE_KEY],
                     applyAlgorithmToCode: allSettings.applyAlgorithmToCode,
                     flipRtlArrows: allSettings.flipRtlArrows,
+                    fixMixedText: allSettings.fixMixedText,
                     mixedTitleDisplayMode: allSettings.mixedTitleDisplayMode,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
@@ -130,6 +131,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             key !== PIN_OPEN_SITE_STORAGE_KEY &&
                             key !== 'applyAlgorithmToCode' &&
                             key !== 'flipRtlArrows' &&
+                            key !== 'fixMixedText' &&
                             key !== 'mixedTitleDisplayMode' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
@@ -218,6 +220,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.flipRtlArrows !== undefined) {
                 settingsToImport.flipRtlArrows = importData.settings.flipRtlArrows === true;
             }
+            if (importData.settings.fixMixedText !== undefined) {
+                settingsToImport.fixMixedText = importData.settings.fixMixedText === true;
+            }
             if (importData.settings.mixedTitleDisplayMode !== undefined) {
                 settingsToImport.mixedTitleDisplayMode = importData.settings.mixedTitleDisplayMode;
             }
@@ -243,6 +248,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== PIN_OPEN_SITE_STORAGE_KEY &&
                     key !== 'applyAlgorithmToCode' &&
                     key !== 'flipRtlArrows' &&
+                    key !== 'fixMixedText' &&
                     key !== 'mixedTitleDisplayMode' &&
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 

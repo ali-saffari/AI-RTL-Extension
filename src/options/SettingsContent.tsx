@@ -57,6 +57,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(true);
     const [flipRtlArrows, setFlipRtlArrows] = React.useState(true);
+    const [fixMixedText, setFixMixedText] = React.useState(false);
     
     const [manualRtlSettings, setManualRtlSettings] = React.useState<ManualRtlSettings>({
         manualRtlEnabled: firefoxDefaults ? false : true,
@@ -82,6 +83,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 'mixedTitleDisplayMode',
                 'applyAlgorithmToCode',
                 'flipRtlArrows',
+                'fixMixedText',
                 SELECTED_FONT_STORAGE_KEY,
                 FONT_SCALE_STORAGE_KEY
             ], (result) => {
@@ -140,6 +142,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 if (result.flipRtlArrows !== undefined) {
                     setFlipRtlArrows(result.flipRtlArrows === true);
                 }
+                if (result.fixMixedText !== undefined) {
+                    setFixMixedText(result.fixMixedText === true);
+                }
             });
         } catch (error) {
             console.log('Failed to load settings:', error);
@@ -187,6 +192,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.flipRtlArrows) {
                     setFlipRtlArrows(changes.flipRtlArrows.newValue === true);
+                }
+                if (changes.fixMixedText) {
+                    setFixMixedText(changes.fixMixedText.newValue === true);
                 }
             }
         };
@@ -339,6 +347,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         }
     };
 
+    const handleFixMixedTextChange = (enabled: boolean) => {
+        setFixMixedText(enabled);
+        try {
+            chrome.storage.sync.set({ fixMixedText: enabled });
+        } catch (error) {
+            console.log('Failed to save mixed text setting:', error);
+        }
+    };
+
     return (
         <Box sx={{ width: '100%' }}>
             {/* Tabs */}
@@ -400,6 +417,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         onApplyAlgorithmToCodeChange={handleApplyAlgorithmToCodeChange}
                         flipRtlArrows={flipRtlArrows}
                         onFlipRtlArrowsChange={handleFlipRtlArrowsChange}
+                        fixMixedText={fixMixedText}
+                        onFixMixedTextChange={handleFixMixedTextChange}
                         selectedFont={selectedFont}
                         onSelectedFontChange={handleSelectedFontChange}
                         fontScale={fontScale}

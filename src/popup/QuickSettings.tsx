@@ -58,6 +58,8 @@ interface QuickSettingsProps {
     onApplyAlgorithmToCodeChange: (enabled: boolean) => void;
     flipRtlArrows: boolean;
     onFlipRtlArrowsChange: (enabled: boolean) => void;
+    fixMixedText: boolean;
+    onFixMixedTextChange: (enabled: boolean) => void;
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
     pinOpenSiteMode: PinOpenSiteMode;
@@ -128,6 +130,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onApplyAlgorithmToCodeChange,
     flipRtlArrows,
     onFlipRtlArrowsChange,
+    fixMixedText,
+    onFixMixedTextChange,
     supportHide,
     onSupportChange,
     pinOpenSiteMode,
@@ -141,6 +145,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
     const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
+    const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
 
@@ -604,6 +609,50 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             />
                         </Box>
                     </Box>
+
+                    {false ? (
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                            }}
+                        >
+                            <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                                <Typography className="quick-settings-label">
+                                    اصلاح متن‌های ترکیبی
+                                </Typography>
+                                <IconButton
+                                    size="small"
+                                    aria-label="توضیحات اصلاح متن‌های ترکیبی"
+                                    onClick={() => setMixedInfoOpen(true)}
+                                    sx={{
+                                        p: 0.2,
+                                        flexShrink: 0,
+                                        color: accent,
+                                        '&:hover': {
+                                            backgroundColor: selectedBg,
+                                        },
+                                    }}
+                                >
+                                    <SvgIcon sx={{ fontSize: '1rem' }}>
+                                        <path d={mdiInformationOutline} />
+                                    </SvgIcon>
+                                </IconButton>
+                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                            </Box>
+                            <Switch
+                                size="small"
+                                checked={fixMixedText}
+                                onChange={(event) => onFixMixedTextChange(event.target.checked)}
+                                sx={switchSx}
+                                inputProps={{ 'aria-label': 'اصلاح متن‌های ترکیبی' }}
+                            />
+                        </Box>
+                    </Box>
+                    ) : null}
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
@@ -1013,6 +1062,64 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Button>
                     <Button
                         onClick={() => setInfoAlgoId(null)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={mixedInfoOpen}
+                onClose={() => setMixedInfoOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    اصلاح متن‌های ترکیبی
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        گاهی وسط جملهٔ فارسی، چند کلمهٔ انگلیسی پشت‌سرهم می‌آید و جایشان عوض می‌شود. اگر این گزینه را روشن کنید، همان انگلیسی درست و به ترتیب خوانده می‌شود. پیش‌فرض خاموش است.
+                    </Typography>
+                    <Typography
+                        sx={{
+                            fontSize: '0.8rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                            mt: 1,
+                            color: muted,
+                        }}
+                    >
+                        مثال: «Plus ChatGPT» می‌شود «ChatGPT Plus». در جملهٔ «برای اتصال از USB، HDMI استفاده کنید» هم جای USB و HDMI عوض نمی‌شود.
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setMixedInfoOpen(false)}
                         variant="contained"
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}

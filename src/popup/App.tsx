@@ -203,6 +203,7 @@ function App() {
     const [mixedTitleDisplayMode, setMixedTitleDisplayMode] = React.useState('unified');
     const [applyAlgorithmToCode, setApplyAlgorithmToCode] = React.useState(true);
     const [flipRtlArrows, setFlipRtlArrows] = React.useState(true);
+    const [fixMixedText, setFixMixedText] = React.useState(false);
     const [supportHide, setSupportHide] = React.useState(false);
     const [pinOpenSiteMode, setPinOpenSiteMode] = React.useState<PinOpenSiteMode>(getDefaultPinOpenSiteMode());
     const [isDarkMode, setIsDarkMode] = React.useState(true);
@@ -236,7 +237,7 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -254,6 +255,9 @@ function App() {
                 }
                 if (result.flipRtlArrows !== undefined) {
                     setFlipRtlArrows(result.flipRtlArrows === true);
+                }
+                if (result.fixMixedText !== undefined) {
+                    setFixMixedText(result.fixMixedText === true);
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
@@ -376,6 +380,9 @@ function App() {
                 if (changes.flipRtlArrows) {
                     setFlipRtlArrows(changes.flipRtlArrows.newValue === true);
                 }
+                if (changes.fixMixedText) {
+                    setFixMixedText(changes.fixMixedText.newValue === true);
+                }
             }
         };
 
@@ -423,6 +430,15 @@ function App() {
         setFlipRtlArrows(enabled);
         try {
             chrome.storage.sync.set({ flipRtlArrows: enabled });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
+    const handleFixMixedTextChange = (enabled: boolean) => {
+        setFixMixedText(enabled);
+        try {
+            chrome.storage.sync.set({ fixMixedText: enabled });
         } catch (error) {
             // Silently handle save errors
         }
@@ -1377,6 +1393,8 @@ function App() {
                         onApplyAlgorithmToCodeChange={handleApplyAlgorithmToCodeChange}
                         flipRtlArrows={flipRtlArrows}
                         onFlipRtlArrowsChange={handleFlipRtlArrowsChange}
+                        fixMixedText={fixMixedText}
+                        onFixMixedTextChange={handleFixMixedTextChange}
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
                         pinOpenSiteMode={pinOpenSiteMode}

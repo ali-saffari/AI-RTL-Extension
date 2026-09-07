@@ -43,6 +43,8 @@ interface AlgorithmTabProps {
     onApplyAlgorithmToCodeChange?: (enabled: boolean) => void;
     flipRtlArrows?: boolean;
     onFlipRtlArrowsChange?: (enabled: boolean) => void;
+    fixMixedText?: boolean;
+    onFixMixedTextChange?: (enabled: boolean) => void;
     selectedFont: string;
     onSelectedFontChange: (value: string) => void;
     fontScale: number;
@@ -62,6 +64,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     onApplyAlgorithmToCodeChange,
     flipRtlArrows = true,
     onFlipRtlArrowsChange,
+    fixMixedText = false,
+    onFixMixedTextChange,
     selectedFont,
     onSelectedFontChange,
     fontScale,
@@ -73,6 +77,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
     const [codeModalOpen, setCodeModalOpen] = React.useState(false);
+    const [mixedModalOpen, setMixedModalOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     
     React.useEffect(() => {
@@ -517,6 +522,86 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             </Card>
                         </Grid>
 
+                        {false ? (
+                        <Grid item xs={12} sx={{ order: 6 }}>
+                            <Card elevation={2}>
+                                <CardContent dir="rtl">
+                                    <Box sx={{ mb: 1.5, textAlign: 'center' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
+                                            <Typography variant="h6" sx={{ 
+                                                fontWeight: 600, 
+                                                color: 'primary.main'
+                                            }}>
+                                                اصلاح متن‌های ترکیبی
+                                            </Typography>
+                                            <IconButton
+                                                onClick={() => setMixedModalOpen(true)}
+                                                size="small"
+                                                aria-label="توضیحات اصلاح متن‌های ترکیبی"
+                                                sx={{
+                                                    color: theme.palette.text.primary,
+                                                    '&:hover': {
+                                                        backgroundColor: theme.palette.mode === 'dark'
+                                                            ? 'rgba(255, 255, 255, 0.1)'
+                                                            : 'rgba(0, 0, 0, 0.1)'
+                                                    }
+                                                }}
+                                            >
+                                                <SvgIcon sx={{
+                                                    fontSize: '1.25rem',
+                                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                                }}>
+                                                    <path d={mdiInformationOutline} />
+                                                </SvgIcon>
+                                            </IconButton>
+                                            <ExperimentalBadge isDarkMode={isDarkMode} />
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        p: 2,
+                                        borderRadius: 2,
+                                        bgcolor: theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                                    }}>
+                                        <Box sx={{ flex: 1, pr: 2 }}>
+                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 500, 
+                                                fontSize: '0.95rem',
+                                                color: theme.palette.text.primary
+                                            }}>
+                                                اصلاح متن‌های ترکیبی
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ 
+                                                color: 'text.secondary',
+                                                fontSize: '0.78rem',
+                                                mt: 0.5,
+                                                lineHeight: 1.6
+                                            }}>
+                                                عبارت‌های انگلیسی وسط جملهٔ فارسی جایشان عوض نمی‌شود
+                                            </Typography>
+                                        </Box>
+                                        <Switch
+                                            checked={fixMixedText}
+                                            onChange={(e) => onFixMixedTextChange?.(e.target.checked)}
+                                            sx={{
+                                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                },
+                                            }}
+                                            inputProps={{ 'aria-label': 'اصلاح متن‌های ترکیبی' }}
+                                        />
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        ) : null}
+
                         {/* نحوه نمایش عنوان‌های ترکیبی */}
                         <Grid item xs={12} sx={{ order: 2 }}>
                             <Card elevation={2}>
@@ -901,6 +986,83 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                     </CardContent>
                 </Card>
             </Grid>
+
+            <Dialog
+                open={mixedModalOpen}
+                onClose={() => setMixedModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                        borderRadius: 2,
+                        direction: 'rtl'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    textAlign: 'center',
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                    py: 1.5,
+                    mb: 2
+                }}>
+                    اصلاح متن‌های ترکیبی
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Typography variant="body1" sx={{
+                        color: theme.palette.text.primary,
+                        mb: 3,
+                        lineHeight: 1.8,
+                        fontSize: '0.95rem'
+                    }}>
+                        گاهی وسط جملهٔ فارسی، چند کلمهٔ انگلیسی پشت‌سرهم می‌آید و جایشان عوض می‌شود. اگر این گزینه را روشن کنید، همان انگلیسی درست و به ترتیب خوانده می‌شود. پیش‌فرض خاموش است.
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="h6" sx={{
+                            color: theme.palette.primary.main,
+                            mb: 2,
+                            fontSize: '1rem',
+                            fontWeight: 600
+                        }}>
+                            مثال:
+                        </Typography>
+                        <Box component="ul" sx={{
+                            pl: 2,
+                            m: 0,
+                            '& li': {
+                                color: 'text.secondary',
+                                mb: 1.25,
+                                fontSize: '0.9rem',
+                                lineHeight: 1.8
+                            }
+                        }}>
+                            <li>به‌جای «Plus ChatGPT» همان «ChatGPT Plus» دیده می‌شود</li>
+                            <li>در جمله‌ای مثل «برای اتصال از USB، HDMI استفاده کنید» جای USB و HDMI عوض نمی‌شود</li>
+                        </Box>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{
+                    justifyContent: 'center',
+                    pt: 2,
+                    borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
+                }}>
+                    <Button
+                        onClick={() => setMixedModalOpen(false)}
+                        variant="contained"
+                        color="primary"
+                        sx={{
+                            minWidth: 120,
+                            fontFamily: 'iranyekan'
+                        }}
+                    >
+                        متوجه شدم
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Dialog
                 open={codeModalOpen}

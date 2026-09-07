@@ -163,6 +163,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             mixedTitleDisplayMode: 'unified',
             applyAlgorithmToCode: true,
             flipRtlArrows: true,
+            fixMixedText: false,
             experimentalAlgoDefaultOn: true,
             [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
             activationHintDismissed: false,
@@ -261,6 +262,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!storedData.hasOwnProperty('flipRtlArrows')) {
                     updates.flipRtlArrows = true;
+                }
+
+                if (!storedData.hasOwnProperty('fixMixedText')) {
+                    updates.fixMixedText = false;
                 }
 
                 if (!storedData.hasOwnProperty(PIN_OPEN_SITE_STORAGE_KEY)) {

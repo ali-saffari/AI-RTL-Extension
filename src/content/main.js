@@ -44,7 +44,7 @@ import { activateGenspark } from './services/observer/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { SessionManager } from './utils/session.js';
-import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting } from './utils/directionUtils/index.js';
+import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setFixMixedText, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting, applyLiveFixMixedTextSetting } from './utils/directionUtils/index.js';
 import { startRtlEngine, stopRtlEngine, isRtlEngineActive } from './utils/originalState.js';
 import { disconnectAllDomObservers } from './utils/domObserver.js';
 import { activateDuckai } from './services/duck-ai.js';
@@ -425,7 +425,7 @@ async function initializeAllServices(token = applyToken) {
     let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows']);
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText']);
     } catch (error) {
         console.log('Storage access failed:', error);
     }
@@ -438,6 +438,7 @@ async function initializeAllServices(token = applyToken) {
     setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
     setApplyAlgorithmToCode(results.applyAlgorithmToCode !== false);
     setFlipRtlArrows(results.flipRtlArrows !== false);
+    setFixMixedText(results.fixMixedText === true);
     
     let activeService = null;
     
@@ -538,12 +539,15 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         return;
     }
 
-    if (changes.applyAlgorithmToCode || changes.flipRtlArrows) {
+    if (changes.applyAlgorithmToCode || changes.flipRtlArrows || changes.fixMixedText) {
         if (changes.applyAlgorithmToCode) {
             applyLiveCodeAlgorithmSetting(changes.applyAlgorithmToCode.newValue === true);
         }
         if (changes.flipRtlArrows) {
             applyLiveFlipRtlArrowsSetting(changes.flipRtlArrows.newValue === true);
+        }
+        if (changes.fixMixedText) {
+            applyLiveFixMixedTextSetting(changes.fixMixedText.newValue === true);
         }
         return;
     }
