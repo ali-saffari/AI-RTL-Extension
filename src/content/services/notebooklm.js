@@ -21,32 +21,71 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
 
 const NOTEBOOK_FONT_STYLE_ID = 'notebooklm-font-style';
 const NOTEBOOK_FONT_CSS = `
-    html.ai-rtl-has-font, html.ai-rtl-has-font body,
-    html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(md-icon):not([class*="material-icons"]):not([class*="material-symbols"]):not([class*="google-symbols"]):not([class*="mat-icon"]) {
-        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+    html.ai-rtl-has-font {
+        --ai-rtl-notebook-ui-fallback: "Google Sans Flex", "Google Sans", "Helvetica Neue", sans-serif;
     }
-    app-flashcard,
-    app-flashcard *,
-    app-flashcard.FontSet,
-    app-flashcard.FontSet *,
-    app-root,
-    app-root *,
-    app-root.FontSet,
-    app-root.FontSet * {
-        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+    html.ai-rtl-has-font body :where(
+        p,
+        span,
+        div,
+        mark,
+        a,
+        h1, h2, h3, h4, h5, h6,
+        li,
+        label,
+        button,
+        input,
+        textarea,
+        select,
+        option,
+        em,
+        strong,
+        b,
+        i,
+        small,
+        time,
+        cite,
+        q,
+        blockquote,
+        figcaption,
+        summary,
+        dt, dd,
+        th, td, caption,
+        legend,
+        [role="heading"],
+        [role="button"],
+        [role="menuitem"],
+        [role="option"],
+        [role="tab"]
+    ):not(
+        pre,
+        pre *,
+        code,
+        code *,
+        [aria-hidden="true"],
+        [style*="font-"],
+        [class*="icon"],
+        [class*="Icon"],
+        [class*="symbol"],
+        [class*="Symbol"],
+        [class*="material-symbol"],
+        [class*="material-icon"],
+        .google-symbols,
+        .lumi-symbols,
+        .mat-ligature-font,
+        [data-mat-icon-type="font"]
+    ) {
+        font-family: var(--ai-rtl-font, iranyekan, sans-serif), var(--ai-rtl-notebook-ui-fallback) !important;
     }
-    code, pre, kbd, samp, code *, pre * {
+    html.ai-rtl-has-font body code,
+    html.ai-rtl-has-font body code *,
+    html.ai-rtl-has-font body pre,
+    html.ai-rtl-has-font body pre *,
+    html.ai-rtl-has-font body kbd,
+    html.ai-rtl-has-font body kbd *,
+    html.ai-rtl-has-font body samp,
+    html.ai-rtl-has-font body samp * {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-    }
-    i, svg, md-icon,
-    .material-icons,
-    .material-symbols-outlined,
-    .google-symbols,
-    [class*="material-icons"],
-    [class*="material-symbols"],
-    [class*="google-symbols"],
-    [class*="mat-icon"] {
-        font-family: 'Google Symbols', 'google-symbols', 'Material Symbols Outlined', 'Material Icons', inherit !important;
     }
 `;
 

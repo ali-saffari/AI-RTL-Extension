@@ -16,8 +16,61 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
     // Font
     if (!AQ('#gemini-font-style').length) {
         AQ(`<style id="gemini-font-style">
-            html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body * {
-                font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+            html.ai-rtl-has-font {
+                --ai-rtl-gemini-ui-fallback: "Google Sans Flex", "Google Sans", "Helvetica Neue", sans-serif;
+            }
+            html.ai-rtl-has-font body :where(
+                p,
+                span,
+                div,
+                mark,
+                a,
+                h1, h2, h3, h4, h5, h6,
+                li,
+                label,
+                button,
+                input,
+                textarea,
+                select,
+                option,
+                em,
+                strong,
+                b,
+                i,
+                small,
+                time,
+                cite,
+                q,
+                blockquote,
+                figcaption,
+                summary,
+                dt, dd,
+                th, td, caption,
+                legend,
+                [role="heading"],
+                [role="button"],
+                [role="menuitem"],
+                [role="option"],
+                [role="tab"]
+            ):not(
+                pre,
+                pre *,
+                code,
+                code *,
+                [aria-hidden="true"],
+                [style*="font-"],
+                [class*="icon"],
+                [class*="Icon"],
+                [class*="symbol"],
+                [class*="Symbol"],
+                [class*="material-symbol"],
+                [class*="material-icon"],
+                .google-symbols,
+                .lumi-symbols,
+                .mat-ligature-font,
+                [data-mat-icon-type="font"]
+            ) {
+                font-family: var(--ai-rtl-font, iranyekan, sans-serif), var(--ai-rtl-gemini-ui-fallback) !important;
             }
             html.ai-rtl-has-font body code,
             html.ai-rtl-has-font body code *,
@@ -38,31 +91,6 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
             html.ai-rtl-has-font body .hljs * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
-            html.ai-rtl-has-font body i,
-            html.ai-rtl-has-font body svg,
-            html.ai-rtl-has-font body mat-icon,
-            html.ai-rtl-has-font body md-icon,
-            html.ai-rtl-has-font body .mat-icon,
-            html.ai-rtl-has-font body .mat-ligature-font,
-            html.ai-rtl-has-font body .lumi-symbols,
-            html.ai-rtl-has-font body .lm-icon-l,
-            html.ai-rtl-has-font body .material-icons,
-            html.ai-rtl-has-font body .material-icons-outlined,
-            html.ai-rtl-has-font body .material-icons-round,
-            html.ai-rtl-has-font body .material-icons-sharp,
-            html.ai-rtl-has-font body .material-icons-two-tone,
-            html.ai-rtl-has-font body .material-symbols-outlined,
-            html.ai-rtl-has-font body .material-symbols-rounded,
-            html.ai-rtl-has-font body .material-symbols-sharp,
-            html.ai-rtl-has-font body .google-symbols,
-            html.ai-rtl-has-font body [class*="mat-icon"],
-            html.ai-rtl-has-font body [class*="lumi-symbols"],
-            html.ai-rtl-has-font body [class*="material-icons"],
-            html.ai-rtl-has-font body [class*="material-symbols"],
-            html.ai-rtl-has-font body [class*="google-symbols"],
-            html.ai-rtl-has-font body [data-mat-icon-type="font"] {
-                font-family: 'Luminous Symbols', lumi-symbols, 'lumi-symbols', 'Google Symbols', 'google-symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons', 'Material Icons Outlined' !important;
-            }
         </style>`).appendTo('head');
     }
 
@@ -70,7 +98,7 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
         document.body.classList.add('FontSet');
     }
 
-    AQ('i, svg, mat-icon, md-icon, .mat-icon, .mat-ligature-font, .lumi-symbols, [class*="mat-icon"], [class*="lumi-symbols"], [class*="material-icons"], [class*="material-symbols"], [class*="google-symbols"], [data-mat-icon-type="font"]').removeClass('FontSet');
+    AQ('.google-symbols, .lumi-symbols').removeClass('FontSet');
 
     // Copyright
     if (chrome.runtime?.id) {

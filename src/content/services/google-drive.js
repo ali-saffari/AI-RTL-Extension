@@ -49,55 +49,137 @@ const MARKDOWN_OPTIONS = {
     includeTags: ['span']
 };
 
+const WORKSPACE_FONT_CSS = `
+        html.ai-rtl-has-font {
+            --ai-rtl-drive-ui-fallback: "Google Sans Flex", "Google Sans", "Helvetica Neue", sans-serif;
+        }
+        html.ai-rtl-has-font body :where(
+            p,
+            span,
+            div,
+            mark,
+            a,
+            h1, h2, h3, h4, h5, h6,
+            li,
+            label,
+            button,
+            input,
+            textarea,
+            select,
+            option,
+            em,
+            strong,
+            b,
+            i,
+            small,
+            time,
+            cite,
+            q,
+            blockquote,
+            figcaption,
+            summary,
+            dt, dd,
+            th, td, caption,
+            legend,
+            [role="heading"],
+            [role="button"],
+            [role="menuitem"],
+            [role="option"],
+            [role="tab"]
+        ):not(
+            pre,
+            pre *,
+            code,
+            code *,
+            [aria-hidden="true"],
+            [style*="font-"],
+            [class*="icon"],
+            [class*="Icon"],
+            [class*="symbol"],
+            [class*="Symbol"],
+            [class*="material-symbol"],
+            [class*="material-icon"],
+            [class*="google-material"],
+            [class*="docs-icon"],
+            [class*="gm3-icon"],
+            .google-symbols,
+            .lumi-symbols,
+            .mat-ligature-font,
+            [data-mat-icon-type="font"]
+        ) {
+            font-family: var(--ai-rtl-font, iranyekan, sans-serif), var(--ai-rtl-drive-ui-fallback) !important;
+        }
+        html.ai-rtl-has-font body code,
+        html.ai-rtl-has-font body code *,
+        html.ai-rtl-has-font body pre,
+        html.ai-rtl-has-font body pre *,
+        html.ai-rtl-has-font body kbd,
+        html.ai-rtl-has-font body kbd *,
+        html.ai-rtl-has-font body samp,
+        html.ai-rtl-has-font body samp * {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+        }
+`;
+
+const ICON_SELECTOR = '.google-symbols, .lumi-symbols, .mat-ligature-font, [class*="docs-icon"], [class*="gm3-icon"], [class*="google-material"]';
+
+function isDriveFileManager() {
+    const host = String(location.hostname || '')
+        .replace(/^www\./, '')
+        .toLowerCase();
+    return host === 'drive.google.com' || host.endsWith('.drive.google.com');
+}
+
 function applyGoogleDriveChrome() {
     if (AQ('#google-drive-font-style').length) {
         return;
     }
 
-    AQ(`<style id="google-drive-font-style">
-        ${GEMINI_ROOT} textarea[dir="rtl"],
-        ${GEMINI_ROOT} input[dir="rtl"],
-        ${GEMINI_ROOT} [contenteditable="true"][dir="rtl"],
-        ${GEMINI_ROOT} [role="textbox"][dir="rtl"] {
-            direction: rtl !important;
-            text-align: right !important;
-            unicode-bidi: isolate !important;
-        }
-        ${GEMINI_ROOT} textarea[dir="ltr"],
-        ${GEMINI_ROOT} input[dir="ltr"],
-        ${GEMINI_ROOT} [contenteditable="true"][dir="ltr"],
-        ${GEMINI_ROOT} [role="textbox"][dir="ltr"] {
-            direction: ltr !important;
-            text-align: left !important;
-        }
+    const cssParts = [
+        GEMINI_ROOT + ' textarea[dir="rtl"],',
+        GEMINI_ROOT + ' input[dir="rtl"],',
+        GEMINI_ROOT + ' [contenteditable="true"][dir="rtl"],',
+        GEMINI_ROOT + ' [role="textbox"][dir="rtl"] {',
+        '    direction: rtl !important;',
+        '    text-align: right !important;',
+        '    unicode-bidi: isolate !important;',
+        '}',
+        GEMINI_ROOT + ' textarea[dir="ltr"],',
+        GEMINI_ROOT + ' input[dir="ltr"],',
+        GEMINI_ROOT + ' [contenteditable="true"][dir="ltr"],',
+        GEMINI_ROOT + ' [role="textbox"][dir="ltr"] {',
+        '    direction: ltr !important;',
+        '    text-align: left !important;',
+        '}',
+        '[jscontroller="TZy0Wb"][dir="rtl"],',
+        '[jscontroller="TZy0Wb"] [dir="rtl"],',
+        '.appsElementsSidekickUserMessageBubbleContent[dir="rtl"],',
+        '.appsElementsSidekickUserMessageBubbleContent [dir="rtl"],',
+        GEMINI_ROOT + ' .appsElementsSidekickHeaderTitle[dir="rtl"],',
+        GEMINI_ROOT + ' [role="menuitem"][dir="rtl"] {',
+        '    text-align: right !important;',
+        '}',
+        '[jscontroller="TZy0Wb"][dir="ltr"],',
+        '[jscontroller="TZy0Wb"] [dir="ltr"],',
+        '.appsElementsSidekickUserMessageBubbleContent[dir="ltr"],',
+        '.appsElementsSidekickUserMessageBubbleContent [dir="ltr"],',
+        GEMINI_ROOT + ' .appsElementsSidekickHeaderTitle[dir="ltr"],',
+        GEMINI_ROOT + ' [role="menuitem"][dir="ltr"] {',
+        '    text-align: left !important;',
+        '}',
+        '[jscontroller="TZy0Wb"] > span[jsname="t1Rade"] {',
+        '    display: block;',
+        '}'
+    ];
 
-        /* Drive wipes inline text-align on AST nodes; align from dir instead.
-           Paragraphs are span[jsname="t1Rade"] (inline) so they need display:block. */
-        [jscontroller="TZy0Wb"][dir="rtl"],
-        [jscontroller="TZy0Wb"] [dir="rtl"],
-        .appsElementsSidekickUserMessageBubbleContent[dir="rtl"],
-        .appsElementsSidekickUserMessageBubbleContent [dir="rtl"],
-        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle[dir="rtl"],
-        ${GEMINI_ROOT} [role="menuitem"][dir="rtl"] {
-            text-align: right !important;
-        }
-        [jscontroller="TZy0Wb"][dir="ltr"],
-        [jscontroller="TZy0Wb"] [dir="ltr"],
-        .appsElementsSidekickUserMessageBubbleContent[dir="ltr"],
-        .appsElementsSidekickUserMessageBubbleContent [dir="ltr"],
-        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle[dir="ltr"],
-        ${GEMINI_ROOT} [role="menuitem"][dir="ltr"] {
-            text-align: left !important;
-        }
-        [jscontroller="TZy0Wb"] > span[jsname="t1Rade"] {
-            display: block;
-        }
+    if (isDriveFileManager()) {
+        cssParts.push(WORKSPACE_FONT_CSS);
+    }
 
-        ${GEMINI_ROOT} .appsElementsSidekickHeaderTitle,
-        ${GEMINI_ROOT} .javascriptMaterialdesignGm3WizListShared-list-item__primary-text {
-            font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-        }
-    </style>`).appendTo('head');
+    const style = document.createElement('style');
+    style.id = 'google-drive-font-style';
+    style.textContent = cssParts.join('\n');
+    document.head.appendChild(style);
 }
 
 function setGoogleDriveCopyright() {
@@ -139,6 +221,9 @@ function clearDirAuto($root) {
 
 export function setGoogleDrive(rtlAlgorithm = 'advanced_full') {
     applyGoogleDriveChrome();
+    if (isDriveFileManager()) {
+        AQ(ICON_SELECTOR).removeClass('FontSet');
+    }
     setGoogleDriveCopyright();
 
     AQ(MARKDOWN_SELECTOR).each(function () {

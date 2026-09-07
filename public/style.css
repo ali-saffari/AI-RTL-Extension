@@ -1053,18 +1053,15 @@ a.AsSBtn.AsDonate {
     font-size: 16px !important;
 }
 
-.AsOkNotebooklm[dir="rtl"] .ng-star-inserted  {
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-
-app-flashcard,
-app-flashcard.FontSet,
-app-flashcard *,
-app-flashcard.FontSet *,
-app-root,
-app-root.FontSet,
-app-root *,
-app-root.FontSet * {
+.AsOkNotebooklm[dir="rtl"] .ng-star-inserted:not(
+    [class*="icon"],
+    [class*="Icon"],
+    [class*="symbol"],
+    [class*="Symbol"],
+    .google-symbols,
+    .lumi-symbols,
+    .mat-ligature-font
+) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
