@@ -182,79 +182,48 @@ function logIgnoredIfSensed(el, selector) {
     });
 }
 
-const SKIP_ANALYZABLE_SELECTOR = [
-    'a', 'button', 'script', 'style', 'svg', 'math', 'canvas',
-    'textarea', 'input', 'pre', 'code',
-    'div.rounded-xl',
-    '.cm-content', '.cm-editor', '.md-code-block',
-    '[data-copy="false"]',
-    CUSTOM_CODE_BLOCK_SELECTOR,
-    KATEX_SELECTOR
-].join(', ');
-
 const STRUCTURED_MEDIA_SELECTOR = `${KATEX_SELECTOR}, math, svg, .mermaid, [data-code-block-preview-pane]`;
 
-function isNonAnalyzableElement(el, ignoreSelector) {
-    if (!el || el.nodeType !== 1) {
-        return false;
-    }
-    if (el.namespaceURI === 'http://www.w3.org/2000/svg') {
-        return true;
-    }
-    try {
-        if (el.matches(SKIP_ANALYZABLE_SELECTOR)) {
-            // Inline markdown `code` is UI/prose (e.g. Settings → System), not a fenced block.
-            if (isInlineCodeElement(el)) {
-                return false;
-            }
-            return true;
+function stripNonAnalyzableContent($tempElement, options = {}) {
+    $tempElement.find('script, style, svg, math, canvas, textarea, input').remove();
+    $tempElement.find('div.rounded-xl').remove();
+    $tempElement.find('pre').remove();
+    $tempElement.find('code').each(function() {
+        if (!isInlineCodeElement(this)) {
+            this.remove();
         }
-        if (ignoreSelector && el.matches(ignoreSelector)) {
-            return true;
+    });
+    $tempElement.find('.cm-content, .cm-editor, .md-code-block').remove();
+    $tempElement.find(CUSTOM_CODE_BLOCK_SELECTOR).remove();
+    $tempElement.find(KATEX_SELECTOR).remove();
+    $tempElement.find('[data-copy="false"]').remove();
+    const ignoreSelector = getIgnoreSelector(options);
+    const root = $tempElement && $tempElement[0];
+    if (ignoreSelector && root) {
+        const ignored = queryIgnoredElements(root, ignoreSelector, false);
+        for (let i = ignored.length - 1; i >= 0; i--) {
+            ignored[i].remove();
         }
-    } catch {
-        return false;
-    }
-    return false;
-}
-
-function collectAnalyzableText(node, ignoreSelector, parts) {
-    if (!node) {
-        return;
-    }
-    if (node.nodeType === 3) {
-        if (node.nodeValue) {
-            parts.push(node.nodeValue);
-        }
-        return;
-    }
-    if (node.nodeType !== 1) {
-        return;
-    }
-    if (isNonAnalyzableElement(node, ignoreSelector)) {
-        return;
-    }
-    const children = node.childNodes;
-    for (let i = 0; i < children.length; i++) {
-        collectAnalyzableText(children[i], ignoreSelector, parts);
     }
 }
 
 function getAnalyzableText($element, options = {}) {
     const root = unwrapElement($element);
+
+    if (options.debug) {
+        console.log('getAnalyzableText', { $element, root });
+    }
+
     if (!root) {
         return '';
     }
     if (root.nodeType === 3) {
         return (root.nodeValue || '').trim();
     }
-    const ignoreSelector = getIgnoreSelector(options);
-    const parts = [];
-    const children = root.childNodes;
-    for (let i = 0; i < children.length; i++) {
-        collectAnalyzableText(children[i], ignoreSelector, parts);
-    }
-    return parts.join('').trim();
+
+    const $tempElement = AQ(root).clone();
+    stripNonAnalyzableContent($tempElement, options);
+    return $tempElement.text().trim();
 }
 
 function isolateIgnoredElements($element, selector) {
@@ -1102,7 +1071,8 @@ function setTextDirectionAndFont(element, options = {}) {
         text: providedText = null,
         setTextAlign = false,
         setUnicodeBidi = false,
-        applyFontIfRtl = false
+        applyFontIfRtl = false,
+        debug = false
     } = options;
     const ignoreSelector = getIgnoreSelector(options);
     
@@ -1112,8 +1082,12 @@ function setTextDirectionAndFont(element, options = {}) {
         textToUse = providedText;
     } else {
         // متن رو بدون محتوای تگ a برای تشخیص جهت استفاده کن
-        textToUse = getAnalyzableText(AQ(element), { ignoreSelector });
+        textToUse = getAnalyzableText(AQ(element), { ignoreSelector , debug });
         
+        if(debug) {
+            console.log('sss', {textToUse , element: AQ(element)});
+        
+        }
         // اگر text() خالی بود، val() رو چک کن (برای input/textarea)
         if (!textToUse || !textToUse.trim()) {
             textToUse = AQ(element).val();
@@ -1123,6 +1097,8 @@ function setTextDirectionAndFont(element, options = {}) {
         }
     }
     
+
+
     if (!textToUse || !textToUse.trim()) return 'auto';
     
     const direction = detectTextDirection(textToUse);
@@ -1670,7 +1646,7 @@ function processTextElementsAdvanced(container, options = {}) {
             
             const direction = detectTextDirection(textToUse);
 
-            console.log('textToUse', textToUse , 'direction', direction);
+            // console.log('textToUse', textToUse , 'direction', direction);
 
              $element.attr('data-direction', direction);
             applyDirectionMarker($element, direction, directionClassOptions);
