@@ -121,9 +121,9 @@ function bindPromptInputs(rtlAlgorithm) {
 export function setAiStudio(rtlAlgorithm = 'advanced_full') {
     if (isExtensionContextValid()) {
         addCopyright(
-            AQ('section footer, .disclaimer, ms-prompt-box, .chat-session-content footer'),
+            AQ('ms-prompt-box'),
             'AsBoxB',
-            'margin-top: 14px'
+            'margin-top: -5px'
         );
     }
 
