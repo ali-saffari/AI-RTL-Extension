@@ -185,7 +185,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
         }
         return text
             .replace(/==>/g, '<==')
-            .replace(/-->/g, '<--')
+            .replace(/([-–—−]{1,})>/g, '<$1')
             .replace(/=>/g, '<=')
             .replace(/->/g, '<-')
             .replace(/→/g, '←')

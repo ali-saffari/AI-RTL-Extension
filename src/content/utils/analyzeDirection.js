@@ -41,7 +41,9 @@ function isCode(text) {
 }
 
 
-const NEUTRAL_TOKEN_PATTERN = /^[\d\s\-–—_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+$/;
+const NEUTRAL_TOKEN_PATTERN = /^[\d\s\-–—−_*•·‣▪◦○●□■◆◇☆★+#@+=~`|\\\/.,!?:;…]+$/;
+const RE_ASCII_ARROW = /(?:<==|==>|<--|-->|<=|=>|<-|->|[-–—−]{1,}>)/g;
+const RE_ASCII_ARROW_TOKEN = /^(?:<==|==>|<--|-->|<=|=>|<-|->|[-–—−]{1,}>)$/;
 const LIST_MARKER_PATTERN = /^[\d\u06F0-\u06F9]+[.\-)]$/;
 const SHORT_TECH_ACRONYMS = new Set([
     'js', 'ts', 'jsx', 'tsx', 'css', 'html', 'sql', 'xml', 'json', 'yaml', 'yml',
@@ -257,11 +259,11 @@ function isLeadingNeutralCharCode(code) {
         code === 0x2B || code === 0x3D || code === 0x7E || code === 0x60 ||
         code === 0x7C || code === 0x5C || code === 0x2F || code === 0x2E ||
         code === 0x2C || code === 0x21 || code === 0x3F || code === 0x3A ||
-        code === 0x3B || code === 0x40
+        code === 0x3B || code === 0x40 || code === 0x3C || code === 0x3E
     ) return true;
     // common unicode bullets/dashes
     return (
-        code === 0x2013 || code === 0x2014 || code === 0x2022 ||
+        code === 0x2013 || code === 0x2014 || code === 0x2212 || code === 0x2022 ||
         code === 0x00B7 || code === 0x2023 || code === 0x25AA ||
         code === 0x25E6 || code === 0x25CB || code === 0x25CF ||
         code === 0x25A1 || code === 0x25A0 || code === 0x25C6 ||
@@ -296,14 +298,19 @@ function cleanWordToken(word) {
 function tokenizeForDirection(text) {
     if (!text || typeof text !== 'string') return { words: [], rtlFlags: [] };
 
-    const normalizedText = sanitizeBracketsAndEmojis(stripMarkdown(text)).trim();
+    RE_ASCII_ARROW.lastIndex = 0;
+    const withoutArrows = stripMarkdown(text).replace(RE_ASCII_ARROW, ' ');
+    const normalizedText = sanitizeBracketsAndEmojis(withoutArrows).trim();
     if (!normalizedText) return { words: [], rtlFlags: [] };
 
     const rawWords = normalizedText.split(RE_WHITESPACE);
     const words = [];
     const rtlFlags = [];
     for (let i = 0; i < rawWords.length; i++) {
-        const cleaned = cleanWordToken(rawWords[i]);
+        const rawWord = rawWords[i];
+        if (RE_ASCII_ARROW_TOKEN.test(rawWord)) continue;
+
+        const cleaned = cleanWordToken(rawWord);
         if (!cleaned) continue;
 
         const hasRTL = wordHasRTL(cleaned);

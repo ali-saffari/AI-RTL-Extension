@@ -52,8 +52,12 @@ const UNICODE_ARROW_FLIP_MAP = {
     '➝': '←',
     '➞': '←'
 };
-const UNICODE_ARROW_FLIP_RE = new RegExp(`[${Object.keys(UNICODE_ARROW_FLIP_MAP).join('')}]`, 'g');
-const FLIPPABLE_ARROW_RE = /==>|-->|=>|->|[→⇒⟶⟹➡▶▷►▸▻⇨⇾↦↠↝↣⇀⇝⇢☞☛➜➔➝➞]/;
+const UNICODE_ARROW_CHARS = Object.keys(UNICODE_ARROW_FLIP_MAP).filter((key) => key.length === 1);
+const UNICODE_ARROW_FLIP_RE = new RegExp(`[${UNICODE_ARROW_CHARS.join('')}]`, 'g');
+const FLIPPABLE_ARROW_RE = /==>|-->|=>|->|==&gt;|--&gt;|=&gt;|-&gt;|[→⇒⟶⟹➡▶▷►▸▻⇨⇾↦↠↝↣⇀⇝⇢☞☛➜➔➝➞]/;
+const INLINE_LTR_ISOLATE_TAGS = new Set([
+    'SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'MARK', 'SMALL', 'SUB', 'SUP', 'LABEL'
+]);
 
 export function setFlipRtlArrows(enabled) {
     flipRtlArrowsCache = enabled === true;
@@ -68,11 +72,26 @@ function flipArrowsInText(text) {
         return text;
     }
     return text
+        .replace(/==&gt;/g, '<==')
+        .replace(/--&gt;/g, '<--')
+        .replace(/=&gt;/g, '<=')
+        .replace(/-&gt;/g, '<-')
         .replace(/==>/g, '<==')
         .replace(/-->/g, '<--')
         .replace(/=>/g, '<=')
         .replace(/->/g, '<-')
         .replace(UNICODE_ARROW_FLIP_RE, (ch) => UNICODE_ARROW_FLIP_MAP[ch] || ch);
+}
+
+function isInlineLtrIsolate(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    const className = typeof el.className === 'string' ? el.className : '';
+    if (className.indexOf('bidi-ltr') !== -1 || className.indexOf('markdown-bidi') !== -1) {
+        return true;
+    }
+    return INLINE_LTR_ISOLATE_TAGS.has(el.tagName);
 }
 
 function isRtlCodeLikeHost(el) {
@@ -119,6 +138,10 @@ function isTextNodeInRtlContext(textNode) {
             return true;
         }
         if (dir === 'ltr') {
+            if (isInlineLtrIsolate(current)) {
+                current = current.parentElement;
+                continue;
+            }
             return false;
         }
         if (dir === 'auto') {
