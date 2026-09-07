@@ -53,12 +53,13 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOkText',
-            isContainer: true
+            isContainer: true,
+            setTextAlign: true
         });
     });
 
 
-    AQ('.ds-message > div:first-of-type').each(function () {
+    AQ('.ds-message > div:first-of-type > .ds-collapsible-text > div  ').each(function () {
         const $el = AQ(this);
         if ($el.find('.ds-markdown').length) {
             return;
@@ -67,7 +68,8 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             processedClass: 'AsOk',
-            rtlClass: 'AsOkRList'
+            rtlClass: 'AsOkRList',
+            setTextAlign: true
         });
     });
 

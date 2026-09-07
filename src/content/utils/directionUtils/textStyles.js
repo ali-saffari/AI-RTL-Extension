@@ -170,11 +170,14 @@ export function applyDirectionMarker($element, direction, options = {}) {
         }
     }
 
+      
+    if (dir) {
+        $element.attr('dir', dir);
+    }
+
     if (usesDirectionClasses(options)) {
         return;
     }
 
-    if (dir) {
-        $element.attr('dir', dir);
-    }
+  
 }
