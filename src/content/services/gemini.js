@@ -1,6 +1,5 @@
 // gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { observeDomSections } from '../utils/domObserver.js';
 import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
@@ -116,6 +115,37 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
             });
         });
 
+        // Sidebar conversation titles
+        AQ('[storagekey="chats"] gem-nav-list-item').each(function () {
+            // const $el = AQ(this);
+            // $el.attr('dir','rtl');
+
+
+            applyRtlToElement(this, rtlAlgorithm, {
+                fontClass: 'FontSetGPT',
+                processedClass: 'AsOk',
+                setTextAlign: true,
+                debug: true
+            });
+            // if (!$el.text().trim()) {
+            //     return;
+            // }
+
+            // const intended = $el.attr('data-direction');
+            // const dir = $el.attr('dir');
+            // if (intended && dir !== intended) {
+            //     $el.removeAttr('data-text-length');
+            //     $el.removeClass('AsOk');
+            //     $el.find('.AsOk').removeClass('AsOk');
+            // }
+
+            // applyRtlToElement(this, rtlAlgorithm, {
+            //     fontClass: 'FontSet',
+            //     processedClass: 'AsOk',
+            //     setTextAlign: true
+            // });
+        });
+
         // Input
         AQ('.ql-editor, .ql-editor p').each(function () {
             const $el = AQ(this);
@@ -141,12 +171,44 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
         });
 
         // Font
-        AQ('.bot-name-ugc-label, .gds-label-l, .gds-body-l, .gds-body-m, .gds-title-m, .research-step-title, .mat-button-toggle-label-content, .title-text, .mdc-button__label, .gds-body-s, .gds-label-m, .gds-label-s, .gds-label-xs, .gds-label-xxs, .gds-label-m-alt, .gds-body-m-alt, .gds-body-s-alt, .gds-body-xs-alt, .ql-editor').each(function () {
+        AQ('.bot-name-ugc-label, .gds-label-l, .gds-body-l, .gds-body-m, .gds-title-m, .research-step-title, .mat-button-toggle-label-content, .title-text, .mdc-button__label, .gds-body-s, .gds-label-m, .gds-label-s, .gds-label-xs, .gds-label-xxs, .gds-label-m-alt, .gds-body-m-alt, .gds-body-s-alt, .gds-body-xs-alt, .ql-editor, gem-nav-list-item').each(function () {
             if (!AQ(this).hasClass('FontSet')) {
                 AQ(this).addClass('FontSet');
             }
         });
+
+        processGeminiMarkdown(rtlAlgorithm);
  
+}
+
+function processGeminiMarkdown(rtlAlgorithm) {
+    AQ('.markdown-main-panel, .immersive-editor, .research-step-description').each(function () {
+        const $el = AQ(this);
+        const intended = $el.attr('data-direction');
+        const dir = $el.attr('dir');
+        if (intended && dir !== intended) {
+            $el.removeAttr('data-text-length');
+            $el.removeClass('AsOk');
+            $el.find('.AsOk').removeClass('AsOk');
+        }
+
+        applyRtlToContainer(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true,
+            setTextAlign: true
+        });
+
+        if (rtlAlgorithm === 'advanced_full') {
+            $el.children('p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote').each(function () {
+                applyRtlToElement(this, rtlAlgorithm, {
+                    fontClass: 'FontSet',
+                    processedClass: false,
+                    setTextAlign: true
+                });
+            });
+        }
+    });
 }
 
 export function activateGemini(rtlAlgorithm = 'advanced_full') {
@@ -155,57 +217,10 @@ export function activateGemini(rtlAlgorithm = 'advanced_full') {
 
     let fontInterval;
     let geminiInterval;
-    let markdownObserver;
     const stopGeminiTimers = () => {
         clearInterval(fontInterval);
         clearInterval(geminiInterval);
-        if (markdownObserver) {
-            markdownObserver.disconnect();
-            markdownObserver = null;
-        }
     };
-
-    // Markdown
-    markdownObserver = observeDomSections([
-        {
-            selector: '.markdown-main-panel, .immersive-editor, .research-step-description',
-            process: (el) => {
-                if (!isExtensionContextValid() || !isRtlEngineActive()) {
-                    stopGeminiTimers();
-                    return;
-                }
-
-                const $el = AQ(el);
-                const intended = $el.attr('data-direction');
-                const dir = $el.attr('dir');
-                if (intended && dir !== intended) {
-                    $el.removeAttr('data-text-length');
-                    $el.removeClass('AsOk');
-                    $el.find('.AsOk').removeClass('AsOk');
-                }
-
-                applyRtlToContainer(el, rtlAlgorithm, {
-                    fontClass: 'FontSet',
-                    processedClass: 'AsOk',
-                    isContainer: true,
-                    setTextAlign: true
-                });
-
-                if (rtlAlgorithm === 'advanced_full') {
-                    $el.children('p, ul, ol, h1, h2, h3, h4, h5, h6, blockquote').each(function () {
-                        applyRtlToElement(this, rtlAlgorithm, {
-                            fontClass: 'FontSet',
-                            processedClass: false,
-                            setTextAlign: true
-                        });
-                    });
-                }
-            },
-            debounceMs: 150,
-            throttleMs: 400,
-            idleMs: 800
-        }
-    ]);
 
     // Input + font
     fontInterval = setInterval(() => {
