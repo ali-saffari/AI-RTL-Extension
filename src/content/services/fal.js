@@ -1,6 +1,6 @@
 // fal.js service functions (fal.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setFal(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#fal-font-style').length) {

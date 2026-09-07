@@ -1,6 +1,6 @@
 // character-ai.js service functions (Character.AI - character.ai / c.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setCharacterAi(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#character-ai-font-style').length) {

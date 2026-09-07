@@ -1,6 +1,6 @@
 // meta.js service functions (Meta AI - meta.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const IGNORE_SELECTOR = '[data-testid="thinking-status"]';
 

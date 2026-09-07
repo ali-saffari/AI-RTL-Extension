@@ -1,6 +1,6 @@
 // manus.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const ELEMENT_OPTIONS = {

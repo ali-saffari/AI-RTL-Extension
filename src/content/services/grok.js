@@ -1,6 +1,6 @@
 // grok.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const GROK_FONT_STYLE_ID = 'grok-font-style';
 const GROK_INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"], .ProseMirror';

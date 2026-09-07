@@ -1,6 +1,6 @@
 // youcom.js service functions
 
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFontOneTime } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFontOneTime } from '../utils/directionUtils/index.js';
 import { addCopyright } from '../utils/copyright.js';
 
 export function setYouCom(rtlAlgorithm = 'advanced_full') {

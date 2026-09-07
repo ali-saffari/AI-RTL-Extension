@@ -7,13 +7,13 @@
 
 import { isRtlEngineActive, restoreElementFromSelf } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
-import { setDebugAttr } from './debug.js';
 import {
     CODE_BLOCK_SELECTOR,
     CUSTOM_CODE_BLOCK_SELECTOR,
     isCodeMirrorCodeBlock,
+    setDebugAttr,
     unwrapElement
-} from './codeSelectors.js';
+} from './shared.js';
 import {
     DEFAULT_LOCKED_EDITOR_SELECTOR,
     invalidateLockedEditorCache,

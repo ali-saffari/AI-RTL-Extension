@@ -1,7 +1,7 @@
 // google.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFont } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement, setTextDirectionAndFont } from '../utils/directionUtils/index.js';
 
 // Default config for Google
 const configDefault = {

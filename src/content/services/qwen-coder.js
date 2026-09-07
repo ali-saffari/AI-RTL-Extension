@@ -1,7 +1,7 @@
 // qwen-coder.js service functions (copy of qwen.js for coder.qwen.ai)
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setQwenCoder(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

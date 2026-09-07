@@ -11,17 +11,17 @@ import {
     processCodeLikeElement,
     processCodeMirrorBlock
 } from './codeBlocks.js';
+import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
+import { isLockedMarkdownEditor } from './lockedEditor.js';
+import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
 import {
     CODE_BLOCK_SELECTOR,
     CUSTOM_CODE_BLOCK_SELECTOR,
     isCodeMirrorCodeBlock,
-    isCustomCodeBlock
-} from './codeSelectors.js';
-import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
-import { setDebugAttr } from './debug.js';
-import { isLockedMarkdownEditor } from './lockedEditor.js';
-import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
-import { normalizeTagNameList } from './tags.js';
+    isCustomCodeBlock,
+    normalizeTagNameList,
+    setDebugAttr
+} from './shared.js';
 import {
     containsStructuredMarkup,
     isKatexTreeElement,

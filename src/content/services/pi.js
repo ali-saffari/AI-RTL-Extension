@@ -1,6 +1,6 @@
 // pi.js service functions (Pi - pi.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setPi(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#pi-font-style').length) {

@@ -13,13 +13,16 @@
 
 import { detectDirectionByAlgorithm } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
-import { getElementClassName } from './codeSelectors.js';
 import {
     getMixedTitleDisplayMode,
     resolveRtlAlgorithm,
     shouldApplyRtlToCodeBlock
 } from './settings.js';
-import { normalizeTagNameList, resolveAdjustedTagList } from './tags.js';
+import {
+    getElementClassName,
+    normalizeTagNameList,
+    resolveAdjustedTagList
+} from './shared.js';
 import { isTextAlignEnabled } from './textStyles.js';
 
 export const LOCKED_EDITOR_STYLE_ID = 'ai-rtl-locked-editor-css';

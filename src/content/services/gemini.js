@@ -1,6 +1,6 @@
 // gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
 function isExtensionContextValid() {

@@ -1,6 +1,6 @@
 // bfl.js service functions (Black Forest Labs - bfl.ai)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setBfl(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#bfl-font-style').length) {

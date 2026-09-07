@@ -1,6 +1,6 @@
 // ernie.js service functions (ernie.baidu.com / wenxin.baidu.com / chat.baidu.com)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const INPUT_SELECTOR = 'textarea, #chat-textarea, .ci-textarea, .ci-editor';
 const MESSAGE_SELECTOR = [

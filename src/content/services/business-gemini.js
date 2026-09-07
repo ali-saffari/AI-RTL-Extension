@@ -1,7 +1,7 @@
 // business-gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 // Global WeakSet to track styled shadow roots across all function calls
 const styledShadowRoots = new WeakSet();

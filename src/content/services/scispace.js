@@ -1,6 +1,6 @@
 // scispace.js service functions (SciSpace - scispace.com)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setScispace(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

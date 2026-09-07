@@ -1,7 +1,7 @@
 // claude.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement, detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement, detectDirectionByAlgorithm } from '../utils/directionUtils/index.js';
 
 // Claude service functions
 export function setItems_Claude(rtlAlgorithm = 'advanced_full') {

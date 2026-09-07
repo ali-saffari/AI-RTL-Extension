@@ -7,8 +7,7 @@
 
 import { detectTextDirection } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
-import { CODE_BLOCK_SELECTOR, KATEX_SELECTOR } from './codeSelectors.js';
-import { setDebugAttr } from './debug.js';
+import { CODE_BLOCK_SELECTOR, KATEX_SELECTOR, setDebugAttr } from './shared.js';
 import { applyTextAlignByDirection } from './textStyles.js';
 
 const INNER_DIR_TARGET_SELECTOR = [

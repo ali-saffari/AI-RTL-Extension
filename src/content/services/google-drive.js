@@ -1,6 +1,6 @@
 // google-drive.js service functions (Gemini in Drive / Docs / Sheets / Slides / Forms)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const GEMINI_ROOT = '[aria-label="Gemini"]';
 const COPYRIGHT_FOOTER_SELECTOR = 'footer, [class*="Footer"], [class*="footer"]';

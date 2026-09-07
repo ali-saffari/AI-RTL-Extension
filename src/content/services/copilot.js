@@ -1,7 +1,7 @@
 // copilot.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord , analyzeTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced , setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced , setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const ELEMENT_OPTIONS = {

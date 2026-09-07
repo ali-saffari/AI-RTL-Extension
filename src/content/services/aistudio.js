@@ -1,6 +1,6 @@
 import { addCopyright } from '../utils/copyright.js';
 import { observeDomSections } from '../utils/domObserver.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
 const MESSAGE_SELECTOR = [

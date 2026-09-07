@@ -1,7 +1,7 @@
 // Notion.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement , detectDirectionByAlgorithm } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement , detectDirectionByAlgorithm } from '../utils/directionUtils/index.js';
 
 // Storage key for Notion collection view direction
 const NOTION_COLLECTION_DIRECTION_KEY = 'notion_collection_direction';

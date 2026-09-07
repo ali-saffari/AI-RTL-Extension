@@ -1,7 +1,7 @@
 // ChatGPT service functions
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
 let markdownObserver = null;

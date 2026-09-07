@@ -1,6 +1,6 @@
 // vivado.js service functions (Vivado Doc Search - vivado.amd.com/chat)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setVivado(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

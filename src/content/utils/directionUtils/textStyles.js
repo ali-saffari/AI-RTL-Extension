@@ -3,7 +3,7 @@
  * Shared by tables, single-element apply, and advanced walk.
  */
 
-import { unwrapElement } from './codeSelectors.js';
+import { unwrapElement } from './shared.js';
 
 export function isTextAlignEnabled(setTextAlign) {
     return Boolean(setTextAlign);

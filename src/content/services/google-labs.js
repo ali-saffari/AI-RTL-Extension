@@ -1,6 +1,6 @@
 // google-labs.js service functions (Google Labs - labs.google)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#google-labs-font-style').length) {

@@ -1,6 +1,6 @@
 // clickup.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setClickup(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

@@ -5,23 +5,24 @@
  */
 
 import { analyzeTextDirectionFirstWord } from '../analyzeDirection.js';
-import { isRtlEngineActive } from '../originalState.js';
-import { flipRtlArrowsInTree } from './arrows.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../originalState.js';
+import { flipRtlArrowsInTree, restoreFlippedArrowsInPage } from './arrows.js';
 import {
     getAnalyzableText,
     getIgnoreSelector,
     isolateIgnoredElements,
     setTextDirectionAndFont
 } from './applyElementDirection.js';
-import { processCodeBlocksInContainer } from './codeBlocks.js';
-import { applyRemoveInnerDir } from './innerDir.js';
+import { processCodeBlocksInContainer, resetCodeMirrorDirectionStyles } from './codeBlocks.js';
 import {
     mirrorRtlBlockquotesInTree,
     normalizeOnlyCssOption,
-    processLockedEditorByCss
+    processLockedEditorByCss,
+    resetLockedEditorCaches
 } from './lockedEditor.js';
 import { processTextElementsAdvanced } from './processAdvanced.js';
 import { isInvalidatedError, resolveRtlAlgorithm } from './settings.js';
+import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, unwrapElement } from './shared.js';
 import { processTablesInContainer } from './tables.js';
 import {
     applyDirectionMarker,
@@ -29,6 +30,53 @@ import {
     applyUnicodeBidiByDirection,
     usesDirectionClasses
 } from './textStyles.js';
+
+const INNER_DIR_SKIP_SELECTOR = [
+    'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
+    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
+    CUSTOM_CODE_BLOCK_SELECTOR,
+    KATEX_SELECTOR
+].join(', ');
+
+function isRemoveInnerDirEnabled(options = {}) {
+    return options.removeInnerDir === true;
+}
+
+function shouldSkipInnerDirStrip(el) {
+    if (!el || typeof el.closest !== 'function') {
+        return true;
+    }
+    return el.matches(INNER_DIR_SKIP_SELECTOR) || Boolean(el.closest(INNER_DIR_SKIP_SELECTOR));
+}
+
+function stripInnerDirAttributes($element) {
+    const root = unwrapElement($element);
+    if (!root || !root.querySelectorAll) {
+        return;
+    }
+    const nodes = root.querySelectorAll('[dir]');
+    for (let i = 0; i < nodes.length; i++) {
+        const el = nodes[i];
+        if (shouldSkipInnerDirStrip(el) || el.hasAttribute('data-ai-rtl-orig-dir')) {
+            continue;
+        }
+        preserveOriginalDir(el);
+        el.removeAttribute('dir');
+    }
+}
+
+function applyRemoveInnerDir($element, options = {}) {
+    if (!isRemoveInnerDirEnabled(options)) {
+        return;
+    }
+    stripInnerDirAttributes($element);
+}
+
+export function resetRtlDomCaches() {
+    resetLockedEditorCaches();
+    restoreFlippedArrowsInPage();
+    resetCodeMirrorDirectionStyles();
+}
 
 /**
  * Get common attribute selectors for text content

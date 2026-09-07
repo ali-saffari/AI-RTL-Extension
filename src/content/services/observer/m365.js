@@ -1,7 +1,7 @@
 // m365.js service functions (Microsoft 365 Copilot - m365.cloud.microsoft)
 import { addCopyright } from '../../utils/copyright.js';
 import { observeDomSections } from '../../utils/domObserver.js';
-import { applyRtlToContainer, applyRtlToElement } from '../../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const CODE_BLOCK_SELECTOR = '.scriptor-component-code-block';

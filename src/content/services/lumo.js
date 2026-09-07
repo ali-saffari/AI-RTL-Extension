@@ -1,6 +1,6 @@
 // lumo.js service functions (Lumo - lumo.proton.me)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setLumo(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

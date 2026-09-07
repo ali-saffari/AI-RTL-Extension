@@ -1,7 +1,7 @@
 // perplexity.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const RTL_CODE_FONT = 'var(--ai-rtl-font, iranyekan, sans-serif)';
 const ORIG_FONT_ATTR = 'data-ai-rtl-orig-font';

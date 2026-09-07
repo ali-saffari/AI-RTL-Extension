@@ -1,7 +1,7 @@
 // dash0.js service functions (Dash0 - dash0.com / app.dash0.com)
 import { addCopyright } from '../../utils/copyright.js';
 import { observeDomSections } from '../../utils/domObserver.js';
-import { applyRtlToContainer, applyRtlToElement } from '../../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
 const INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"], .ProseMirror';

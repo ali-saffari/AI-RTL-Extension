@@ -44,7 +44,7 @@ import { activateGenspark } from './services/observer/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
 import { SessionManager } from './utils/session.js';
-import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting } from './utils/textDirectionUtils.js';
+import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting } from './utils/directionUtils/index.js';
 import { startRtlEngine, stopRtlEngine, isRtlEngineActive } from './utils/originalState.js';
 import { disconnectAllDomObservers } from './utils/domObserver.js';
 import { activateDuckai } from './services/duck-ai.js';

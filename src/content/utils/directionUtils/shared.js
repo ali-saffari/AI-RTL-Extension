@@ -1,5 +1,6 @@
 /**
- * Shared code / KaTeX selectors used by codeBlocks, arrows, and textDirectionUtils.
+ * Shared primitives: code/KaTeX selectors, debug helpers, tag-list helpers.
+ * Leaf module — do not import other directionUtils files here.
  */
 
 export function getElementClassName(el) {
@@ -77,4 +78,38 @@ export function isCustomCodeBlock($element) {
 
 export function isCodeMirrorCodeBlock($element) {
     return $element.hasClass('cm-content') || $element.hasClass('cm-editor') || $element.hasClass('md-code-block');
+}
+
+export const DEBUG_MODE = false;
+
+export function setDebugAttr($element, attrName, value) {
+    if (DEBUG_MODE) {
+        $element.attr(attrName, value);
+    }
+}
+
+export function normalizeTagNameList(tags) {
+    if (!Array.isArray(tags)) {
+        return [];
+    }
+    return tags
+        .map((tag) => String(tag || '').trim().toLowerCase())
+        .filter(Boolean);
+}
+
+export function resolveAdjustedTagList(defaults, addTags, removeTags) {
+    const extraTags = normalizeTagNameList(addTags);
+    const removeSet = new Set(normalizeTagNameList(removeTags));
+    const seen = new Set();
+    const resolved = [];
+
+    [...defaults, ...extraTags].forEach((tag) => {
+        if (removeSet.has(tag) || seen.has(tag)) {
+            return;
+        }
+        seen.add(tag);
+        resolved.push(tag);
+    });
+
+    return resolved;
 }

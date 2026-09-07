@@ -1,7 +1,7 @@
 /**
  * Set dir/font on a single node, including paragraphs split by <br>.
  * Services call setTextDirectionAndFont / setTextDirectionAndFontOneTime
- * via textDirectionUtils. Also used by applyRtlToElement and advanced walk.
+ * via directionUtils/index. Also used by applyRtlToElement and advanced walk.
  */
 
 import { detectTextDirection } from '../analyzeDirection.js';
@@ -9,12 +9,12 @@ import { isRtlEngineActive } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CUSTOM_CODE_BLOCK_SELECTOR,
+    DEBUG_MODE,
     getElementClassName,
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
-} from './codeSelectors.js';
-import { DEBUG_MODE } from './debug.js';
+} from './shared.js';
 import { containsStructuredMarkup, skipStructuredMedia } from './structuredMedia.js';
 import {
     applyDirectionMarker,

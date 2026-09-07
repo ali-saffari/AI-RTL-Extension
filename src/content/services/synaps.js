@@ -1,7 +1,7 @@
 // synaps.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setSynaps(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {

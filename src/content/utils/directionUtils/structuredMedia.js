@@ -3,7 +3,7 @@
  * Used while walking message HTML so formulas and charts stay LTR.
  */
 
-import { getElementClassName, KATEX_SELECTOR, unwrapElement } from './codeSelectors.js';
+import { getElementClassName, KATEX_SELECTOR, unwrapElement } from './shared.js';
 
 export const STRUCTURED_MEDIA_SELECTOR = `${KATEX_SELECTOR}, math, svg, .mermaid, [data-code-block-preview-pane]`;
 

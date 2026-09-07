@@ -12,7 +12,7 @@ import {
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
-} from './codeSelectors.js';
+} from './shared.js';
 
 let flipRtlArrowsCache = false;
 const flippedArrowOriginals = new WeakMap();

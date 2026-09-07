@@ -1,7 +1,7 @@
 // cursor.js service functions (Cursor - cursor.com)
 import { addCopyright } from '../../utils/copyright.js';
 import { observeDomSections } from '../../utils/domObserver.js';
-import { applyRtlToContainer, applyRtlToElement } from '../../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
 
 const EDITOR_IGNORE = '.monaco-editor, .monaco-editor-background, [class*="cm-editor"]';
 const ICON_SELECTOR = 'i, svg, path, use, [class*="codicon"], [class*="icon"], [class*="Icon"]';

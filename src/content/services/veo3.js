@@ -1,6 +1,6 @@
 // veo3.js service functions (Veo 3 - www-veo3.com)
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 export function setVeo3(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#veo3-font-style').length) {

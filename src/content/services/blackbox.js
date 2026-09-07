@@ -1,7 +1,7 @@
 // blackbox.js service functions
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, isRTL, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/textDirectionUtils.js';
+import { processTextElementsAdvanced, setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 // BlackBox service functions
 export function setBlackBox(rtlAlgorithm = 'advanced_full') {
