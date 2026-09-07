@@ -1,7 +1,8 @@
 // gemini.js service functions
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
+import { applyRtlToContainer, applyRtlToElement, getAnalyzableText } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
+import { AI_RTL_ICON_SELECTOR, ensureAiRtlPageFontStyle } from '../utils/pageFontStyle.js';
 
 function isExtensionContextValid() {
     try {
@@ -13,92 +14,8 @@ function isExtensionContextValid() {
 
 export function setGemini(rtlAlgorithm = 'advanced_full') {
 
-    // Font
-    if (!AQ('#gemini-font-style').length) {
-        AQ(`<style id="gemini-font-style">
-            html.ai-rtl-has-font {
-                --ai-rtl-gemini-ui-fallback: "Google Sans Flex", "Google Sans", "Helvetica Neue", sans-serif;
-            }
-            html.ai-rtl-has-font body :where(
-                p,
-                span,
-                div,
-                mark,
-                a,
-                h1, h2, h3, h4, h5, h6,
-                li,
-                label,
-                button,
-                input,
-                textarea,
-                select,
-                option,
-                em,
-                strong,
-                b,
-                i,
-                small,
-                time,
-                cite,
-                q,
-                blockquote,
-                figcaption,
-                summary,
-                dt, dd,
-                th, td, caption,
-                legend,
-                [role="heading"],
-                [role="button"],
-                [role="menuitem"],
-                [role="option"],
-                [role="tab"]
-            ):not(
-                pre,
-                pre *,
-                code,
-                code *,
-                [aria-hidden="true"],
-                [style*="font-"],
-                [class*="icon"],
-                [class*="Icon"],
-                [class*="symbol"],
-                [class*="Symbol"],
-                [class*="material-symbol"],
-                [class*="material-icon"],
-                .google-symbols,
-                .lumi-symbols,
-                .mat-ligature-font,
-                [data-mat-icon-type="font"]
-            ) {
-                font-family: var(--ai-rtl-font, iranyekan, sans-serif), var(--ai-rtl-gemini-ui-fallback) !important;
-            }
-            html.ai-rtl-has-font body code,
-            html.ai-rtl-has-font body code *,
-            html.ai-rtl-has-font body pre,
-            html.ai-rtl-has-font body pre *,
-            html.ai-rtl-has-font body kbd,
-            html.ai-rtl-has-font body kbd *,
-            html.ai-rtl-has-font body samp,
-            html.ai-rtl-has-font body samp *,
-            html.ai-rtl-has-font body [class*="code-block"],
-            html.ai-rtl-has-font body [class*="code-block"] *,
-            html.ai-rtl-has-font body .cm-editor,
-            html.ai-rtl-has-font body .cm-editor *,
-            html.ai-rtl-has-font body .cm-content,
-            html.ai-rtl-has-font body .cm-content *,
-            html.ai-rtl-has-font body .cm-line,
-            html.ai-rtl-has-font body .hljs,
-            html.ai-rtl-has-font body .hljs * {
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-            }
-        </style>`).appendTo('head');
-    }
-
-    if (document.body && !document.body.classList.contains('FontSet')) {
-        document.body.classList.add('FontSet');
-    }
-
-    AQ('.google-symbols, .lumi-symbols').removeClass('FontSet');
+    ensureAiRtlPageFontStyle('"Google Sans Flex", "Google Sans", "Helvetica Neue", sans-serif');
+    AQ(AI_RTL_ICON_SELECTOR).removeClass('FontSet');
 
     // Copyright
     if (chrome.runtime?.id) {
@@ -149,11 +66,22 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
             // $el.attr('dir','rtl');
 
 
+
+            // const textToUse = getAnalyzableText(AQ(this), {
+            //     ignoreSelector: AI_RTL_ICON_SELECTOR
+            // });
+     
+            // const direction = detectTextDirection(textToUse);
+
+            // const finalDirection = direction || 'auto';
+        
+            // console.log('textToUse', textToUse, finalDirection);
+
+
             applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: 'FontSetGPT',
+                // fontClass: 'FontSetGPT',
                 processedClass: 'AsOk',
-                setTextAlign: true,
-                debug: true
+                setTextAlign: true
             });
             // if (!$el.text().trim()) {
             //     return;

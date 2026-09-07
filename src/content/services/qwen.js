@@ -2,8 +2,12 @@
 import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
+import { ensureAiRtlPageFontStyle } from '../utils/pageFontStyle.js';
 
 export function setQwenlm(rtlAlgorithm = 'advanced_full') {
+    ensureAiRtlPageFontStyle('"PingFang SC", "Noto Sans SC", Inter, system-ui, sans-serif');
+    AQ('[class*="icon"], [class*="Icon"], [class*="iconfont"]').removeClass('FontSet');
+
     if (chrome.runtime?.id) {
 
               let fo2 = `.chat-layout-input-container`
@@ -76,6 +80,13 @@ export function setQwenlm(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+
+    AQ('.qwen-chat-thinking-status-card-title-text').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            setTextAlign: true
+        });
+    });
 
     // Process font primary and scrollbar hidden elements
     AQ(".font-primary ,.scrollbar-hidden").each(function (each) {

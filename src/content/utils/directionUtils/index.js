@@ -20,7 +20,8 @@ export {
 export {
     processParagraphWithBreaks,
     setTextDirectionAndFont,
-    setTextDirectionAndFontOneTime
+    setTextDirectionAndFontOneTime,
+    getAnalyzableText
 } from './applyElementDirection.js';
 export {
     applyRtlToContainer,
