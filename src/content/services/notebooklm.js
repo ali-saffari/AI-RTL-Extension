@@ -19,7 +19,150 @@ function detectDirectionByAlgorithm(text, rtlAlgorithm) {
     return direction;
 }
 
+const NOTEBOOK_FONT_STYLE_ID = 'notebooklm-font-style';
+const NOTEBOOK_FONT_CSS = `
+    html.ai-rtl-has-font, html.ai-rtl-has-font body,
+    html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(md-icon):not([class*="material-icons"]):not([class*="material-symbols"]):not([class*="google-symbols"]):not([class*="mat-icon"]) {
+        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+    }
+    app-flashcard,
+    app-flashcard *,
+    app-flashcard.FontSet,
+    app-flashcard.FontSet *,
+    app-root,
+    app-root *,
+    app-root.FontSet,
+    app-root.FontSet * {
+        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+    }
+    code, pre, kbd, samp, code *, pre * {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    }
+    i, svg, md-icon,
+    .material-icons,
+    .material-symbols-outlined,
+    .google-symbols,
+    [class*="material-icons"],
+    [class*="material-symbols"],
+    [class*="google-symbols"],
+    [class*="mat-icon"] {
+        font-family: 'Google Symbols', 'google-symbols', 'Material Symbols Outlined', 'Material Icons', inherit !important;
+    }
+`;
+
+function injectFontStyleIntoRoot(root, styleId = NOTEBOOK_FONT_STYLE_ID) {
+    if (!root) {
+        return;
+    }
+    const host = root.head || root;
+    let style = (root.getElementById && root.getElementById(styleId))
+        || (root.querySelector && root.querySelector('#' + styleId));
+    if (!style) {
+        const doc = root.ownerDocument || document;
+        style = doc.createElement('style');
+        style.id = styleId;
+        host.appendChild(style);
+    }
+    style.textContent = NOTEBOOK_FONT_CSS;
+}
+
+function ensureNotebookFontStyle(doc) {
+    const targetDoc = doc || document;
+    injectFontStyleIntoRoot(targetDoc.head || targetDoc.documentElement);
+}
+
+function copyFontFacesToDocument(targetDoc) {
+    if (!document.fonts || !targetDoc?.fonts || targetDoc === document) {
+        return;
+    }
+    try {
+        document.fonts.forEach((face) => {
+            try {
+                targetDoc.fonts.add(face);
+            } catch (error) {
+                // Some FontFace objects cannot be shared across documents
+            }
+        });
+    } catch (error) {
+        // Ignore
+    }
+}
+
+function applyNotebookFontToDocument(targetDoc) {
+    if (!targetDoc?.documentElement) {
+        return;
+    }
+
+    const parentRoot = document.documentElement;
+    const iframeRoot = targetDoc.documentElement;
+    const fontValue = getComputedStyle(parentRoot).getPropertyValue('--ai-rtl-font').trim()
+        || parentRoot.style.getPropertyValue('--ai-rtl-font');
+
+    if (parentRoot.classList.contains('ai-rtl-font-none')) {
+        iframeRoot.classList.add('ai-rtl-font-none');
+        iframeRoot.classList.remove('ai-rtl-has-font');
+        iframeRoot.style.removeProperty('--ai-rtl-font');
+        return;
+    }
+
+    if (parentRoot.classList.contains('ai-rtl-has-font') && fontValue) {
+        iframeRoot.style.setProperty('--ai-rtl-font', fontValue);
+        iframeRoot.classList.add('ai-rtl-has-font');
+        iframeRoot.classList.remove('ai-rtl-font-none');
+    }
+
+    ensureNotebookFontStyle(targetDoc);
+    copyFontFacesToDocument(targetDoc);
+
+    if (targetDoc.body && !targetDoc.body.classList.contains('FontSet')) {
+        targetDoc.body.classList.add('FontSet');
+    }
+}
+
+function requestNotebookIframeInject() {
+    if (window !== window.top || window.__aiRtlNotebookIframeInjectQueued) {
+        return;
+    }
+    window.__aiRtlNotebookIframeInjectQueued = true;
+    setTimeout(() => {
+        window.__aiRtlNotebookIframeInjectQueued = false;
+        try {
+            chrome.runtime.sendMessage({ action: 'injectNotebookIframes' });
+        } catch (error) {
+            // Ignore
+        }
+    }, 400);
+}
+
+function applyNotebookFontToIframes(rootDoc) {
+    const doc = rootDoc || document;
+    const frames = doc.querySelectorAll('iframe');
+    frames.forEach((iframe) => {
+        if (!iframe.dataset.aiRtlFontLoadBound) {
+            iframe.dataset.aiRtlFontLoadBound = '1';
+            iframe.addEventListener('load', () => {
+                applyNotebookFontToIframes(document);
+                requestNotebookIframeInject();
+            });
+            requestNotebookIframeInject();
+        }
+        try {
+            const frameDoc = iframe.contentDocument;
+            if (!frameDoc) {
+                return;
+            }
+            applyNotebookFontToDocument(frameDoc);
+            applyNotebookFontToIframes(frameDoc);
+        } catch (error) {
+            // Cross-origin frames are injected via allFrames
+        }
+    });
+}
+
 export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
+    ensureNotebookFontStyle(document);
+    applyNotebookFontToIframes(document);
+
     if (chrome.runtime?.id) {
         addCopyright(AQ('.omnibar-container').parent() , 'AsBoxB' );
     }
@@ -131,6 +274,25 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+    AQ('app-flashcard, app-root').each(function () {
+        const $el = AQ(this);
+        $el.addClass('FontSet AsOkNotebooklm');
+        applyRtlToContainer(this, rtlAlgorithm, {
+            fontClass: 'FontSet',
+            processedClass: 'AsOk',
+            isContainer: true,
+            setTextAlign: true
+        });
+        if (this.shadowRoot) {
+            injectFontStyleIntoRoot(this.shadowRoot);
+            this.shadowRoot.querySelectorAll('*').forEach((node) => {
+                if (node.classList && !node.classList.contains('mat-icon')) {
+                    node.classList.add('FontSet');
+                }
+            });
+        }
+    });
+
 
 
 
@@ -148,13 +310,19 @@ export function setNotebooklm(rtlAlgorithm = 'advanced_full') {
 
 // Main activation function for NotebookLM
 export function activateNotebooklm(rtlAlgorithm = 'advanced_full') {
+    if (window.__aiRtlNotebooklmActive) {
+        setNotebooklm(rtlAlgorithm);
+        return;
+    }
+    window.__aiRtlNotebooklmActive = true;
+
     console.log('NotebookLM RTL activated with algorithm:', rtlAlgorithm);
     
     // Initial setup
     setNotebooklm(rtlAlgorithm);
     
     // SetInterval for continuous processing
-    let interval = setInterval(() => {
+    window.__aiRtlNotebooklmInterval = setInterval(() => {
         setNotebooklm(rtlAlgorithm);
     }, 500);
 }

@@ -209,7 +209,7 @@ const serviceConfig = {
         activate: activateBlackbox
     },
     googleNotebook: {
-        urls: ["notebooklm.google.com", "notebook.google.com"],
+        urls: ["notebooklm.google.com", "notebook.google.com", "usercontent.goog"],
         activate: activateNotebooklm
     },
     zai: {

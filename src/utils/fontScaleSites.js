@@ -38,6 +38,7 @@ export const FONT_SCALE_SITE_MODES = {
     'blackbox.ai': 'zoom',
     'notebooklm.google.com': 'zoom',
     'notebook.google.com': 'zoom',
+    'usercontent.goog': 'zoom',
     'chat.z.ai': 'zoom',
     'arena.ai': 'zoom',
     'lmarena.ai': 'zoom',

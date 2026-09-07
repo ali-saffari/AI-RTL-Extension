@@ -58,8 +58,12 @@ export const DYNAMIC_SERVICES = {
     },
     googleNotebook: {
         name: 'Google Notebook',
-        origins: ['*://notebook.google.com/*'],
-        hostnames: ['notebook.google.com']
+        origins: [
+            '*://notebook.google.com/*',
+            '*://notebooklm.google.com/*',
+            '*://*.usercontent.goog/*'
+        ],
+        hostnames: ['notebook.google.com', 'notebooklm.google.com', 'usercontent.goog']
     },
     consensus: {
         name: 'Consensus',

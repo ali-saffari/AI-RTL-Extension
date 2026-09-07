@@ -736,6 +736,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         })();
         return true; // Keep message channel open for async response
+    } else if (message.action === 'injectNotebookIframes') {
+        (async () => {
+            const tabId = sender?.tab?.id;
+            if (!tabId) {
+                sendResponse?.({ success: false });
+                return;
+            }
+            try {
+                await injectContentFiles(tabId, { allFrames: true });
+                sendResponse?.({ success: true });
+            } catch (error) {
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true;
     } else if (message.action === 'toggleManualRtlSite') {
         // Handle adding site to manual RTL active sites list
         // Request scripting permission for the site before adding
@@ -849,7 +864,7 @@ const AI_SITES = [
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
     // 'google.com', 'www.google.com',
     'chat.mistral.ai', 'manus.im', 'www.kimi.com', 'kimi.com', 'www.kimi.ai', 'kimi.ai', 'www.blackbox.ai',
-    'notebooklm.google.com', 'notebook.google.com', 'chat.z.ai', 'arena.ai', 'openrouter.ai',
+    'notebooklm.google.com', 'notebook.google.com', 'usercontent.goog', 'chat.z.ai', 'arena.ai', 'openrouter.ai',
     'agent.minimax.io', 'jules.google.com', '1min.ai', 'app.1min.ai',
     'digen.ai', 'agent.digen.ai', 'lovable.dev', 'www.lovable.dev', 'synaps.app',
     'www.synaps.app', 'my.synaps.app', 'app.writesonic.com', 'ernie.baidu.com',
@@ -929,8 +944,21 @@ async function shouldEnableManualRtlForSite(hostname) {
     }
 }
 
-async function injectContentFiles(tabId) {
+function shouldInjectNotebookAllFrames(hostname) {
+    const host = String(hostname || '').toLowerCase();
+    return host === 'notebook.google.com'
+        || host === 'notebooklm.google.com'
+        || host.endsWith('.notebook.google.com')
+        || host.endsWith('.notebooklm.google.com')
+        || host === 'usercontent.goog'
+        || host.endsWith('.usercontent.goog');
+}
+
+async function injectContentFiles(tabId, options = {}) {
     const target = { tabId };
+    if (options.allFrames) {
+        target.allFrames = true;
+    }
     if (isFirefoxRuntime()) {
         // Sequential files: Firefox does not always run a files[] array in order.
         await chrome.scripting.insertCSS({
@@ -1145,7 +1173,9 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         }
         
         try {
-            await injectContentFiles(tabId);
+            await injectContentFiles(tabId, {
+                allFrames: serviceName === 'googleNotebook' || shouldInjectNotebookAllFrames(url.hostname)
+            });
             devLog(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
             if (isMissingTabError(injectError)) {
@@ -1172,8 +1202,15 @@ async function injectTabNow(tabId, options = {}) {
             return;
         }
 
+        let allFrames = false;
         try {
-            await injectContentFiles(tabId);
+            allFrames = shouldInjectNotebookAllFrames(new URL(tab.url).hostname);
+        } catch {
+            allFrames = false;
+        }
+
+        try {
+            await injectContentFiles(tabId, { allFrames });
         } catch (injectError) {
             if (isMissingTabError(injectError) || (injectError.message && injectError.message.includes('error page'))) {
                 return;

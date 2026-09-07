@@ -1057,6 +1057,17 @@ a.AsSBtn.AsDonate {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
+app-flashcard,
+app-flashcard.FontSet,
+app-flashcard *,
+app-flashcard.FontSet *,
+app-root,
+app-root.FontSet,
+app-root *,
+app-root.FontSet * {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
 
 /* --------OpenRouter------------- */
 
