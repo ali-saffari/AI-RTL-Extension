@@ -2,6 +2,14 @@
  * Shared code / KaTeX selectors used by codeBlocks, arrows, and textDirectionUtils.
  */
 
+export function getElementClassName(el) {
+    if (!el) return '';
+    const className = el.className;
+    if (typeof className === 'string') return className;
+    if (className && typeof className.baseVal === 'string') return className.baseVal;
+    return el.getAttribute('class') || '';
+}
+
 export function unwrapElement(element) {
     if (!element) {
         return null;

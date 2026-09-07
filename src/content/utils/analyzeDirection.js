@@ -558,12 +558,22 @@ function analyzeFirstWordDirection(word) {
     return 'ltr';
 }
 
+function detectDirectionByAlgorithm(text, rtlAlgorithm) {
+    if (!text || !text.trim()) return 'ltr';
+
+    if (rtlAlgorithm === 'first_word') {
+        return analyzeTextDirectionFirstWord(text);
+    }
+    return detectTextDirection(text);
+}
+
 // Export functions for CommonJS
 module.exports = {
     analyzeTextDirection,
     detectTextDirection,
     isRTL,
     isCode,
-    analyzeTextDirectionFirstWord
+    analyzeTextDirectionFirstWord,
+    detectDirectionByAlgorithm
 };
 

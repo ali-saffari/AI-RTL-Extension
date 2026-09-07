@@ -9,10 +9,12 @@ import { isRtlEngineActive } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CUSTOM_CODE_BLOCK_SELECTOR,
+    getElementClassName,
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
 } from './codeSelectors.js';
+import { DEBUG_MODE } from './debug.js';
 import { containsStructuredMarkup, skipStructuredMedia } from './structuredMedia.js';
 import {
     applyDirectionMarker,
@@ -24,16 +26,7 @@ import {
     usesDirectionClasses
 } from './textStyles.js';
 
-const DEBUG_MODE = false;
 const loggedIgnoredEls = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
-
-function getElementClassName(el) {
-    if (!el) return '';
-    const className = el.className;
-    if (typeof className === 'string') return className;
-    if (className && typeof className.baseVal === 'string') return className.baseVal;
-    return el.getAttribute('class') || '';
-}
 
 export function getIgnoreSelector(options = {}) {
     const value = options.ignoreSelector;

@@ -8,9 +8,9 @@
 import { detectTextDirection } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
 import { CODE_BLOCK_SELECTOR, KATEX_SELECTOR } from './codeSelectors.js';
+import { setDebugAttr } from './debug.js';
 import { applyTextAlignByDirection } from './textStyles.js';
 
-const DEBUG_MODE = false;
 const INNER_DIR_TARGET_SELECTOR = [
     'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'li', 'blockquote', 'div', 'section', 'article', 'header',
@@ -21,12 +21,6 @@ const TABLE_CELL_SELECTOR = 'th, td, caption';
 const ARIA_TABLE_STRUCTURE_SELECTOR = '[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]';
 const ARIA_TABLE_CELL_SELECTOR = '[role="cell"], [role="columnheader"], [role="rowheader"]';
 const TABLE_FONT_SKIP_SELECTOR = `${CODE_BLOCK_SELECTOR}, ${KATEX_SELECTOR}, svg, math`;
-
-function setDebugAttr($element, attrName, value) {
-    if (DEBUG_MODE) {
-        $element.attr(attrName, value);
-    }
-}
 
 function applyFontClassToTableContents($table, fontClass, structureSelector, cellSelector) {
     if (!fontClass || !$table || !$table.length) {

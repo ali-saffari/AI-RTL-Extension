@@ -4,7 +4,7 @@
  * applyRtlToElement styles a single input/title/node.
  */
 
-import { analyzeTextDirectionFirstWord, detectTextDirection } from '../analyzeDirection.js';
+import { analyzeTextDirectionFirstWord } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
@@ -303,23 +303,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             return;
         }
         throw error;
-    }
-}
-
-/**
- * Detect text direction based on RTL algorithm
- * @param {string} text - Text to analyze
- * @param {string} rtlAlgorithm - Algorithm type: 'advanced_section', 'advanced_full', or 'first_word'
- * @returns {string} - Detected direction ('rtl' or 'ltr')
- */
-export function detectDirectionByAlgorithm(text, rtlAlgorithm) {
-    if (!text || !text.trim()) return 'ltr';
-    
-    if (rtlAlgorithm === 'first_word') {
-        return analyzeTextDirectionFirstWord(text);
-    } else {
-        // For 'advanced_section' and 'advanced_full', use detectTextDirection
-        return detectTextDirection(text);
     }
 }
 

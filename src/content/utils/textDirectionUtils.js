@@ -5,6 +5,7 @@
 
 export {
     analyzeTextDirection,
+    detectDirectionByAlgorithm,
     detectTextDirection,
     isRTL,
     isCode
@@ -21,7 +22,6 @@ export {
 export {
     applyRtlToContainer,
     applyRtlToElement,
-    detectDirectionByAlgorithm,
     getAttributeTextElements
 } from './directionUtils/applyRtl.js';
 export {
@@ -34,9 +34,9 @@ export {
     processLockedEditorByCss
 } from './directionUtils/lockedEditor.js';
 export { processTextElementsAdvanced } from './directionUtils/processAdvanced.js';
+export { resetRtlDomCaches } from './directionUtils/resetCaches.js';
 export {
     getActiveRtlAlgorithm,
-    resetRtlDomCaches,
     setActiveRtlAlgorithm,
     setMixedTitleDisplayMode
 } from './directionUtils/settings.js';

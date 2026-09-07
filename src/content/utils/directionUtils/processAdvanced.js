@@ -18,8 +18,10 @@ import {
     isCustomCodeBlock
 } from './codeSelectors.js';
 import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
+import { setDebugAttr } from './debug.js';
 import { isLockedMarkdownEditor } from './lockedEditor.js';
 import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
+import { normalizeTagNameList } from './tags.js';
 import {
     containsStructuredMarkup,
     isKatexTreeElement,
@@ -32,24 +34,7 @@ import {
     applyUnicodeBidiByDirection
 } from './textStyles.js';
 
-const DEBUG_MODE = false;
-
-function setDebugAttr($element, attrName, value) {
-    if (DEBUG_MODE) {
-        $element.attr(attrName, value);
-    }
-}
-
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
-
-function normalizeTagNameList(tags) {
-    if (!Array.isArray(tags)) {
-        return [];
-    }
-    return tags
-        .map((tag) => String(tag || '').trim().toLowerCase())
-        .filter(Boolean);
-}
 
 export function processTextElementsAdvanced(container, options = {}) {
     if (!isRtlEngineActive()) {

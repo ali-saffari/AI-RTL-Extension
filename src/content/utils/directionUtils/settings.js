@@ -1,14 +1,14 @@
 /**
  * Live RTL settings shared by locked editors, advanced walk, and applyRtl.
+ * This module must stay a leaf (no imports from lockedEditor / codeBlocks / arrows).
  */
 
-import { restoreFlippedArrowsInPage } from './arrows.js';
-import { resetCodeMirrorDirectionStyles } from './codeBlocks.js';
-import { resetLockedEditorCaches, syncLockedEditorSettings } from './lockedEditor.js';
+import { detectTextDirection, isCode } from '../analyzeDirection.js';
 
 const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
 let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
 let activeRtlAlgorithmCache = 'advanced_full';
+let applyAlgorithmToCodeCache = false;
 
 export function isExtensionContextValid() {
     try {
@@ -25,7 +25,6 @@ export function isInvalidatedError(error) {
 
 export function setMixedTitleDisplayMode(mode) {
     mixedTitleDisplayModeCache = mode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
-    syncLockedEditorSettings({ mixedTitleDisplayMode: mixedTitleDisplayModeCache });
 }
 
 export function getMixedTitleDisplayMode() {
@@ -34,7 +33,6 @@ export function getMixedTitleDisplayMode() {
 
 export function setActiveRtlAlgorithm(mode) {
     activeRtlAlgorithmCache = mode || 'advanced_full';
-    syncLockedEditorSettings({ activeRtlAlgorithm: activeRtlAlgorithmCache });
 }
 
 export function getActiveRtlAlgorithm() {
@@ -45,8 +43,20 @@ export function resolveRtlAlgorithm(passed) {
     return activeRtlAlgorithmCache || passed || 'advanced_full';
 }
 
-export function resetRtlDomCaches() {
-    resetLockedEditorCaches();
-    restoreFlippedArrowsInPage();
-    resetCodeMirrorDirectionStyles();
+export function setApplyAlgorithmToCodeEnabled(enabled) {
+    applyAlgorithmToCodeCache = enabled === true;
+}
+
+export function isApplyAlgorithmToCodeEnabled() {
+    return applyAlgorithmToCodeCache === true;
+}
+
+export function shouldApplyRtlToCodeBlock(text) {
+    if (!isApplyAlgorithmToCodeEnabled()) {
+        return false;
+    }
+    if (isCode(text)) {
+        return false;
+    }
+    return detectTextDirection(text) === 'rtl';
 }

@@ -11,86 +11,16 @@
  * selector or already has `data-ai-rtl-editor`.
  */
 
-import { analyzeTextDirectionFirstWord, detectTextDirection, isCode } from '../analyzeDirection.js';
+import { detectDirectionByAlgorithm } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
-
-const DEFAULT_MIXED_TITLE_DISPLAY_MODE = 'unified';
-let mixedTitleDisplayModeCache = DEFAULT_MIXED_TITLE_DISPLAY_MODE;
-let activeRtlAlgorithmCache = 'advanced_full';
-let applyAlgorithmToCodeCache = false;
-
-export function syncLockedEditorSettings(settings = {}) {
-    if (Object.prototype.hasOwnProperty.call(settings, 'mixedTitleDisplayMode')) {
-        mixedTitleDisplayModeCache = settings.mixedTitleDisplayMode || DEFAULT_MIXED_TITLE_DISPLAY_MODE;
-    }
-    if (Object.prototype.hasOwnProperty.call(settings, 'activeRtlAlgorithm')) {
-        activeRtlAlgorithmCache = settings.activeRtlAlgorithm || 'advanced_full';
-    }
-    if (Object.prototype.hasOwnProperty.call(settings, 'applyAlgorithmToCode')) {
-        applyAlgorithmToCodeCache = settings.applyAlgorithmToCode === true;
-    }
-}
-
-function resolveRtlAlgorithm(passed) {
-    return activeRtlAlgorithmCache || passed || 'advanced_full';
-}
-
-function isTextAlignEnabled(setTextAlign) {
-    return Boolean(setTextAlign);
-}
-
-function normalizeTagNameList(tags) {
-    if (!Array.isArray(tags)) {
-        return [];
-    }
-    return tags
-        .map((tag) => String(tag || '').trim().toLowerCase())
-        .filter(Boolean);
-}
-
-function resolveAdjustedTagList(defaults, addTags, removeTags) {
-    const extraTags = normalizeTagNameList(addTags);
-    const removeSet = new Set(normalizeTagNameList(removeTags));
-    const seen = new Set();
-    const resolved = [];
-
-    [...defaults, ...extraTags].forEach((tag) => {
-        if (removeSet.has(tag) || seen.has(tag)) {
-            return;
-        }
-        seen.add(tag);
-        resolved.push(tag);
-    });
-
-    return resolved;
-}
-
-function getElementClassName(el) {
-    if (!el) return '';
-    const className = el.className;
-    if (typeof className === 'string') return className;
-    if (className && typeof className.baseVal === 'string') return className.baseVal;
-    return el.getAttribute('class') || '';
-}
-
-function detectDirectionByAlgorithm(text, rtlAlgorithm) {
-    if (!text || !text.trim()) return 'ltr';
-
-    if (rtlAlgorithm === 'first_word') {
-        return analyzeTextDirectionFirstWord(text);
-    }
-    return detectTextDirection(text);
-}
-
-function shouldApplyRtlToCodeBlock(text) {
-    if (applyAlgorithmToCodeCache !== true) {
-        return false;
-    }
-    if (isCode(text)) {
-        return false;
-    }
-    return detectTextDirection(text) === 'rtl';
-}
+import { getElementClassName } from './codeSelectors.js';
+import {
+    getMixedTitleDisplayMode,
+    resolveRtlAlgorithm,
+    shouldApplyRtlToCodeBlock
+} from './settings.js';
+import { normalizeTagNameList, resolveAdjustedTagList } from './tags.js';
+import { isTextAlignEnabled } from './textStyles.js';
 
 export const LOCKED_EDITOR_STYLE_ID = 'ai-rtl-locked-editor-css';
 export const DEFAULT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
@@ -562,7 +492,7 @@ export function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     const blockTags = resolveLockedEditorBlockTags(options);
 
     const editorId = getLockedEditorId(el);
-    let contentSig = `${rtlAlgorithm}:${setTextAlign}:${mixedTitleDisplayModeCache || ''}:${blockTags.join(',')}|`;
+    let contentSig = `${rtlAlgorithm}:${setTextAlign}:${getMixedTitleDisplayMode() || ''}:${blockTags.join(',')}|`;
     for (let i = 0; i < el.children.length; i++) {
         const child = el.children[i];
         const text = (child.textContent || '').trim();
@@ -656,6 +586,6 @@ export function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
         $element.attr('data-algorithm-rtl', rtlAlgorithm);
     };
 
-    applyRules(mixedTitleDisplayModeCache || DEFAULT_MIXED_TITLE_DISPLAY_MODE);
+    applyRules(getMixedTitleDisplayMode());
     return true;
 }

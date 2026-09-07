@@ -5,9 +5,9 @@
  * applyRtlToContainer / processTextElementsAdvanced when applyAlgorithmToCode is on.
  */
 
-import { detectTextDirection, isCode } from '../analyzeDirection.js';
 import { isRtlEngineActive, restoreElementFromSelf } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
+import { setDebugAttr } from './debug.js';
 import {
     CODE_BLOCK_SELECTOR,
     CUSTOM_CODE_BLOCK_SELECTOR,
@@ -17,40 +17,21 @@ import {
 import {
     DEFAULT_LOCKED_EDITOR_SELECTOR,
     invalidateLockedEditorCache,
-    processLockedEditorByCss,
-    syncLockedEditorSettings
+    processLockedEditorByCss
 } from './lockedEditor.js';
+import {
+    isApplyAlgorithmToCodeEnabled,
+    setApplyAlgorithmToCodeEnabled,
+    shouldApplyRtlToCodeBlock
+} from './settings.js';
 
-const DEBUG_MODE = false;
 export const CM_DIR_STYLE_ID = 'ai-rtl-cm-code-direction';
-let applyAlgorithmToCodeCache = false;
-
-function setDebugAttr($element, attrName, value) {
-    if (DEBUG_MODE) {
-        $element.attr(attrName, value);
-    }
-}
 
 export function setApplyAlgorithmToCode(enabled) {
-    applyAlgorithmToCodeCache = enabled === true;
-    syncLockedEditorSettings({ applyAlgorithmToCode: applyAlgorithmToCodeCache });
+    setApplyAlgorithmToCodeEnabled(enabled === true);
     if (typeof document !== 'undefined' && document.documentElement) {
-        document.documentElement.classList.toggle('ai-rtl-code-algorithm', applyAlgorithmToCodeCache);
+        document.documentElement.classList.toggle('ai-rtl-code-algorithm', enabled === true);
     }
-}
-
-export function isApplyAlgorithmToCodeEnabled() {
-    return applyAlgorithmToCodeCache === true;
-}
-
-function shouldApplyRtlToCodeBlock(text) {
-    if (!isApplyAlgorithmToCodeEnabled()) {
-        return false;
-    }
-    if (isCode(text)) {
-        return false;
-    }
-    return detectTextDirection(text) === 'rtl';
 }
 
 function getLiveCodeProcessOptions() {
