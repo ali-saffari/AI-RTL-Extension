@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const { iranyekanFontPattern } = require('./scripts/private-assets');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
@@ -88,6 +89,7 @@ module.exports = {
                     from: 'public/manifest.chrome.json',
                     to: '../manifest.json',
                 },
+                iranyekanFontPattern('../fonts/iranyekan'),
             ],
         }),
         new BundleBackgroundPlugin(),

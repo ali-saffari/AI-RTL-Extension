@@ -163,4 +163,12 @@ Output: `../ai-rtl-X.Y.Z.zip` (next to the project folder).
 
 ## License
 
-Private project. All rights reserved.
+All rights reserved. This repository is published for **viewing only**.
+
+No permission is granted to use, copy, modify, distribute, sublicense, sell, commercially exploit, or fork this project. See [LICENSE](LICENSE) (`UNLICENSED`).
+
+### Fonts
+
+OFL fonts such as Vazirmatn and Shabnam are included under `public/fonts/`.
+
+IranYekan is a proprietary Fontiran typeface and is **not** in this repository. To build with IranYekan, place the licensed `.woff` files in `private/fonts/iranyekan/`. See `public/fonts/iranyekan/README.md`.
