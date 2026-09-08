@@ -23,6 +23,7 @@ const EXCLUDE_DIRS = new Set([
     'node_modules',
     'private',
     'dist',
+    'dist-chrome',
     'dist-firefox',
     'releases',
     'addons-linter',

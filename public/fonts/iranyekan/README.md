@@ -19,4 +19,4 @@ Expected files:
 - `iranyekanwebblack.woff`
 - `iranyekanwebextrablack.woff`
 
-Webpack copies them to `dist/fonts/iranyekan/` (Chrome) and `dist-firefox/fonts/iranyekan/` (Firefox). If the private folder is missing, the build continues without these fonts.
+Webpack copies them to `dist-chrome/fonts/iranyekan/` (Chrome) and `dist-firefox/fonts/iranyekan/` (Firefox). If the private folder is missing, the build continues without these fonts.

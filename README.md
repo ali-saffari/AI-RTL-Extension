@@ -8,7 +8,7 @@ Homepage: [https://ai-rtl.ir](https://ai-rtl.ir)
 
 | Browser | Manifest | Build output | Store |
 |---------|----------|--------------|-------|
-| Google Chrome / Chromium | `public/manifest.chrome.json` | `dist/` | Chrome Web Store |
+| Google Chrome / Chromium | `public/manifest.chrome.json` | `dist-chrome/` | Chrome Web Store |
 | Mozilla Firefox | `public/manifest.firefox.json` | `dist-firefox/` | Firefox Add-ons (AMO) |
 
 Both targets share the same source under `src/` and are built with webpack (Manifest V3).
@@ -52,13 +52,13 @@ npm run build:chrome:release
 
 Outputs:
 
-- Unpacked extension: `dist/`
+- Unpacked extension: `dist-chrome/`
 - Zip package: `releases/chrome/chrome-extension-vX.Y.Z.zip` (from `build:chrome:release`)
 
-Load unpacked in Chrome: `chrome://extensions` → Developer mode → Load unpacked → select `dist/`.
+Load unpacked in Chrome: `chrome://extensions` → Developer mode → Load unpacked → select `dist-chrome/`.
 
 Webpack config: `webpack.config.chrome.js`  
-Manifest source: `public/manifest.chrome.json` (copied to `dist/manifest.json`)
+Manifest source: `public/manifest.chrome.json` (copied to `dist-chrome/manifest.json`)
 
 ### Mozilla Firefox
 
@@ -143,7 +143,7 @@ Updates:
 
 - Source is TypeScript/React/JavaScript under `src/`.
 - Production build is bundled with webpack: `npm install` then `npm run build:chrome`.
-- Compare built `dist/` with the uploaded package.
+- Compare built `dist-chrome/` with the uploaded package.
 
 ### Firefox Add-ons (AMO)
 
@@ -153,7 +153,7 @@ Updates:
 - Compare built `dist-firefox/` with the uploaded extension package.
 - No remote code is downloaded or executed at runtime.
 
-Source zip for AMO reviewers (excludes `node_modules`, `dist`, `releases`, etc.):
+Source zip for AMO reviewers (excludes `node_modules`, `dist-chrome`, `dist-firefox`, `releases`, etc.):
 
 ```bash
 npm run zip:source

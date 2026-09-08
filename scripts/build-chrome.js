@@ -7,7 +7,7 @@ const archiver = require('archiver');
 const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json');
 const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
 const packagePath = path.join(__dirname, '../package.json');
-const distPath = path.join(__dirname, '../dist');
+const distPath = path.join(__dirname, '../dist-chrome');
 const outputPath = path.join(__dirname, '../releases/chrome');
 
 // Colors for console output
@@ -79,8 +79,8 @@ async function main() {
         
         logSuccess(`Version updated to ${newVersion} in Chrome/Firefox manifests and package.json`);
         
-        // Step 3: Clean dist directory
-        logStep('4', 'Cleaning dist directory...');
+        // Step 3: Clean dist-chrome directory
+        logStep('4', 'Cleaning dist-chrome directory...');
         if (fs.existsSync(distPath)) {
             fs.rmSync(distPath, { recursive: true, force: true });
             logSuccess('Dist directory cleaned');

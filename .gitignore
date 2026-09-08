@@ -15,6 +15,7 @@ yarn.lock
 
 # Build outputs
 dist/
+dist-chrome/
 dist-firefox/
 build/
 releases/

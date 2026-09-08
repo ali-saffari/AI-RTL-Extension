@@ -46,7 +46,7 @@ function removeSourceMaps(dir) {
 }
 
 /**
- * Build Firefox extension into dist-firefox/ (separate from Chrome dist/).
+ * Build Firefox extension into dist-firefox/ (separate from Chrome dist-chrome/).
  * Returns the extension version string.
  */
 function buildFirefoxDist({ watch = false } = {}) {
@@ -107,7 +107,7 @@ function main() {
         log(`\n${colors.bright}${colors.green}Firefox build completed successfully!${colors.reset}`);
         log(`Output dir: ${distFirefoxPath}`, 'cyan');
         log(`Zip: ${zipFilePath}`, 'cyan');
-        log(`Chrome dist/ was not touched.`, 'yellow');
+        log(`Chrome dist-chrome/ was not touched.`, 'yellow');
         log(`Run temporary: npm run firefox`, 'yellow');
     } catch (error) {
         logError(`Firefox build failed: ${error.message}`);
