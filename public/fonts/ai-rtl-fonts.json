@@ -2,19 +2,18 @@
   "schemaVersion": 1,
   "project": {
     "id": "ai-rtl",
-    "name": "AI RTL (Persian/Farsi) : cursor",
-    "nameFa": "راست‌چین هوش مصنوعی برای Cursor",
-    "packageName": "cursor-chat-rtl"
+    "name": "AI RTL (Persian/Farsi)",
+    "nameFa": "راست‌چین هوش مصنوعی"
   },
   "defaultFont": "iranyekan",
-  "licenseNotice": "افزونه AI RTL با تمام حقوق محفوظ است و مجوز استفاده یا کپی داده نمی‌شود. فونت‌های همراه، جز ایران‌یکان، تحت SIL OFL 1.1 هستند. ایران‌یکان متعلق به Fontiran است (کد مجوز T7RJ805N) و فایل‌های آن در این مخزن نیستند.",
+  "licenseNotice": "فونت‌های همراه (جز ایران‌یکان) تحت SIL OFL 1.1 یا مجوز بالادستی خودشان هستند؛ فایل لایسنس کنار هر خانواده است. ایران‌یکان متعلق به Fontiran است و فایل‌های آن در این مخزن نیستند.",
   "fonts": [
     {
       "id": "iranyekan",
       "title": "ایران یکان",
       "family": "iranyekan",
       "version": "web",
-      "license": "Fontiran T7RJ805N",
+      "license": "Fontiran (proprietary, not bundled)",
       "source": "https://fontiran.com",
       "selectable": true,
       "files": [
@@ -180,7 +179,7 @@
       "title": "تنها",
       "family": "Tanha",
       "version": "0.10",
-      "license": "OFL-1.1",
+      "license": "Bitstream Vera (see LICENSE)",
       "source": "https://github.com/rastikerdar/tanha-font",
       "selectable": true,
       "files": [
@@ -196,7 +195,7 @@
       "title": "ناهید",
       "family": "Nahid",
       "version": "0.3.0",
-      "license": "OFL-1.1",
+      "license": "Bitstream Vera (see LICENSE)",
       "source": "https://github.com/rastikerdar/nahid-font",
       "selectable": true,
       "files": [
@@ -245,7 +244,7 @@
       "family": "Nika",
       "version": "1.0.0",
       "license": "OFL-1.1",
-      "source": "Persian Font Store / Saleh Souzanchi",
+      "source": "https://github.com/font-store/NikaFont",
       "selectable": true,
       "files": [
         {
@@ -293,7 +292,7 @@
       "family": "Behdad",
       "version": "0.0.3",
       "license": "OFL-1.1",
-      "source": "Persian Font Store / Saleh Souzanchi",
+      "source": "https://github.com/font-store/BehdadFont",
       "selectable": true,
       "files": [
         {
@@ -309,7 +308,7 @@
       "family": "GanjNamehSans",
       "version": "0.0.4",
       "license": "OFL-1.1",
-      "source": "Persian Font Store / Saleh Souzanchi",
+      "source": "https://github.com/font-store/GanjnamehFont",
       "selectable": true,
       "files": [
         {
@@ -325,7 +324,7 @@
       "family": "Shahab",
       "version": "0.0.2",
       "license": "OFL-1.1",
-      "source": "Persian Font Store / Saleh Souzanchi",
+      "source": "https://github.com/font-store/ShahabFont",
       "selectable": true,
       "files": [
         {

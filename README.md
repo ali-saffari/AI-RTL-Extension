@@ -169,6 +169,8 @@ No permission is granted to use, copy, modify, distribute, sublicense, sell, com
 
 ### Fonts
 
-OFL fonts such as Vazirmatn and Shabnam are included under `public/fonts/`.
+Bundled typefaces are licensed separately from the extension. Each family has its upstream license next to the font files. Index: [public/fonts/README.md](public/fonts/README.md).
+
+Most families are SIL OFL 1.1 (Vazirmatn, Shabnam, Sahel, Samim, Parastoo, Gandom, Mikhak, Estedad, Arad, Nika, Behdad, GanjNameh, Shahab). Tanha and Nahid use the Bitstream Vera license from upstream.
 
 IranYekan is a proprietary Fontiran typeface and is **not** in this repository. To build with IranYekan, place the licensed `.woff` files in `private/fonts/iranyekan/`. See `public/fonts/iranyekan/README.md`.

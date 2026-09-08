@@ -750,6 +750,10 @@ function createUpdateModalHTML() {
                     font-weight: 700;
                     width: 100%;
                     font-family: iranyekan, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
                     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
                     box-shadow: 0 2px 8px rgba(0, 233, 255, 0.2);
                     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
