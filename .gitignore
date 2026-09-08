@@ -14,7 +14,7 @@ build/
 releases/
 *.min.js
 *.min.css
-
+.idea/
 # Environment variables
 .env
 .env.local
