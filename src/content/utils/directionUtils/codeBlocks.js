@@ -34,11 +34,22 @@ export function setApplyAlgorithmToCode(enabled) {
     }
 }
 
+function isGeminiHost() {
+    return typeof location !== 'undefined' && /(^|\.)gemini\.google\.com$/i.test(location.hostname);
+}
+
+function resolveCodeFontClass(fontClass, codeFontClass) {
+    if (codeFontClass === false) {
+        return '';
+    }
+    return codeFontClass || fontClass;
+}
+
 function getLiveCodeProcessOptions() {
     const isGpt = Boolean(document.body && document.body.classList.contains('FontSetGPT'));
     return {
         fontClass: isGpt ? 'FontSetGPT' : 'FontSet',
-        codeFontClass: isGpt ? 'FontSetCodeBlocksGPT' : 'FontSet',
+        codeFontClass: isGpt ? 'FontSetCodeBlocksGPT' : (isGeminiHost() ? false : 'FontSet'),
         setTextAlign: true
     };
 }
@@ -143,7 +154,7 @@ export function processCodeLikeElement($element, element, options = {}) {
         return;
     }
     const { fontClass, processedClass, codeFontClass } = options;
-    const blockFontClass = codeFontClass || fontClass;
+    const blockFontClass = resolveCodeFontClass(fontClass, codeFontClass);
     if (processedClass) {
         $element.addClass(processedClass);
     }
@@ -215,7 +226,7 @@ export function processCodeMirrorBlock($element, element, options = {}) {
         return;
     }
     const { fontClass, processedClass, codeFontClass } = options;
-    const blockFontClass = codeFontClass || fontClass;
+    const blockFontClass = resolveCodeFontClass(fontClass, codeFontClass);
     const $content = $element.hasClass('cm-content')
         ? $element
         : ($element.find('.cm-content').first().length ? $element.find('.cm-content').first() : $element);

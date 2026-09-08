@@ -150,6 +150,7 @@ function processGeminiMarkdown(rtlAlgorithm) {
 
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
+            codeFontClass: false,
             processedClass: 'AsOk',
             isContainer: true,
             setTextAlign: true

@@ -96,7 +96,7 @@ const services: Service[] = [
     { key: 'mistral', name: 'Mistral', icon: '/images/sites/chat-mistral.png', url: 'https://chat.mistral.ai', hosts: ['chat.mistral.ai'], keywords: ['mistral', 'میسترال', 'le chat'] },
     { key: 'manus', name: 'Manus', icon: '/images/sites/manus.png', url: 'https://manus.im/', hosts: ['manus.im'], keywords: ['manus', 'مانوس'] },
     { key: 'blackbox', name: 'Black Box', icon: '/images/sites/blackbox.png', url: 'https://www.blackbox.ai/', hosts: ['blackbox.ai'], keywords: ['blackbox', 'بلک باکس', 'بلک‌باکس', 'کد'] },
-    { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/openAi-icon.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
+    { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/1minai.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
     { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://agent.digen.ai/', hosts: ['digen.ai', 'agent.digen.ai'], keywords: ['digen', 'دیجن'] },
     { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
     { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },

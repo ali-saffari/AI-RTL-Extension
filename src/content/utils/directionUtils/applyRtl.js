@@ -104,7 +104,7 @@ export function getAttributeTextElements() {
  * @param {string} [options.fontClass='FontSet'] - Font class to apply on processed elements
  * @param {string} [options.processedClass] - Class that marks already-processed nodes. Default `'AsOk'` for advanced_section; used to skip reprocessing and to count processed children
  * @param {boolean} [options.isContainer] - Treat as a nested container. Default `true` for advanced_section. advanced_full: also process inner code blocks on first pass. first_word: also process tables
- * @param {string} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted
+ * @param {string|false} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted. `false` skips applying a font class on code
  * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)

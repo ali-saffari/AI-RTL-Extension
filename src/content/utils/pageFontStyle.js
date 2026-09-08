@@ -83,25 +83,6 @@ function buildPageFontCss(uiFallback) {
             ) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif), var(--ai-rtl-ui-fallback) !important;
             }
-            html.ai-rtl-has-font body code,
-            html.ai-rtl-has-font body code *,
-            html.ai-rtl-has-font body pre,
-            html.ai-rtl-has-font body pre *,
-            html.ai-rtl-has-font body kbd,
-            html.ai-rtl-has-font body kbd *,
-            html.ai-rtl-has-font body samp,
-            html.ai-rtl-has-font body samp *,
-            html.ai-rtl-has-font body [class*="code-block"],
-            html.ai-rtl-has-font body [class*="code-block"] *,
-            html.ai-rtl-has-font body .cm-editor,
-            html.ai-rtl-has-font body .cm-editor *,
-            html.ai-rtl-has-font body .cm-content,
-            html.ai-rtl-has-font body .cm-content *,
-            html.ai-rtl-has-font body .cm-line,
-            html.ai-rtl-has-font body .hljs,
-            html.ai-rtl-has-font body .hljs * {
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-            }
         `;
 }
 
