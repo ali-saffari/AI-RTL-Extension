@@ -9,6 +9,7 @@ import {
 } from '../utils/chromeMessaging.js';
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission.js';
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY } from '../utils/pinOpenSite';
+import { getActivateGuidePath } from '../utils/storeLinks.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -189,7 +190,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         try {
             const uidResult = await chrome.storage.sync.get(['uid']);
             chrome.tabs.create({
-                url: buildExtensionSiteUrl('/activate', {
+                url: buildExtensionSiteUrl(getActivateGuidePath(), {
                     uid: uidResult.uid || '',
                     source: 'extension-install'
                 })

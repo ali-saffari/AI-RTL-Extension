@@ -1,6 +1,6 @@
 export const FONT_SCALE_MODE_ZOOM = 'zoom';
 export const FONT_SCALE_MODE_FONT_SIZE = 'font-size';
-export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_ZOOM;
+export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_FONT_SIZE;
 
 /**
  * Scale method per site:
@@ -10,6 +10,88 @@ export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_ZOOM;
  * Change each line to 'zoom' or 'font-size'.
  * Unlisted sites (including manual RTL) use DEFAULT_FONT_SCALE_MODE.
  */
+export const FONT_SCALE_SITE_MODES = {
+    'chatgpt.com': 'font-size',
+    'chat.openai.com': 'font-size',
+
+    'claude.ai': 'font-size',
+    'copilot.microsoft.com': 'font-size',
+    'bing.com': 'font-size',
+    'github.com': 'font-size',
+    'perplexity.ai': 'font-size',
+    'duckduckgo.com': 'font-size',
+    'aistudio.google.com': 'font-size',
+    'chat.deepseek.com': 'font-size',
+    'you.com': 'font-size',
+    'chat.qwenlm.ai': 'font-size',
+    'chat.qwen.ai': 'font-size',
+    'coder.qwen.ai': 'font-size',
+    'poe.com': 'font-size',
+    'monica.im': 'font-size',
+    'gemini.google.com': 'font-size',
+    'business.gemini.google': 'font-size',
+    'grok.com': 'font-size',
+    'chat.mistral.ai': 'font-size',
+    'manus.im': 'font-size',
+    'kimi.com': 'font-size',
+    'kimi.ai': 'font-size',
+    'blackbox.ai': 'font-size',
+    'notebooklm.google.com': 'font-size',
+    'notebook.google.com': 'font-size',
+    'usercontent.goog': 'font-size',
+    'chat.z.ai': 'font-size',
+    'arena.ai': 'font-size',
+    'lmarena.ai': 'font-size',
+    'openrouter.ai': 'font-size',
+    'agent.minimax.io': 'font-size',
+    'jules.google.com': 'font-size',
+    '1min.ai': 'font-size',
+    'app.1min.ai': 'font-size',
+    'digen.ai': 'font-size',
+    'agent.digen.ai': 'font-size',
+    'lovable.dev': 'font-size',
+    'synaps.app': 'font-size',
+    'app.writesonic.com': 'font-size',
+    'ernie.baidu.com': 'font-size',
+    'wenxin.baidu.com': 'font-size',
+    'chat.baidu.com': 'font-size',
+    'gamma.app': 'font-size',
+    'notion.so': 'font-size',
+    'genspark.ai': 'font-size',
+    'duck.ai': 'font-size',
+    'app.clickup.com': 'font-size',
+    't3.chat': 'font-size',
+    'vivado.amd.com': 'font-size',
+    'chat.atxp.ai': 'font-size',
+    'consensus.app': 'font-size',
+    'scispace.com': 'font-size',
+    'web.chatboxai.app': 'font-size',
+    'lumo.proton.me': 'font-size',
+    'meta.ai': 'font-size',
+    'labs.google': 'font-size',
+    'docs.google.com': 'font-size',
+    'drive.google.com': 'font-size',
+    'sheets.google.com': 'font-size',
+    'slides.google.com': 'font-size',
+    'forms.google.com': 'font-size',
+    'www-veo3.com': 'font-size',
+    'fal.ai': 'font-size',
+    'bfl.ai': 'font-size',
+    'character.ai': 'font-size',
+    'c.ai': 'font-size',
+    'pi.ai': 'font-size',
+    'cursor.com': 'font-size',
+    'typingmind.com': 'font-size',
+    'huggingface.co': 'font-size',
+    'hf.co': 'font-size',
+    'dash0.com': 'font-size',
+    'zerve.ai': 'font-size',
+    'chat.sakana.ai': 'font-size',
+    'm365.cloud.microsoft': 'font-size',
+    'copilot.cloud.microsoft': 'font-size',
+};
+
+/*
 export const FONT_SCALE_SITE_MODES = {
     'chatgpt.com': 'font-size',
     'chat.openai.com': 'font-size',
@@ -90,6 +172,7 @@ export const FONT_SCALE_SITE_MODES = {
     'm365.cloud.microsoft': 'zoom',
     'copilot.cloud.microsoft': 'zoom',
 };
+*/
 
 function normalizeHostname(hostname) {
     return String(hostname || '')

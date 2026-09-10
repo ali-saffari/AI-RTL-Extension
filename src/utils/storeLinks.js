@@ -6,6 +6,24 @@ export const CHROME_STORE_URL =
 export const FIREFOX_STORE_URL =
     'https://addons.mozilla.org/en-US/firefox/addon/ai-rtl-persian-farsi/';
 
+export const ACTIVATE_PATHS = {
+    chrome: '/activate/chrome/',
+    firefox: '/activate/firefox/',
+};
+
+export const GUIDE_PATHS = {
+    chrome: '/guide/chrome/',
+    firefox: '/guide/firefox/',
+};
+
+export function getActivateGuidePath() {
+    return isFirefoxRuntime() ? ACTIVATE_PATHS.firefox : ACTIVATE_PATHS.chrome;
+}
+
+export function getInstallGuidePath() {
+    return isFirefoxRuntime() ? GUIDE_PATHS.firefox : GUIDE_PATHS.chrome;
+}
+
 export function getExtensionStoreUrl() {
     return isFirefoxRuntime() ? FIREFOX_STORE_URL : CHROME_STORE_URL;
 }
