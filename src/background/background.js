@@ -598,6 +598,21 @@ function isMissingTabError(error) {
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'getToolbarPinState') {
+        (async () => {
+            try {
+                if (typeof chrome.action?.getUserSettings !== 'function') {
+                    sendResponse({ success: true, pinned: false });
+                    return;
+                }
+                const settings = await chrome.action.getUserSettings();
+                sendResponse({ success: true, pinned: settings?.isOnToolbar === true });
+            } catch (error) {
+                sendResponse({ success: false, pinned: false, error: error?.message });
+            }
+        })();
+        return true;
+    }
     if (message.action === 'openOptionsPage') {
         try {
             // Check if hash is provided in message, default to #manual-rtl
