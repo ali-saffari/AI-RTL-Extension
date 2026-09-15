@@ -11,14 +11,13 @@ import {
     AppBar,
     IconButton,
     Tooltip,
-    SvgIcon,
-    Button
+    SvgIcon
 } from '@mui/material';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCog, mdiCogOutline, mdiStarOutline, mdiInformationOutline, mdiClose, mdiHelpCircleOutline, mdiHeadset, mdiShieldOutline } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCogOutline, mdiStarOutline, mdiHelpCircleOutline, mdiHeadset, mdiShieldOutline } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
@@ -581,23 +580,19 @@ function App() {
                 }
 
                 const scrollTop = container.scrollTop;
-                const settingsSection = document.getElementById('settings-section');
                 const notesSection = document.getElementById('notes-section');
                 const reportSection = document.getElementById('report-section');
 
-                if (settingsSection && notesSection && reportSection) {
-                    const settingsTop = getSectionOffset(settingsSection, container);
+                if (notesSection && reportSection) {
                     const notesTop = getSectionOffset(notesSection, container);
                     const reportTop = getSectionOffset(reportSection, container);
 
-                    if (scrollTop < settingsTop - 60) {
+                    if (scrollTop < reportTop - 60) {
                         if (tabValue !== 0) setTabValue(0);
-                    } else if (scrollTop < reportTop - 60) {
-                        if (tabValue !== 1) setTabValue(1);
                     } else if (scrollTop < notesTop - 60) {
-                        if (tabValue !== 2) setTabValue(2);
-                    } else if (tabValue !== 3) {
-                        setTabValue(3);
+                        if (tabValue !== 1) setTabValue(1);
+                    } else if (tabValue !== 2) {
+                        setTabValue(2);
                     }
                 }
             }, 100);
@@ -615,7 +610,7 @@ function App() {
         setTabValue(newValue);
         isTabScrolling.current = true;
 
-        const sectionIds = ['sites-section', 'settings-section', 'report-section', 'notes-section'];
+        const sectionIds = ['sites-section', 'report-section', 'notes-section'];
         const sectionId = sectionIds[newValue];
         const element = document.getElementById(sectionId);
         const container = mainScrollRef.current;
@@ -1068,7 +1063,6 @@ function App() {
                             }}
                         >
                             <Tab label="سایت‌ها" />
-                            <Tab label="تنظیمات" />
                             <Tab label="گزارش مشکل" />
                             <Tab label="درباره افزونه" />
                         </Tabs>
@@ -1104,97 +1098,6 @@ function App() {
                                 <ServiceList pinOpenSiteMode={pinOpenSiteMode} />
                                 </Box>
                             </div>
-                        </div>
-
-                        <div id="settings-section">
-                            <Box
-                                sx={{
-                                    minHeight: 280,
-                                    mx: 0,
-                                    mt: 2,
-                                    mb: 3,
-                                    px: 3,
-                                    py: 5,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    textAlign: 'center',
-                                    background: isDarkMode
-                                        ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.14) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                                        : 'linear-gradient(135deg, rgba(30, 64, 175, 0.14) 0%, rgba(30, 64, 175, 0.05) 100%)',
-                                    borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
-                                    borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
-                                }}
-                            >
-                                <SvgIcon sx={{ fontSize: '2.4rem', mb: 1.5, color: isDarkMode ? '#00e9ff' : '#1e40af' }}>
-                                    <path d={mdiInformationOutline} />
-                                </SvgIcon>
-                                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', mb: 1.25, color: isDarkMode ? '#ffffff' : '#1e293b' }}>
-                                    تنظیمات جابه‌جا شد
-                                </Typography>
-                                <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
-                                    برای راحتی استفاده، تنظیمات به پنل جدا منتقل شده است.
-                                </Typography>
-                                <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.9, maxWidth: 320, color: isDarkMode ? 'rgba(255,255,255,0.88)' : 'rgba(30,41,59,0.88)' }}>
-                                    از طریق{' '}
-                                    <Box
-                                        component="button"
-                                        type="button"
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            handleHighlightSettingsButton();
-                                        }}
-                                        sx={{
-                                            display: 'inline',
-                                            p: 0,
-                                            m: 0,
-                                            border: 0,
-                                            background: 'none',
-                                            cursor: 'pointer',
-                                            font: 'inherit',
-                                            fontWeight: 700,
-                                            color: isDarkMode ? '#00e9ff' : '#1e40af',
-                                            textDecoration: 'underline',
-                                            textUnderlineOffset: '3px',
-                                            '&:hover': {
-                                                color: isDarkMode ? '#4dd4ff' : '#3b82f6'
-                                            }
-                                        }}
-                                    >
-                                        تنظیمات
-                                    </Box>
-                                    {' '}در منوی سمت چپ یا دکمه زیر، پنل را باز کنید.
-                                </Typography>
-                                <Button
-                                    onClick={() => handleSettingsOpenChange(!settingsOpen)}
-                                    startIcon={
-                                        <SvgIcon sx={{ fontSize: '1.15rem !important' }}>
-                                            <path d={settingsOpen ? mdiClose : mdiCog} />
-                                        </SvgIcon>
-                                    }
-                                    sx={{
-                                        mt: 2.5,
-                                        px: 2,
-                                        py: 0.75,
-                                        color: isDarkMode ? '#00e9ff' : '#1e40af',
-                                        fontFamily: 'iranyekan',
-                                        fontSize: '0.88rem',
-                                        fontWeight: 700,
-                                        textTransform: 'none',
-                                        border: isDarkMode
-                                            ? '1px solid rgba(0, 233, 255, 0.45)'
-                                            : '1px solid rgba(30, 64, 175, 0.4)',
-                                        '&:hover': {
-                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.1)',
-                                            transform: 'none',
-                                        },
-                                    }}
-                                >
-                                    {settingsOpen ? 'بستن پنل تنظیمات' : 'باز کردن پنل تنظیمات'}
-                                </Button>
-                            </Box>
                         </div>
                         
                         <div id="report-section">

@@ -522,7 +522,6 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             </Card>
                         </Grid>
 
-                        {false ? (
                         <Grid item xs={12} sx={{ order: 6 }}>
                             <Card elevation={2}>
                                 <CardContent dir="rtl">
@@ -600,7 +599,6 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 </CardContent>
                             </Card>
                         </Grid>
-                        ) : null}
 
                         {/* نحوه نمایش عنوان‌های ترکیبی */}
                         <Grid item xs={12} sx={{ order: 2 }}>

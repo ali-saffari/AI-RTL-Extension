@@ -610,7 +610,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Box>
                     </Box>
 
-                    {false ? (
                     <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
                         <Box
                             sx={{
@@ -652,7 +651,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             />
                         </Box>
                     </Box>
-                    ) : null}
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
