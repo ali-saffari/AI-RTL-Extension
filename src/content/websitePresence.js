@@ -4,11 +4,6 @@ const INSTALLED_EVENT = 'ai-rtl-extension-installed';
 
 function isOwnWebsite() {
     const host = String(window.location.hostname || '').toLowerCase();
-    const port = String(window.location.port || '');
-    // Temporary: local website on port 3000
-    if ((host === 'localhost' || host === '127.0.0.1') && port === '3000') {
-        return true;
-    }
     return /(^|\.)ai-rtl\.ir$/.test(host) || /(^|\.)chatgpt-rtl\.ir$/.test(host);
 }
 

@@ -23,7 +23,6 @@ module.exports = {
         options: './src/options/index.tsx',
         background: './src/background/background.js',
         content: './src/content/index.ts',
-        'website-presence': './src/content/websitePresence.js',
         'manual-rtl': './src/manual-rtl/content.js',
         'myJquery-3.7.1': './src/myJquery-3.7.1.js'
     },

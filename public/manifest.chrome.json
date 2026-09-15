@@ -20,9 +20,7 @@
         "https://ai-rtl.ir/*",
         "https://api.ai-rtl.ir/*",
         "https://chatgpt-rtl.ir/*",
-        "https://api.chatgpt-rtl.ir/*",
-        "http://localhost:3000/*",
-        "http://127.0.0.1:3000/*"
+        "https://api.chatgpt-rtl.ir/*"
     ],
     "optional_host_permissions": [
         "<all_urls>"
@@ -90,16 +88,6 @@
                 "https://gamma.app/*",
                 "https://www.gamma.app/*"
             ]
-        },
-        {
-            "js": [
-                "js/website-presence.js"
-            ],
-            "matches": [
-                "http://localhost:3000/*",
-                "http://127.0.0.1:3000/*"
-            ],
-            "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [

@@ -17,7 +17,6 @@
     ],
     "host_permissions": [
         "*://1min.ai/*",
-        "*://127.0.0.1:3000/*",
         "*://agent.minimax.io/*",
         "*://ai-rtl.ir/*",
         "*://aistudio.google.com/*",
@@ -78,7 +77,6 @@
         "*://labs.google/*",
         "*://lmarena.ai/*",
         "*://lovable.dev/*",
-        "*://localhost:3000/*",
         "*://lumo.proton.me/*",
         "*://manus.im/*",
         "*://m365.cloud.microsoft/*",
@@ -273,16 +271,6 @@
                 "*://you.com/*",
                 "*://zerve.ai/*"
             ]
-        },
-        {
-            "js": [
-                "js/website-presence.js"
-            ],
-            "matches": [
-                "*://localhost:3000/*",
-                "*://127.0.0.1:3000/*"
-            ],
-            "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [
