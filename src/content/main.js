@@ -70,6 +70,7 @@ import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateGoogleDrive } from './services/google-drive.js';
+import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateM365 } from './services/observer/m365.js';
 
 // Global variables
@@ -359,6 +360,10 @@ const serviceConfig = {
     googleDrive: {
         urls: ["docs.google.com", "drive.google.com", "sheets.google.com", "slides.google.com", "forms.google.com"],
         activate: activateGoogleDrive
+    },
+    googleAnalytics: {
+        urls: ["analytics.google.com"],
+        activate: activateGoogleAnalytics
     },
     m365: {
         urls: ["m365.cloud.microsoft", "copilot.cloud.microsoft"],

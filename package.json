@@ -1,6 +1,6 @@
 {
   "name": "ai-rtl",
-  "version": "4.0.13",
+  "version": "4.0.14",
   "private": true,
   "license": "UNLICENSED",
   "dependencies": {
@@ -30,7 +30,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "build:chrome": "cross-env NODE_ENV=production webpack --config webpack.config.chrome.js",
+    "build:chrome": "node scripts/check-chrome-manifest.js && cross-env NODE_ENV=production webpack --config webpack.config.chrome.js",
     "build:chrome:dev": "cross-env NODE_ENV=development webpack --config webpack.config.chrome.js",
     "build:chrome:release": "node scripts/build-chrome.js",
     "build:firefox": "node scripts/build-firefox.js",

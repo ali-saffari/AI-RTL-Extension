@@ -1,7 +1,7 @@
 {
     "default_locale": "fa",
     "name": "__MSG_extension_name__",
-    "version": "4.0.13",
+    "version": "4.0.14",
     "short_name": "__MSG_extension_short_name__",
     "background": {
         "scripts": [
@@ -19,6 +19,7 @@
         "*://1min.ai/*",
         "*://agent.minimax.io/*",
         "*://ai-rtl.ir/*",
+        "*://analytics.google.com/*",
         "*://aistudio.google.com/*",
         "*://api.ai-rtl.ir/*",
         "*://api.chatgpt-rtl.ir/*",
@@ -156,6 +157,7 @@
                 "*://1min.ai/*",
                 "*://agent.minimax.io/*",
                 "*://ai-rtl.ir/*",
+                "*://analytics.google.com/*",
                 "*://aistudio.google.com/*",
                 "*://api.ai-rtl.ir/*",
                 "*://api.chatgpt-rtl.ir/*",
@@ -283,6 +285,7 @@
                 "*://1min.ai/*",
                 "*://agent.minimax.io/*",
                 "*://ai-rtl.ir/*",
+                "*://analytics.google.com/*",
                 "*://aistudio.google.com/*",
                 "*://api.ai-rtl.ir/*",
                 "*://api.chatgpt-rtl.ir/*",

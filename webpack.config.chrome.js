@@ -3,11 +3,26 @@ const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { iranyekanFontPattern } = require('./scripts/private-assets');
+const { assertChromeManifestUnchanged } = require('./scripts/check-chrome-manifest');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
 
 // Plugin to bundle background script with all dependencies
+class CheckChromeManifestPlugin {
+    apply(compiler) {
+        const runCheck = () => {
+            if (!isProduction) {
+                return;
+            }
+            assertChromeManifestUnchanged();
+            console.log('✅ Chrome manifest permission check passed');
+        };
+        compiler.hooks.beforeRun.tap('CheckChromeManifestPlugin', runCheck);
+        compiler.hooks.watchRun.tap('CheckChromeManifestPlugin', runCheck);
+    }
+}
+
 class BundleBackgroundPlugin {
     apply(compiler) {
         compiler.hooks.afterEmit.tap('BundleBackgroundPlugin', (compilation) => {
@@ -73,6 +88,7 @@ module.exports = {
         ],
     },
     plugins: [
+        new CheckChromeManifestPlugin(),
         new CopyPlugin({
             patterns: [
                 {

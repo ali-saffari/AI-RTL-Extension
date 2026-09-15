@@ -112,6 +112,11 @@ export const DYNAMIC_SERVICES = {
             'forms.google.com'
         ]
     },
+    googleAnalytics: {
+        name: 'Google Analytics',
+        origins: ['*://analytics.google.com/*'],
+        hostnames: ['analytics.google.com']
+    },
     veo3: {
         name: 'Veo 3',
         origins: ['*://www-veo3.com/*'],

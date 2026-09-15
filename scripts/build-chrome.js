@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const archiver = require('archiver');
+const { assertChromeManifestUnchanged } = require('./check-chrome-manifest');
 
 // Paths
 const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json');
@@ -45,6 +46,10 @@ function logWarning(message) {
 async function main() {
     try {
         logStep('1', 'Starting build process...');
+
+        logStep('1b', 'Checking Chrome manifest permissions against last store snapshot...');
+        assertChromeManifestUnchanged();
+        logSuccess('Chrome manifest permission check passed');
         
         // Step 1: Read current version
         logStep('2', 'Reading current version...');
