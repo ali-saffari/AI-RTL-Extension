@@ -3,6 +3,7 @@
 export const versionChanges = [
     { id: '1', text: 'افزودن نیم‌فاصله با Ctrl+Shift+2', note: 'قابل مدیریت جداگانه برای هر سایت؛ پیش‌فرض فقط ChatGPT', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '2', text: 'افزودن قابلیت اصلاح متن‌های ترکیبی', note: 'عبارت‌های انگلیسی وسط جملهٔ فارسی جایشان عوض نمی‌شود', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
 ];
 
 export function getSiteShortName(change) {

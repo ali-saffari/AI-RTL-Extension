@@ -107,6 +107,7 @@ function getAISitesList() {
         'slides.google.com',
         'forms.google.com',
         'analytics.google.com',
+        'studio.youtube.com',
         'm365.cloud.microsoft',
         'copilot.cloud.microsoft'
     ];

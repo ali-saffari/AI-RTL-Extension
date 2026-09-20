@@ -117,6 +117,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://analytics.google.com/*'],
         hostnames: ['analytics.google.com']
     },
+    youtubeStudio: {
+        name: 'YouTube Studio',
+        origins: ['*://studio.youtube.com/*'],
+        hostnames: ['studio.youtube.com']
+    },
     veo3: {
         name: 'Veo 3',
         origins: ['*://www-veo3.com/*'],

@@ -71,6 +71,7 @@ import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
+import { activateYoutubeStudio } from './services/youtube-studio.js';
 import { activateM365 } from './services/observer/m365.js';
 import { syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
 import { HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
@@ -368,6 +369,10 @@ const serviceConfig = {
     googleAnalytics: {
         urls: ["analytics.google.com"],
         activate: activateGoogleAnalytics
+    },
+    youtubeStudio: {
+        urls: ["studio.youtube.com"],
+        activate: activateYoutubeStudio
     },
     m365: {
         urls: ["m365.cloud.microsoft", "copilot.cloud.microsoft"],

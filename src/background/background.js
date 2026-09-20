@@ -916,6 +916,7 @@ const AI_SITES = [
     'genspark.ai', 'www.genspark.ai',
     'docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com',
     'analytics.google.com',
+    'studio.youtube.com',
     'm365.cloud.microsoft', 'copilot.cloud.microsoft'
 ];
 
