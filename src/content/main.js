@@ -267,7 +267,7 @@ const serviceConfig = {
         activate: activateGamma
     },
     notion: {
-        urls: ["notion.so", "www.notion.so"],
+        urls: ["notion.so", "www.notion.so", "notion.com", "www.notion.com", "app.notion.com"],
         activate: activateNotion
     },
     genspark: {

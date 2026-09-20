@@ -7,8 +7,14 @@ export const DYNAMIC_SERVICES = {
     },
     notion: {
         name: 'Notion',
-        origins: ['*://notion.so/*', '*://www.notion.so/*'],
-        hostnames: ['notion.so', 'www.notion.so']
+        origins: [
+            '*://notion.so/*',
+            '*://www.notion.so/*',
+            '*://notion.com/*',
+            '*://www.notion.com/*',
+            '*://app.notion.com/*'
+        ],
+        hostnames: ['notion.so', 'www.notion.so', 'notion.com', 'www.notion.com', 'app.notion.com']
     },
     businessGemini: {
         name: 'Business Gemini',

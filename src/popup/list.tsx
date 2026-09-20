@@ -106,7 +106,7 @@ const services: Service[] = [
     { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://wenxin.baidu.com/', hosts: ['ernie.baidu.com', 'wenxin.baidu.com', 'chat.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin', 'ونشین'] },
     { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', hosts: ['gamma.app'], keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
     { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', hosts: ['synaps.app', 'my.synaps.app'], helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
-    { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', hosts: ['notion.so'], keywords: ['notion', 'نوشن'] },
+    { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', hosts: ['notion.so', 'notion.com', 'app.notion.com'], keywords: ['notion', 'نوشن'] },
     { key: 'genspark', name: 'Genspark', icon: '/images/sites/genspark.png', url: 'https://genspark.ai/', hosts: ['genspark.ai'], keywords: ['genspark', 'جن اسپارک', 'جن‌اسپارک'] },
     { key: 'arena', name: 'Arena', icon: '/images/sites/arena.png', url: 'https://arena.ai/', hosts: ['arena.ai', 'lmarena.ai'], keywords: ['arena', 'آرنا', 'lmsys', 'lmarena'] },
     { key: 'duckai', name: 'Duck AI', icon: '/images/sites/duckduckgo.png', url: 'https://duck.ai/', hosts: ['duck.ai'], keywords: ['duck', 'داک', 'duck.ai'] },
