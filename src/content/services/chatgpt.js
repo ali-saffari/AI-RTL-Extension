@@ -15,6 +15,7 @@ const MARKDOWN_PROCESS_OPTIONS = {
     isContainer: true,
     siteConfig: 'chatgpt',
     setTextAlign: true,
+    removeDirAuto: true,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
 const COMPOSER_CSS_OPTIONS = {
@@ -64,7 +65,8 @@ function processUserMessageNode(node, rtlAlgorithm) {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
-            setTextAlign: true
+            setTextAlign: true,
+            removeDirAuto: true
         });
     });
 }
@@ -232,7 +234,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
-            setTextAlign: true
+            setTextAlign: true,
+            removeDirAuto: true
         });
     });
 

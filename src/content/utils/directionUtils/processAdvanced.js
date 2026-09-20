@@ -36,6 +36,19 @@ import {
 
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
+export function applyRemoveDirAuto(container, enabled = false) {
+    if (!enabled) {
+        return;
+    }
+    const $container = AQ(container);
+    $container.find('[dir="auto"]').addBack('[dir="auto"]').each(function () {
+        const $el = AQ(this);
+        if (!$el.hasClass('removeedDirAuto')) {
+            $el.removeAttr('dir').addClass('removeedDirAuto');
+        }
+    });
+}
+
 export function processTextElementsAdvanced(container, options = {}) {
     if (!isRtlEngineActive()) {
         return;
@@ -90,13 +103,7 @@ export function processTextElementsAdvanced(container, options = {}) {
     }
 
 
-    if (removeDirAuto) {
-        container.find('*[dir="auto"]').each(function() {
-            if (!AQ(this).hasClass("removeedDirAuto")) {
-                AQ(this).removeAttr('dir').addClass("removeedDirAuto");
-            }
-        });
-    }
+    applyRemoveDirAuto(container, removeDirAuto);
 
 
     const extraBlockTags = normalizeTagNameList(includeTags);

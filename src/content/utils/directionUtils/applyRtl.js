@@ -21,7 +21,7 @@ import {
     processLockedEditorByCss,
     resetLockedEditorCaches
 } from './lockedEditor.js';
-import { processTextElementsAdvanced } from './processAdvanced.js';
+import { applyRemoveDirAuto, processTextElementsAdvanced } from './processAdvanced.js';
 import { isInvalidatedError, resolveRtlAlgorithm } from './settings.js';
 import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, unwrapElement } from './shared.js';
 import { processTablesInContainer } from './tables.js';
@@ -116,7 +116,7 @@ export function getAttributeTextElements() {
  * @param {string[]} [options.excludeTags] - Remove tag names from the default block list (onlyCss) or skip them while walking children
  * @param {string[]} [options.skipTags] - Extra tag names to skip while walking children (advanced_section → processTextElementsAdvanced)
  * @param {string[]} [options.removeSkipTags] - Tag names to remove from the default skip list (advanced_section)
- * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from descendants (advanced_section)
+ * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from the element and descendants (advanced_section and advanced_full)
  * @param {boolean} [options.applyFontIfRtl] - advanced_full: add fontClass only when detected direction is RTL
  * @param {boolean} [options.endTyping] - advanced_section: process headers only after typing has settled
  * @param {string} [options.rtlClass] - If set (with optional ltrClass), apply this class for RTL instead of setting dir
@@ -149,6 +149,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     }
 
     applyRemoveInnerDir($element, options);
+    applyRemoveDirAuto($element, options.removeDirAuto === true);
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -371,6 +372,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
  * @param {string} [options.ltrClass] - If set, apply this class for LTR instead of setting dir
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
+ * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from the element and descendants
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off.
  */
 export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
@@ -383,6 +385,8 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     if (processLockedEditorByCss($element[0], rtlAlgorithm, options)) {
         return;
     }
+
+    applyRemoveDirAuto($element, options.removeDirAuto === true);
     
     // Default options for each algorithm
     const defaultOptions = {
