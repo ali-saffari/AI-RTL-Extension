@@ -9,7 +9,6 @@ import {
 import AlgorithmTab from './tabs/AlgorithmTab';
 import ManualRTLTab from './tabs/ManualRTLTab';
 import OtherSettingsTab from './tabs/OtherSettingsTab';
-import HalfSpaceTab from './tabs/HalfSpaceTab';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
@@ -28,16 +27,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const hashToTabIndex: { [key: string]: number } = {
         'algorithm': 0,
         'manual-rtl': 1,
-        'half-space': 2,
-        'other-settings': 3
+        'other-settings': 2
     };
     
     // Map tab index to hash
     const tabIndexToHash: { [key: number]: string } = {
         0: 'algorithm',
         1: 'manual-rtl',
-        2: 'half-space',
-        3: 'other-settings'
+        2: 'other-settings'
     };
     
     // Get initial tab from hash or default to 0
@@ -397,7 +394,6 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 >
                     <Tab label="الگوریتم" />
                     <Tab label="راستچین دستی" />
-                    <Tab label="نیم‌فاصله" />
                     <Tab label="تنظیمات عمومی" />
                     
                    
@@ -438,9 +434,6 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                     />
                 )}
                 {tabValue === 2 && (
-                    <HalfSpaceTab isDarkMode={isDarkMode} />
-                )}
-                {tabValue === 3 && (
                     <OtherSettingsTab
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}

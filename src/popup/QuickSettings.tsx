@@ -1042,7 +1042,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
                                 {currentService
                                     ? `برای ${currentService.name}`
-                                    : 'برای مدیریت سایت‌ها به تنظیمات بروید'}
+                                    : 'روی صفحه سایت پشتیبانی‌شده فعال می‌شود'}
                             </Typography>
                         </Box>
                         {currentService ? (
@@ -1060,56 +1060,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'نیم‌فاصله سایت فعلی' }}
                             />
-                        ) : (
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => openOptions('half-space')}
-                                sx={{
-                                    flexShrink: 0,
-                                    fontSize: '0.7rem',
-                                    fontFamily: 'iranyekan',
-                                    textTransform: 'none',
-                                    borderRadius: '8px',
-                                    px: 1,
-                                    py: 0.25,
-                                    minWidth: 0,
-                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(30, 64, 175, 0.5)',
-                                    color: accent,
-                                    '&:hover': {
-                                        borderColor: accent,
-                                        backgroundColor: selectedBg,
-                                        transform: 'none',
-                                    },
-                                }}
-                            >
-                                سایت‌ها
-                            </Button>
-                        )}
+                        ) : null}
                     </Box>
-                    {currentService ? (
-                        <Button
-                            variant="text"
-                            size="small"
-                            onClick={() => openOptions('half-space')}
-                            sx={{
-                                mt: 0.5,
-                                px: 0,
-                                minWidth: 0,
-                                fontSize: '0.7rem',
-                                fontFamily: 'iranyekan',
-                                textTransform: 'none',
-                                color: muted,
-                                '&:hover': {
-                                    color: accent,
-                                    backgroundColor: 'transparent',
-                                    transform: 'none',
-                                },
-                            }}
-                        >
-                            مدیریت همه سایت‌ها
-                        </Button>
-                    ) : null}
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
