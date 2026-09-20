@@ -76,7 +76,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                     onOpen={() => setMenuOpen(true)}
                     onClose={() => setMenuOpen(false)}
                     className="quick-settings-select"
-                    value={options.some((option) => option.id === value) ? value : options[0]?.id ?? 'off'}
+                    value={options.some((option) => option.id === value) ? value : 'off'}
                     renderValue={(selected) =>
                         options.find((item) => item.id === selected)?.title
                         ?? options[0]?.title
