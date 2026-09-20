@@ -72,6 +72,8 @@ import { activateSakana } from './services/observer/sakana.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateM365 } from './services/observer/m365.js';
+import { syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
+import { HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -105,12 +107,14 @@ window.addEventListener('contentScriptActivate', async () => {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', async () => {
                 console.log('[Content] DOMContentLoaded event received, initializing services');
+                initializeHalfSpaceHotkey();
                 await enqueueRtlTask(() => initializeAllServices(applyToken));
             });
         } else {
             console.log('[Content] DOM already ready, initializing services');
             // Small delay to ensure everything is loaded
             setTimeout(async () => {
+                initializeHalfSpaceHotkey();
                 await enqueueRtlTask(() => initializeAllServices(applyToken));
             }, 200);
         }
@@ -130,7 +134,7 @@ window.addEventListener('manualRtlActivate', () => {
 // Service configuration with their activation functions
 const serviceConfig = {
     chatGpt: {
-        urls: ["chatgpt.com"],
+        urls: ["chatgpt.com", "chat.openai.com"],
         activate: activateChatGpt
     },
     claude: {
@@ -393,6 +397,15 @@ function isCurrentSiteInServiceConfig() {
     return Object.values(serviceConfig).some(config => isCurrentSite(config.urls));
 }
 
+function getCurrentServiceKey() {
+    for (const [serviceKey, config] of Object.entries(serviceConfig)) {
+        if (isCurrentSite(config.urls)) {
+            return serviceKey;
+        }
+    }
+    return null;
+}
+
 // ============================================
 // Analytics Session Manager
 // ============================================
@@ -538,6 +551,10 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     }
     
     if (!isCurrentSiteInServiceConfig()) return;
+
+    if (changes[HALF_SPACE_STORAGE_KEY]) {
+        await syncHalfSpaceHotkeyForService(getCurrentServiceKey());
+    }
     
     if (changes.rtlAlgorithm || changes.rtlAlgorithmMode || changes.mixedTitleDisplayMode) {
         await requestRtlEnable();
@@ -640,12 +657,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
+function initializeHalfSpaceHotkey() {
+    void syncHalfSpaceHotkeyForService(getCurrentServiceKey());
+}
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
+        initializeHalfSpaceHotkey();
         await enqueueRtlTask(() => initializeAllServices(applyToken));
     });
 } else {
+    initializeHalfSpaceHotkey();
     enqueueRtlTask(() => initializeAllServices(applyToken));
 }
 

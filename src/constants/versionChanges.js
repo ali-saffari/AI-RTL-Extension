@@ -7,6 +7,7 @@ export const versionChanges = [
     { id: '26', text: 'قابلیت سرچ در لیست سایت‌ها', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'menu' },
     { id: '36', text: 'افزودن متن‌های راهنمای بیشتر', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'menu' },
     { id: '16', text: 'افزودن قابلیت تغییر فونت و سایز فونت', note: 'قابل مدیریت در تنظیمات', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
+    { id: '44', text: 'افزودن نیم‌فاصله با Ctrl+Shift+2', note: 'قابل مدیریت جداگانه برای هر سایت؛ پیش‌فرض فقط ChatGPT', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '17', text: 'قابلیت برعکس کردن فلش‌ها در متن‌های فارسی و راست‌چین', note: 'قابل مدیریت در تنظیمات', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '18', text: 'قابلیت راست‌چین باکس کدها (مارک‌داون‌های) فارسی', note: 'قابل مدیریت در تنظیمات', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '20', text: 'آپدیت الگوریتم راست‌چین و بهینه‌سازی آن', icon: 'logo/ai-rtl-logo.png', type: 'fix', group: 'feature' },

@@ -121,6 +121,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
                     analytics: allSettings.analytics,
                     previewEnabled: allSettings.previewEnabled,
+                    halfSpaceHotkeySites: allSettings.halfSpaceHotkeySites,
                     // Export all service flags
                     ...Object.keys(allSettings).reduce((acc, key) => {
                         // Include service flags (check if it's a boolean service flag)
@@ -137,6 +138,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             key !== 'manualRtlActiveSites' && 
                             key !== 'analytics' && 
                             key !== 'previewEnabled' &&
+                            key !== 'halfSpaceHotkeySites' &&
                             typeof allSettings[key] === 'boolean') {
                             acc[key] = allSettings[key];
                         }
@@ -238,6 +240,9 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.previewEnabled !== undefined) {
                 settingsToImport.previewEnabled = importData.settings.previewEnabled;
             }
+            if (importData.settings.halfSpaceHotkeySites !== undefined) {
+                settingsToImport.halfSpaceHotkeySites = importData.settings.halfSpaceHotkeySites;
+            }
 
             // Import service flags
             Object.keys(importData.settings).forEach(key => {
@@ -254,6 +259,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== 'manualRtlActiveSites' && 
                     key !== 'analytics' && 
                     key !== 'previewEnabled' &&
+                    key !== 'halfSpaceHotkeySites' &&
                     typeof importData.settings[key] === 'boolean') {
                     settingsToImport[key] = importData.settings[key];
                 }

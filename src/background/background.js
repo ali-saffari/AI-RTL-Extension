@@ -10,6 +10,7 @@ import {
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission.js';
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY } from '../utils/pinOpenSite';
 import { getActivateGuidePath } from '../utils/storeLinks.js';
+import { DEFAULT_HALF_SPACE_SITES, HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -166,6 +167,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
             flipRtlArrows: true,
             fixMixedText: false,
             experimentalAlgoDefaultOn: true,
+            [HALF_SPACE_STORAGE_KEY]: { ...DEFAULT_HALF_SPACE_SITES },
             [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
             activationHintDismissed: false,
             troubleshootingHintDismissed: true
@@ -271,6 +273,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!storedData.hasOwnProperty(PIN_OPEN_SITE_STORAGE_KEY)) {
                     updates[PIN_OPEN_SITE_STORAGE_KEY] = getDefaultPinOpenSiteMode();
+                }
+
+                if (!storedData.hasOwnProperty(HALF_SPACE_STORAGE_KEY)) {
+                    updates[HALF_SPACE_STORAGE_KEY] = { ...DEFAULT_HALF_SPACE_SITES };
                 }
 
                 if (storedData.experimentalAlgoDefaultOn !== true) {
