@@ -897,6 +897,7 @@ const AI_SITES = [
     'chat.atxp.ai',
     'consensus.app', 'www.consensus.app',
     'scispace.com', 'www.scispace.com',
+    'elicit.com', 'www.elicit.com',
     'web.chatboxai.app',
     'lumo.proton.me',
     'meta.ai', 'www.meta.ai',

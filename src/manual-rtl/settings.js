@@ -62,6 +62,8 @@ function getAISitesList() {
         'www.consensus.app',
         'scispace.com',
         'www.scispace.com',
+        'elicit.com',
+        'www.elicit.com',
         'web.chatboxai.app',
         'lumo.proton.me',
         'meta.ai',

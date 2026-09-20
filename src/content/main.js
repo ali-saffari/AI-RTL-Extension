@@ -54,6 +54,7 @@ import { activateVivado } from './services/vivado.js';
 import { activateAtxp } from './services/atxp.js';
 import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
+import { activateElicit } from './services/elicit.js';
 import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
@@ -301,6 +302,10 @@ const serviceConfig = {
     scispace: {
         urls: ["scispace.com", "www.scispace.com"],
         activate: activateScispace
+    },
+    elicit: {
+        urls: ["elicit.com", "www.elicit.com"],
+        activate: activateElicit
     },
     chatboxai: {
         urls: ["web.chatboxai.app"],

@@ -81,6 +81,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://scispace.com/*', '*://www.scispace.com/*'],
         hostnames: ['scispace.com', 'www.scispace.com']
     },
+    elicit: {
+        name: 'Elicit',
+        origins: ['*://elicit.com/*', '*://www.elicit.com/*'],
+        hostnames: ['elicit.com', 'www.elicit.com']
+    },
     chatboxai: {
         name: 'Chatbox AI',
         origins: ['*://web.chatboxai.app/*'],
