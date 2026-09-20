@@ -1,7 +1,6 @@
 // youtube-studio.js service functions (YouTube Studio - studio.youtube.com)
-// import { addCopyright } from '../utils/copyright.js';
-// import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
-import { applyRtlToElement } from '../utils/directionUtils/index.js';
+import { addCopyright } from '../utils/copyright.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 import { AI_RTL_ICON_SELECTOR } from '../utils/pageFontStyle.js';
 
@@ -37,11 +36,41 @@ const INPUT_SELECTOR = [
 //     '.msg-content'
 // ].join(', ');
 
+const ASK_USER_SELECTOR = '.ytcpAskStudioUserTurnViewModelPromptContainer';
+const ASK_ANSWER_SELECTOR = 'ytcp-ask-studio-item-view-model';
+const ASK_BUTTON_SELECTOR = '.ytSpecButtonViewModelHost';
+const ASK_LIST_SELECTOR = 'yt-list-item-view-model';
+const ASK_LIST_TEXT_SELECTOR = 'yt-list-item-view-model [role="text"]';
+const PANEL_SELECTOR = '.persistent-panel-wrapper';
+
 const INPUT_OPTIONS = {
     fontClass: 'FontSet',
     processedClass: false,
     setTextAlign: 'important',
     setUnicodeBidi: 'isolate',
+    applyFontIfRtl: true
+};
+
+const ASK_USER_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOk',
+    setTextAlign: 'important',
+    applyFontIfRtl: true
+};
+
+const ASK_ANSWER_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOkText',
+    removeDirAuto: true,
+    isContainer: true,
+    setTextAlign: 'important',
+    applyFontIfRtl: true
+};
+
+const ASK_BUTTON_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOk',
+    setTextAlign: 'important',
     applyFontIfRtl: true
 };
 
@@ -78,7 +107,11 @@ function applyYoutubeStudioChrome() {
         #textbox[dir="rtl"],
         textarea[dir="rtl"],
         input[dir="rtl"],
-        [contenteditable="true"][dir="rtl"] {
+        [contenteditable="true"][dir="rtl"],
+        .ytcpAskStudioUserTurnViewModelPromptContainer[dir="rtl"],
+        ytcp-ask-studio-item-view-model[dir="rtl"],
+        .ytSpecButtonViewModelHost[dir="rtl"],
+        yt-list-item-view-model[dir="rtl"] {
             direction: rtl !important;
             text-align: right !important;
             unicode-bidi: isolate !important;
@@ -86,9 +119,27 @@ function applyYoutubeStudioChrome() {
         #textbox[dir="ltr"],
         textarea[dir="ltr"],
         input[dir="ltr"],
-        [contenteditable="true"][dir="ltr"] {
+        [contenteditable="true"][dir="ltr"],
+        .ytcpAskStudioUserTurnViewModelPromptContainer[dir="ltr"],
+        ytcp-ask-studio-item-view-model[dir="ltr"],
+        .ytSpecButtonViewModelHost[dir="ltr"],
+        yt-list-item-view-model[dir="ltr"] {
             direction: ltr !important;
             text-align: left !important;
+        }
+        .persistent-panel-wrapper.FontSet,
+        .persistent-panel-wrapper.FontSet *:not(code):not(pre):not(kbd):not(samp):not(yt-icon):not(yt-icon-shape):not(tp-yt-iron-icon):not(iron-icon):not(svg):not(path):not(use) {
+            font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+        }
+        .persistent-panel-wrapper.FontSet yt-icon,
+        .persistent-panel-wrapper.FontSet yt-icon-shape,
+        .persistent-panel-wrapper.FontSet tp-yt-iron-icon,
+        .persistent-panel-wrapper.FontSet iron-icon {
+            font-family: inherit !important;
+        }
+        yt-list-item-view-model [role="text"].FontSet,
+        yt-list-item-view-model[dir="rtl"] [role="text"] {
+            font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
         /* #video-title[dir="rtl"],
         a#video-title[dir="rtl"],
@@ -114,15 +165,21 @@ function applyYoutubeStudioChrome() {
 
 export function setYoutubeStudio(rtlAlgorithm = 'advanced_full') {
     applyYoutubeStudioChrome();
+
+    AQ(PANEL_SELECTOR).each(function () {
+        if (!AQ(this).hasClass('FontSet')) {
+            AQ(this).addClass('FontSet');
+        }
+    });
     AQ(ICON_SELECTOR).removeClass('FontSet');
 
-    // if (chrome.runtime?.id) {
-    //     addCopyright(
-    //         AQ('form, footer, [class*="footer"]'),
-    //         'AsBoxGemini AsBoxB',
-    //         'margin-top: 4px; margin-bottom: 4px; font-size: 13px;'
-    //     );
-    // }
+    if (chrome.runtime?.id) {
+        addCopyright(
+            AQ('ytcp-ask-studio-input-view-model'),
+            'AsBoxGemini AsBoxB',
+            'margin-top: 4px; margin-bottom: 4px; font-size: 13px;'
+        );
+    }
 
     AQ(INPUT_SELECTOR).each(function () {
         if (AQ(this).data('rtl-listener-added')) {
@@ -138,6 +195,26 @@ export function setYoutubeStudio(rtlAlgorithm = 'advanced_full') {
                 applyRtlToElement(this, rtlAlgorithm, INPUT_OPTIONS);
             });
         });
+    });
+
+    AQ(ASK_USER_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, ASK_USER_OPTIONS);
+    });
+
+    AQ(ASK_ANSWER_SELECTOR).each(function () {
+        applyRtlToContainer(this, rtlAlgorithm, ASK_ANSWER_OPTIONS);
+    });
+
+    AQ(ASK_BUTTON_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, ASK_BUTTON_OPTIONS);
+    });
+
+    AQ(ASK_LIST_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, ASK_BUTTON_OPTIONS);
+    });
+
+    AQ(ASK_LIST_TEXT_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, ASK_BUTTON_OPTIONS);
     });
 
     // AQ(TEXT_SELECTOR).each(function () {
