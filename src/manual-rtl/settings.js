@@ -68,6 +68,8 @@ function getAISitesList() {
         'www.longcat.ai',
         'longcat.chat',
         'www.longcat.chat',
+        'math-gpt.org',
+        'www.math-gpt.org',
         'web.chatboxai.app',
         'lumo.proton.me',
         'meta.ai',

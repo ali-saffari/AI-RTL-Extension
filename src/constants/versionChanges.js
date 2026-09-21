@@ -6,6 +6,7 @@ export const versionChanges = [
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
     { id: '4', text: 'افزودن سایت Elicit', icon: 'sites/elicit.png', type: 'add', group: 'site' },
     { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },
+    { id: '6', text: 'افزودن سایت MathGPT', icon: 'sites/mathgpt.png', type: 'add', group: 'site' },
 ];
 
 export function getSiteShortName(change) {

@@ -96,6 +96,11 @@ export const DYNAMIC_SERVICES = {
         ],
         hostnames: ['longcat.ai', 'www.longcat.ai', 'longcat.chat', 'www.longcat.chat']
     },
+    mathgpt: {
+        name: 'MathGPT',
+        origins: ['*://math-gpt.org/*', '*://www.math-gpt.org/*'],
+        hostnames: ['math-gpt.org', 'www.math-gpt.org']
+    },
     chatboxai: {
         name: 'Chatbox AI',
         origins: ['*://web.chatboxai.app/*'],

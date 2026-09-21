@@ -56,6 +56,7 @@ import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
 import { activateElicit } from './services/elicit.js';
 import { activateLongcat } from './services/longcat.js';
+import { activateMathgpt } from './services/mathgpt.js';
 import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
@@ -311,6 +312,10 @@ const serviceConfig = {
     longcat: {
         urls: ["longcat.ai", "www.longcat.ai", "longcat.chat", "www.longcat.chat"],
         activate: activateLongcat
+    },
+    mathgpt: {
+        urls: ["math-gpt.org", "www.math-gpt.org"],
+        activate: activateMathgpt
     },
     chatboxai: {
         urls: ["web.chatboxai.app"],
