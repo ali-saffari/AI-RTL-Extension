@@ -11,10 +11,6 @@ export function normalizeHalfSpaceSites(stored) {
     return { ...stored };
 }
 
-export function isHalfSpaceEnabledForSite(stored, serviceKey) {
-    if (!serviceKey) {
-        return false;
-    }
-    const sites = normalizeHalfSpaceSites(stored);
-    return sites[serviceKey] === true;
+export function isHalfSpaceEnabledForSite(_stored, serviceKey) {
+    return serviceKey === 'chatGpt';
 }

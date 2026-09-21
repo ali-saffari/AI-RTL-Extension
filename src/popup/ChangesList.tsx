@@ -169,6 +169,7 @@ const ChangesList: React.FC = () => {
                                             mb: 0.5,
                                             display: 'flex',
                                             alignItems: 'center',
+                                            flexWrap: 'wrap',
                                             gap: 0.5,
                                             fontWeight: 600
                                         }}>
@@ -179,6 +180,19 @@ const ChangesList: React.FC = () => {
                                                 <path d={mdiCheck} />
                                             </SvgIcon>
                                             {change.text}
+                                            {change.note && (
+                                                <Box
+                                                    component="span"
+                                                    sx={{
+                                                        fontSize: '0.65rem',
+                                                        fontWeight: 300,
+                                                        color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                                                        mr: 0.5
+                                                    }}
+                                                >
+                                                    {change.note}
+                                                </Box>
+                                            )}
                                         </Typography>
                                     ))}
                                 </Box>

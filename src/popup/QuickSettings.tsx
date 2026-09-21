@@ -28,12 +28,6 @@ import {
     requestTabsPermission,
 } from '../utils/pinOpenSite';
 import PinOpenSiteModeSelect from '../components/PinOpenSiteModeSelect';
-import { services } from './list';
-import {
-    HALF_SPACE_STORAGE_KEY,
-    isHalfSpaceEnabledForSite,
-    normalizeHalfSpaceSites,
-} from '../constants/halfSpaceHotkey';
 import {
     DEFAULT_FONT_ID,
     DEFAULT_FONT_SCALE,
@@ -154,8 +148,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
-    const [halfSpaceSites, setHalfSpaceSites] = React.useState<Record<string, boolean>>({ chatGpt: true });
-    const [currentServiceKey, setCurrentServiceKey] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -187,69 +179,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         };
     }, []);
 
-    React.useEffect(() => {
-        chrome.storage.sync.get([HALF_SPACE_STORAGE_KEY], (result) => {
-            setHalfSpaceSites(normalizeHalfSpaceSites(result[HALF_SPACE_STORAGE_KEY]));
-        });
-
-        const handleStorageChange = (
-            changes: { [key: string]: chrome.storage.StorageChange },
-            areaName: string
-        ) => {
-            if (areaName === 'sync' && changes[HALF_SPACE_STORAGE_KEY]) {
-                setHalfSpaceSites(normalizeHalfSpaceSites(changes[HALF_SPACE_STORAGE_KEY].newValue));
-            }
-        };
-        chrome.storage.onChanged.addListener(handleStorageChange);
-        return () => {
-            chrome.storage.onChanged.removeListener(handleStorageChange);
-        };
-    }, []);
-
-    React.useEffect(() => {
-        let cancelled = false;
-
-        const normalizeHost = (hostname: string) => hostname.replace(/^www\./, '').toLowerCase();
-        const hostMatches = (tabHost: string, serviceHost: string) => {
-            const a = normalizeHost(tabHost);
-            const b = normalizeHost(serviceHost);
-            return a === b || a.endsWith('.' + b);
-        };
-
-        const detectCurrentService = async () => {
-            try {
-                const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-                const tab = tabs[0];
-                if (!tab?.url || cancelled) {
-                    return;
-                }
-                const hostname = normalizeHost(new URL(tab.url).hostname);
-                const match = services.find((service) => {
-                    const hosts = new Set<string>();
-                    try {
-                        hosts.add(normalizeHost(new URL(service.url).hostname));
-                    } catch {
-                        // Ignore invalid service URLs
-                    }
-                    (service.hosts || []).forEach((host) => hosts.add(normalizeHost(host)));
-                    return Array.from(hosts).some((host) => hostMatches(hostname, host));
-                });
-                if (!cancelled) {
-                    setCurrentServiceKey(match?.key || null);
-                }
-            } catch {
-                if (!cancelled) {
-                    setCurrentServiceKey(null);
-                }
-            }
-        };
-
-        void detectCurrentService();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
     const selectedAlgo = ALGORITHMS.find((item) => item.id === rtlAlgorithm) ?? ALGORITHMS[1];
     const selectedTitleMode = TITLE_MODES.find((item) => item.id === mixedTitleDisplayMode) ?? TITLE_MODES[0];
     const selectedFontOption = fonts.find((font) => font.id === selectedFont);
@@ -260,8 +189,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
             : 'iranyekan, sans-serif';
     const infoAlgo = ALGORITHMS.find((item) => item.id === infoAlgoId) ?? null;
     const manualEnabled = manualRtlSettings.manualRtlEnabled !== false;
-    const currentService = services.find((service) => service.key === currentServiceKey) || null;
-    const halfSpaceEnabled = isHalfSpaceEnabledForSite(halfSpaceSites, currentServiceKey);
 
     const accent = isDarkMode ? '#00e9ff' : '#1e40af';
     const muted = isDarkMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(30, 41, 59, 0.55)';
@@ -1047,42 +974,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 فعال‌سازی
                             </Button>
                         )}
-                    </Box>
-                </Box>
-
-                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                        }}
-                    >
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography className="quick-settings-label">نیم‌فاصله Ctrl+Shift+2</Typography>
-                            {currentService ? (
-                                <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
-                                    {`برای ${currentService.name}`}
-                                </Typography>
-                            ) : null}
-                        </Box>
-                        {currentService ? (
-                            <Switch
-                                size="small"
-                                checked={halfSpaceEnabled}
-                                onChange={(event) => {
-                                    const next = {
-                                        ...normalizeHalfSpaceSites(halfSpaceSites),
-                                        [currentService.key]: event.target.checked,
-                                    };
-                                    setHalfSpaceSites(next);
-                                    chrome.storage.sync.set({ [HALF_SPACE_STORAGE_KEY]: next });
-                                }}
-                                sx={switchSx}
-                                inputProps={{ 'aria-label': 'نیم‌فاصله سایت فعلی' }}
-                            />
-                        ) : null}
                     </Box>
                 </Box>
 

@@ -1,6 +1,5 @@
 import {
     HALF_SPACE_CHAR,
-    HALF_SPACE_STORAGE_KEY,
     isHalfSpaceEnabledForSite
 } from '../../constants/halfSpaceHotkey.js';
 
@@ -153,15 +152,5 @@ export function setHalfSpaceHotkeyEnabled(enabled) {
 }
 
 export async function syncHalfSpaceHotkeyForService(serviceKey) {
-    if (!serviceKey) {
-        setHalfSpaceHotkeyEnabled(false);
-        return;
-    }
-
-    try {
-        const result = await chrome.storage.sync.get([HALF_SPACE_STORAGE_KEY]);
-        setHalfSpaceHotkeyEnabled(isHalfSpaceEnabledForSite(result[HALF_SPACE_STORAGE_KEY], serviceKey));
-    } catch {
-        setHalfSpaceHotkeyEnabled(isHalfSpaceEnabledForSite(undefined, serviceKey));
-    }
+    setHalfSpaceHotkeyEnabled(isHalfSpaceEnabledForSite(undefined, serviceKey));
 }

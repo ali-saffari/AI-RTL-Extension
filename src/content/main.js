@@ -77,7 +77,6 @@ import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
 import { activateM365 } from './services/observer/m365.js';
 import { syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
-import { HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -570,12 +569,7 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         }
     }
     
-    if (!isCurrentSiteInServiceConfig()) return;
-
-    if (changes[HALF_SPACE_STORAGE_KEY]) {
-        await syncHalfSpaceHotkeyForService(getCurrentServiceKey());
-    }
-    
+    if (!isCurrentSiteInServiceConfig()) return; 
     if (changes.rtlAlgorithm || changes.rtlAlgorithmMode || changes.mixedTitleDisplayMode) {
         await requestRtlEnable();
         return;
