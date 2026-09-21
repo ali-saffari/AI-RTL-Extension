@@ -455,11 +455,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             onChange={(event) => onRtlAlgorithmChange(event.target.value)}
                             MenuProps={{
                                 PaperProps: {
-                                    className: 'quick-settings-select-menu',
+                                    className: 'quick-settings-select-menu quick-settings-algo-menu',
                                     sx: {
                                         mt: 0.5,
                                         backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                                         backgroundImage: 'none',
+                                        width: 330,
+                                        maxWidth: 330,
+                                        boxSizing: 'border-box',
                                     },
                                 },
                             }}
@@ -489,35 +492,54 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     key={algo.id}
                                     value={algo.id}
                                     dir="rtl"
+                                    className="quick-settings-algo-item"
                                     sx={{
                                         fontFamily: 'iranyekan',
                                         fontSize: '0.82rem',
-                                        justifyContent: 'space-between',
-                                        gap: 1,
-                                        py: 1,
+                                        alignItems: 'flex-start',
+                                        py: 1.1,
+                                        whiteSpace: 'normal',
                                         textAlign: 'right',
                                         direction: 'rtl',
                                     }}
                                 >
-                                    <span>{algo.title}</span>
-                                    {algo.badge ? (
-                                        <Box
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                            <span>{algo.title}</span>
+                                            {algo.badge ? (
+                                                <Box
+                                                    component="span"
+                                                    sx={{
+                                                        flexShrink: 0,
+                                                        px: 0.7,
+                                                        py: 0.1,
+                                                        borderRadius: 1,
+                                                        fontSize: '0.62rem',
+                                                        fontWeight: 600,
+                                                        color: accent,
+                                                        border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                        background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                                    }}
+                                                >
+                                                    {algo.badge}
+                                                </Box>
+                                            ) : null}
+                                        </Box>
+                                        <Typography
                                             component="span"
                                             sx={{
-                                                flexShrink: 0,
-                                                px: 0.7,
-                                                py: 0.1,
-                                                borderRadius: 1,
-                                                fontSize: '0.62rem',
-                                                fontWeight: 600,
-                                                color: accent,
-                                                border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                                fontSize: '0.68rem',
+                                                color: muted,
+                                                lineHeight: 1.5,
+                                                whiteSpace: 'normal',
+                                                overflowWrap: 'break-word',
+                                                wordBreak: 'break-word',
+                                                fontFamily: 'iranyekan',
                                             }}
                                         >
-                                            {algo.badge}
-                                        </Box>
-                                    ) : null}
+                                            {algo.hint}
+                                        </Typography>
+                                    </Box>
                                 </MenuItem>
                             ))}
                         </Select>

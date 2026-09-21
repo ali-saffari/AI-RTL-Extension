@@ -561,6 +561,20 @@ body[data-theme="light"] .quick-settings-label {
     justify-content: space-between !important;
 }
 
+.quick-settings-select-menu.quick-settings-algo-menu {
+    width: 330px !important;
+    max-width: 330px !important;
+    min-width: 0 !important;
+}
+
+.quick-settings-select-menu .MuiMenuItem-root.quick-settings-algo-item {
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    white-space: normal !important;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 /* اسکرول برای لیست سایت‌ها - LTR */
 .listSite {
     direction: ltr;
