@@ -694,13 +694,16 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
         }
 
         if (!pinnedEl) {
-            listEl.style.setProperty('--service-pinned-h', '0px');
+            listEl.style.setProperty('--service-pinned-rest-h', '0px');
             return;
         }
 
         const updatePinnedHeight = () => {
+            if (listEl.classList.contains('service-list--search-stuck')) {
+                return;
+            }
             const height = Math.ceil(pinnedEl.getBoundingClientRect().height);
-            listEl.style.setProperty('--service-pinned-h', `${height}px`);
+            listEl.style.setProperty('--service-pinned-rest-h', `${height}px`);
         };
 
         updatePinnedHeight();
@@ -755,6 +758,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             <React.Fragment key={pinned ? `pinned-${service.key}` : service.key}>
                 <ListItem
                     disablePadding
+                    className={pinned ? 'service-list-pinned' : undefined}
                     ref={pinned ? pinnedItemRef : (!pinned && service.key === 'lovable' ? lovableItemRef : undefined)}
                     style={{ direction: 'ltr' }}
                     sx={pinned ? {

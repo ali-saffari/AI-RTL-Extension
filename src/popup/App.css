@@ -758,6 +758,18 @@ body[data-theme="light"] {
     padding-left: 0 !important;
 }
 
+@property --service-search-h {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 48px;
+}
+
+@property --service-pinned-h {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 56px;
+}
+
 .service-list-search-sentinel {
     height: 1px;
     margin-top: -1px;
@@ -765,12 +777,21 @@ body[data-theme="light"] {
 }
 
 .service-list {
+    --service-sticky-duration: 0.38s;
+    --service-sticky-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --service-search-h: 48px;
-    --service-pinned-h: 56px;
+    --service-pinned-h: var(--service-pinned-rest-h, 56px);
+    transition:
+        --service-search-h var(--service-sticky-duration) var(--service-sticky-ease),
+        --service-pinned-h var(--service-sticky-duration) var(--service-sticky-ease);
 }
 
 .service-list.service-list--search-stuck {
     --service-search-h: 36px;
+}
+
+.service-list.service-list--search-stuck:has(.service-list-pinned) {
+    --service-pinned-h: 36px;
 }
 
 .service-list-search-slot {
@@ -780,7 +801,6 @@ body[data-theme="light"] {
     padding: 0 !important;
     line-height: 0 !important;
     background: transparent !important;
-    transition: none;
 }
 
 .service-list-search {
@@ -790,12 +810,10 @@ body[data-theme="light"] {
     line-height: var(--service-search-h);
     box-sizing: border-box;
     overflow: hidden;
-    transition: none;
 }
 
 .service-list-search-toggle {
     height: var(--service-search-h) !important;
-    transition: none !important;
 }
 
 .service-list-search-input {
@@ -813,11 +831,62 @@ body[data-theme="light"] {
     line-height: var(--service-search-h);
     text-align: center;
     color: inherit;
-    transition: none;
+    transition: font-size var(--service-sticky-duration) var(--service-sticky-ease);
 }
 
 .service-list--search-stuck .service-list-search-input {
     font-size: 0.8rem;
+}
+
+.service-list-pinned {
+    height: var(--service-pinned-h);
+    max-height: var(--service-pinned-h);
+    overflow: hidden;
+}
+
+.service-list-pinned .MuiListItemButton-root {
+    min-height: var(--service-pinned-h);
+    box-sizing: border-box;
+    transition:
+        min-height var(--service-sticky-duration) var(--service-sticky-ease),
+        padding var(--service-sticky-duration) var(--service-sticky-ease);
+}
+
+.service-list-pinned .MuiListItemIcon-root {
+    transition: min-width var(--service-sticky-duration) var(--service-sticky-ease);
+}
+
+.service-list-pinned .MuiAvatar-root {
+    transition: width var(--service-sticky-duration) var(--service-sticky-ease),
+        height var(--service-sticky-duration) var(--service-sticky-ease);
+}
+
+.service-list-pinned .MuiSwitch-root {
+    transform-origin: center;
+    transition: transform var(--service-sticky-duration) var(--service-sticky-ease);
+}
+
+.service-list--search-stuck .service-list-pinned .MuiListItemButton-root {
+    min-height: 36px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+.service-list--search-stuck .service-list-pinned .MuiListItemIcon-root {
+    min-width: 32px;
+}
+
+.service-list--search-stuck .service-list-pinned .MuiAvatar-root {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+.service-list--search-stuck .service-list-pinned .MuiSwitch-root {
+    transform: rotate(180deg) scale(0.78) !important;
+}
+
+.service-list--search-stuck .service-list-pinned .MuiTypography-root {
+    font-size: 0.875rem;
 }
 
 .service-list-search-input::placeholder {
