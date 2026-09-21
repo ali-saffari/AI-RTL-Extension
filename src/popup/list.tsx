@@ -117,6 +117,7 @@ const services: Service[] = [
     { key: 'consensus', name: 'Consensus', icon: '/images/sites/consensus.png', url: 'https://consensus.app/', hosts: ['consensus.app'], keywords: ['consensus', 'کنسنسوس', 'مقاله', 'پژوهش', 'paper', 'research'] },
     { key: 'scispace', name: 'SciSpace', icon: '/images/sites/scispace.png', url: 'https://scispace.com/', hosts: ['scispace.com'], keywords: ['scispace', 'سای اسپیس', 'سای‌اسپیس', 'مقاله', 'پژوهش', 'paper'] },
     { key: 'elicit', name: 'Elicit', icon: '/images/sites/elicit.png', url: 'https://elicit.com/', new: true, hosts: ['elicit.com'], keywords: ['elicit', 'الیسیت', 'مقاله', 'پژوهش', 'paper', 'research', 'علمی'] },
+    { key: 'longcat', name: 'LongCat', icon: '/images/sites/longcat.png', url: 'https://longcat.ai/chat/', new: true, hosts: ['longcat.ai', 'longcat.chat'], keywords: ['longcat', 'لانگ کت', 'لانگ‌کت', 'لانگکت', 'meituan', 'میتوان'] },
     { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/sites/chatboxai.png', url: 'https://web.chatboxai.app/', hosts: ['web.chatboxai.app'], keywords: ['chatbox', 'چت باکس', 'چت‌باکس'] },
     { key: 'lumo', name: 'Lumo', icon: '/images/sites/lumo-proton.png', url: 'https://lumo.proton.me/', hosts: ['lumo.proton.me'], keywords: ['lumo', 'لومو', 'proton', 'پروتون'] },
     { key: 'veo3', name: 'Veo 3', icon: '/images/sites/veo3.png', url: 'https://www-veo3.com/', hosts: ['www-veo3.com'], keywords: ['veo', 'وئو', 'ویدیو', 'video', 'گوگل'] },

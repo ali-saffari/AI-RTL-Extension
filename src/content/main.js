@@ -55,6 +55,7 @@ import { activateAtxp } from './services/atxp.js';
 import { activateConsensus } from './services/consensus.js';
 import { activateScispace } from './services/scispace.js';
 import { activateElicit } from './services/elicit.js';
+import { activateLongcat } from './services/longcat.js';
 import { activateChatboxai } from './services/chatboxai.js';
 import { activateLumo } from './services/lumo.js';
 import { activateMeta } from './services/meta.js';
@@ -306,6 +307,10 @@ const serviceConfig = {
     elicit: {
         urls: ["elicit.com", "www.elicit.com"],
         activate: activateElicit
+    },
+    longcat: {
+        urls: ["longcat.ai", "www.longcat.ai", "longcat.chat", "www.longcat.chat"],
+        activate: activateLongcat
     },
     chatboxai: {
         urls: ["web.chatboxai.app"],

@@ -86,6 +86,16 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://elicit.com/*', '*://www.elicit.com/*'],
         hostnames: ['elicit.com', 'www.elicit.com']
     },
+    longcat: {
+        name: 'LongCat',
+        origins: [
+            '*://longcat.ai/*',
+            '*://www.longcat.ai/*',
+            '*://longcat.chat/*',
+            '*://www.longcat.chat/*'
+        ],
+        hostnames: ['longcat.ai', 'www.longcat.ai', 'longcat.chat', 'www.longcat.chat']
+    },
     chatboxai: {
         name: 'Chatbox AI',
         origins: ['*://web.chatboxai.app/*'],

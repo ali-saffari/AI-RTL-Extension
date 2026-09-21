@@ -5,6 +5,7 @@ export const versionChanges = [
     { id: '2', text: 'افزودن قابلیت اصلاح متن‌های ترکیبی', note: 'عبارت‌های انگلیسی وسط جملهٔ فارسی جایشان عوض نمی‌شود', icon: 'logo/ai-rtl-logo.png', type: 'add', group: 'feature' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
     { id: '4', text: 'افزودن سایت Elicit', icon: 'sites/elicit.png', type: 'add', group: 'site' },
+    { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },
 ];
 
 export function getSiteShortName(change) {
