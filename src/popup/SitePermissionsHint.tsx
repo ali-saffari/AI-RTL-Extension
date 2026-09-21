@@ -97,16 +97,14 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         cursor: 'pointer',
                         font: 'inherit',
                         color: 'inherit',
-                        backgroundColor: isDarkMode
-                            ? 'rgba(26, 26, 46, 0.42)'
-                            : 'rgba(224, 242, 254, 0.42)',
+                        backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.4)'
                             : '1px solid rgba(30, 64, 175, 0.28)',
                         boxShadow: 'none',
                         transition: 'background-color 0.28s ease',
                         '&:hover': {
-                            backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
+                            backgroundColor: isDarkMode ? '#22223a' : '#bae6fd',
                         },
                     }}
                 >

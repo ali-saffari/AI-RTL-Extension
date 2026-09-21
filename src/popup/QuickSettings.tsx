@@ -1039,11 +1039,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Typography className="quick-settings-label">نیم‌فاصله Ctrl+Shift+2</Typography>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
-                                {currentService
-                                    ? `برای ${currentService.name}`
-                                    : 'روی صفحه سایت پشتیبانی‌شده فعال می‌شود'}
-                            </Typography>
+                            {currentService ? (
+                                <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
+                                    {`برای ${currentService.name}`}
+                                </Typography>
+                            ) : null}
                         </Box>
                         {currentService ? (
                             <Switch
