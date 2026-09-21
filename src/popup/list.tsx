@@ -21,7 +21,7 @@ import {
     Box,
     Paper,
 } from '@mui/material';
-import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose } from '@mdi/js';
+import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
@@ -43,6 +43,8 @@ interface Service {
 interface CheckedState {
     [key: string]: boolean;
 }
+
+const toPersianDigits = (value: number) => value.toLocaleString('fa-IR');
 
 const normalizeHost = (hostname: string) => hostname.replace(/^www\./, '').toLowerCase();
 
@@ -91,7 +93,7 @@ const services: Service[] = [
     { key: 'zai', name: 'Z.ai', icon: '/images/sites/z.ai.png', url: 'https://chat.z.ai/', hosts: ['chat.z.ai'], keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
     { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
-    { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', hosts: ['duckduckgo.com'], keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
+    // { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', hosts: ['duckduckgo.com'], keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
     { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['you', 'یو'] },
     { key: 'poeCom', name: 'poe.com', icon: '/images/sites/poe.png', url: 'https://poe.com/', hosts: ['poe.com'], keywords: ['poe', 'پو', 'quora'] },
     { key: 'monica', name: 'Monica', icon: '/images/sites/monica.png', url: 'https://monica.im/', hosts: ['monica.im'], keywords: ['monica', 'مونیکا'] },
@@ -137,6 +139,46 @@ const services: Service[] = [
 
 export { services };
 
+const SERVICE_CATEGORIES = [
+    { id: 'chat', title: 'گفتگوهای عمومی', icon: mdiChatOutline },
+    { id: 'search', title: 'جستجو و پژوهش', icon: mdiBookSearchOutline },
+    { id: 'coding', title: 'کدنویسی و توسعه', icon: mdiCodeTags },
+    { id: 'media', title: 'تصویر، ویدیو و ارائه', icon: mdiImageMultipleOutline },
+    { id: 'workspace', title: 'ابزارهای سازمانی', icon: mdiBriefcaseOutline },
+    { id: 'other', title: 'چندمدله، ایجنت و سایر', icon: mdiDotsGrid },
+] as const;
+
+const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], string[]> = {
+    chat: [
+        'chatGpt', 'claude', 'gemini', 'businessGemini', 'copilot', 'deepseek', 'grok',
+        'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
+        'characterAi', 'lumo', 'sakana', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
+    ],
+    search: [
+        'perplexity', 'genspark', 'youCom', 'consensus', 'scispace', 'elicit',
+        'mathgpt', 'googleNotebook',
+    ],
+    coding: [
+        'githubCopilot', 'qwenCoder', 'blackbox', 'jules', 'lovable', 'cursor',
+        'vivado', 'huggingface', 'aiStudio',
+    ],
+    media: ['googleLabs', 'veo3', 'fal', 'bfl', 'gamma'],
+    workspace: [
+        'googleDrive', 'googleAnalytics', 'youtubeStudio', 'm365', 'notion',
+        'clickup', 'dash0',
+    ],
+    other: [
+        'poeCom', 'openrouter', 'typingmind', 'chatboxai', 'arena', 'monica',
+        'oneMinai', 'writesonic', 'manus', 'minimax', 'digen', 'synaps', 'zerve',
+    ],
+};
+
+const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORIES)[number]['id']> = Object.fromEntries(
+    Object.entries(CATEGORY_SERVICE_KEYS).flatMap(([categoryId, keys]) =>
+        keys.map((key) => [key, categoryId])
+    )
+) as Record<string, (typeof SERVICE_CATEGORIES)[number]['id']>;
+
 interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
 }
@@ -149,7 +191,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
         claude: true,
         copilot: true,
         githubCopilot: true,
-        duckduckgo: true,
+        // duckduckgo: true,
         perplexity: true,
         aiStudio: true,
         deepseek: true,
@@ -189,6 +231,9 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const [showPermissionsHint, setShowPermissionsHint] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const lovableItemRef = useRef<HTMLLIElement>(null);
+    const pinnedItemRef = useRef<HTMLLIElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
+    const searchStickySentinelRef = useRef<HTMLDivElement>(null);
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -532,6 +577,29 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
         }
     }, [isSearchOpen]);
 
+    useEffect(() => {
+        const sentinel = searchStickySentinelRef.current;
+        const listEl = listRef.current;
+        const scrollRoot = document.querySelector('.popup-main');
+        if (!sentinel || !listEl || !scrollRoot) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                listEl.classList.toggle('service-list--search-stuck', !entry.isIntersecting);
+            },
+            {
+                root: scrollRoot,
+                threshold: 0,
+                rootMargin: '-48px 0px 0px 0px',
+            }
+        );
+
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, []);
+
     const closeSearch = () => {
         setIsSearchOpen(false);
         setSearchQuery('');
@@ -566,7 +634,19 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     };
 
     const filteredServices = useMemo(() => {
-        return services.filter(service => matchesSearch(service, searchQuery));
+        const categoryIndex = new Map(SERVICE_CATEGORIES.map((category, index) => [category.id, index]));
+        return services
+            .filter(service => matchesSearch(service, searchQuery))
+            .sort((a, b) => {
+                const categoryA = SERVICE_CATEGORY_BY_KEY[a.key] || 'other';
+                const categoryB = SERVICE_CATEGORY_BY_KEY[b.key] || 'other';
+                const categoryDiff = (categoryIndex.get(categoryA) ?? 99) - (categoryIndex.get(categoryB) ?? 99);
+                if (categoryDiff !== 0) {
+                    return categoryDiff;
+                }
+                const keys = CATEGORY_SERVICE_KEYS[categoryA] || [];
+                return keys.indexOf(a.key) - keys.indexOf(b.key);
+            });
     }, [searchQuery]);
 
     // Get active service for display at top
@@ -591,6 +671,43 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
 
         return items;
     }, [filteredServices, activeService, searchQuery, pinOpenSiteInList]);
+
+    const groupedList = useMemo(() => {
+        const pinnedItems = listItems.filter((item) => item.pinned);
+        const groups = SERVICE_CATEGORIES
+            .map((category) => ({
+                ...category,
+                items: listItems.filter((item) =>
+                    !item.pinned && (SERVICE_CATEGORY_BY_KEY[item.service.key] || 'other') === category.id
+                ),
+            }))
+            .filter((group) => group.items.length > 0);
+
+        return { pinnedItems, groups };
+    }, [listItems]);
+
+    useEffect(() => {
+        const listEl = listRef.current;
+        const pinnedEl = pinnedItemRef.current;
+        if (!listEl) {
+            return;
+        }
+
+        if (!pinnedEl) {
+            listEl.style.setProperty('--service-pinned-h', '0px');
+            return;
+        }
+
+        const updatePinnedHeight = () => {
+            const height = Math.ceil(pinnedEl.getBoundingClientRect().height);
+            listEl.style.setProperty('--service-pinned-h', `${height}px`);
+        };
+
+        updatePinnedHeight();
+        const resizeObserver = new ResizeObserver(updatePinnedHeight);
+        resizeObserver.observe(pinnedEl);
+        return () => resizeObserver.disconnect();
+    }, [groupedList.pinnedItems.length, activeServiceKey]);
 
     useEffect(() => {
         if (showPermissionsHint) {
@@ -627,34 +744,247 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
         };
     }, [listItems, searchQuery, showPermissionsHint]);
 
-    // default: '#1a1a2e',
-    // paper: '#2f2f41',
+    const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2';
+    const categoryStickyTop = groupedList.pinnedItems.length > 0
+        ? 'calc(48px + var(--service-search-h, 48px) + var(--service-pinned-h, 56px))'
+        : 'calc(48px + var(--service-search-h, 48px))';
+
+    const renderServiceRow = (service: Service, pinned: boolean, showDivider: boolean) => {
+        const isActive = service.key === activeServiceKey;
+        return (
+            <React.Fragment key={pinned ? `pinned-${service.key}` : service.key}>
+                <ListItem
+                    disablePadding
+                    ref={pinned ? pinnedItemRef : (!pinned && service.key === 'lovable' ? lovableItemRef : undefined)}
+                    style={{ direction: 'ltr' }}
+                    sx={pinned ? {
+                        position: 'sticky',
+                        top: 'calc(48px + var(--service-search-h, 48px))',
+                        zIndex: 2,
+                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                        boxShadow: 'none',
+                        transition: 'none',
+                    } : undefined}
+                >
+                    <ListItemButton
+                        style={{ direction: 'ltr' }}
+                        sx={pinned ? {
+                            backgroundColor: isDarkMode
+                                ? 'rgba(76, 175, 80, 0.16)'
+                                : 'rgba(76, 175, 80, 0.1)',
+                            '&:hover': {
+                                backgroundColor: isDarkMode
+                                    ? 'rgba(76, 175, 80, 0.24)'
+                                    : 'rgba(76, 175, 80, 0.16)',
+                            },
+                        } : undefined}
+                    >
+                        <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                                <Avatar
+                                    sx={{ width: 30, height: 30 }}
+                                    alt={service.name}
+                                    src={chrome.runtime.getURL(service.icon)}
+                                />
+                            </ListItemIcon>
+                        </a>
+                        <ListItemText
+                            primary={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
+                                        <Typography sx={{
+                                            color: isDarkMode ? '#ffffff' : '#000000',
+                                            fontWeight: 500,
+                                            '&:hover': {
+                                                textDecoration: 'underline'
+                                            }
+                                        }}>
+                                            {service.name}
+                                        </Typography>
+                                    </a>
+                                    {!isActive && (
+                                        <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                            <IconButton
+                                                size="small"
+                                                sx={{
+                                                    p: 0.5,
+                                                    color: 'text.primary',
+                                                    opacity: 0.4,
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        opacity: 1,
+                                                        transform: 'scale(1.1)',
+                                                        '& .MuiSvgIcon-root': {
+                                                            color: '#ffffff'
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <SvgIcon sx={{
+                                                    fontSize: '1.15rem',
+                                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                                                    transition: 'all 0.2s ease'
+                                                }}>
+                                                    <path d={mdiOpenInNew} />
+                                                </SvgIcon>
+                                            </IconButton>
+                                        </a>
+                                    )}
+                                    {isActive && (
+                                        <Box component="span" sx={{
+                                            px: 1,
+                                            py: 0.3,
+                                            bgcolor: isDarkMode
+                                                ? 'rgba(76, 175, 80, 0.2)'
+                                                : 'rgba(76, 175, 80, 0.15)',
+                                            border: `1px solid ${isDarkMode ? 'rgba(76, 175, 80, 0.5)' : 'rgba(76, 175, 80, 0.4)'}`,
+                                            color: isDarkMode ? '#4caf50' : '#2e7d32',
+                                            borderRadius: 1,
+                                            fontSize: '0.6rem',
+                                            fontWeight: 600
+                                        }}>
+                                            باز
+                                        </Box>
+                                    )}
+                                    {service.new && (
+                                        <Box component="span" sx={{
+                                            px: 1,
+                                            py: 0.3,
+                                            bgcolor: isDarkMode
+                                                ? 'rgb(33, 46, 65)'
+                                                : 'rgba(30, 64, 175, 0.1)',
+                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            borderRadius: 1,
+                                            fontSize: '0.6rem',
+                                            fontWeight: 600
+                                        }}>
+                                            جدید
+                                        </Box>
+                                    )}
+                                </Box>
+                            }
+                        />
+
+                        {service.helpText && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
+                            <IconButton
+                                size="small"
+                                sx={{
+                                    ml: 1,
+                                    color: 'text.primary',
+                                    opacity: 0.8,
+                                    '&:hover': {
+                                        opacity: 1,
+                                        color: 'primary.main'
+                                    }
+                                }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedService(service);
+                                    setHelpModalOpen(true);
+                                }}
+                            >
+                                <SvgIcon sx={{
+                                    fontSize: '1.25rem',
+                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                }}>
+                                    <path d={mdiInformationOutline} />
+                                </SvgIcon>
+                            </IconButton>
+                        )}
+
+                        <Switch
+                            edge="start"
+                            onChange={handleChange(service.key)}
+                            checked={checked?.[service.key] || false}
+                            disabled={isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)}
+                            data-list-switch="true"
+                            inputProps={{
+                                'aria-labelledby': `switch-list-label-${service.key}`,
+                            }}
+                            sx={{
+                                transform: 'rotate(180deg)',
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .Mui-disabled': {
+                                    opacity: 0.5
+                                }
+                            }}
+                        />
+                    </ListItemButton>
+                </ListItem>
+                {isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key) && (
+                    <Box sx={{ px: 2, py: 1.5 }} style={{ direction: 'rtl' }}>
+                        <Paper
+                            elevation={0}
+                            dir="rtl"
+                            style={{ direction: 'rtl', textAlign: 'right' }}
+                            sx={{
+                                backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
+                                border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
+                                borderRadius: 1,
+                                p: 1.5,
+                            }}
+                        >
+                            <Typography
+                                dir="rtl"
+                                style={{ direction: 'rtl', textAlign: 'right' }}
+                                sx={{
+                                    fontSize: '0.80rem',
+                                    color: isDarkMode ? '#ffcdd2' : '#c62828',
+                                    fontWeight: 400,
+                                    lineHeight: 1.6,
+                                }}
+                            >
+                                برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله {service.name}) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی {service.name}، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
+                            </Typography>
+                        </Paper>
+                    </Box>
+                )}
+                {showDivider && <Divider sx={{ borderColor: dividerColor }} />}
+            </React.Fragment>
+        );
+    };
+
     return (
         <>
+            <div ref={searchStickySentinelRef} className="service-list-search-sentinel" aria-hidden />
             <List
+                ref={listRef}
+                className="service-list"
                 sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
                 style={{ direction: 'ltr' }}
                 subheader={
                     <ListSubheader 
                         component="div" 
                         id="nested-list-subheader" 
+                        className="service-list-search-slot"
                         sx={{ 
-                            textAlign: 'center',
                             position: 'sticky',
                             top: 48,
                             zIndex: 3,
-                            height: 48,
-                            minHeight: 48,
-                            maxHeight: 48,
-                            lineHeight: '48px',
                             overflow: 'hidden',
                             boxSizing: 'border-box',
-                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                            p: 0,
+                            backgroundColor: 'transparent',
                             color: isDarkMode ? '#ffffff' : '#000000',
-                            borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`
                         }}
                         style={{ direction: 'ltr' }}
                     >
+                        <Box
+                            className="service-list-search"
+                            sx={{
+                                textAlign: 'center',
+                                position: 'relative',
+                                backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`,
+                            }}
+                        >
                         {isSearchOpen ? (
                             <input
                                 ref={searchInputRef}
@@ -670,18 +1000,18 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 className="service-list-search-input"
                             />
                         ) : (
-                            `تعداد کل: ${services.length} | تعداد فعال: ${Object.values(checked).filter(Boolean).length}`
+                            `تعداد کل: ${toPersianDigits(services.length)} | تعداد فعال: ${toPersianDigits(Object.values(checked).filter(Boolean).length)}`
                         )}
                         <Box
                             component="button"
                             type="button"
+                            className="service-list-search-toggle"
                             onClick={isSearchOpen ? closeSearch : () => setIsSearchOpen(true)}
                             aria-label={isSearchOpen ? 'بستن جستجو' : 'جستجو'}
                             sx={{
                                 position: 'absolute',
                                 right: 8,
                                 top: 0,
-                                height: 48,
                                 width: 28,
                                 p: 0,
                                 border: 0,
@@ -699,6 +1029,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 <path d={isSearchOpen ? mdiClose : mdiMagnify} />
                             </SvgIcon>
                         </Box>
+                        </Box>
                     </ListSubheader>
                 }
             >
@@ -709,209 +1040,72 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         </Typography>
                     </Box>
                 )}
-                {listItems.map(({ service, pinned }, index) => {
-                    const isActive = service.key === activeServiceKey;
-                    return (
-                    <React.Fragment key={pinned ? `pinned-${service.key}` : service.key}>
-                            <ListItem
-                                disablePadding
-                                ref={!pinned && service.key === 'lovable' ? lovableItemRef : undefined}
-                                style={{ direction: 'ltr' }}
-                                sx={pinned ? {
-                                    position: 'sticky',
-                                    top: 96,
-                                    zIndex: 2,
-                                    backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
-                                    boxShadow: isDarkMode
-                                        ? '0 4px 10px rgba(0, 0, 0, 0.35)'
-                                        : '0 4px 10px rgba(0, 0, 0, 0.08)',
-                                } : undefined}
-                            >
-                                <ListItemButton
-                                    style={{ direction: 'ltr' }}
-                                    sx={pinned ? {
-                                        backgroundColor: isDarkMode
-                                            ? 'rgba(76, 175, 80, 0.16)'
-                                            : 'rgba(76, 175, 80, 0.1)',
-                                        '&:hover': {
-                                            backgroundColor: isDarkMode
-                                                ? 'rgba(76, 175, 80, 0.24)'
-                                                : 'rgba(76, 175, 80, 0.16)',
-                                        },
-                                    } : undefined}
-                                >
-                                    <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                                        <ListItemIcon sx={{ minWidth: 40 }}>
-                                            <Avatar 
-                                                sx={{ width: 30, height: 30 }} 
-                                                alt={service.name} 
-                                                src={chrome.runtime.getURL(service.icon)}
-                                            />
-                                        </ListItemIcon>
-                                    </a>
-                                    <ListItemText 
-                                        primary={
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
-                                                    <Typography sx={{ 
-                                                        color: isDarkMode ? '#ffffff' : '#000000',
-                                                        fontWeight: 500,
-                                                        '&:hover': {
-                                                            textDecoration: 'underline'
-                                                        }
-                                                    }}>
-                                                        {service.name}
-                                                    </Typography>
-                                                </a>
-                                                {!isActive && (
-                                                    <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                                                        <IconButton 
-                                                            size="small" 
-                                                            sx={{ 
-                                                                p: 0.5,
-                                                                color: 'text.primary',
-                                                                opacity: 0.4,
-                                                                transition: 'all 0.2s ease',
-                                                                '&:hover': {
-                                                                    opacity: 1,
-                                                                    transform: 'scale(1.1)',
-                                                                    '& .MuiSvgIcon-root': {
-                                                                        color: '#ffffff'
-                                                                    }
-                                                                }
-                                                            }}
-                                                        >
-                                                            <SvgIcon sx={{ 
-                                                                fontSize: '1.15rem',
-                                                                color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
-                                                                transition: 'all 0.2s ease'
-                                                            }}>
-                                                                <path d={mdiOpenInNew} />
-                                                            </SvgIcon>
-                                                        </IconButton>
-                                                    </a>
-                                                )}
-                                                {isActive && (
-                                                    <Box component="span" sx={{ 
-                                                        px: 1, 
-                                                        py: 0.3, 
-                                                        bgcolor: isDarkMode 
-                                                            ? 'rgba(76, 175, 80, 0.2)' 
-                                                            : 'rgba(76, 175, 80, 0.15)',
-                                                        border: `1px solid ${isDarkMode ? 'rgba(76, 175, 80, 0.5)' : 'rgba(76, 175, 80, 0.4)'}`,
-                                                        color: isDarkMode ? '#4caf50' : '#2e7d32', 
-                                                        borderRadius: 1, 
-                                                        fontSize: '0.6rem',
-                                                        fontWeight: 600
-                                                    }}>
-                                                        باز
-                                                    </Box>
-                                                )}
-                                                {service.new && (
-                                                    <Box component="span" sx={{ 
-                                                        px: 1, 
-                                                        py: 0.3, 
-                                                        bgcolor: isDarkMode 
-                                                            ? 'rgb(33, 46, 65)' 
-                                                            : 'rgba(30, 64, 175, 0.1)',
-                                                        border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                        color: isDarkMode ? '#00e9ff' : '#1c39bb', 
-                                                        borderRadius: 1, 
-                                                        fontSize: '0.6rem',
-                                                        fontWeight: 600
-                                                    }}>
-                                                        جدید
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        }
-                                    />
-                                    
-                                    {service.helpText && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
-                                        <IconButton 
-                                            size="small" 
-                                            sx={{ 
-                                                ml: 1,
-                                                color: 'text.primary',
-                                                opacity: 0.8,
-                                                '&:hover': {
-                                                    opacity: 1,
-                                                    color: 'primary.main'
-                                                }
-                                            }}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setSelectedService(service);
-                                                setHelpModalOpen(true);
-                                            }}
-                                        >
-                                            <SvgIcon sx={{ 
-                                                fontSize: '1.25rem',
-                                                color: isDarkMode ? '#ffffff' : '#000000'
-                                            }}>
-                                                <path d={mdiInformationOutline} />
-                                            </SvgIcon>
-                                        </IconButton>
-                                    )}
-                                    
-                                    <Switch
-                                        edge="start"
-                                    
-                                        onChange={handleChange(service.key)}
-                                        checked={checked?.[service.key] || false}
-                                        disabled={isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)}
-                                        data-list-switch="true"
-                                        inputProps={{
-                                            'aria-labelledby': `switch-list-label-${service.key}`,
-                                        }}
-                                        sx={{
-                                            transform: 'rotate(180deg)',
-                                            '& .MuiSwitch-switchBase.Mui-checked': {
-                                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            },
-                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            },
-                                            '& .Mui-disabled': {
-                                                opacity: 0.5
-                                            }
-                                        }}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        {isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key) && (
-                            <Box sx={{ px: 2, py: 1.5 }} style={{ direction: 'rtl' }}>
-                                <Paper 
-                                    elevation={0}
-                                    dir="rtl"
-                                    style={{ direction: 'rtl', textAlign: 'right' }}
-                                    sx={{
-                                        backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
-                                        border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
-                                        borderRadius: 1,
-                                        p: 1.5,
-                                    }}
-                                >
-                                    <Typography 
-                                        dir="rtl"
-                                        style={{ direction: 'rtl', textAlign: 'right' }}
-                                        sx={{ 
-                                            fontSize: '0.80rem',
-                                            color: isDarkMode ? '#ffcdd2' : '#c62828',
-                                            fontWeight: 400,
-                                            lineHeight: 1.6,
-                                        }}
-                                    >
-                                        برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله {service.name}) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی {service.name}، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
-                                    </Typography>
-                                </Paper>
+                {groupedList.pinnedItems.map((item, index) =>
+                    renderServiceRow(
+                        item.service,
+                        true,
+                        index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
+                    )
+                )}
+                {groupedList.groups.map((group) => (
+                    <React.Fragment key={group.id}>
+                        <ListSubheader
+                            component="div"
+                            style={{ direction: 'rtl' }}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-start',
+                                gap: 0.75,
+                                position: 'sticky',
+                                top: categoryStickyTop,
+                                zIndex: 1,
+                                height: 36,
+                                minHeight: 36,
+                                lineHeight: 1,
+                                px: 2,
+                                backgroundColor: isDarkMode ? '#262636' : '#f4f5f7',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.82)' : 'rgba(0, 0, 0, 0.64)',
+                                borderTop: `1px solid ${dividerColor}`,
+                                borderBottom: `1px solid ${dividerColor}`,
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                            }}
+                        >
+                            <SvgIcon sx={{ fontSize: '1rem', opacity: 0.8, display: 'block' }}>
+                                <path d={group.icon} />
+                            </SvgIcon>
+                            <Box component="span" sx={{ lineHeight: 1, display: 'flex', alignItems: 'center' }}>
+                                {group.title}
                             </Box>
+                            <Box
+                                component="span"
+                                sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minWidth: 20,
+                                    height: 18,
+                                    px: 0.7,
+                                    borderRadius: 1,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    lineHeight: 1,
+                                    bgcolor: isDarkMode
+                                        ? 'rgba(0, 233, 255, 0.14)'
+                                        : 'rgba(28, 57, 187, 0.1)',
+                                    border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)'}`,
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                }}
+                            >
+                                {toPersianDigits(group.items.length)}
+                            </Box>
+                        </ListSubheader>
+                        {group.items.map((item, index) =>
+                            renderServiceRow(item.service, false, index < group.items.length - 1)
                         )}
-                        {index < listItems.length - 1 && <Divider sx={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2' }} />}
                     </React.Fragment>
-                    );
-                })}
+                ))}
             </List>
 
 

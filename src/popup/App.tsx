@@ -1094,9 +1094,7 @@ function App() {
                                راست چین هوشمند پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
-                            <Box sx={{ p: 2 }}>
                                 <ServiceList pinOpenSiteMode={pinOpenSiteMode} />
-                                </Box>
                             </div>
                         </div>
                         
