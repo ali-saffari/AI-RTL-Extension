@@ -659,7 +659,6 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
 
     const listItems = useMemo(() => {
         const items: Array<{ service: Service; pinned: boolean }> = filteredServices
-            .filter((service) => !(pinOpenSiteInList && activeService && service.key === activeService.key))
             .map((service) => ({
                 service,
                 pinned: false,
