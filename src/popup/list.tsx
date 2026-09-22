@@ -90,6 +90,7 @@ const services: Service[] = [
     { key: 'qwenCoder', name: 'QWEN CODER', icon: '/images/sites/qwen.png', url: 'https://coder.qwen.ai/', new: true, hosts: ['coder.qwen.ai'], keywords: ['qwen', 'کوئن', 'coder', 'کدر', 'کد', 'alibaba', 'علی بابا', 'علی‌بابا'] },
     { key: 'kimi', name: 'Kimi', icon: '/images/sites/kimi.png', url: 'https://www.kimi.ai/', hosts: ['kimi.ai', 'kimi.com'], keywords: ['kimi', 'کیمی', 'moonshot', 'k2'] },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/sites/openrouter.png', url: 'https://openrouter.ai/', hosts: ['openrouter.ai'], keywords: ['openrouter', 'اوپن روتر', 'اوپن‌روتر'] },
+    { key: 'codecraft', name: 'CodeCraft API', icon: '/images/sites/codecraft.png', url: 'https://codecraftapi.com/dashboard/playground', new: true, hosts: ['codecraftapi.com'], keywords: ['codecraft', 'code craft', 'کدکرفت', 'کد کرافت', 'کدکرافت', 'playground', 'پلی‌گراند', 'api'] },
     { key: 'zai', name: 'Z.ai', icon: '/images/sites/z.ai.png', url: 'https://chat.z.ai/', hosts: ['chat.z.ai'], keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
     { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
@@ -168,7 +169,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], s
         'clickup', 'dash0',
     ],
     other: [
-        'poeCom', 'openrouter', 'typingmind', 'chatboxai', 'arena', 'monica',
+        'poeCom', 'openrouter', 'codecraft', 'typingmind', 'chatboxai', 'arena', 'monica',
         'oneMinai', 'writesonic', 'manus', 'minimax', 'digen', 'synaps', 'zerve',
     ],
 };
@@ -234,6 +235,8 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const pinnedItemRef = useRef<HTMLLIElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const searchStickySentinelRef = useRef<HTMLDivElement>(null);
+    const pinnedRestMeasureLockedRef = useRef(false);
+    const remeasurePinnedRestHeightRef = useRef<() => void>(() => {});
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -585,9 +588,62 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             return;
         }
 
+        let unlockGeneration = 0;
+        let unlockTimer = 0;
+        let removeTransitionListener: (() => void) | null = null;
+
+        const clearUnlockWait = () => {
+            window.clearTimeout(unlockTimer);
+            removeTransitionListener?.();
+            removeTransitionListener = null;
+        };
+
+        const scheduleUnlock = () => {
+            clearUnlockWait();
+            const generation = unlockGeneration;
+            const finish = () => {
+                if (generation !== unlockGeneration) {
+                    return;
+                }
+                unlockGeneration += 1;
+                clearUnlockWait();
+                if (listEl.classList.contains('service-list--search-stuck')) {
+                    return;
+                }
+                pinnedRestMeasureLockedRef.current = false;
+                remeasurePinnedRestHeightRef.current();
+            };
+            const onTransitionEnd = (event: TransitionEvent) => {
+                if (event.target !== listEl || event.propertyName !== '--service-pinned-h') {
+                    return;
+                }
+                finish();
+            };
+            listEl.addEventListener('transitionend', onTransitionEnd);
+            removeTransitionListener = () => listEl.removeEventListener('transitionend', onTransitionEnd);
+            // Slightly longer than --service-sticky-duration (0.38s).
+            unlockTimer = window.setTimeout(finish, 450);
+        };
+
         const observer = new IntersectionObserver(
             ([entry]) => {
-                listEl.classList.toggle('service-list--search-stuck', !entry.isIntersecting);
+                const stuck = !entry.isIntersecting;
+                if (stuck) {
+                    unlockGeneration += 1;
+                    clearUnlockWait();
+                    pinnedRestMeasureLockedRef.current = true;
+                    listEl.classList.add('service-list--search-stuck');
+                    return;
+                }
+
+                const wasStuck = listEl.classList.contains('service-list--search-stuck');
+                if (wasStuck) {
+                    pinnedRestMeasureLockedRef.current = true;
+                }
+                listEl.classList.remove('service-list--search-stuck');
+                if (wasStuck) {
+                    scheduleUnlock();
+                }
             },
             {
                 root: scrollRoot,
@@ -597,7 +653,11 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
         );
 
         observer.observe(sentinel);
-        return () => observer.disconnect();
+        return () => {
+            unlockGeneration += 1;
+            clearUnlockWait();
+            observer.disconnect();
+        };
     }, []);
 
     const closeSearch = () => {
@@ -694,21 +754,29 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
 
         if (!pinnedEl) {
             listEl.style.setProperty('--service-pinned-rest-h', '0px');
+            remeasurePinnedRestHeightRef.current = () => {};
             return;
         }
 
         const updatePinnedHeight = () => {
-            if (listEl.classList.contains('service-list--search-stuck')) {
+            if (
+                pinnedRestMeasureLockedRef.current
+                || listEl.classList.contains('service-list--search-stuck')
+            ) {
                 return;
             }
             const height = Math.ceil(pinnedEl.getBoundingClientRect().height);
             listEl.style.setProperty('--service-pinned-rest-h', `${height}px`);
         };
 
+        remeasurePinnedRestHeightRef.current = updatePinnedHeight;
         updatePinnedHeight();
         const resizeObserver = new ResizeObserver(updatePinnedHeight);
         resizeObserver.observe(pinnedEl);
-        return () => resizeObserver.disconnect();
+        return () => {
+            resizeObserver.disconnect();
+            remeasurePinnedRestHeightRef.current = () => {};
+        };
     }, [groupedList.pinnedItems.length, activeServiceKey]);
 
     useEffect(() => {
