@@ -173,7 +173,7 @@ const ChangesList: React.FC = () => {
                                             gap: 0.5,
                                             fontWeight: 600
                                         }}>
-                                            {String(change.icon || '').startsWith('sites/') && (
+                                            {/^(sites|logo)\//.test(String(change.icon || '')) && (
                                                 <Box
                                                     component="img"
                                                     src={chrome.runtime.getURL('images/' + change.icon)}

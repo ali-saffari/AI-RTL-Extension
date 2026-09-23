@@ -1,8 +1,9 @@
 // Shared version changes for update modal and popup ChangesList
 
 export const versionChanges = [
-    { id: '1', text: 'افزودن نیم‌فاصله با Ctrl+Shift+2', note: 'حل مشکل نیم‌فاصله در ChatGPT', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
     { id: '2', text: 'آپدیت ChatGPT', note: 'هماهنگ شدن افزونه با آخرین نسخه ChatGPT', icon: 'sites/openAi-icon.png', type: 'update', group: 'feature' },
+    { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
+    { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
     { id: '4', text: 'افزودن سایت Elicit', icon: 'sites/elicit.png', type: 'add', group: 'site' },
     { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },

@@ -7,7 +7,7 @@ let isModalShowing = false;
 function renderFeatureItems(changes) {
     return changes.map((change) => `
         <div class="As-change-item">
-            ${String(change.icon || '').startsWith('sites/') ? `
+            ${/^(sites|logo)\//.test(String(change.icon || '')) ? `
                 <img class="As-change-icon" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="" onerror="this.style.display='none'">
             ` : ''}
             <div class="As-change-type" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
@@ -71,14 +71,14 @@ function renderChangeItems(changes) {
                             سایت‌های جدید
                             <span class="As-change-group-count">${addedSites.length} سایت</span>
                         </div>
+                        <div class="As-site-grid As-site-grid-new">
+                            ${renderSiteChips(addedSites)}
+                        </div>
                         <div class="As-sites-note">
                             <span class="As-sites-note-icon">!</span>
                             <p class="As-sites-note-text">
                                 <strong>توجه:</strong> سایت‌های جدید به‌صورت پیش‌فرض غیرفعال هستند و باید از طریق منوی اکستنشن فعال کنید
                             </p>
-                        </div>
-                        <div class="As-site-grid As-site-grid-new">
-                            ${renderSiteChips(addedSites)}
                         </div>
                     </div>
                 ` : ''}
@@ -277,10 +277,12 @@ function createUpdateModalHTML() {
                     bottom: 0;
                     background: transparent;
                     display: flex;
-                    justify-content: flex-start;
-                    align-items: center;
-                    flex-wrap: wrap;
-                    gap: 8px;
+                    justify-content: stretch;
+                    align-items: stretch;
+                    flex-wrap: nowrap;
+                    gap: 10px;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
                 #AsUpdateModal .As-header {
                     display: flex;
@@ -489,6 +491,9 @@ function createUpdateModalHTML() {
                 #AsUpdateModal .As-site-grid-new .As-site-chip-img {
                     border-radius: 6px;
                 }
+                #AsUpdateModal .As-site-grid-new .As-site-chip-name {
+                    margin-top: 6px;
+                }
                 #AsUpdateModal .As-site-chip-name {
                     color: rgba(255, 255, 255, 0.88);
                     font-size: 11px;
@@ -650,13 +655,15 @@ function createUpdateModalHTML() {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.15) 0%, rgba(0, 153, 204, 0.1) 100%);
                     color: #ffffff;
                     border: 2px solid rgba(0, 233, 255, 0.4);
-                    padding: 12px 36px;
+                    padding: 10px 16px;
                     border-radius: 10px;
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
+                    flex: 1.7 1 0;
                     width: auto;
-                    min-width: 168px;
+                    min-width: 0;
+                    box-sizing: border-box;
                     font-family: iranyekan, sans-serif;
                     display: flex;
                     align-items: center;
@@ -677,14 +684,16 @@ function createUpdateModalHTML() {
                 }
                 #AsUpdateModal .As-footer-link {
                     box-sizing: border-box;
-                    padding: 12px 14px;
+                    padding: 10px 12px;
                     border-radius: 10px;
                     cursor: pointer;
-                    font-size: 13px;
+                    font-size: 14px;
                     font-weight: 700;
                     font-family: iranyekan, sans-serif;
                     text-decoration: none;
                     white-space: nowrap;
+                    flex: 1 1 0;
+                    min-width: 0;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
