@@ -130,8 +130,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onApplyAlgorithmToCodeChange,
     flipRtlArrows,
     onFlipRtlArrowsChange,
-    fixMixedText,
-    onFixMixedTextChange,
     supportHide,
     onSupportChange,
     pinOpenSiteMode,
@@ -145,7 +143,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
     const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
-    const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
+    // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
 
@@ -632,6 +630,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Box>
                     </Box>
 
+                    {/* اصلاح متن‌های ترکیبی — موقتاً پنهان
                     <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
                         <Box
                             sx={{
@@ -667,12 +666,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Switch
                                 size="small"
                                 checked={fixMixedText}
+                                disabled
                                 onChange={(event) => onFixMixedTextChange(event.target.checked)}
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'اصلاح متن‌های ترکیبی' }}
                             />
                         </Box>
                     </Box>
+                    */}
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
@@ -1090,6 +1091,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* دیالوگ توضیح اصلاح متن‌های ترکیبی — موقتاً پنهان
             <Dialog
                 open={mixedInfoOpen}
                 onClose={() => setMixedInfoOpen(false)}
@@ -1148,6 +1150,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Button>
                 </DialogActions>
             </Dialog>
+            */}
             <Dialog
                 open={codeInfoOpen}
                 onClose={() => setCodeInfoOpen(false)}

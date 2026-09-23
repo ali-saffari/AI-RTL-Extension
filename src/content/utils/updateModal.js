@@ -1,5 +1,5 @@
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-import { versionChanges, previousChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import { versionChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 
 let isModalShowing = false;
@@ -7,6 +7,9 @@ let isModalShowing = false;
 function renderFeatureItems(changes) {
     return changes.map((change) => `
         <div class="As-change-item">
+            ${String(change.icon || '').startsWith('sites/') ? `
+                <img class="As-change-icon" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="" onerror="this.style.display='none'">
+            ` : ''}
             <div class="As-change-type" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
                 ${change.type === 'add' ? '+' : '↻'}
             </div>
@@ -35,7 +38,7 @@ function renderChangeItems(changes) {
     return `
         ${features.length ? `
             <div class="As-change-group">
-                <div class="As-change-group-title">قابلیت‌های جدید برای همه سایت‌ها</div>
+                <div class="As-change-group-title">تغییرات این نسخه</div>
                 <div class="As-change-list">
                     ${renderFeatureItems(features)}
                 </div>
@@ -65,7 +68,7 @@ function renderChangeItems(changes) {
                 ${addedSites.length ? `
                     <div class="As-site-subgroup">
                         <div class="As-change-group-title">
-                            سایت‌های اضافه‌شده
+                            سایت‌های جدید
                             <span class="As-change-group-count">${addedSites.length} سایت</span>
                         </div>
                         <div class="As-sites-note">
@@ -74,7 +77,7 @@ function renderChangeItems(changes) {
                                 <strong>توجه:</strong> سایت‌های جدید به‌صورت پیش‌فرض غیرفعال هستند و باید از طریق منوی اکستنشن فعال کنید
                             </p>
                         </div>
-                        <div class="As-site-grid">
+                        <div class="As-site-grid As-site-grid-new">
                             ${renderSiteChips(addedSites)}
                         </div>
                     </div>
@@ -83,22 +86,6 @@ function renderChangeItems(changes) {
         ` : ''}
     `;
 }
-
-function renderPreviousChanges(changes) {
-    return changes.map((versionData, index) => `
-        <div class="As-prev-version">
-            <div class="As-prev-version-title">${versionData.version}</div>
-            <div class="As-prev-version-list">
-                ${versionData.changes.map((change) => `
-                    <div class="As-prev-change-item">✓ ${change.text}</div>
-                `).join('')}
-            </div>
-            ${index < changes.length - 1 ? '<div class="As-prev-divider"></div>' : ''}
-        </div>
-    `).join('');
-}
-
-
 
 function appendModalToBody(modalHTML) {
     if (typeof window.AQ === 'function') {
@@ -205,7 +192,6 @@ function setupCapsuleAnimation(capsuleId, toggleId, panelId) {
 
 function setupStoryCapsuleAnimation() {
     setupCapsuleAnimation('AsStoryCapsule', 'AsStoryToggle', 'AsStoryPanel');
-    setupCapsuleAnimation('AsPrevChangesCapsule', 'AsPrevChangesToggle', 'AsPrevChangesPanel');
 }
 
 
@@ -230,21 +216,6 @@ function createUpdateModalHTML() {
                     خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
                     📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
                     🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // باکس بازشو برای تغییرات نسخه‌های قبلی
-    const previousChangesHTML = `
-        <div class="As-story-capsule" id="AsPrevChangesCapsule">
-            <button class="As-story-summary" id="AsPrevChangesToggle" type="button" aria-expanded="false">
-                <span class="As-story-summary-text">تغییرات قبلی</span>
-                <span class="As-story-arrow" aria-hidden="true">▼</span>
-            </button>
-            <div class="As-story-panel" id="AsPrevChangesPanel">
-                <div class="As-prev-changes As-story-content">
-                    ${renderPreviousChanges(previousChanges)}
                 </div>
             </div>
         </div>
@@ -306,13 +277,15 @@ function createUpdateModalHTML() {
                     bottom: 0;
                     background: transparent;
                     display: flex;
-                    justify-content: center;
+                    justify-content: flex-start;
                     align-items: center;
+                    flex-wrap: wrap;
+                    gap: 8px;
                 }
                 #AsUpdateModal .As-header {
                     display: flex;
                     align-items: center;
-                    justify-content: space-between;
+                    justify-content: flex-end;
                     gap: 8px;
                     margin-bottom: 12px;
                     padding: 0 20px 10px;
@@ -391,51 +364,6 @@ function createUpdateModalHTML() {
                     font-weight: 700;
                     text-align: center;
                     text-shadow: 0 1px 8px rgba(0, 233, 255, 0.3);
-                }
-                #AsUpdateModal .As-update-summary {
-                    margin: 0 0 10px 0;
-                    color: #ffc24a;
-                    font-size: 13px;
-                    font-weight: 700;
-                    line-height: 1.85;
-                    text-align: center;
-                    text-shadow: 0 0 10px rgba(255, 176, 46, 0.28);
-                }
-                #AsUpdateModal .As-update-summary-lead {
-                    display: block;
-                    margin-bottom: 6px;
-                    font-size: 15px;
-                    font-weight: 800;
-                }
-                #AsUpdateModal .As-update-summary-hint {
-                    display: block;
-                    margin-top: 4px;
-                    color: rgba(255, 194, 74, 0.78);
-                    font-size: 12px;
-                    font-weight: 600;
-                }
-                #AsUpdateModal .As-major-badge {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 5px;
-                    padding: 5px 11px 5px 9px;
-                    border-radius: 999px;
-                    font-size: 11px;
-                    font-weight: 800;
-                    letter-spacing: 0.2px;
-                    line-height: 1.3;
-                    color: #2a1a04;
-                    background: linear-gradient(135deg, #ffe27a 0%, #ffb02e 100%);
-                    box-shadow: 0 0 14px rgba(255, 176, 46, 0.38);
-                    white-space: nowrap;
-                    flex-shrink: 0;
-                }
-                #AsUpdateModal .As-major-badge-dot {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                    background: #2a1a04;
-                    box-shadow: 0 0 0 3px rgba(42, 26, 4, 0.12);
                 }
                 #AsUpdateModal .As-sites-note {
                     margin: 0;
@@ -532,7 +460,7 @@ function createUpdateModalHTML() {
                 }
                 #AsUpdateModal .As-site-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
                     gap: 8px;
                 }
                 #AsUpdateModal .As-site-chip {
@@ -542,20 +470,24 @@ function createUpdateModalHTML() {
                     align-items: center;
                     justify-content: center;
                     gap: 6px;
-                    min-height: 76px;
-                    padding: 10px 6px 8px;
+                    min-height: 96px;
+                    padding: 12px 6px 8px;
                     border-radius: 12px;
                     background: rgba(255, 255, 255, 0.04);
                     border: 1px solid rgba(255, 255, 255, 0.08);
                     text-align: center;
                 }
                 #AsUpdateModal .As-site-chip-img {
-                    width: 28px;
-                    height: 28px;
+                    width: 44px;
+                    height: 44px;
                     object-fit: contain;
+                    border-radius: 0;
+                    background: none;
+                    border: none;
+                    padding: 0;
+                }
+                #AsUpdateModal .As-site-grid-new .As-site-chip-img {
                     border-radius: 6px;
-                    background: rgba(255, 255, 255, 0.05);
-                    padding: 3px;
                 }
                 #AsUpdateModal .As-site-chip-name {
                     color: rgba(255, 255, 255, 0.88);
@@ -642,38 +574,6 @@ function createUpdateModalHTML() {
                     box-shadow: none;
                 }
 
-                #AsUpdateModal .As-prev-changes {
-                    padding: 12px 16px 16px;
-                    max-height: 220px;
-                    overflow-y: auto;
-                    direction: rtl;
-                }
-                #AsUpdateModal .As-prev-version {
-                    margin-bottom: 4px;
-                }
-                #AsUpdateModal .As-prev-version-title {
-                    color: #00e9ff;
-                    font-size: 13px;
-                    font-weight: 700;
-                    margin-bottom: 8px;
-                }
-                #AsUpdateModal .As-prev-version-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                    padding-right: 8px;
-                }
-                #AsUpdateModal .As-prev-change-item {
-                    color: rgba(255, 255, 255, 0.9);
-                    font-size: 12px;
-                    line-height: 1.6;
-                }
-                #AsUpdateModal .As-prev-divider {
-                    height: 1px;
-                    margin: 12px 0;
-                    background: rgba(0, 233, 255, 0.15);
-                }
-
                 /* استایل باکس استاتیک اطلاعیه اصلی */
                 #AsUpdateModal .As-special-announcement {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
@@ -702,7 +602,7 @@ function createUpdateModalHTML() {
                 /* استایل لیست قابلیت‌های جدید */
                 #AsUpdateModal .As-change-item {
                     display: flex;
-                    align-items: flex-start;
+                    align-items: center;
                     gap: 8px;
                     padding: 7px 2px;
                     border-radius: 0;
@@ -717,7 +617,7 @@ function createUpdateModalHTML() {
                 }
                 #AsUpdateModal .As-change-text {
                     color: rgba(255, 255, 255, 0.88);
-                    font-size: 12.5px;
+                    font-size: 14.5px;
                     line-height: 1.6;
                     flex: 1;
                     font-weight: 500;
@@ -729,26 +629,34 @@ function createUpdateModalHTML() {
                     font-weight: 300;
                     margin-right: 6px;
                 }
+                #AsUpdateModal .As-change-icon {
+                    width: 28px;
+                    height: 28px;
+                    object-fit: contain;
+                    flex-shrink: 0;
+                    border-radius: 4px;
+                }
                 #AsUpdateModal .As-change-type {
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
-                    font-size: 15px;
+                    font-size: 22px;
                     font-weight: 700;
-                    line-height: 1.4;
-                    width: 18px;
+                    line-height: 1;
+                    width: 24px;
                 }
                 #AsUpdateModal .As-close-btn {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.15) 0%, rgba(0, 153, 204, 0.1) 100%);
                     color: #ffffff;
                     border: 2px solid rgba(0, 233, 255, 0.4);
-                    padding: 12px 18px;
+                    padding: 12px 36px;
                     border-radius: 10px;
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
-                    width: 100%;
+                    width: auto;
+                    min-width: 168px;
                     font-family: iranyekan, sans-serif;
                     display: flex;
                     align-items: center;
@@ -767,14 +675,33 @@ function createUpdateModalHTML() {
                 #AsUpdateModal .As-close-btn:active {
                     transform: translateY(0);
                 }
+                #AsUpdateModal .As-footer-link {
+                    box-sizing: border-box;
+                    padding: 12px 14px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 700;
+                    font-family: iranyekan, sans-serif;
+                    text-decoration: none;
+                    white-space: nowrap;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #00e9ff;
+                    background: none;
+                    border: 2px solid rgba(0, 233, 255, 0.45);
+                    box-shadow: none;
+                    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+                }
+                #AsUpdateModal .As-footer-link:hover {
+                    transform: translateY(-2px);
+                    color: #ffffff;
+                }
             </style>
             <div class="As-modal">
                 <div class="As-content">
                     <div class="As-header">
-                        <span class="As-major-badge">
-                            <span class="As-major-badge-dot"></span>
-                            یه آپدیتِ حسابی
-                        </span>
                         <div class="As-header-brand">
                             <img class="As-logo" src="${iconUrl}" alt="${extensionName}">
                             <div class="As-ext-info">
@@ -792,21 +719,16 @@ function createUpdateModalHTML() {
                         <h3 class="As-title">
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
-                        <p class="As-update-summary">
-                            <span class="As-update-summary-lead">🎉 ۴۰ هزار نفری شدیم!</span>
-                            به پاس همراهی شما، یک آپدیت بزرگ آماده کردیم؛
-                            <span class="As-update-summary-hint">برای جزئیات بیشتر، لیست زیر را مشاهده کنید.</span>
-                        </p>
                         <div class="As-changes As-version-changes">
                             ${renderChangeItems(versionChanges)}
                         </div>
 
                         ${staticAnnouncementHTML}
-                        ${previousChangesHTML}
                     </div>
 
                     <div class="As-footer">
                         <button class="As-close-btn" id="AsUpdateCloseBtn">متوجه شدم</button>
+                        <a class="As-footer-link" href="https://ai-rtl.ir/supporters/" target="_blank" rel="noopener noreferrer">حمایت از اکستنشن</a>
                     </div>
                 </div>
             </div>

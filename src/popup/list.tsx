@@ -90,7 +90,6 @@ const services: Service[] = [
     { key: 'qwenCoder', name: 'QWEN CODER', icon: '/images/sites/qwen.png', url: 'https://coder.qwen.ai/', new: true, hosts: ['coder.qwen.ai'], keywords: ['qwen', 'کوئن', 'coder', 'کدر', 'کد', 'alibaba', 'علی بابا', 'علی‌بابا'] },
     { key: 'kimi', name: 'Kimi', icon: '/images/sites/kimi.png', url: 'https://www.kimi.ai/', hosts: ['kimi.ai', 'kimi.com'], keywords: ['kimi', 'کیمی', 'moonshot', 'k2'] },
     { key: 'openrouter', name: 'OpenRouter', icon: '/images/sites/openrouter.png', url: 'https://openrouter.ai/', hosts: ['openrouter.ai'], keywords: ['openrouter', 'اوپن روتر', 'اوپن‌روتر'] },
-    { key: 'codecraft', name: 'CodeCraft API', icon: '/images/sites/codecraft.png', url: 'https://codecraftapi.com/dashboard/playground', new: true, hosts: ['codecraftapi.com'], keywords: ['codecraft', 'code craft', 'کدکرفت', 'کد کرافت', 'کدکرافت', 'playground', 'پلی‌گراند', 'api'] },
     { key: 'zai', name: 'Z.ai', icon: '/images/sites/z.ai.png', url: 'https://chat.z.ai/', hosts: ['chat.z.ai'], keywords: ['z.ai', 'zai', 'glm', 'zhipu', 'زی آی', 'زی‌ای'] },
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
     { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
@@ -169,7 +168,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], s
         'clickup', 'dash0',
     ],
     other: [
-        'poeCom', 'openrouter', 'codecraft', 'typingmind', 'chatboxai', 'arena', 'monica',
+        'poeCom', 'openrouter', 'typingmind', 'chatboxai', 'arena', 'monica',
         'oneMinai', 'writesonic', 'manus', 'minimax', 'digen', 'synaps', 'zerve',
     ],
 };

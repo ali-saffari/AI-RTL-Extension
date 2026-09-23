@@ -161,7 +161,7 @@ const ChangesList: React.FC = () => {
                                         mb: 0.5,
                                         fontSize: '0.8rem'
                                     }}>
-                                        قابلیت‌های جدید برای همه سایت‌ها
+                                        تغییرات این نسخه
                                     </Typography>
                                     {features.map((change, changeIndex) => (
                                         <Typography key={`version-${changeIndex}-${change.id}`} variant="body2" sx={{ 
@@ -173,6 +173,14 @@ const ChangesList: React.FC = () => {
                                             gap: 0.5,
                                             fontWeight: 600
                                         }}>
+                                            {String(change.icon || '').startsWith('sites/') && (
+                                                <Box
+                                                    component="img"
+                                                    src={chrome.runtime.getURL('images/' + change.icon)}
+                                                    alt=""
+                                                    sx={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }}
+                                                />
+                                            )}
                                             <SvgIcon sx={{ 
                                                 fontSize: '0.9rem',
                                                 color: isDarkMode ? '#4CAF50' : '#2E7D32'
@@ -232,7 +240,7 @@ const ChangesList: React.FC = () => {
                                             justifyContent: 'space-between',
                                             gap: 1
                                         }}>
-                                            سایت‌های اضافه‌شده
+                                            سایت‌های جدید
                                             <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
                                                 {addedSites.length} سایت
                                             </Box>
