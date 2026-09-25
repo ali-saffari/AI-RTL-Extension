@@ -7,7 +7,7 @@ let markdownObserver = null;
 let markdownFlushRaf = 0;
 let markdownProcessTimes = new WeakMap();
 const MARKDOWN_SELECTOR = '.markdown, [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
-const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"]';
+const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
@@ -225,10 +225,10 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
 
-        processCodeMirrorBlocks(element, {
-            fontClass: 'FontSetCodeBlocksGPT',
-            setTextAlign: true
-        });
+        // processCodeMirrorBlocks(element, {
+        //     fontClass: 'FontSetCodeBlocksGPT',
+        //     setTextAlign: true
+        // });
         clearDirOnIgnoredMarkdown(element);
     };
 
@@ -325,10 +325,10 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    processCodeMirrorBlocks(document.body, {
-        fontClass: 'FontSetCodeBlocksGPT',
-        setTextAlign: true
-    });
+    // processCodeMirrorBlocks(document.body, {
+    //     fontClass: 'FontSetCodeBlocksGPT',
+    //     setTextAlign: true
+    // });
 
     AQ(USER_MESSAGE_SELECTOR).each(function () {
         applyRtlToElement(this, rtlAlgorithm, {

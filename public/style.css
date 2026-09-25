@@ -309,6 +309,22 @@ html.ai-rtl-code-algorithm .md-code-block[dir="rtl"] {
     unicode-bidi: isolate;
 }
 
+/* Programming comments: marker stays on the left, comment text is RTL. */
+html.ai-rtl-code-algorithm [data-ai-rtl-comment="1"],
+html.ai-rtl-code-algorithm [data-ai-rtl-comment="mark"] {
+    direction: ltr !important;
+    unicode-bidi: isolate;
+    text-align: left !important;
+    display: inline;
+}
+
+html.ai-rtl-code-algorithm [data-ai-rtl-comment="body"] {
+    direction: rtl !important;
+    unicode-bidi: isolate;
+    display: inline;
+    text-align: right;
+}
+
 /* Persian/RTL code boxes: override site monospace on the block and nested spans */
 html.ai-rtl-code-algorithm code.FontSet,
 html.ai-rtl-code-algorithm code.FontSet *,
