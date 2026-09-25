@@ -20,6 +20,11 @@ import {
     processLockedEditorByCss
 } from './lockedEditor.js';
 import {
+    alignCodeCommentsIn,
+    codeBlockKind,
+    restoreCodeCommentsIn
+} from './codeLanguage.js';
+import {
     isApplyAlgorithmToCodeEnabled,
     setApplyAlgorithmToCodeEnabled,
     shouldApplyRtlToCodeBlock
@@ -65,15 +70,42 @@ function refreshLockedEditorsForCodeSetting() {
     });
 }
 
+function isCodeHeaderElement(el) {
+    return Boolean(el && el.closest && el.closest('[data-markdown-copy="exclude"]'));
+}
+
 function applyForcedCodeLtr($element) {
+    const el = unwrapElement($element);
+    if (isCodeHeaderElement(el)) {
+        return;
+    }
     $element.attr('dir', 'ltr');
     $element.attr('data-direction', 'ltr');
     $element.addClass('AsSetLtr');
     $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT AsRtl');
-    const el = unwrapElement($element);
     if (el && el.style) {
         el.style.setProperty('direction', 'ltr', 'important');
         el.style.setProperty('text-align', 'left', 'important');
+    }
+}
+
+function applyProseCodeRtl($element) {
+    const el = unwrapElement($element);
+    if (!el || isCodeHeaderElement(el)) {
+        return;
+    }
+    $element.attr('dir', 'rtl');
+    $element.attr('data-direction', 'rtl');
+    $element.removeClass('AsSetLtr');
+    el.style.setProperty('direction', 'rtl', 'important');
+    el.style.setProperty('text-align', 'right', 'important');
+
+    const pane = el.closest && el.closest('.chatgpt-code-scrollport');
+    if (pane && !isCodeHeaderElement(pane)) {
+        pane.setAttribute('dir', 'rtl');
+        pane.setAttribute('data-direction', 'rtl');
+        pane.style.setProperty('direction', 'rtl', 'important');
+        pane.style.setProperty('text-align', 'right', 'important');
     }
 }
 
@@ -85,6 +117,8 @@ function restoreCodeBlocksToOriginal() {
     if (typeof document === 'undefined' || !document.body) {
         return;
     }
+
+    restoreCodeCommentsIn(document.body);
 
     const blocks = document.body.querySelectorAll(CODE_BLOCK_SELECTOR);
     for (let i = 0; i < blocks.length; i++) {
@@ -161,11 +195,22 @@ export function processCodeLikeElement($element, element, options = {}) {
 
     const text = $element.text();
     const $targets = getCodeBlockDirectionTargets($element);
-    if (!shouldApplyRtlToCodeBlock(text)) {
-        setDebugAttr($element, 'data-debug-mode', 'code-element-ltr');
+    const kind = codeBlockKind(unwrapElement($element));
+    if (kind === 'prose') {
+        setDebugAttr($element, 'data-debug-mode', 'code-prose-rtl');
+        $targets.each(function() {
+            applyProseCodeRtl(AQ(this));
+        });
+        return;
+    }
+    if (kind === 'code' || !shouldApplyRtlToCodeBlock(text)) {
+        setDebugAttr($element, 'data-debug-mode', kind === 'code' ? 'code-lang-ltr' : 'code-element-ltr');
         $targets.each(function() {
             applyForcedCodeLtr(AQ(this));
         });
+        if (kind === 'code') {
+            alignCodeCommentsIn(unwrapElement($element));
+        }
         return;
     }
 
@@ -241,9 +286,20 @@ export function processCodeMirrorBlock($element, element, options = {}) {
     const $targets = getCodeMirrorTargets($element, $content);
 
     const blockText = $content.text();
-    if (!shouldApplyRtlToCodeBlock(blockText)) {
-        setDebugAttr($element, 'data-debug-mode', 'cm-code-block-ltr');
+    const kind = codeBlockKind($content[0] || unwrapElement($element));
+    if (kind === 'prose') {
+        setDebugAttr($element, 'data-debug-mode', 'cm-code-prose-rtl');
+        $targets.each(function() {
+            applyProseCodeRtl(AQ(this));
+        });
+        return;
+    }
+    if (kind === 'code' || !shouldApplyRtlToCodeBlock(blockText)) {
+        setDebugAttr($element, 'data-debug-mode', kind === 'code' ? 'cm-code-lang-ltr' : 'cm-code-block-ltr');
         applyCodeBlockDirection($targets, 'ltr', blockFontClass);
+        if (kind === 'code') {
+            alignCodeCommentsIn($content[0] || unwrapElement($element));
+        }
         return;
     }
 
