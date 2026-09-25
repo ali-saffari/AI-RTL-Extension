@@ -150,7 +150,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     }
 
     applyRemoveInnerDir($element, options);
-    applyRemoveDirAuto($element, options.removeDirAuto === true, getIgnoreSelector(options));
+    applyRemoveDirAuto($element, options.removeDirAuto === true, getIgnoreSelector(options), options.onlyCss);
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -394,7 +394,7 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
         return;
     }
 
-    applyRemoveDirAuto($element, options.removeDirAuto === true);
+    applyRemoveDirAuto($element, options.removeDirAuto === true, null, options.onlyCss);
     
     // Default options for each algorithm
     const defaultOptions = {

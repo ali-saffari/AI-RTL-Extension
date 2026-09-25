@@ -47,13 +47,31 @@ function isInsideIgnored(el, ignoreSelector) {
     }
 }
 
-export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = null) {
+function onlyCssSkipSelector(onlyCss) {
+    if (onlyCss === true) {
+        return true;
+    }
+    if (Array.isArray(onlyCss)) {
+        const joined = onlyCss.filter((item) => typeof item === 'string' && item.trim()).join(', ');
+        return joined || null;
+    }
+    if (typeof onlyCss === 'string' && onlyCss.trim()) {
+        return onlyCss.trim();
+    }
+    return null;
+}
+
+export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = null, onlyCss = null) {
     if (!enabled) {
+        return;
+    }
+    const onlyCssScope = onlyCssSkipSelector(onlyCss);
+    if (onlyCssScope === true) {
         return;
     }
     const $container = AQ(container);
     $container.find('[dir="auto"]').addBack('[dir="auto"]').each(function () {
-        if (isInsideIgnored(this, ignoreSelector)) {
+        if (isInsideIgnored(this, ignoreSelector) || isInsideIgnored(this, onlyCssScope)) {
             return;
         }
         const $el = AQ(this);
@@ -123,7 +141,7 @@ export function processTextElementsAdvanced(container, options = {}) {
     }
 
 
-    applyRemoveDirAuto(container, removeDirAuto, ignoreSelector);
+    applyRemoveDirAuto(container, removeDirAuto, ignoreSelector, options.onlyCss);
 
 
     const extraBlockTags = normalizeTagNameList(includeTags);

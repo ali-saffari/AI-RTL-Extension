@@ -5,8 +5,10 @@ import { isRtlEngineActive } from '../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
+let markdownScanInterval = 0;
 let markdownProcessTimes = new WeakMap();
-const MARKDOWN_SELECTOR = '.markdown, [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
+const MARKDOWN_SCAN_INTERVAL_MS = 1000;
+const MARKDOWN_SELECTOR = ' [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown] , [data-writing-block-table-controls-container]';
 const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
@@ -53,11 +55,15 @@ function isInsideInlineCodePane(element) {
     return Boolean(element && element.closest && element.closest('[class*="InlineCodePane-"]'));
 }
 
+function isInsideTableControls(element) {
+    return Boolean(element && element.closest && element.closest('[data-writing-block-table-controls-container]'));
+}
+
 function watchChatGptComposer(element, rtlAlgorithm) {
     if (!element || element.id === 'mobile-composer-prompt' || element.id === 'prompt-textarea') {
         return;
     }
-    if (isProseMirrorInsideMarkdownRoot(element) || isInsideInlineCodePane(element)) {
+    if (isProseMirrorInsideMarkdownRoot(element) || isInsideInlineCodePane(element) || isInsideTableControls(element)) {
         return;
     }
 
@@ -209,6 +215,10 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
+    if (markdownScanInterval) {
+        clearInterval(markdownScanInterval);
+        markdownScanInterval = 0;
+    }
     markdownProcessTimes = new WeakMap();
 
     const pendingMarkdown = new Set();
@@ -306,6 +316,13 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     });
 
     document.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
+
+    markdownScanInterval = setInterval(() => {
+        if (!isRtlEngineActive()) {
+            return;
+        }
+        document.querySelectorAll(MARKDOWN_SELECTOR).forEach(processMarkdownElement);
+    }, MARKDOWN_SCAN_INTERVAL_MS);
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -321,6 +338,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     if (chrome.runtime?.id) {
         addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), 'text-xs text-token-text-secondary AsBoxB' , 'margin-top: 9px; margin-bottom: -11px;');
     }
+
+    AQ('body').addClass('FontSetGPT');
 
     AQ('.hljs-comment').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
@@ -344,7 +363,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]').each(function () {
-        if (this.id === 'mobile-composer-prompt' || this.id === 'prompt-textarea' || isProseMirrorInsideMarkdownRoot(this) || isInsideInlineCodePane(this)) {
+        if (this.id === 'mobile-composer-prompt' || this.id === 'prompt-textarea' || isProseMirrorInsideMarkdownRoot(this) || isInsideInlineCodePane(this) || isInsideTableControls(this)) {
             return;
         }
 
@@ -436,6 +455,10 @@ export function stopChatGptNew() {
     if (markdownFlushRaf) {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
+    }
+    if (markdownScanInterval) {
+        clearInterval(markdownScanInterval);
+        markdownScanInterval = 0;
     }
 }
 

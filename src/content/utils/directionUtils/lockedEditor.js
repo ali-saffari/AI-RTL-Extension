@@ -550,7 +550,6 @@ export function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     if (processedClass) {
         $element.addClass(processedClass);
     }
-    el.removeAttribute('dir');
     el.removeAttribute('data-direction');
     el.style.removeProperty('text-align');
 
