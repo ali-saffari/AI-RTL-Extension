@@ -443,6 +443,68 @@ function majorityDirection(directions) {
     return rtlCount >= ltrCount ? 'rtl' : 'ltr';
 }
 
+function isListElement(el) {
+    const tagName = el.tagName.toLowerCase();
+    return tagName === 'ul' || tagName === 'ol';
+}
+
+function getListItemOwnText(item) {
+    let text = '';
+    item.childNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE && isListElement(node)) {
+            return;
+        }
+        text += node.textContent || '';
+    });
+    return text.trim() ? text : (item.textContent || '');
+}
+
+/**
+ * Nested items carry their own direction; inner `p[dir=auto]` would otherwise
+ * fall back to first-strong detection, so they get an explicit rule too.
+ */
+function collectLockedListRules(list, listSelector, rtlAlgorithm, unifiedDirection, blockRules, allItemDirs) {
+    const itemDirs = [];
+    let itemCount = 0;
+    Array.from(list.children).forEach((item) => {
+        if (item.tagName.toLowerCase() !== 'li') {
+            return;
+        }
+        itemCount += 1;
+        const itemSelector = `${listSelector}>li:nth-of-type(${itemCount})`;
+        const itemDirection = unifiedDirection || detectDirectionByAlgorithm(getListItemOwnText(item), rtlAlgorithm);
+        itemDirs.push(itemDirection);
+        allItemDirs.push(itemDirection);
+        blockRules.push({ selector: itemSelector, direction: itemDirection });
+
+        const nestedCount = {};
+        let hasParagraph = false;
+        Array.from(item.children).forEach((nested) => {
+            const nestedTag = nested.tagName.toLowerCase();
+            if (nestedTag === 'p') {
+                hasParagraph = true;
+                return;
+            }
+            if (!isListElement(nested)) {
+                return;
+            }
+            nestedCount[nestedTag] = (nestedCount[nestedTag] || 0) + 1;
+            collectLockedListRules(
+                nested,
+                `${itemSelector}>${nestedTag}:nth-of-type(${nestedCount[nestedTag]})`,
+                rtlAlgorithm,
+                unifiedDirection,
+                blockRules,
+                allItemDirs
+            );
+        });
+        if (hasParagraph) {
+            blockRules.push({ selector: `${itemSelector}>p`, direction: itemDirection });
+        }
+    });
+    blockRules.push({ selector: listSelector, direction: unifiedDirection || majorityDirection(itemDirs) });
+}
+
 export function resetLockedEditorCaches() {
     lockedEditorCssById.clear();
     lockedBlockquoteOriginals.clear();
@@ -529,19 +591,15 @@ export function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
         }
 
         if (tagName === 'ul' || tagName === 'ol') {
-            const itemDirs = [];
-            Array.from(child.children).forEach((item, itemIndex) => {
-                if (item.tagName.toLowerCase() !== 'li') {
-                    return;
-                }
-                const itemDirection = unifiedDirection || detectDirectionByAlgorithm(item.textContent || '', rtlAlgorithm);
-                itemDirs.push(itemDirection);
-                blockRules.push({
-                    selector: `${selector}>li:nth-of-type(${itemIndex + 1})`,
-                    direction: itemDirection
+            const listRules = [];
+            const listItemDirs = [];
+            collectLockedListRules(child, selector, rtlAlgorithm, unifiedDirection, listRules, listItemDirs);
+            if (!unifiedDirection && majorityDirection(listItemDirs) === 'rtl') {
+                listRules.forEach((rule) => {
+                    rule.direction = 'rtl';
                 });
-            });
-            blockRules.push({ selector, direction: unifiedDirection || majorityDirection(itemDirs) });
+            }
+            blockRules.push(...listRules);
             return;
         }
 

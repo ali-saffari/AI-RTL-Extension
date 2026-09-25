@@ -108,7 +108,7 @@ export function getAttributeTextElements() {
  * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
- * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess
+ * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess. `false` skips tables in every algorithm
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore when analyzing text; skipped if omitted
  * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
  * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM. `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) targets matching descendants as locked editors
@@ -117,6 +117,7 @@ export function getAttributeTextElements() {
  * @param {string[]} [options.skipTags] - Extra tag names to skip while walking children (advanced_section → processTextElementsAdvanced)
  * @param {string[]} [options.removeSkipTags] - Tag names to remove from the default skip list (advanced_section)
  * @param {boolean} [options.removeDirAuto] - Strip `dir="auto"` from the element and descendants (advanced_section and advanced_full)
+ * @param {boolean} [options.removeTableDirAuto] - Strip `dir="auto"` from tables (HTML and role=table) and all their contents on every pass, including already-processed tables
  * @param {boolean} [options.applyFontIfRtl] - advanced_full: add fontClass only when detected direction is RTL
  * @param {boolean} [options.endTyping] - advanced_section: process headers only after typing has settled
  * @param {string} [options.rtlClass] - If set (with optional ltrClass), apply this class for RTL instead of setting dir
@@ -149,7 +150,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     }
 
     applyRemoveInnerDir($element, options);
-    applyRemoveDirAuto($element, options.removeDirAuto === true);
+    applyRemoveDirAuto($element, options.removeDirAuto === true, getIgnoreSelector(options));
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -220,12 +221,15 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             flipRtlArrowsInTree($element);
         }
 
-        processTablesInContainer($element, {
-            fontClass: mergedOptions.fontClass,
-            processedClass: mergedOptions.processedClass,
-            siteConfig: mergedOptions.siteConfig,
-            setTextAlign: mergedOptions.setTextAlign
-        });
+        if (mergedOptions.processTables !== false) {
+            processTablesInContainer($element, {
+                fontClass: mergedOptions.fontClass,
+                processedClass: mergedOptions.processedClass,
+                siteConfig: mergedOptions.siteConfig,
+                setTextAlign: mergedOptions.setTextAlign,
+                removeDirAuto: mergedOptions.removeTableDirAuto === true
+            });
+        }
         processCodeBlocksInContainer($element, {
             fontClass: mergedOptions.fontClass,
             codeFontClass: mergedOptions.codeFontClass,
@@ -300,12 +304,13 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             processedClass: mergedOptions.processedClass
         }, false);
 
-        if (mergedOptions.processTables || mergedOptions.isContainer) {
+        if (mergedOptions.processTables !== false && (mergedOptions.processTables || mergedOptions.isContainer)) {
             processTablesInContainer($element, {
                 fontClass: mergedOptions.fontClass,
                 processedClass: mergedOptions.processedClass,
                 siteConfig: mergedOptions.siteConfig,
-                setTextAlign: mergedOptions.setTextAlign
+                setTextAlign: mergedOptions.setTextAlign,
+                removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
 
@@ -331,12 +336,15 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             
             if (shouldProcess) {
                 // console.log("applyRtlToContainer first_word tables", currentTextLength, storedLength, lengthDifference);
-                processTablesInContainer($element, {
-                    fontClass,
-                    processedClass: options.processedClass,
-                    siteConfig: options.siteConfig,
-                    setTextAlign: options.setTextAlign
-                });
+                if (options.processTables !== false) {
+                    processTablesInContainer($element, {
+                        fontClass,
+                        processedClass: options.processedClass,
+                        siteConfig: options.siteConfig,
+                        setTextAlign: options.setTextAlign,
+                        removeDirAuto: options.removeTableDirAuto === true
+                    });
+                }
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
             }

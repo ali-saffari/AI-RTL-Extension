@@ -7,21 +7,25 @@ import { isRtlEngineActive } from '../utils/originalState.js';
 let markdownObserver = null;
 let markdownFlushRaf = 0;
 const markdownProcessTimes = new WeakMap();
-const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
+const MARKDOWN_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
+const TABLE_CONTAINER_SELECTOR = '[class^="TableContainer-"], [class*=" TableContainer-"]';
+const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
     codeFontClass: 'FontSetCodeBlocksGPT',
     processedClass: 'AsOkText',
-    isContainer: true,
-    siteConfig: 'chatgpt',
+    // isContainer: true,
+    // siteConfig: 'chatgpt',
     setTextAlign: true,
     removeDirAuto: true,
+    // removeTableDirAuto: true,
+    processTables: true,
+    ignoreSelector: TABLE_CONTAINER_SELECTOR,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
 const COMPOSER_CSS_OPTIONS = {
     fontClass: 'FontSetGPT',
     processedClass: 'AsOk',
-    setTextAlign: true,
     onlyCss: true
 };
 
@@ -29,7 +33,7 @@ function isLockedMarkdownEditorEl(element) {
     return Boolean(
         element &&
         element.nodeType === Node.ELEMENT_NODE &&
-        element.classList.contains('markdown') &&
+        element.matches(MARKDOWN_SELECTOR) &&
         element.classList.contains('ProseMirror') &&
         element.isContentEditable
     );
@@ -45,10 +49,10 @@ function closestMarkdown(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
         return null;
     }
-    if (node.classList && node.classList.contains('markdown')) {
+    if (node.matches && node.matches(MARKDOWN_SELECTOR)) {
         return node;
     }
-    return node.closest ? node.closest('.markdown') : null;
+    return node.closest ? node.closest(MARKDOWN_SELECTOR) : null;
 }
 
 function processUserMessageNode(node, rtlAlgorithm) {
@@ -56,16 +60,16 @@ function processUserMessageNode(node, rtlAlgorithm) {
         return;
     }
 
+    // [2] User messages (observer)
     const $node = AQ(node);
-    const userMessages = $node.find('[data-message-author-role="user"]').add(
-        $node.filter('[data-message-author-role="user"]')
+    const userMessages = $node.find('.text-user-message').add(
+        $node.filter('.text-user-message')
     );
 
     userMessages.each(function() {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
-            setTextAlign: true,
             removeDirAuto: true
         });
     });
@@ -76,30 +80,31 @@ function processSuggestionNode(node, rtlAlgorithm) {
         return;
     }
 
-    const $node = AQ(node);
-    const suggestionElements = $node.find('ul.divide-token-border-light .whitespace-pre-wrap').add(
-        $node.filter('ul.divide-token-border-light .whitespace-pre-wrap')
-    );
-
-    if ($node.is('ul.divide-token-border-light')) {
-        $node.find('.whitespace-pre-wrap').each(function() {
-            if (!AQ(this).hasClass('AsOk')) {
-                applyRtlToElement(this, rtlAlgorithm, {
-                    fontClass: 'FontSetGPT',
-                    processedClass: 'AsOk'
-                });
-            }
-        });
-    }
-
-    suggestionElements.each(function() {
-        if (!AQ(this).hasClass('AsOk')) {
-            applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: 'FontSetGPT',
-                processedClass: 'AsOk'
-            });
-        }
-    });
+    // [5] Suggestions (observer)
+    // const $node = AQ(node);
+    // const suggestionElements = $node.find('ul.divide-token-border-light .whitespace-pre-wrap').add(
+    //     $node.filter('ul.divide-token-border-light .whitespace-pre-wrap')
+    // );
+    //
+    // if ($node.is('ul.divide-token-border-light')) {
+    //     $node.find('.whitespace-pre-wrap').each(function() {
+    //         if (!AQ(this).hasClass('AsOk')) {
+    //             applyRtlToElement(this, rtlAlgorithm, {
+    //                 fontClass: 'FontSetGPT',
+    //                 processedClass: 'AsOk'
+    //             });
+    //         }
+    //     });
+    // }
+    //
+    // suggestionElements.each(function() {
+    //     if (!AQ(this).hasClass('AsOk')) {
+    //         applyRtlToElement(this, rtlAlgorithm, {
+    //             fontClass: 'FontSetGPT',
+    //             processedClass: 'AsOk'
+    //         });
+    //     }
+    // });
 }
 
 export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
@@ -126,12 +131,14 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         }
         markdownProcessTimes.set(element, now);
 
+        // [1] Model responses (MarkdownRoot-*)
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
-        processCodeMirrorBlocks(element, {
-            fontClass: 'FontSetCodeBlocksGPT',
-            setTextAlign: true
-        });
+
+        // [4] Code blocks inside responses
+        // processCodeMirrorBlocks(element, {
+        //     fontClass: 'FontSetCodeBlocksGPT'
+        // });
     };
 
     const flushPendingMarkdown = () => {
@@ -158,11 +165,11 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         if (!node || node.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
-        if (node.classList && node.classList.contains('markdown')) {
+        if (node.matches && node.matches(MARKDOWN_SELECTOR)) {
             queueMarkdown(node);
         }
-        if (node.querySelector && node.querySelector('.markdown')) {
-            node.querySelectorAll('.markdown').forEach(queueMarkdown);
+        if (node.querySelector && node.querySelector(MARKDOWN_SELECTOR)) {
+            node.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
         }
     };
 
@@ -202,7 +209,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         characterData: true
     });
 
-    document.querySelectorAll('.markdown').forEach(queueMarkdown);
+    document.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -214,52 +221,58 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         return;
     }
     let presentation = ".relative.flex.h-full "
-    if (chrome.runtime?.id) {
-        addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 9px; margin-bottom: -11px;');
-    }
 
-    AQ('.hljs-comment').each(function (each) {
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'FontSetGPT',
-            processedClass: 'AsOk'
-        });
-    })
+    // [9] Copyright under the composer
+    // if (chrome.runtime?.id) {
+    //     addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 9px; margin-bottom: -11px;');
+    // }
 
-    processCodeMirrorBlocks(document.body, {
-        fontClass: 'FontSetCodeBlocksGPT',
-        setTextAlign: true
-    });
+    // [4] Code comments (.hljs-comment)
+    // AQ('.hljs-comment').each(function (each) {
+    //     applyRtlToElement(this, rtlAlgorithm, {
+    //         fontClass: 'FontSetGPT',
+    //         processedClass: 'AsOk'
+    //     });
+    // })
 
-    AQ('[data-message-author-role="user"]').each(function () {
+    // [4] CodeMirror code blocks
+    // processCodeMirrorBlocks(document.body, {
+    //     fontClass: 'FontSetCodeBlocksGPT'
+    // });
+
+    // [2] User messages
+    AQ('.text-user-message').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
-            setTextAlign: true,
             removeDirAuto: true
         });
     });
 
-    AQ(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
-        if (!AQ(this).parent().hasClass("AsOk")) {
-            AQ(this).parent().addClass('AsOk');
-            const text = AQ(this).text()
-            AQ(this).addClass('FontSetGPT');
-            if (isRTL(text)) {
-                AQ(this).parent().addClass("setRight")
-            }
+    // [8] Rounded cards (.relative.rounded-3xl)
+    // AQ(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
+    //     if (!AQ(this).parent().hasClass("AsOk")) {
+    //         AQ(this).parent().addClass('AsOk');
+    //         const text = AQ(this).text()
+    //         AQ(this).addClass('FontSetGPT');
+    //         if (isRTL(text)) {
+    //             AQ(this).parent().addClass("setRight")
+    //         }
+    //
+    //     }
+    // })
 
-        }
-    })
+    // [10] Font on body
+    // AQ('body').each(function (each) {
+    //     AQ(this).addClass('FontSetGPT');
+    // })
 
+    // [10] Font on main container
+    // AQ(presentation).each(function (each) {
+    //     AQ(this).addClass('FontSetGPT');
+    // })
 
-    AQ('body').each(function (each) {
-        AQ(this).addClass('FontSetGPT');
-    })
-
-    AQ(presentation).each(function (each) {
-        AQ(this).addClass('FontSetGPT');
-    })
-
+    // [3] Composer container (#prosemirror-editor-container)
     AQ(presentation + '#prosemirror-editor-container').each(function (each) {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
@@ -268,18 +281,18 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
+    // [3] Composer input (#prompt-textarea)
     AQ("#prompt-textarea").each(function (each) {
         if (AQ(this).data('rtl-listener-added')) {
             return;
         }
         AQ(this).data('rtl-listener-added', true);
 
-        
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
-        
+
         AQ(this).on('keyup paste', function() {
             requestAnimationFrame(() => {
                 applyRtlToElement(this, rtlAlgorithm, {
@@ -289,14 +302,13 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     })
 
-    
-    AQ('.text-token-text-secondary span').each(function (each) {
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'FontSetGPT',
-            processedClass: 'AsOk'
-        });
-    })
-
+    // [6] Secondary text (.text-token-text-secondary span)
+    // AQ('.text-token-text-secondary span').each(function (each) {
+    //     applyRtlToElement(this, rtlAlgorithm, {
+    //         fontClass: 'FontSetGPT',
+    //         processedClass: 'AsOk'
+    //     });
+    // })
 
 }
 
@@ -304,31 +316,33 @@ export function initializeChatGptHistory() {
     if (!isRtlEngineActive()) {
         return;
     }
-    AQ('#history .__menu-item').each(function (each) {
-        const text = AQ(this).text()
-        let p = isRTL(text);
 
-        if ((text !== "New chat") && !AQ(this).hasClass("AsOkList")) {
-            AQ(this).addClass('AsOkList');
-
-            if (p) {
-                AQ(this).attr("dir", "rtl");
-                AQ(this).addClass('AsRtlList');
-                AQ(this).addClass('FontSetGPT');
-                AQ(this).parent().addClass('AsRtlList_parent');
-            }
-        }
-
-        let absoluteItem = AQ(this).parent().parent().find(".absolute.bottom-0")
-
-        if (!absoluteItem.hasClass("AsOk")) {
-            absoluteItem.addClass('AsOk');
-
-            if (p) {
-                absoluteItem.addClass('AsOkList_absolute');
-            }
-        }
-    })
+    // [7] Sidebar history (#history .__menu-item)
+    // AQ('#history .__menu-item').each(function (each) {
+    //     const text = AQ(this).text()
+    //     let p = isRTL(text);
+    //
+    //     if ((text !== "New chat") && !AQ(this).hasClass("AsOkList")) {
+    //         AQ(this).addClass('AsOkList');
+    //
+    //         if (p) {
+    //             AQ(this).attr("dir", "rtl");
+    //             AQ(this).addClass('AsRtlList');
+    //             AQ(this).addClass('FontSetGPT');
+    //             AQ(this).parent().addClass('AsRtlList_parent');
+    //         }
+    //     }
+    //
+    //     let absoluteItem = AQ(this).parent().parent().find(".absolute.bottom-0")
+    //
+    //     if (!absoluteItem.hasClass("AsOk")) {
+    //         absoluteItem.addClass('AsOk');
+    //
+    //         if (p) {
+    //             absoluteItem.addClass('AsOkList_absolute');
+    //         }
+    //     }
+    // })
 }
 
 export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {

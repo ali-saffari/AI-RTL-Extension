@@ -36,12 +36,26 @@ import {
 
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
-export function applyRemoveDirAuto(container, enabled = false) {
+function isInsideIgnored(el, ignoreSelector) {
+    if (!ignoreSelector || !el || !el.closest) {
+        return false;
+    }
+    try {
+        return Boolean(el.closest(ignoreSelector));
+    } catch {
+        return false;
+    }
+}
+
+export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = null) {
     if (!enabled) {
         return;
     }
     const $container = AQ(container);
     $container.find('[dir="auto"]').addBack('[dir="auto"]').each(function () {
+        if (isInsideIgnored(this, ignoreSelector)) {
+            return;
+        }
         const $el = AQ(this);
         if (!$el.hasClass('removeedDirAuto')) {
             $el.removeAttr('dir').addClass('removeedDirAuto');
@@ -70,6 +84,9 @@ export function processTextElementsAdvanced(container, options = {}) {
         rtlClass = false,
         ltrClass = false
     } = options;
+    const ignoreSelector = typeof options.ignoreSelector === 'string' && options.ignoreSelector.length
+        ? options.ignoreSelector
+        : null;
     const directionClassOptions = { rtlClass, ltrClass };
     // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
@@ -92,6 +109,9 @@ export function processTextElementsAdvanced(container, options = {}) {
             !['code', 'pre'].includes(tag)
         );
         container.find(allTagsSetFont.join(',')).each(function() {
+            if (isInsideIgnored(this, ignoreSelector)) {
+                return;
+            }
             const $element = AQ(this);
             if (!$element.hasClass(fontClass)) {
                 $element.addClass(fontClass);
@@ -103,7 +123,7 @@ export function processTextElementsAdvanced(container, options = {}) {
     }
 
 
-    applyRemoveDirAuto(container, removeDirAuto);
+    applyRemoveDirAuto(container, removeDirAuto, ignoreSelector);
 
 
     const extraBlockTags = normalizeTagNameList(includeTags);
@@ -122,6 +142,11 @@ export function processTextElementsAdvanced(container, options = {}) {
         
         // Skip if already processed
         if ($element.hasClass(processedClass)) {
+            return;
+        }
+
+        if (isInsideIgnored(this, ignoreSelector)) {
+            setDebugAttr($element, 'data-debug-mode', 'ignore-selector-skipped');
             return;
         }
         
@@ -565,12 +590,13 @@ export function processTextElementsAdvanced(container, options = {}) {
                             setTextAlign,
                             setUnicodeBidi,
                             rtlClass,
-                            ltrClass
+                            ltrClass,
+                            ignoreSelector
                         });
 
                         // برای خود المان هم تصمیم بگیر
                     
-                            setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
+                            setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass, ignoreSelector });
                         
 
                         setDebugAttr($element, 'data-debug-mode', 'no-formatting-children');
