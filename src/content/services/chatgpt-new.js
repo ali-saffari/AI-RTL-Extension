@@ -49,11 +49,15 @@ function isProseMirrorInsideMarkdownRoot(element) {
     );
 }
 
+function isInsideInlineCodePane(element) {
+    return Boolean(element && element.closest && element.closest('[class*="InlineCodePane-"]'));
+}
+
 function watchChatGptComposer(element, rtlAlgorithm) {
     if (!element || element.id === 'mobile-composer-prompt' || element.id === 'prompt-textarea') {
         return;
     }
-    if (isProseMirrorInsideMarkdownRoot(element)) {
+    if (isProseMirrorInsideMarkdownRoot(element) || isInsideInlineCodePane(element)) {
         return;
     }
 
@@ -340,7 +344,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]').each(function () {
-        if (this.id === 'mobile-composer-prompt' || this.id === 'prompt-textarea' || isProseMirrorInsideMarkdownRoot(this)) {
+        if (this.id === 'mobile-composer-prompt' || this.id === 'prompt-textarea' || isProseMirrorInsideMarkdownRoot(this) || isInsideInlineCodePane(this)) {
             return;
         }
 

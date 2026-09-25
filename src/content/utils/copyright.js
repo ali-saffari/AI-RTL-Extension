@@ -49,7 +49,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
 
                     <a href="${saffariLink}" target="_blank">
 
-                  <img src="${alisaffari}"  alt="ali saffari"></a>
+                  <img src="${alisaffari}"  alt="ali saffari" width="22" height="22"></a>
 
 
 
