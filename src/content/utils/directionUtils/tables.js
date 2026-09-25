@@ -7,7 +7,6 @@
 
 import { detectTextDirection } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
-import { isInsideLockedCssEditor } from './lockedEditor.js';
 import { CODE_BLOCK_SELECTOR, KATEX_SELECTOR, setDebugAttr } from './shared.js';
 import { applyTextAlignByDirection } from './textStyles.js';
 
@@ -53,9 +52,6 @@ export function processTablesInContainer(container, options = {}) {
     } = options;
 
     container.find('table').each(function() {
-        if (isInsideLockedCssEditor(this)) {
-            return;
-        }
         const $table = AQ(this);
 
 
@@ -146,9 +142,6 @@ export function processTablesInContainer(container, options = {}) {
     });
 
     container.find('[role="table"]').each(function() {
-        if (isInsideLockedCssEditor(this)) {
-            return;
-        }
         const $table = AQ(this);
 
         const allAriaTableItems = $table.find('[role="cell"], [role="columnheader"], [role="rowheader"], [role="row"]');

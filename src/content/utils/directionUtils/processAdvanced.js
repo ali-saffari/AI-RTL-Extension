@@ -12,7 +12,7 @@ import {
     processCodeMirrorBlock
 } from './codeBlocks.js';
 import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
-import { isInsideLockedCssEditor, isLockedMarkdownEditor } from './lockedEditor.js';
+import { isLockedMarkdownEditor } from './lockedEditor.js';
 import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
 import {
     CODE_BLOCK_SELECTOR,
@@ -325,7 +325,7 @@ export function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-        if (isLockedMarkdownEditor(this, options.onlyCss) || isInsideLockedCssEditor(this)) {
+        if (isLockedMarkdownEditor(this, options.onlyCss)) {
             setDebugAttr($element, 'data-debug-mode', 'locked-markdown-editor-skipped');
             return;
         }

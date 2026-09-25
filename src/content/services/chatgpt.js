@@ -11,8 +11,7 @@ const markdownProcessTimes = new WeakMap();
 const MARKDOWN_SELECTOR = '.markdown, [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
-const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable], .ProseMirror[contenteditable][class^="MarkdownRoot-"], .ProseMirror[contenteditable][class*=" MarkdownRoot-"]';
-const CHATGPT_WRITING_BLOCK_SELECTOR = '[data-assistant-writing-block]';
+const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable], .ProseMirror[contenteditable][class^="MarkdownRoot-"], .ProseMirror[contenteditable][class*=" MarkdownRoot-"], [data-assistant-writing-block]';
 
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
@@ -22,7 +21,7 @@ const MARKDOWN_PROCESS_OPTIONS = {
     siteConfig: 'chatgpt',
     setTextAlign: true,
     removeDirAuto: true,
-    onlyCss: [CHATGPT_LOCKED_EDITOR_SELECTOR, CHATGPT_WRITING_BLOCK_SELECTOR]
+    onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
 const COMPOSER_CSS_OPTIONS = {
     fontClass: 'FontSetGPT',

@@ -4,8 +4,8 @@
  * Also mirrors RTL blockquote bars (padding/border and Tailwind pl/pr).
  *
  * Sites that use this path today (via onlyCss):
- * - ChatGPT — composer and markdown editor (`.ProseMirror.markdown[contenteditable]`, also the default selector)
- * - ChatGPT — assistant writing blocks inside markdown (`[data-assistant-writing-block]`)
+ * - ChatGPT — composer, markdown editor, and assistant writing blocks
+ *   (`.ProseMirror.markdown[contenteditable]`, `[data-assistant-writing-block]`; the ProseMirror part is also the default selector)
  * - MiniMax — TipTap composer (`.tiptap.ProseMirror`)
  *
  * Other services may still hit it if the processed node matches the default
@@ -391,14 +391,6 @@ function shouldHandleElementByCss(element, onlyCss) {
 
 export function isLockedMarkdownEditor(element, onlyCss) {
     return shouldHandleElementByCss(element, onlyCss);
-}
-
-export function isInsideLockedCssEditor(element) {
-    const el = element && element.jquery ? element[0] : element;
-    if (!el || typeof el.closest !== 'function') {
-        return false;
-    }
-    return Boolean(el.closest('[data-ai-rtl-editor]'));
 }
 
 function getLockedEditorId(element) {
