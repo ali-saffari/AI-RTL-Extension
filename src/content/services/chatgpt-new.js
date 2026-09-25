@@ -11,7 +11,7 @@ const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableConta
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
-const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable], .ProseMirror[contenteditable][class^="MarkdownRoot-"], .ProseMirror[contenteditable][class*=" MarkdownRoot-"], [data-assistant-writing-block]';
+const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
 // const CHAT_PAGE_SELECTOR = '[data-app-shell-main-content-layout="thread-edge-scroll"]';
 
 // let lastLoggedPage = '';
