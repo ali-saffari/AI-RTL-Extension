@@ -764,12 +764,6 @@ body[data-theme="light"] {
     initial-value: 48px;
 }
 
-@property --service-pinned-h {
-    syntax: "<length>";
-    inherits: true;
-    initial-value: 56px;
-}
-
 .service-list-search-sentinel {
     height: 1px;
     margin-top: -1px;
@@ -780,17 +774,12 @@ body[data-theme="light"] {
     --service-sticky-duration: 0.38s;
     --service-sticky-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --service-search-h: 48px;
-    --service-pinned-h: var(--service-pinned-rest-h, 56px);
-    transition:
-        --service-search-h var(--service-sticky-duration) var(--service-sticky-ease),
-        --service-pinned-h var(--service-sticky-duration) var(--service-sticky-ease);
+    --service-pinned-h: 56px;
+    transition: --service-search-h var(--service-sticky-duration) var(--service-sticky-ease);
 }
 
 .service-list.service-list--search-stuck {
     --service-search-h: 36px;
-}
-
-.service-list.service-list--search-stuck:has(.service-list-pinned) {
     --service-pinned-h: 36px;
 }
 
@@ -839,13 +828,26 @@ body[data-theme="light"] {
 }
 
 .service-list-pinned {
-    height: var(--service-pinned-h);
-    max-height: var(--service-pinned-h);
+    height: 56px;
+    min-height: 56px;
+    max-height: 56px;
     overflow: hidden;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition:
+        height var(--service-sticky-duration) var(--service-sticky-ease),
+        min-height var(--service-sticky-duration) var(--service-sticky-ease),
+        max-height var(--service-sticky-duration) var(--service-sticky-ease);
+}
+
+.service-list--search-stuck .service-list-pinned {
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
 }
 
 .service-list-pinned .MuiListItemButton-root {
-    min-height: var(--service-pinned-h);
+    min-height: 56px;
     box-sizing: border-box;
     transition:
         min-height var(--service-sticky-duration) var(--service-sticky-ease),

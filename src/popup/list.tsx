@@ -231,11 +231,8 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const [showPermissionsHint, setShowPermissionsHint] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const lovableItemRef = useRef<HTMLLIElement>(null);
-    const pinnedItemRef = useRef<HTMLLIElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const searchStickySentinelRef = useRef<HTMLDivElement>(null);
-    const pinnedRestMeasureLockedRef = useRef(false);
-    const remeasurePinnedRestHeightRef = useRef<() => void>(() => {});
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
@@ -587,62 +584,9 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             return;
         }
 
-        let unlockGeneration = 0;
-        let unlockTimer = 0;
-        let removeTransitionListener: (() => void) | null = null;
-
-        const clearUnlockWait = () => {
-            window.clearTimeout(unlockTimer);
-            removeTransitionListener?.();
-            removeTransitionListener = null;
-        };
-
-        const scheduleUnlock = () => {
-            clearUnlockWait();
-            const generation = unlockGeneration;
-            const finish = () => {
-                if (generation !== unlockGeneration) {
-                    return;
-                }
-                unlockGeneration += 1;
-                clearUnlockWait();
-                if (listEl.classList.contains('service-list--search-stuck')) {
-                    return;
-                }
-                pinnedRestMeasureLockedRef.current = false;
-                remeasurePinnedRestHeightRef.current();
-            };
-            const onTransitionEnd = (event: TransitionEvent) => {
-                if (event.target !== listEl || event.propertyName !== '--service-pinned-h') {
-                    return;
-                }
-                finish();
-            };
-            listEl.addEventListener('transitionend', onTransitionEnd);
-            removeTransitionListener = () => listEl.removeEventListener('transitionend', onTransitionEnd);
-            // Slightly longer than --service-sticky-duration (0.38s).
-            unlockTimer = window.setTimeout(finish, 450);
-        };
-
         const observer = new IntersectionObserver(
             ([entry]) => {
-                const stuck = !entry.isIntersecting;
-                if (stuck) {
-                    unlockGeneration += 1;
-                    clearUnlockWait();
-                    pinnedRestMeasureLockedRef.current = true;
-                    listEl.classList.add('service-list--search-stuck');
-                    return;
-                }
-
-                const wasStuck = listEl.classList.contains('service-list--search-stuck');
-                if (wasStuck) {
-                    pinnedRestMeasureLockedRef.current = true;
-                }
-                listEl.classList.remove('service-list--search-stuck');
-                if (wasStuck) {
-                    scheduleUnlock();
-                }
+                listEl.classList.toggle('service-list--search-stuck', !entry.isIntersecting);
             },
             {
                 root: scrollRoot,
@@ -653,8 +597,6 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
 
         observer.observe(sentinel);
         return () => {
-            unlockGeneration += 1;
-            clearUnlockWait();
             observer.disconnect();
         };
     }, []);
@@ -745,40 +687,6 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     }, [listItems]);
 
     useEffect(() => {
-        const listEl = listRef.current;
-        const pinnedEl = pinnedItemRef.current;
-        if (!listEl) {
-            return;
-        }
-
-        if (!pinnedEl) {
-            listEl.style.setProperty('--service-pinned-rest-h', '0px');
-            remeasurePinnedRestHeightRef.current = () => {};
-            return;
-        }
-
-        const updatePinnedHeight = () => {
-            if (
-                pinnedRestMeasureLockedRef.current
-                || listEl.classList.contains('service-list--search-stuck')
-            ) {
-                return;
-            }
-            const height = Math.ceil(pinnedEl.getBoundingClientRect().height);
-            listEl.style.setProperty('--service-pinned-rest-h', `${height}px`);
-        };
-
-        remeasurePinnedRestHeightRef.current = updatePinnedHeight;
-        updatePinnedHeight();
-        const resizeObserver = new ResizeObserver(updatePinnedHeight);
-        resizeObserver.observe(pinnedEl);
-        return () => {
-            resizeObserver.disconnect();
-            remeasurePinnedRestHeightRef.current = () => {};
-        };
-    }, [groupedList.pinnedItems.length, activeServiceKey]);
-
-    useEffect(() => {
         if (showPermissionsHint) {
             return;
         }
@@ -825,7 +733,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                 <ListItem
                     disablePadding
                     className={pinned ? 'service-list-pinned' : undefined}
-                    ref={pinned ? pinnedItemRef : (!pinned && service.key === 'lovable' ? lovableItemRef : undefined)}
+                    ref={!pinned && service.key === 'lovable' ? lovableItemRef : undefined}
                     style={{ direction: 'ltr' }}
                     sx={pinned ? {
                         position: 'sticky',
