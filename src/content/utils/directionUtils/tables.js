@@ -20,6 +20,19 @@ const TABLE_CELL_SELECTOR = 'th, td, caption';
 const ARIA_TABLE_STRUCTURE_SELECTOR = '[role="table"], [role="row"], [role="cell"], [role="columnheader"], [role="rowheader"]';
 const ARIA_TABLE_CELL_SELECTOR = '[role="cell"], [role="columnheader"], [role="rowheader"]';
 const TABLE_FONT_SKIP_SELECTOR = `${CODE_BLOCK_SELECTOR}, ${KATEX_SELECTOR}, svg, math`;
+const HAD_TEXT_LEFT_ATTR = 'data-ai-rtl-had-text-left';
+
+function dropTextLeft($nodes) {
+    if (!$nodes || !$nodes.length) {
+        return;
+    }
+    $nodes.each(function () {
+        if (this.classList && this.classList.contains('text-left') && !this.hasAttribute(HAD_TEXT_LEFT_ATTR)) {
+            this.setAttribute(HAD_TEXT_LEFT_ATTR, '');
+        }
+    });
+    $nodes.removeClass('text-left');
+}
 
 function applyFontClassToTableContents($table, fontClass, structureSelector, cellSelector) {
     if (!fontClass || !$table || !$table.length) {
@@ -127,13 +140,8 @@ export function processTablesInContainer(container, options = {}) {
 
             applyTextAlignByDirection($table.find('th, td'), tableDirection, setTextAlign);
             if (tableDirection === 'rtl') {
-                $table.find('.text-left').removeClass('text-left');
-                $table.removeClass('text-left');
+                dropTextLeft($table.find('.text-left').add($table.filter('.text-left')));
             }
-
-
-
-
 
             applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
 
@@ -184,8 +192,7 @@ export function processTablesInContainer(container, options = {}) {
                 setTextAlign
             );
             if (tableDirection === 'rtl') {
-                $table.find('.text-left').removeClass('text-left');
-                $table.removeClass('text-left');
+                dropTextLeft($table.find('.text-left').add($table.filter('.text-left')));
             }
 
             applyFontClassToTableContents($table, fontClass, ARIA_TABLE_STRUCTURE_SELECTOR, ARIA_TABLE_CELL_SELECTOR);

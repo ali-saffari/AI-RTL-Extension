@@ -7,6 +7,8 @@ const ORIG_DIR_ATTR = 'data-ai-rtl-orig-dir';
 const ORIG_ALIGN_ATTR = 'data-ai-rtl-orig-align';
 const ORIG_BIDI_ATTR = 'data-ai-rtl-orig-bidi';
 const ORIG_FONT_ATTR = 'data-ai-rtl-orig-font';
+const ORIG_CSS_DIRECTION_ATTR = 'data-ai-rtl-orig-css-direction';
+const HAD_TEXT_LEFT_ATTR = 'data-ai-rtl-had-text-left';
 const CODE_FONT_ATTR = 'data-ai-rtl-code-font';
 
 const SKIP_STYLE_IDS = new Set([
@@ -90,7 +92,7 @@ const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
     ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_BIDI_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
     'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
-    'data-org-dir', 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',
+    'data-org-dir', ORIG_CSS_DIRECTION_ATTR, HAD_TEXT_LEFT_ATTR, 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',
     'data-debug-reason', 'data-debug-processed', 'data-skip-log-sent'
 ];
 
@@ -151,6 +153,19 @@ function isTextAlignProp(prop) {
 
 function isUnicodeBidiProp(prop) {
     return prop === 'unicode-bidi' || prop === 'unicodeBidi';
+}
+
+function isCssDirectionProp(prop) {
+    return prop === 'direction';
+}
+
+function stampOrigCssDirection(el) {
+    if (!canStamp(el) || !el.style || el.hasAttribute(ORIG_CSS_DIRECTION_ATTR)) {
+        return;
+    }
+    const value = el.style.getPropertyValue('direction') || '';
+    const priority = el.style.getPropertyPriority('direction') || '';
+    nativeSetAttribute.call(el, ORIG_CSS_DIRECTION_ATTR, priority ? `${value}!${priority}` : value);
 }
 
 function wrapMethod(object, key, wrapper) {
@@ -251,26 +266,30 @@ function installDomHooks() {
 
     wrapGetterMap(HTMLElement.prototype, 'style', styleOwners);
     wrapMethod(CSSStyleDeclaration.prototype, 'setProperty', function (original, args) {
-        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0])) {
+        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0]) || isCssDirectionProp(args[0])) {
             const el = styleOwners.get(this);
             if (el) {
                 if (isTextAlignProp(args[0])) {
                     stampOrigAlign(el);
-                } else {
+                } else if (isUnicodeBidiProp(args[0])) {
                     stampOrigBidi(el);
+                } else {
+                    stampOrigCssDirection(el);
                 }
             }
         }
         return original.apply(this, args);
     });
     wrapMethod(CSSStyleDeclaration.prototype, 'removeProperty', function (original, args) {
-        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0])) {
+        if (isTextAlignProp(args[0]) || isUnicodeBidiProp(args[0]) || isCssDirectionProp(args[0])) {
             const el = styleOwners.get(this);
             if (el) {
                 if (isTextAlignProp(args[0])) {
                     stampOrigAlign(el);
-                } else {
+                } else if (isUnicodeBidiProp(args[0])) {
                     stampOrigBidi(el);
+                } else {
+                    stampOrigCssDirection(el);
                 }
             }
         }
@@ -503,6 +522,33 @@ function restoreBidiFromSelf(el) {
     nativeRemoveAttribute.call(el, ORIG_BIDI_ATTR);
 }
 
+function restoreCssDirectionFromSelf(el) {
+    if (!el.hasAttribute(ORIG_CSS_DIRECTION_ATTR) || !el.style) {
+        if (el.hasAttribute(ORIG_CSS_DIRECTION_ATTR)) {
+            nativeRemoveAttribute.call(el, ORIG_CSS_DIRECTION_ATTR);
+        }
+        return;
+    }
+    const raw = el.getAttribute(ORIG_CSS_DIRECTION_ATTR) || '';
+    const importantSplit = raw.lastIndexOf('!');
+    const value = importantSplit >= 0 ? raw.slice(0, importantSplit) : raw;
+    const priority = importantSplit >= 0 ? raw.slice(importantSplit + 1) : '';
+    if (value) {
+        nativeSetProperty.call(el.style, 'direction', value, priority);
+    } else {
+        nativeRemoveProperty.call(el.style, 'direction');
+    }
+    nativeRemoveAttribute.call(el, ORIG_CSS_DIRECTION_ATTR);
+}
+
+function restoreRemovedTextLeft(el) {
+    if (!el.hasAttribute(HAD_TEXT_LEFT_ATTR)) {
+        return;
+    }
+    el.classList.add('text-left');
+    nativeRemoveAttribute.call(el, HAD_TEXT_LEFT_ATTR);
+}
+
 function restoreFontFromSelf(el) {
     if (!el.hasAttribute(ORIG_FONT_ATTR) && !el.hasAttribute(CODE_FONT_ATTR)) {
         return;
@@ -531,7 +577,9 @@ export function restoreElementFromSelf(el) {
         const hasOrigAlign = el.hasAttribute(ORIG_ALIGN_ATTR);
         const hasOrigBidi = el.hasAttribute(ORIG_BIDI_ATTR);
         const hasOrigFont = el.hasAttribute(ORIG_FONT_ATTR) || el.hasAttribute(CODE_FONT_ATTR);
-        const touched = hasOrigDir || hasOrigAlign || hasOrigBidi || hasOrigFont || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
+        const hasOrigCssDirection = el.hasAttribute(ORIG_CSS_DIRECTION_ATTR);
+        const hadTextLeft = el.hasAttribute(HAD_TEXT_LEFT_ATTR);
+        const touched = hasOrigDir || hasOrigAlign || hasOrigBidi || hasOrigFont || hasOrigCssDirection || hadTextLeft || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
         if (!touched) {
             return false;
         }
@@ -539,6 +587,8 @@ export function restoreElementFromSelf(el) {
         restoreDirFromSelf(el);
         restoreAlignFromSelf(el);
         restoreBidiFromSelf(el);
+        restoreCssDirectionFromSelf(el);
+        restoreRemovedTextLeft(el);
         restoreFontFromSelf(el);
         nativeRemoveAttribute.call(el, 'data-direction');
         stripExtensionClassesFrom(el);
@@ -552,7 +602,7 @@ export function restoreElementFromSelf(el) {
 
 function restoreMarkedElements() {
     try {
-        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_BIDI_ATTR}], [${ORIG_FONT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
+        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_BIDI_ATTR}], [${ORIG_FONT_ATTR}], [${ORIG_CSS_DIRECTION_ATTR}], [${HAD_TEXT_LEFT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
             restoreElementFromSelf(el);
         });
     } catch {

@@ -1,6 +1,6 @@
 // Main content script - orchestrates all services
 
-import { activateChatGptRTL as activateChatGpt } from './services/chatgpt.js';
+import { activateChatGptRTL as activateChatGpt, stopChatGptRTL } from './services/chatgpt.js';
 import { activateClaude } from './services/claude.js';
 import { activateCopilot } from './services/copilot.js';
 import { activateGitHubCopilot } from './services/github-copilot.js';
@@ -443,6 +443,7 @@ function enqueueRtlTask(task) {
 
 function deactivateCurrentRtl() {
     applyToken += 1;
+    stopChatGptRTL();
     disconnectAllDomObservers();
     stopRtlEngine();
     resetRtlDomCaches();
@@ -534,6 +535,7 @@ function requestRtlDisable() {
         if (token !== applyToken) {
             return;
         }
+        stopChatGptRTL();
         disconnectAllDomObservers();
         stopRtlEngine();
         resetRtlDomCaches();
@@ -553,6 +555,7 @@ function requestRtlEnable() {
         if (token !== applyToken) {
             return;
         }
+        stopChatGptRTL();
         disconnectAllDomObservers();
         stopRtlEngine();
         resetRtlDomCaches();
