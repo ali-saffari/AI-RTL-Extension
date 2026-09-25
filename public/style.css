@@ -95,6 +95,11 @@ textarea.FontSetImportant{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
+
+.katex {
+    direction: ltr !important;
+}
+
 .FontSetGPT,
 .FontSetGPT * {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
