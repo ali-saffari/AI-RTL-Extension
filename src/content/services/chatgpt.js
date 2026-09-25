@@ -9,6 +9,7 @@ let markdownFlushRaf = 0;
 const markdownProcessTimes = new WeakMap();
 // ChatGPT currently ships multiple UI variants; keep selectors compatible with both.
 const MARKDOWN_SELECTOR = '.markdown, [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
+const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable], .ProseMirror[contenteditable][class^="MarkdownRoot-"], .ProseMirror[contenteditable][class*=" MarkdownRoot-"], [data-assistant-writing-block]';
@@ -21,13 +22,14 @@ const MARKDOWN_PROCESS_OPTIONS = {
     siteConfig: 'chatgpt',
     setTextAlign: true,
     removeDirAuto: true,
+    ignoreSelector: MARKDOWN_IGNORE_SELECTOR,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
 const COMPOSER_CSS_OPTIONS = {
     fontClass: 'FontSetGPT',
     processedClass: 'AsOk',
     setTextAlign: true,
-    onlyCss: true
+    // onlyCss: true
 };
 
 function isLockedMarkdownEditorEl(element) {
@@ -38,6 +40,41 @@ function isLockedMarkdownEditorEl(element) {
         element.classList.contains('ProseMirror') &&
         element.isContentEditable
     );
+}
+
+function clearDirInTree(node) {
+    if (node.hasAttribute('dir')) {
+        node.removeAttribute('dir');
+    }
+    const dirs = node.querySelectorAll('[dir]');
+    for (let i = 0; i < dirs.length; i++) {
+        dirs[i].removeAttribute('dir');
+    }
+}
+
+function clearDirOnIgnoredMarkdown(root) {
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) {
+        return;
+    }
+
+    let nested;
+    try {
+        nested = root.querySelectorAll(MARKDOWN_IGNORE_SELECTOR);
+    } catch {
+        return;
+    }
+    if (!nested.length) {
+        const ancestor = root.closest && root.closest(MARKDOWN_IGNORE_SELECTOR);
+        if (!ancestor) {
+            return;
+        }
+        clearDirInTree(ancestor);
+        return;
+    }
+
+    for (let i = 0; i < nested.length; i++) {
+        clearDirInTree(nested[i]);
+    }
 }
 
 function closestMarkdown(node) {
@@ -142,6 +179,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             fontClass: 'FontSetCodeBlocksGPT',
             setTextAlign: true
         });
+        clearDirOnIgnoredMarkdown(element);
     };
 
     const flushPendingMarkdown = () => {
@@ -280,7 +318,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    AQ('#prompt-textarea, textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]').each(function () {
+
+    AQ('#prompt-textarea').each(function () {
         if (this.id === 'mobile-composer-prompt') {
             return;
         }
@@ -304,6 +343,34 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
 
             });
         });
+    });
+
+
+    AQ('textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]').each(function () {
+        if (this.id === 'mobile-composer-prompt') {
+            return;
+        }
+
+        applyRtlToElement(this, rtlAlgorithm, COMPOSER_CSS_OPTIONS);
+
+        if (AQ(this).data('rtl-listener-added')) {
+            return;
+        }
+    
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSetGPT',
+            setTextAlign: true
+        });
+        AQ(this).data('rtl-listener-added', true);
+
+
+        AQ(this).on('input keyup paste', function () {
+            requestAnimationFrame(() => {
+                applyRtlToElement(this, rtlAlgorithm, COMPOSER_CSS_OPTIONS);
+
+            });
+        });
+     
     });
 
     // // Keep mobile composer isolated from generic input rules.
@@ -390,7 +457,8 @@ export function initializeChatGptHistory(rtlAlgorithm = 'advanced_full') {
     })
 
     // New ChatGPT sidebar history (Recents) and project rows
-    AQ('[data-app-action-sidebar-section-heading="Recents"] [data-sidebar-chatgpt-conversation-key], [data-app-action-sidebar-project-row]').each(function () {
+    AQ('[data-app-action-sidebar-section-heading="Recents"] [role="listitem"], [data-app-action-sidebar-project-row]').each(function () {
+        console.log('this', this);
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
