@@ -19,6 +19,7 @@ const SKIP_MIXED_PHRASE_SELECTOR = [
     'code', 'kbd', 'samp', 'pre',
     '[contenteditable="true"]',
     '.ProseMirror',
+    '[data-ai-rtl-editor]',
     KATEX_SELECTOR,
     CODE_BLOCK_HOST_SELECTOR
 ].join(', ');

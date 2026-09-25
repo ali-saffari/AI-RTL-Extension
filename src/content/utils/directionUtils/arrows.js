@@ -20,7 +20,7 @@ const flippedArrowNodes = new Set();
 
 const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
     'textarea', 'input', 'script', 'style', 'svg', 'math',
-    KATEX_SELECTOR, '.ProseMirror'
+    KATEX_SELECTOR, '.ProseMirror', '[data-ai-rtl-editor]'
 ].join(', ');
 
 const CODE_SKIP_ARROW_FLIP_SELECTOR = CODE_BLOCK_HOST_SELECTOR;

@@ -35,6 +35,7 @@ export {
     setApplyAlgorithmToCode
 } from './codeBlocks.js';
 export {
+    isInsideLockedCssEditor,
     isLockedMarkdownEditor,
     processLockedEditorByCss
 } from './lockedEditor.js';

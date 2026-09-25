@@ -12,7 +12,7 @@ import {
     processCodeMirrorBlock
 } from './codeBlocks.js';
 import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
-import { isLockedMarkdownEditor } from './lockedEditor.js';
+import { isInsideLockedCssEditor, isLockedMarkdownEditor } from './lockedEditor.js';
 import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
 import {
     CODE_BLOCK_SELECTOR,
@@ -325,7 +325,7 @@ export function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-        if (isLockedMarkdownEditor(this, options.onlyCss)) {
+        if (isLockedMarkdownEditor(this, options.onlyCss) || isInsideLockedCssEditor(this)) {
             setDebugAttr($element, 'data-debug-mode', 'locked-markdown-editor-skipped');
             return;
         }
@@ -587,11 +587,14 @@ export function processTextElementsAdvanced(container, options = {}) {
                             isContainer: false,
                             skipTags,
                             removeSkipTags,
+                            includeTags,
+                            excludeTags,
                             setTextAlign,
                             setUnicodeBidi,
                             rtlClass,
                             ltrClass,
-                            ignoreSelector
+                            ignoreSelector,
+                            onlyCss: options.onlyCss
                         });
 
                         // برای خود المان هم تصمیم بگیر

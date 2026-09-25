@@ -17,6 +17,7 @@ import {
 import {
     DEFAULT_LOCKED_EDITOR_SELECTOR,
     invalidateLockedEditorCache,
+    isInsideLockedCssEditor,
     processLockedEditorByCss
 } from './lockedEditor.js';
 import {
@@ -189,6 +190,9 @@ export function processCodeBlocksInContainer($container, options = {}, includeSt
     }
     const selector = includeStandard ? CODE_BLOCK_SELECTOR : CUSTOM_CODE_BLOCK_SELECTOR;
     $container.find(selector).add($container.filter(selector)).each(function() {
+        if (isInsideLockedCssEditor(this)) {
+            return;
+        }
         processCodeBlockNode(AQ(this), options);
     });
 }
@@ -257,6 +261,9 @@ export function processCodeMirrorBlocks(container, options = {}) {
     }
     const $root = container ? AQ(container) : AQ(document);
     $root.find('.cm-content, .md-code-block').add($root.filter('.cm-content, .md-code-block')).each(function() {
+        if (isInsideLockedCssEditor(this)) {
+            return;
+        }
         processCodeMirrorBlock(AQ(this), this, options);
     });
 }
