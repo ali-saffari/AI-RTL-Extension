@@ -1140,9 +1140,13 @@ export default function ServiceList({
                                 backgroundColor: isDarkMode
                                     ? 'rgba(26, 26, 46, 0.72)'
                                     : 'rgba(255, 255, 255, 0.72)',
+                                borderTop: isDarkMode
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
                                 borderBottom: isDarkMode
-                                    ? '1px solid rgba(255, 255, 255, 0.12)'
-                                    : '1px solid rgba(15, 23, 42, 0.1)',
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
+                                borderRadius: 0,
                                 direction: 'rtl',
                             }}
                         >
@@ -1152,7 +1156,7 @@ export default function ServiceList({
                                     fontWeight: 300,
                                     fontSize: '0.8rem',
                                     lineHeight: 1.5,
-                                    color: isDarkMode ? '#ffffff' : '#1e293b',
+                                    color: isDarkMode ? '#ff8a8a' : '#ef5350',
                                     whiteSpace: 'nowrap',
                                 }}
                             >
