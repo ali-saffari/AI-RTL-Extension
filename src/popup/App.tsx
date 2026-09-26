@@ -1136,6 +1136,7 @@ function App() {
                                 <ServiceList
                                     pinOpenSiteMode={pinOpenSiteMode}
                                     extensionEnabled={extensionEnabled}
+                                    onEnableExtension={() => handleExtensionEnabledChange(true)}
                                 />
                             </div>
                         </div>
