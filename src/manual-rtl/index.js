@@ -2,39 +2,55 @@ import { manualRtlState } from './state.js';
 import { ensureHighlightStyle, removeHighlightStyle, applyStylesToImages, removeStylesFromImages } from './styles.js';
 import { shouldEnableTextSelector } from './settings.js';
 import { updateHighlightStyle, handleSelectionChange, updateElementHighlight } from './highlight.js';
-import { showMenuAfterSelection } from './menu.js';
+import { hidePopupMenu, showMenuAfterSelection } from './menu.js';
+import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled.js';
+import { removeDirectionChanges } from './direction.js';
 import { handleManualLogoClick } from './logoTrigger.js';
 import { updateMousePositionFromEvent, resetMousePosition } from './dom.js';
 
-export function initTextSelector() {
-    shouldEnableTextSelector((enabled) => {
-        if (!enabled) {
-            console.log('[RTL Text Selector] Disabled based on settings');
+function clearManualDirections() {
+    document.querySelectorAll('.rtl-manual-direction-element').forEach((element) => {
+        removeDirectionChanges(element);
+    });
+}
+
+function refreshTextSelector(settings) {
+    chrome.storage.sync.get([EXTENSION_ENABLED_STORAGE_KEY], (result) => {
+        if (!isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY])) {
+            clearManualDirections();
+            cleanupTextSelector();
             return;
         }
 
-        initTextSelectorInternal();
+        shouldEnableTextSelector((enabled) => {
+            if (!enabled) {
+                cleanupTextSelector();
+            } else if (!manualRtlState.highlightStyle) {
+                initTextSelectorInternal();
+            } else if (settings) {
+                updateHighlightStyle(settings);
+            }
+        });
     });
+}
+
+export function initTextSelector() {
+    refreshTextSelector();
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'sync' && changes.manualRtlSettings) {
-            const newSettings = changes.manualRtlSettings?.newValue;
-            if (newSettings) {
-                manualRtlState.manualRtlSettings = newSettings;
-                updateHighlightStyle(newSettings);
-            }
-
-            shouldEnableTextSelector((enabled) => {
-                if (!enabled) {
-                    cleanupTextSelector();
-                } else if (!manualRtlState.highlightStyle) {
-                    initTextSelectorInternal();
-                } else {
-                    // اگر text selector فعال است، logo display را به‌روزرسانی کن
-                    updateHighlightStyle(newSettings);
-                }
-            });
+        if (areaName !== 'sync') {
+            return;
         }
+        if (!changes.manualRtlSettings && !changes[EXTENSION_ENABLED_STORAGE_KEY]) {
+            return;
+        }
+
+        const newSettings = changes.manualRtlSettings?.newValue;
+        if (newSettings) {
+            manualRtlState.manualRtlSettings = newSettings;
+        }
+
+        refreshTextSelector(newSettings);
     });
 }
 
@@ -125,6 +141,7 @@ export function removeHighlight() {
 }
 
 export function cleanupTextSelector() {
+    hidePopupMenu();
     removeHighlightStyle();
     removeHighlight();
     removeStylesFromImages();

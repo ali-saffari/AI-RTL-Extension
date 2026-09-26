@@ -12,6 +12,7 @@ import {
     normalizeSelectedFontId,
 } from '../../utils/fonts';
 import { FONT_SCALE_MODE_FONT_SIZE, getFontScaleMode } from '../../utils/fontScaleSites';
+import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../../constants/extensionEnabled.js';
 
 const STYLE_ID = 'ai-rtl-selected-font-style';
 const FONT_SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
@@ -21,6 +22,7 @@ const LEGACY_FONT_SIZE_ATTR = 'data-ai-rtl-font-px';
 const loadedFontIds = new Set();
 let initialized = false;
 let applyingFontId = null;
+let pageEffectsEnabled = true;
 
 const NONE_FONT_OVERRIDE_CSS = `
 html.ai-rtl-font-none .FontSet,
@@ -116,7 +118,42 @@ function buildFontScaleCss(value) {
     return `html { zoom: ${value / 100} !important; }`;
 }
 
+function clearPageEffects() {
+    const root = document.documentElement;
+    if (root) {
+        root.style.removeProperty('--ai-rtl-font');
+        root.style.removeProperty('font-size');
+        root.style.removeProperty('zoom');
+        root.classList.remove(HAS_FONT_CLASS, NONE_FONT_CLASS);
+    }
+    clearLegacyElementScales();
+    [STYLE_ID, FONT_SCALE_STYLE_ID].forEach((styleId) => {
+        const style = document.getElementById(styleId);
+        if (style) {
+            style.textContent = '';
+        }
+    });
+}
+
+function restorePageEffectsFromStorage() {
+    try {
+        chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY], (result) => {
+            if (!pageEffectsEnabled) {
+                return;
+            }
+            applySelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
+            applyFontScale(result[FONT_SCALE_STORAGE_KEY]);
+        });
+    } catch (error) {
+        applySelectedFont(DEFAULT_FONT_ID);
+        applyFontScale(DEFAULT_FONT_SCALE);
+    }
+}
+
 export function applyFontScale(scale) {
+    if (!pageEffectsEnabled) {
+        return;
+    }
     const value = normalizeFontScale(scale);
     const root = document.documentElement;
     if (!root) {
@@ -177,6 +214,9 @@ async function loadFontFaces(font) {
 }
 
 export async function applySelectedFont(fontId) {
+    if (!pageEffectsEnabled) {
+        return;
+    }
     const selectedId = normalizeSelectedFontId(fontId);
     applyingFontId = selectedId;
 
@@ -187,7 +227,7 @@ export async function applySelectedFont(fontId) {
 
     try {
         const config = await loadFontsConfig();
-        if (applyingFontId !== selectedId) {
+        if (applyingFontId !== selectedId || !pageEffectsEnabled) {
             return;
         }
         const font = getFontById(config, selectedId) || getFontById(config, DEFAULT_FONT_ID);
@@ -196,11 +236,14 @@ export async function applySelectedFont(fontId) {
             return;
         }
         await loadFontFaces(font);
-        if (applyingFontId !== selectedId) {
+        if (applyingFontId !== selectedId || !pageEffectsEnabled) {
             return;
         }
         setRootFontState(getFontFamilyCssValue(font), false);
     } catch (error) {
+        if (!pageEffectsEnabled) {
+            return;
+        }
         if (selectedId === DEFAULT_FONT_ID) {
             setRootFontState('iranyekan, sans-serif', false);
             return;
@@ -216,12 +259,28 @@ export function initSelectedFont() {
     initialized = true;
 
     try {
-        chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY], (result) => {
+        chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, EXTENSION_ENABLED_STORAGE_KEY], (result) => {
+            pageEffectsEnabled = isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY]);
+            if (!pageEffectsEnabled) {
+                clearPageEffects();
+                return;
+            }
             applySelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
             applyFontScale(result[FONT_SCALE_STORAGE_KEY]);
         });
         chrome.storage.onChanged.addListener((changes, areaName) => {
             if (areaName !== 'sync') {
+                return;
+            }
+            if (changes[EXTENSION_ENABLED_STORAGE_KEY]) {
+                pageEffectsEnabled = isExtensionEnabledValue(changes[EXTENSION_ENABLED_STORAGE_KEY].newValue);
+                if (!pageEffectsEnabled) {
+                    clearPageEffects();
+                    return;
+                }
+                restorePageEffectsFromStorage();
+            }
+            if (!pageEffectsEnabled) {
                 return;
             }
             if (changes[SELECTED_FONT_STORAGE_KEY]) {
@@ -233,7 +292,9 @@ export function initSelectedFont() {
         });
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message && message.action === 'previewFontScale') {
-                applyFontScale(message.scale);
+                if (pageEffectsEnabled) {
+                    applyFontScale(message.scale);
+                }
                 sendResponse({ success: true });
                 return true;
             }

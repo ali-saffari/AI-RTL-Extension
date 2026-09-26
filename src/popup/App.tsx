@@ -11,7 +11,8 @@ import {
     AppBar,
     IconButton,
     Tooltip,
-    SvgIcon
+    SvgIcon,
+    Switch
 } from '@mui/material';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -39,6 +40,7 @@ import {
     getRateLinkText,
     getStorePageLinkText,
 } from '../utils/storeLinks';
+import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled';
 import './App.css';
 import manifest from '../../public/manifest.chrome.json';
 
@@ -222,7 +224,8 @@ function App() {
     const [troubleshootingHintDismissed, setTroubleshootingHintDismissed] = React.useState<boolean>(true);
     const [algorithmHintDismissed, setAlgorithmHintDismissed] = React.useState<boolean>(true);
     const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
-    const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [settingsOpen, setSettingsOpen] = React.useState(true);
+    const [extensionEnabled, setExtensionEnabled] = React.useState(true);
     const [settingsHintActive, setSettingsHintActive] = React.useState(false);
     const settingsHintTimer = React.useRef<number | null>(null);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
@@ -236,7 +239,7 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', EXTENSION_ENABLED_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -272,8 +275,11 @@ function App() {
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
                 }
-                if (result.popupSettingsOpen === true) {
-                    setSettingsOpen(true);
+                if (result.popupSettingsOpen !== undefined) {
+                    setSettingsOpen(result.popupSettingsOpen === true);
+                }
+                if (result[EXTENSION_ENABLED_STORAGE_KEY] !== undefined) {
+                    setExtensionEnabled(isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY]));
                 }
                 // Use manualRtlSettings
                 const settings = result.manualRtlSettings;
@@ -356,7 +362,10 @@ function App() {
                     }
                 }
                 if (changes.popupSettingsOpen) {
-                    setSettingsOpen(changes.popupSettingsOpen.newValue === true);
+                    setSettingsOpen(changes.popupSettingsOpen.newValue !== false);
+                }
+                if (changes[EXTENSION_ENABLED_STORAGE_KEY]) {
+                    setExtensionEnabled(isExtensionEnabledValue(changes[EXTENSION_ENABLED_STORAGE_KEY].newValue));
                 }
                 if (changes.activationHintDismissed) {
                     setActivationHintDismissed(changes.activationHintDismissed.newValue !== false);
@@ -471,6 +480,15 @@ function App() {
     };
 
     // Save support setting to storage when changed
+    const handleExtensionEnabledChange = (enabled: boolean) => {
+        setExtensionEnabled(enabled);
+        try {
+            chrome.storage.sync.set({ [EXTENSION_ENABLED_STORAGE_KEY]: enabled });
+        } catch (error) {
+            // Silently handle save errors
+        }
+    };
+
     const handleSupportChange = (enabled: boolean) => {
         setSupportHide(enabled);
         try {
@@ -882,6 +900,27 @@ function App() {
                             />
                         </Box>
                         
+                        <Tooltip
+                            title={extensionEnabled ? 'خاموش کردن افزونه' : 'روشن کردن افزونه'}
+                            placement="bottom-end"
+                            disableInteractive
+                        >
+                            <Switch
+                                checked={extensionEnabled}
+                                onChange={(event) => handleExtensionEnabledChange(event.target.checked)}
+                                inputProps={{ 'aria-label': extensionEnabled ? 'افزونه فعال است' : 'افزونه خاموش است' }}
+                                sx={{
+                                    flexShrink: 0,
+                                    transform: 'rotate(180deg)',
+                                    '& .MuiSwitch-switchBase.Mui-checked': {
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    },
+                                }}
+                            />
+                        </Tooltip>
                         <Tooltip
                             title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
                             placement="bottom-end"
