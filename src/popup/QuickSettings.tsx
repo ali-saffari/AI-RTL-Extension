@@ -198,13 +198,26 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
 
     const switchSx = {
-        '& .MuiSwitch-switchBase.Mui-checked': {
+        '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
             color: isDarkMode ? '#00e9ff' : '#1c39bb',
         },
-        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+        '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
             backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
         },
+        '& .MuiSwitch-switchBase.Mui-disabled': {
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
+        },
+        '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.12)',
+            opacity: 1,
+        },
+        '& .Mui-disabled': {
+            opacity: 0.5,
+        },
     };
+
+    const disabledControlColor = isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.26)';
+    const controlsDisabled = !extensionEnabled;
 
     const openOptions = (hash = '') => {
         const page = hash ? `options.html#${hash}` : 'options.html';
@@ -333,21 +346,21 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
             </Box>
 
-            <Box className="quick-settings-body" sx={{ position: 'relative' }}>
+            <Box className="quick-settings-body">
                 {!extensionEnabled ? (
                     <Box
                         className="popup-disabled-overlay"
                         role="status"
                         aria-live="polite"
                         sx={{
-                            backgroundColor: isDarkMode ? 'rgba(10, 14, 28, 0.32)' : 'rgba(226, 232, 240, 0.38)',
+                            backgroundColor: isDarkMode ? 'rgba(10, 14, 28, 0.38)' : 'rgba(226, 232, 240, 0.42)',
                         }}
                     >
                         <Typography
                             className="popup-disabled-overlay-label"
                             sx={{
                                 color: isDarkMode ? '#ffffff' : '#1e293b',
-                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.88)' : 'rgba(255, 255, 255, 0.92)',
+                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.92)' : 'rgba(255, 255, 255, 0.95)',
                                 border: isDarkMode
                                     ? '1px solid rgba(0, 233, 255, 0.28)'
                                     : '1px solid rgba(30, 64, 175, 0.2)',
@@ -360,6 +373,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Typography>
                     </Box>
                 ) : null}
+                <Box className="quick-settings-body-scroll">
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{
@@ -399,11 +413,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Button>
                     </Box>
 
-                    <FormControl fullWidth size="small">
+                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
                         <Select
                             dir="rtl"
                             className="quick-settings-select"
                             value={rtlAlgorithm}
+                            disabled={controlsDisabled}
                             renderValue={(value) => ALGORITHMS.find((item) => item.id === value)?.title ?? ''}
                             onChange={(event) => onRtlAlgorithmChange(event.target.value)}
                             MenuProps={{
@@ -526,11 +541,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Typography className="quick-settings-label" sx={{ mb: 1 }}>
                                 نحوه نمایش عنوان‌ها
                             </Typography>
-                            <FormControl fullWidth size="small">
+                            <FormControl fullWidth size="small" disabled={controlsDisabled}>
                                 <Select
                                     dir="rtl"
                                     className="quick-settings-select"
                                     value={mixedTitleDisplayMode}
+                                    disabled={controlsDisabled}
                                     renderValue={(value) => TITLE_MODES.find((item) => item.id === value)?.title ?? ''}
                                     onChange={(event) => onMixedTitleDisplayModeChange(event.target.value)}
                                     MenuProps={{
@@ -601,11 +617,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <Typography className="quick-settings-label">
                                     برعکس کردن فلش‌ها در متن راست‌چین
                                 </Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Switch
                                 size="small"
                                 checked={flipRtlArrows}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onFlipRtlArrowsChange(event.target.checked)}
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
@@ -646,11 +663,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         <path d={mdiInformationOutline} />
                                     </SvgIcon>
                                 </IconButton>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Switch
                                 size="small"
                                 checked={applyAlgorithmToCode}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onApplyAlgorithmToCodeChange(event.target.checked)}
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
@@ -709,13 +727,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Typography className="quick-settings-label">
                             فونت
                         </Typography>
-                        <ExperimentalBadge isDarkMode={isDarkMode} />
+                        <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                     </Box>
-                    <FormControl fullWidth size="small">
+                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
                         <Select
                             dir="rtl"
                             className="quick-settings-select"
                             value={selectedFont}
+                            disabled={controlsDisabled}
                             renderValue={(value) => {
                                 if (value === NONE_FONT_ID) {
                                     return NONE_FONT_TITLE;
@@ -816,7 +835,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 <Typography className="quick-settings-label">اندازه فونت</Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted }}>
                                 {formatFontScaleLabel(fontScale)}
@@ -829,19 +848,24 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             max={MAX_FONT_SCALE}
                             step={FONT_SCALE_STEP}
                             marks={[{ value: DEFAULT_FONT_SCALE }]}
+                            disabled={controlsDisabled}
                             onChange={(_, value) => onFontScaleChange(value as number)}
                             onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
                             sx={{
                                 mt: 0.5,
-                                color: accent,
+                                color: controlsDisabled ? disabledControlColor : accent,
                                 '& .MuiSlider-rail': {
                                     opacity: 0.35
                                 },
                                 '& .MuiSlider-mark': {
-                                    backgroundColor: accent,
+                                    backgroundColor: controlsDisabled ? disabledControlColor : accent,
                                     height: 8,
                                     width: 2
-                                }
+                                },
+                                '&.Mui-disabled': {
+                                    color: disabledControlColor,
+                                    opacity: 0.55,
+                                },
                             }}
                         />
                     </Box>
@@ -859,11 +883,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Typography className="quick-settings-label">تم منو اکستشن</Typography>
-                        <FormControl size="small" sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
+                        <FormControl size="small" disabled={controlsDisabled} sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
                             <Select
                                 dir="rtl"
                                 className="quick-settings-select"
                                 value={isDarkMode ? 'dark' : 'light'}
+                                disabled={controlsDisabled}
                                 renderValue={(value) => THEME_MODES.find((item) => item.id === value)?.title ?? ''}
                                 onChange={(event) => onDarkModeChange(event.target.value === 'dark')}
                                 MenuProps={{
@@ -941,6 +966,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 void handlePinOpenSiteModeSelect(mode);
                             }}
                             isDarkMode={isDarkMode}
+                            disabled={controlsDisabled}
                         />
                     </Box>
                 </Box>
@@ -957,7 +983,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
                                 <Typography className="quick-settings-label">چینش دستی</Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
                                 راست‌چین یا چپ‌چین کردن متن در هر سایت
@@ -968,6 +994,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Switch
                                 size="small"
                                 checked={manualEnabled}
+                                disabled={controlsDisabled}
                                 onChange={(event) => {
                                     onManualRtlSettingsChange({
                                         ...manualRtlSettings,
@@ -981,6 +1008,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Button
                                 variant="outlined"
                                 size="small"
+                                disabled={controlsDisabled}
                                 onClick={() => openOptions('manual-rtl')}
                                 sx={{
                                     flexShrink: 0,
@@ -1026,7 +1054,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 sx={{
                                     fontSize: '0.65rem',
                                     fontWeight: 600,
-                                    color: supportHide ? muted : accent,
+                                    color: controlsDisabled
+                                        ? muted
+                                        : (supportHide ? muted : accent),
                                     whiteSpace: 'nowrap',
                                 }}
                             >
@@ -1035,6 +1065,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Switch
                                 size="small"
                                 checked={supportHide}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onSupportChange(event.target.checked)}
                                 data-settings-switch="true"
                                 sx={switchSx}
@@ -1042,6 +1073,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             />
                         </Box>
                     </Box>
+                </Box>
                 </Box>
             </Box>
             <Dialog

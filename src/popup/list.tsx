@@ -781,10 +781,13 @@ export default function ServiceList({
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                                         <Typography sx={{
-                                            color: isDarkMode ? '#ffffff' : '#000000',
+                                            color: extensionEnabled
+                                                ? (isDarkMode ? '#ffffff' : '#000000')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.42)' : 'rgba(0, 0, 0, 0.38)'),
                                             fontWeight: 500,
+                                            transition: 'color 0.2s ease',
                                             '&:hover': {
-                                                textDecoration: 'underline'
+                                                textDecoration: extensionEnabled ? 'underline' : 'none',
                                             }
                                         }}>
                                             {service.name}

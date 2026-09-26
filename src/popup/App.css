@@ -126,7 +126,7 @@ html.popup-side-expanded .popup-columns {
     justify-content: center;
     padding: 24px;
     box-sizing: border-box;
-    pointer-events: auto;
+    pointer-events: none;
     backdrop-filter: blur(0.6px);
 }
 
@@ -520,6 +520,15 @@ body[data-theme="light"] .quick-settings-header {
 }
 
 .quick-settings-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-settings-body-scroll {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
