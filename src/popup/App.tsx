@@ -37,15 +37,18 @@ import {
 } from '../utils/pinOpenSite';
 import {
     getExtensionStoreUrl,
+    getExtensionReviewsUrl,
     getRateLinkText,
     getStorePageLinkText,
 } from '../utils/storeLinks';
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled';
+import ShareModal from './ShareModal';
 import './App.css';
 import manifest from '../../public/manifest.chrome.json';
 
 const firefoxDefaults = isFirefoxRuntime();
 const extensionStoreUrl = getExtensionStoreUrl();
+const extensionReviewsUrl = getExtensionReviewsUrl();
 const storePageLinkText = getStorePageLinkText();
 const rateLinkText = getRateLinkText();
 const TELEGRAM_ICON_PATH = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z';
@@ -230,6 +233,7 @@ function App() {
     const settingsHintTimer = React.useRef<number | null>(null);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
     const [hoverExpandLocked, setHoverExpandLocked] = React.useState(false);
+    const [shareModalOpen, setShareModalOpen] = React.useState(false);
     const skipSettingsAnimation = React.useRef(true);
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
     const POPUP_MAIN_WIDTH = 378;
@@ -531,6 +535,11 @@ function App() {
     const handleThemeToggle = () => {
         handleDarkModeChange(!isDarkMode);
     };
+
+    const handleIntroShare = React.useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        setShareModalOpen(true);
+    }, []);
 
     const handleHighlightSettingsButton = React.useCallback(() => {
         setSettingsHintActive(true);
@@ -971,25 +980,12 @@ function App() {
                             fontSize: '0.8rem',
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 1)',
                             lineHeight: 1.4,
-                            fontWeight: 400,
-                            mb: 0.75
-                        }}
-                    >
-                        این افزونه ساخته شده تا استفاده از هوش مصنوعی برای فارسی زبانان شیرین تر و لذت بخش تر باشد.
-                    </Typography>
-                    )}
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
-                            fontSize: '0.8rem',
-                            color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 1)',
-                            lineHeight: 1.4,
                             fontWeight: 400
                         }}
                     >
-                        امیدوارم از استفاده از این اکستشن لذت ببرید ❤️ و اگر دوست داشتید{' '}
+                        برای پیوند شیرین‌تر هوش مصنوعی و زبان مادری‌مان. اگر نشست به دلتان،{' '}
                         <a
-                            href="https://ai-rtl.ir/supporters/?source=extension-popup-intro-supporters"
+                            href={extensionReviewsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
@@ -998,10 +994,36 @@ function App() {
                                 fontWeight: 600,
                             }}
                         >
-                            حمایت
+                            نظرتان
                         </a>
-                        {' '}کنید
+                        {' '}را بنویسید، به دیگران{' '}
+                        <a
+                            href="#share"
+                            onClick={handleIntroShare}
+                            style={{
+                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
+                            تعارفش
+                        </a>
+                        {' '}کنید، یا یک{' '}
+                        <a
+                            href="https://donate.sudoshz.ir/u/ai-rtl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
+                            فنجان قهوه
+                        </a>
+                        {' '}مهمانمان کنید! ☕❤️
                     </Typography>
+                    )}
                 </Box>
 
                 {notebookNeedsReenable && (
@@ -1060,6 +1082,50 @@ function App() {
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
+                    <Box className="popup-sponsors" aria-label="حامیان ویژه و اسپانسرها">
+                        <div className="popup-sponsors-top">
+                            <Typography className="popup-sponsors-caption" component="span">
+                                اسپانسرهای ارزشمند ما
+                            </Typography>
+                            <a
+                                className="popup-sponsors-cta"
+                                href="https://t.me/ai_rtl_support"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                همکاری و حمایت
+                            </a>
+                        </div>
+                        <a
+                            className="popup-sponsors-box popup-sponsors-box--full"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            این اکستنشن اسپانسر می‌پذیرد
+                        </a>
+                        <div className="popup-sponsors-slots">
+                            <a
+                                className="popup-sponsors-box popup-sponsors-box--half"
+                                href="https://t.me/ai_rtl_support"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                جای لوگوی قشنگتون
+                            </a>
+                            <a
+                                className="popup-sponsors-box popup-sponsors-box--half"
+                                href="https://t.me/ai_rtl_support"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                جای لوگوی قشنگتون
+                            </a>
+                        </div>
+                        <Typography className="popup-sponsors-note" component="p">
+                            حمایت‌های شما دلگرمی بزرگی است. ما عاشق این پروژه‌ایم و می‌خواهیم وقت خیلی بیشتری پایش بگذاریم، به همین دلیل تصمیم گرفتیم برای اکستنشن اسپانسر بگیریم.
+                        </Typography>
+                    </Box>
                     <AppBar 
                         position="sticky"
                         sx={{
@@ -1485,6 +1551,11 @@ function App() {
                 </div>
                 </div>
             </div>
+            <ShareModal
+                open={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                isDarkMode={isDarkMode}
+            />
         </ThemeProvider>
         </CacheProvider>
     );
