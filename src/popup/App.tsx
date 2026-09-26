@@ -228,6 +228,8 @@ function App() {
     const [algorithmHintDismissed, setAlgorithmHintDismissed] = React.useState<boolean>(true);
     const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(true);
+    // Temporarily keep the settings panel always open.
+    const settingsAlwaysOpen = true;
     const [extensionEnabled, setExtensionEnabled] = React.useState(true);
     const [settingsHintActive, setSettingsHintActive] = React.useState(false);
     const settingsHintTimer = React.useRef<number | null>(null);
@@ -279,8 +281,10 @@ function App() {
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
                 }
-                if (result.popupSettingsOpen !== undefined) {
+                if (result.popupSettingsOpen !== undefined && !settingsAlwaysOpen) {
                     setSettingsOpen(result.popupSettingsOpen === true);
+                } else {
+                    setSettingsOpen(true);
                 }
                 if (result[EXTENSION_ENABLED_STORAGE_KEY] !== undefined) {
                     setExtensionEnabled(isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY]));
@@ -561,6 +565,10 @@ function App() {
     }, []);
 
     const handleSettingsOpenChange = React.useCallback((open: boolean) => {
+        // Temporarily disable closing the settings panel.
+        if (settingsAlwaysOpen && !open) {
+            return;
+        }
         setSideMenuHovered(false);
         setSettingsOpen(open);
         try {
@@ -568,7 +576,7 @@ function App() {
         } catch (error) {
             // Silently handle save errors
         }
-    }, []);
+    }, [settingsAlwaysOpen]);
 
     const unlockHoverExpand = React.useCallback(() => {
         setHoverExpandLocked(false);
@@ -1082,50 +1090,6 @@ function App() {
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
-                    <Box className="popup-sponsors" aria-label="حامیان ویژه و اسپانسرها">
-                        <div className="popup-sponsors-top">
-                            <Typography className="popup-sponsors-caption" component="span">
-                                اسپانسرهای ارزشمند ما
-                            </Typography>
-                            <a
-                                className="popup-sponsors-cta"
-                                href="https://t.me/ai_rtl_support"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                همکاری و حمایت
-                            </a>
-                        </div>
-                        <a
-                            className="popup-sponsors-box popup-sponsors-box--full"
-                            href="https://t.me/ai_rtl_support"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            این اکستنشن اسپانسر می‌پذیرد
-                        </a>
-                        <div className="popup-sponsors-slots">
-                            <a
-                                className="popup-sponsors-box popup-sponsors-box--half"
-                                href="https://t.me/ai_rtl_support"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                جای لوگوی قشنگتون
-                            </a>
-                            <a
-                                className="popup-sponsors-box popup-sponsors-box--half"
-                                href="https://t.me/ai_rtl_support"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                جای لوگوی قشنگتون
-                            </a>
-                        </div>
-                        <Typography className="popup-sponsors-note" component="p">
-                            حمایت‌های شما دلگرمی بزرگی است. ما عاشق این پروژه‌ایم و می‌خواهیم وقت خیلی بیشتری پایش بگذاریم، به همین دلیل تصمیم گرفتیم برای اکستنشن اسپانسر بگیریم.
-                        </Typography>
-                    </Box>
                     <AppBar 
                         position="sticky"
                         sx={{
@@ -1413,7 +1377,7 @@ function App() {
                         onDarkModeChange={handleDarkModeChange}
                         manualRtlSettings={manualRtlSettings}
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
-                        onClose={() => handleSettingsOpenChange(false)}
+                        onClose={settingsAlwaysOpen ? undefined : () => handleSettingsOpenChange(false)}
                         extensionEnabled={extensionEnabled}
                         onEnableExtension={() => handleExtensionEnabledChange(true)}
                     />
@@ -1434,10 +1398,16 @@ function App() {
                         <div className="popup-side-item-group">
                         <button
                             type="button"
-                            className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}`}
-                            onClick={() => handleSettingsOpenChange(!settingsOpen)}
+                            className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}${settingsAlwaysOpen ? ' is-locked-open' : ''}`}
+                            onClick={() => {
+                                if (settingsAlwaysOpen) {
+                                    return;
+                                }
+                                handleSettingsOpenChange(!settingsOpen);
+                            }}
                             aria-label="تنظیمات"
                             aria-expanded={settingsOpen}
+                            aria-disabled={settingsAlwaysOpen}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>

@@ -16,7 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
+import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiClose } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -118,6 +118,8 @@ const THEME_MODES = [
     { id: 'light', title: 'روشن' },
 ] as const;
 
+const SPONSOR_NOTE_DISMISSED_KEY = 'sponsorNoteDismissed';
+
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
@@ -140,7 +142,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onDarkModeChange,
     manualRtlSettings,
     onManualRtlSettingsChange,
-    onClose,
     extensionEnabled = true,
     onEnableExtension,
 }) => {
@@ -150,6 +151,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
+    const [sponsorNoteDismissed, setSponsorNoteDismissed] = React.useState(false);
+    const [sponsorNoteReady, setSponsorNoteReady] = React.useState(false);
+    const [sponsorNoteConfirmOpen, setSponsorNoteConfirmOpen] = React.useState(false);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -162,6 +166,48 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         };
         checkTabsPermission();
     }, []);
+
+    React.useEffect(() => {
+        try {
+            chrome.storage.sync.get([SPONSOR_NOTE_DISMISSED_KEY], (result) => {
+                setSponsorNoteDismissed(result[SPONSOR_NOTE_DISMISSED_KEY] === true);
+                setSponsorNoteReady(true);
+            });
+        } catch {
+            setSponsorNoteReady(true);
+        }
+
+        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+            if (areaName !== 'sync' || !changes[SPONSOR_NOTE_DISMISSED_KEY]) {
+                return;
+            }
+            setSponsorNoteDismissed(changes[SPONSOR_NOTE_DISMISSED_KEY].newValue === true);
+        };
+
+        try {
+            chrome.storage.onChanged.addListener(handleStorageChange);
+        } catch {
+            // Storage events are unavailable outside the extension runtime.
+        }
+
+        return () => {
+            try {
+                chrome.storage.onChanged.removeListener(handleStorageChange);
+            } catch {
+                // Ignore cleanup when storage is unavailable.
+            }
+        };
+    }, []);
+
+    const hideSponsorNote = () => {
+        setSponsorNoteDismissed(true);
+        setSponsorNoteConfirmOpen(false);
+        try {
+            chrome.storage.sync.set({ [SPONSOR_NOTE_DISMISSED_KEY]: true });
+        } catch {
+            // Keep the note hidden for this session if storage fails.
+        }
+    };
 
     React.useEffect(() => {
         let cancelled = false;
@@ -260,94 +306,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     return (
         <Box className="quick-settings" dir="rtl">
-            <Box className="quick-settings-header">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
-                    <Box
-                        component={onClose ? 'button' : 'div'}
-                        type={onClose ? 'button' : undefined}
-                        onClick={onClose}
-                        aria-label={onClose ? 'بستن تنظیمات' : undefined}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.75,
-                            minWidth: 0,
-                            p: 0,
-                            m: 0,
-                            border: 0,
-                            background: 'none',
-                            cursor: onClose ? 'pointer' : 'default',
-                            color: 'inherit',
-                            font: 'inherit',
-                            textAlign: 'right',
-                            '&:hover .quick-settings-title': onClose
-                                ? { color: accent }
-                                : undefined,
-                        }}
-                    >
-                        <SvgIcon sx={{ fontSize: '1.1rem', color: accent }}>
-                            <path d={mdiCog} />
-                        </SvgIcon>
-                        <Typography
-                            className="quick-settings-title"
-                            sx={{ fontWeight: 700, fontSize: '0.9rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}
-                        >
-                            تنظیمات
-                        </Typography>
-                    </Box>
-                    {onClose ? (
-                        <Tooltip title="بستن تنظیمات">
-                            <IconButton
-                                size="small"
-                                onClick={onClose}
-                                aria-label="بستن تنظیمات"
-                                sx={{
-                                    p: 0.5,
-                                    color: muted,
-                                    '&:hover': {
-                                        backgroundColor: selectedBg,
-                                        color: accent,
-                                    },
-                                }}
-                            >
-                                <SvgIcon sx={{ fontSize: '1.05rem' }}>
-                                    <path d={mdiClose} />
-                                </SvgIcon>
-                            </IconButton>
-                        </Tooltip>
-                    ) : null}
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
-                    <Button
-                        variant="text"
-                        size="small"
-                        onClick={() => openOptions()}
-                        endIcon={
-                            <SvgIcon sx={{ fontSize: '0.85rem !important' }}>
-                                <path d={mdiOpenInNew} />
-                            </SvgIcon>
-                        }
-                        sx={{
-                            minWidth: 0,
-                            px: 0.75,
-                            py: 0.25,
-                            color: accent,
-                            textTransform: 'none',
-                            fontFamily: 'iranyekan',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            flexShrink: 0,
-                            '&:hover': {
-                                backgroundColor: selectedBg,
-                                transform: 'none',
-                            },
-                        }}
-                    >
-                        تنظیمات پیشرفته
-                    </Button>
-                </Box>
-            </Box>
-
             <Box className="quick-settings-body">
                 {!extensionEnabled ? (
                     <Box
@@ -419,6 +377,117 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 <Box
                     className={`quick-settings-body-scroll${controlsDisabled ? ' is-disabled' : ''}`}
                 >
+                <Box className="popup-sponsors popup-sponsors--scroll" aria-label="حامیان ویژه و اسپانسرها">
+                    <div className="popup-sponsors-top">
+                        <Typography className="popup-sponsors-caption" component="span">
+                            اسپانسرهای ارزشمند ما
+                        </Typography>
+                        <a
+                            className="popup-sponsors-cta"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            همکاری و حمایت
+                        </a>
+                    </div>
+                    <a
+                        className="popup-sponsors-box popup-sponsors-box--full"
+                        href="https://t.me/ai_rtl_support"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        این اکستنشن اسپانسر می‌پذیرد
+                    </a>
+                    <div className="popup-sponsors-slots">
+                        <a
+                            className="popup-sponsors-box popup-sponsors-box--half"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            جای لوگوی قشنگتون
+                        </a>
+                        <a
+                            className="popup-sponsors-box popup-sponsors-box--half"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            جای لوگوی قشنگتون
+                        </a>
+                    </div>
+                    {sponsorNoteReady && !sponsorNoteDismissed ? (
+                        <div className="popup-sponsors-note">
+                            <button
+                                type="button"
+                                className="popup-sponsors-note-close"
+                                aria-label="پنهان کردن این پیام"
+                                onClick={() => setSponsorNoteConfirmOpen(true)}
+                            >
+                                <SvgIcon sx={{ fontSize: '1rem' }}>
+                                    <path d={mdiClose} />
+                                </SvgIcon>
+                            </button>
+                            <Typography className="popup-sponsors-note-text" component="p">
+                                حمایت‌های شما دلگرمی بزرگی است. ما عاشق این پروژه‌ایم و می‌خواهیم وقت خیلی بیشتری پایش بگذاریم، به همین دلیل تصمیم گرفتیم برای اکستنشن اسپانسر بگیریم.
+                            </Typography>
+                        </div>
+                    ) : null}
+                </Box>
+                <Box
+                    className="quick-settings-section-title"
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        px: 0.25,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, minWidth: 0 }}>
+                        <SvgIcon sx={{ fontSize: '1rem', color: accent, flexShrink: 0 }}>
+                            <path d={mdiCog} />
+                        </SvgIcon>
+                        <Typography
+                            sx={{
+                                fontFamily: 'iranyekan',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                            }}
+                        >
+                            تنظیمات سریع
+                        </Typography>
+                    </Box>
+                    <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => openOptions()}
+                        endIcon={
+                            <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
+                                <path d={mdiOpenInNew} />
+                            </SvgIcon>
+                        }
+                        sx={{
+                            minWidth: 0,
+                            px: 0.5,
+                            py: 0,
+                            color: accent,
+                            textTransform: 'none',
+                            fontFamily: 'iranyekan',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            '&:hover': {
+                                backgroundColor: 'transparent',
+                                textDecoration: 'underline',
+                                transform: 'none',
+                            },
+                        }}
+                    >
+                        تنظیمات پیشرفته
+                    </Button>
+                </Box>
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{
@@ -1311,6 +1380,60 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={sponsorNoteConfirmOpen}
+                onClose={() => setSponsorNoteConfirmOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    پنهان کردن پیام
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        این توضیح دیگر نمایش داده نشود؟
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setSponsorNoteConfirmOpen(false)}
+                        variant="text"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        انصراف
+                    </Button>
+                    <Button
+                        onClick={hideSponsorNote}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        پنهان کردن
                     </Button>
                 </DialogActions>
             </Dialog>
