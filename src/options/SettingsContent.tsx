@@ -13,6 +13,7 @@ import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, normalizePinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY, PinOpenSiteMode } from '../utils/pinOpenSite';
+import FirefoxHostAccessBanner from '../popup/FirefoxHostAccessBanner';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -358,6 +359,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
 
     return (
         <Box sx={{ width: '100%' }}>
+            <FirefoxHostAccessBanner isDarkMode={isDarkMode} placement="settings" />
             {/* Tabs */}
             <Box sx={{ 
                 // direction: 'rtl',

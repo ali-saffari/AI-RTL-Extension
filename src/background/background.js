@@ -1257,6 +1257,72 @@ async function injectTabNow(tabId, options = {}) {
     }
 }
 
+function urlMatchesHostPattern(url, pattern) {
+    if (!url || !pattern) return false;
+    if (pattern === '<all_urls>' || pattern === '*://*/*' || pattern === 'http://*/*' || pattern === 'https://*/*') {
+        return isValidHttpPage(url);
+    }
+
+    let parsed;
+    try {
+        parsed = new URL(url);
+    } catch {
+        return false;
+    }
+
+    const match = /^(\*|https?|wss?|ftp):\/\/(\*|\*\.[^/]+|[^/]+)\/(.*)$/.exec(pattern);
+    if (!match) return false;
+
+    const scheme = match[1];
+    const hostPattern = match[2];
+    if (scheme !== '*' && `${scheme}:` !== parsed.protocol) return false;
+
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostPattern === '*') return true;
+    if (hostPattern.startsWith('*.')) {
+        const base = hostPattern.slice(2).toLowerCase();
+        return hostname === base || hostname.endsWith(`.${base}`);
+    }
+    return hostname === hostPattern.toLowerCase();
+}
+
+async function queryTabsForOrigins(origins) {
+    try {
+        return await chrome.tabs.query({ url: origins });
+    } catch (error) {
+        devError('[Background] tabs.query by origin failed:', error);
+        try {
+            const tabs = await chrome.tabs.query({});
+            return tabs.filter((tab) => origins.some((origin) => urlMatchesHostPattern(tab.url, origin)));
+        } catch (fallbackError) {
+            devError('[Background] tabs.query fallback failed:', fallbackError);
+            return [];
+        }
+    }
+}
+
+async function injectOpenTabsForOrigins(origins) {
+    const patterns = (origins || []).filter(Boolean);
+    if (!patterns.length) return;
+
+    const tabs = await queryTabsForOrigins(patterns);
+    for (const tab of tabs) {
+        if (!tab?.id || !tab.url || isRestrictedBrowserUrl(tab.url) || !isValidHttpPage(tab.url)) {
+            continue;
+        }
+        if (!patterns.some((origin) => urlMatchesHostPattern(tab.url, origin))) {
+            continue;
+        }
+
+        const ping = await sendTabMessage(tab.id, { action: 'getPageInfo' });
+        if (ping?.success) {
+            continue;
+        }
+
+        await injectTabNow(tab.id, { skipOriginCheck: true });
+    }
+}
+
 async function activateCurrentTab(options = {}) {
     let tabId = options.tabId;
     if (!tabId) {
@@ -1395,9 +1461,9 @@ function setupEventListeners() {
                 return;
             }
             try {
-                await activateCurrentTab({ skipOriginCheck: true });
+                await injectOpenTabsForOrigins(perms.origins);
             } catch (error) {
-                devError('[Background] Error activating tab after permission grant:', error);
+                devError('[Background] Error activating tabs after permission grant:', error);
             }
         });
     }
