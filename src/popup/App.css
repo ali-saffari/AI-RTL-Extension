@@ -124,7 +124,7 @@ html.popup-side-expanded .popup-columns {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 12px;
     box-sizing: border-box;
     pointer-events: none;
     backdrop-filter: blur(0.6px);
@@ -138,6 +138,23 @@ html.popup-side-expanded .popup-columns {
     text-align: center;
     padding: 12px 20px;
     border-radius: 12px;
+}
+
+.popup-disabled-overlay-card {
+    pointer-events: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: auto;
+    min-width: 220px;
+    max-width: calc(100% - 24px);
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: right;
+    direction: rtl;
+    box-sizing: border-box;
 }
 
 .popup-side-menu {
@@ -539,6 +556,10 @@ body[data-theme="light"] .quick-settings-header {
     gap: 10px;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+.quick-settings-body-scroll.is-disabled > * {
+    pointer-events: none;
 }
 
 .quick-settings-card {

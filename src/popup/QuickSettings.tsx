@@ -70,6 +70,7 @@ interface QuickSettingsProps {
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     onClose?: () => void;
     extensionEnabled?: boolean;
+    onEnableExtension?: () => void;
 }
 
 const ALGORITHMS = [
@@ -141,6 +142,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onManualRtlSettingsChange,
     onClose,
     extensionEnabled = true,
+    onEnableExtension,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
@@ -356,24 +358,61 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             backgroundColor: isDarkMode ? 'rgba(10, 14, 28, 0.38)' : 'rgba(226, 232, 240, 0.42)',
                         }}
                     >
-                        <Typography
-                            className="popup-disabled-overlay-label"
+                        <Box
+                            className="popup-disabled-overlay-card"
                             sx={{
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.92)' : 'rgba(255, 255, 255, 0.95)',
+                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.72)' : 'rgba(255, 255, 255, 0.72)',
                                 border: isDarkMode
-                                    ? '1px solid rgba(0, 233, 255, 0.28)'
-                                    : '1px solid rgba(30, 64, 175, 0.2)',
-                                boxShadow: isDarkMode
-                                    ? '0 8px 24px rgba(0, 0, 0, 0.28)'
-                                    : '0 8px 24px rgba(15, 23, 42, 0.1)',
+                                    ? '1px solid rgba(255, 255, 255, 0.12)'
+                                    : '1px solid rgba(15, 23, 42, 0.1)',
                             }}
                         >
-                            افزونه غیر فعال است
-                        </Typography>
+                            <Typography
+                                sx={{
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 300,
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.5,
+                                    color: isDarkMode ? '#ffffff' : '#1e293b',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                افزونه غیرفعال است
+                            </Typography>
+                            <Button
+                                variant="text"
+                                size="small"
+                                onClick={() => onEnableExtension?.()}
+                                sx={{
+                                    flexShrink: 0,
+                                    px: 1,
+                                    py: 0.25,
+                                    minWidth: 0,
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    boxShadow: 'none',
+                                    border: 'none',
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: 'transparent',
+                                    '&:hover': {
+                                        border: 'none',
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(28, 57, 187, 0.06)',
+                                        boxShadow: 'none',
+                                        transform: 'none',
+                                    },
+                                }}
+                            >
+                                فعال کردن
+                            </Button>
+                        </Box>
                     </Box>
                 ) : null}
-                <Box className="quick-settings-body-scroll">
+                <Box
+                    className={`quick-settings-body-scroll${controlsDisabled ? ' is-disabled' : ''}`}
+                >
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{

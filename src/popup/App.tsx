@@ -1348,6 +1348,7 @@ function App() {
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         onClose={() => handleSettingsOpenChange(false)}
                         extensionEnabled={extensionEnabled}
+                        onEnableExtension={() => handleExtensionEnabledChange(true)}
                     />
                 </div>
                 <div className="popup-side-slot">
