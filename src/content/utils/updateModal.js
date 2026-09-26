@@ -1,5 +1,5 @@
-import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-import { versionChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, PREVIOUS_UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
+import { versionChanges, chatgptOnlyChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 
 let isModalShowing = false;
@@ -98,13 +98,13 @@ function appendModalToBody(modalHTML) {
     }
 }
 
-function mountUpdateModal(persistClose) {
+function mountUpdateModal(persistClose, modalOptions = {}) {
     if (document.getElementById('AsUpdateModal') || isModalShowing) {
         return;
     }
 
     isModalShowing = true;
-    appendModalToBody(createUpdateModalHTML());
+    appendModalToBody(createUpdateModalHTML(modalOptions));
     setupUpdateModalListeners(UPDATE_MODAL_ID, persistClose);
 }
 
@@ -141,6 +141,14 @@ export function showUpdateModal(options = {}) {
             const closedId = result?.[UPDATE_MODAL_STORAGE_KEY];
 
             if (closedId === UPDATE_MODAL_ID) {
+                return;
+            }
+
+            if (closedId === PREVIOUS_UPDATE_MODAL_ID) {
+                mountUpdateModal(true, {
+                    changes: chatgptOnlyChanges,
+                    includeStory: false,
+                });
                 return;
             }
 
@@ -195,7 +203,7 @@ function setupStoryCapsuleAnimation() {
 }
 
 
-function createUpdateModalHTML() {
+function createUpdateModalHTML({ changes = versionChanges, includeStory = true } = {}) {
     const manifest = chrome.runtime.getManifest();
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
     const iconUrl = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
@@ -655,15 +663,21 @@ function createUpdateModalHTML() {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.15) 0%, rgba(0, 153, 204, 0.1) 100%);
                     color: #ffffff;
                     border: 2px solid rgba(0, 233, 255, 0.4);
-                    padding: 10px 16px;
+                    padding: 0 16px;
                     border-radius: 10px;
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
+                    line-height: 20px;
                     flex: 1.7 1 0;
                     width: auto;
+                    height: 44px;
+                    min-height: 44px;
                     min-width: 0;
+                    margin: 0;
                     box-sizing: border-box;
+                    appearance: none;
+                    -webkit-appearance: none;
                     font-family: iranyekan, sans-serif;
                     display: flex;
                     align-items: center;
@@ -684,23 +698,29 @@ function createUpdateModalHTML() {
                 }
                 #AsUpdateModal .As-footer-link {
                     box-sizing: border-box;
-                    padding: 10px 12px;
+                    padding: 0 12px;
                     border-radius: 10px;
                     cursor: pointer;
                     font-size: 14px;
                     font-weight: 700;
+                    line-height: 20px;
                     font-family: iranyekan, sans-serif;
                     text-decoration: none;
                     white-space: nowrap;
                     flex: 1 1 0;
+                    height: 44px;
+                    min-height: 44px;
                     min-width: 0;
-                    display: inline-flex;
+                    margin: 0;
+                    display: flex;
                     align-items: center;
                     justify-content: center;
                     color: #00e9ff;
                     background: none;
                     border: 2px solid rgba(0, 233, 255, 0.45);
                     box-shadow: none;
+                    appearance: none;
+                    -webkit-appearance: none;
                     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
                 }
                 #AsUpdateModal .As-footer-link:hover {
@@ -729,10 +749,10 @@ function createUpdateModalHTML() {
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
                         <div class="As-changes As-version-changes">
-                            ${renderChangeItems(versionChanges)}
+                            ${renderChangeItems(changes)}
                         </div>
 
-                        ${staticAnnouncementHTML}
+                        ${includeStory ? staticAnnouncementHTML : ''}
                     </div>
 
                     <div class="As-footer">

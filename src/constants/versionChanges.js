@@ -1,7 +1,33 @@
 // Shared version changes for update modal and popup ChangesList
 
+/**
+ * @typedef {Object} VersionChange
+ * @property {string} id
+ * @property {string} text
+ * @property {string} [note]
+ * @property {string} [icon]
+ * @property {string} [shortName]
+ * @property {string} [type]
+ * @property {string} [group]
+ */
+
+/** @type {VersionChange} */
+export const chatgptUpdateChange = {
+    id: '2',
+    text: 'آپدیت ChatGPT',
+    note: 'هماهنگ شدن افزونه با آخرین نسخه ChatGPT',
+    icon: 'sites/openAi-icon.png',
+    type: 'update',
+    group: 'feature',
+};
+
+// Shown only to users who already closed the 2026-09-20 modal.
+/** @type {VersionChange[]} */
+export const chatgptOnlyChanges = [chatgptUpdateChange];
+
+/** @type {VersionChange[]} */
 export const versionChanges = [
-    { id: '2', text: 'آپدیت ChatGPT', note: 'هماهنگ شدن افزونه با آخرین نسخه ChatGPT', icon: 'sites/openAi-icon.png', type: 'update', group: 'feature' },
+    chatgptUpdateChange,
     { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
     { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
@@ -10,6 +36,7 @@ export const versionChanges = [
     { id: '6', text: 'افزودن سایت MathGPT', icon: 'sites/mathgpt.png', type: 'add', group: 'site' },
 ];
 
+/** @param {VersionChange} change */
 export function getSiteShortName(change) {
     if (change.shortName) {
         return change.shortName;
@@ -20,9 +47,22 @@ export function getSiteShortName(change) {
         .replace(/^آپدیت\s+/, '');
 }
 
+/**
+ * @param {VersionChange[]} [changes]
+ * @returns {{
+ *   menuChanges: VersionChange[],
+ *   features: VersionChange[],
+ *   sites: VersionChange[],
+ *   updatedSites: VersionChange[],
+ *   addedSites: VersionChange[]
+ * }}
+ */
 export function splitVersionChanges(changes = versionChanges) {
+    /** @type {VersionChange[]} */
     const menuChanges = [];
+    /** @type {VersionChange[]} */
     const features = [];
+    /** @type {VersionChange[]} */
     const sites = [];
 
     for (const change of changes) {
