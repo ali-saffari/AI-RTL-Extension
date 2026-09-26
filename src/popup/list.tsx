@@ -1150,18 +1150,6 @@ export default function ServiceList({
                                 direction: 'rtl',
                             }}
                         >
-                            <Typography
-                                sx={{
-                                    fontFamily: 'iranyekan',
-                                    fontWeight: 300,
-                                    fontSize: '0.8rem',
-                                    lineHeight: 1.5,
-                                    color: isDarkMode ? '#ff8a8a' : '#ef5350',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                افزونه غیرفعال است
-                            </Typography>
                             <Button
                                 variant="text"
                                 size="small"
@@ -1190,6 +1178,18 @@ export default function ServiceList({
                             >
                                 فعال کردن
                             </Button>
+                            <Typography
+                                sx={{
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 300,
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.5,
+                                    color: isDarkMode ? '#ff8a8a' : '#ef5350',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                افزونه غیرفعال است
+                            </Typography>
                         </Box>
                     </ListItem>
                 </Collapse>
