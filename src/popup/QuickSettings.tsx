@@ -69,6 +69,7 @@ interface QuickSettingsProps {
     manualRtlSettings: ManualRtlSettings;
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     onClose?: () => void;
+    extensionEnabled?: boolean;
 }
 
 const ALGORITHMS = [
@@ -139,6 +140,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     manualRtlSettings,
     onManualRtlSettingsChange,
     onClose,
+    extensionEnabled = true,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
@@ -331,7 +333,33 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
             </Box>
 
-            <Box className="quick-settings-body">
+            <Box className="quick-settings-body" sx={{ position: 'relative' }}>
+                {!extensionEnabled ? (
+                    <Box
+                        className="popup-disabled-overlay"
+                        role="status"
+                        aria-live="polite"
+                        sx={{
+                            backgroundColor: isDarkMode ? 'rgba(10, 14, 28, 0.32)' : 'rgba(226, 232, 240, 0.38)',
+                        }}
+                    >
+                        <Typography
+                            className="popup-disabled-overlay-label"
+                            sx={{
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.88)' : 'rgba(255, 255, 255, 0.92)',
+                                border: isDarkMode
+                                    ? '1px solid rgba(0, 233, 255, 0.28)'
+                                    : '1px solid rgba(30, 64, 175, 0.2)',
+                                boxShadow: isDarkMode
+                                    ? '0 8px 24px rgba(0, 0, 0, 0.28)'
+                                    : '0 8px 24px rgba(15, 23, 42, 0.1)',
+                            }}
+                        >
+                            افزونه غیر فعال است
+                        </Typography>
+                    </Box>
+                ) : null}
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{

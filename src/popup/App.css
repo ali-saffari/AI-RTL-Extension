@@ -117,6 +117,29 @@ html.popup-side-expanded .popup-columns {
     overflow: hidden;
 }
 
+.popup-disabled-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    pointer-events: auto;
+    backdrop-filter: blur(0.6px);
+}
+
+.popup-disabled-overlay-label {
+    font-family: iranyekan, sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 12px;
+}
+
 .popup-side-menu {
     position: absolute;
     left: 0;
@@ -577,6 +600,7 @@ body[data-theme="light"] .quick-settings-label {
 
 /* اسکرول برای لیست سایت‌ها - LTR */
 .listSite {
+    position: relative;
     direction: ltr;
 }
 

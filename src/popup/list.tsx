@@ -181,9 +181,13 @@ const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORIES)[number
 
 interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
+    extensionEnabled?: boolean;
 }
 
-export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMode() }: ServiceListProps) {
+export default function ServiceList({
+    pinOpenSiteMode = getDefaultPinOpenSiteMode(),
+    extensionEnabled = true,
+}: ServiceListProps) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -760,7 +764,13 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                             <ListItemIcon sx={{ minWidth: 40 }}>
                                 <Avatar
-                                    sx={{ width: 30, height: 30 }}
+                                    sx={{
+                                        width: 30,
+                                        height: 30,
+                                        filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                        opacity: extensionEnabled ? 1 : 0.55,
+                                        transition: 'filter 0.2s ease, opacity 0.2s ease',
+                                    }}
                                     alt={service.name}
                                     src={chrome.runtime.getURL(service.icon)}
                                 />
@@ -828,14 +838,22 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                         <Box component="span" sx={{
                                             px: 1,
                                             py: 0.3,
-                                            bgcolor: isDarkMode
-                                                ? 'rgb(33, 46, 65)'
-                                                : 'rgba(30, 64, 175, 0.1)',
-                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            bgcolor: extensionEnabled
+                                                ? (isDarkMode ? 'rgb(33, 46, 65)' : 'rgba(30, 64, 175, 0.1)')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
+                                            border: `1px solid ${
+                                                extensionEnabled
+                                                    ? (isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)')
+                                                    : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
+                                            }`,
+                                            color: extensionEnabled
+                                                ? (isDarkMode ? '#00e9ff' : '#1c39bb')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
                                             borderRadius: 1,
                                             fontSize: '0.6rem',
-                                            fontWeight: 600
+                                            fontWeight: 600,
+                                            filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                            transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                         }}>
                                             جدید
                                         </Box>
@@ -876,18 +894,25 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                             edge="start"
                             onChange={handleChange(service.key)}
                             checked={checked?.[service.key] || false}
-                            disabled={isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)}
+                            disabled={!extensionEnabled || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
                             data-list-switch="true"
                             inputProps={{
                                 'aria-labelledby': `switch-list-label-${service.key}`,
                             }}
                             sx={{
                                 transform: 'rotate(180deg)',
-                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
                                     color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-disabled': {
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.12)',
+                                    opacity: 1,
                                 },
                                 '& .Mui-disabled': {
                                     opacity: 0.5
@@ -1069,11 +1094,19 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                     fontSize: '0.65rem',
                                     fontWeight: 700,
                                     lineHeight: 1,
-                                    bgcolor: isDarkMode
-                                        ? 'rgba(0, 233, 255, 0.14)'
-                                        : 'rgba(28, 57, 187, 0.1)',
-                                    border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)'}`,
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    bgcolor: extensionEnabled
+                                        ? (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(28, 57, 187, 0.1)')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
+                                    border: `1px solid ${
+                                        extensionEnabled
+                                            ? (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')
+                                            : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
+                                    }`,
+                                    color: extensionEnabled
+                                        ? (isDarkMode ? '#00e9ff' : '#1c39bb')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
+                                    filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                    transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                 }}
                             >
                                 {toPersianDigits(group.items.length)}

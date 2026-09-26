@@ -1133,7 +1133,10 @@ function App() {
                                راست چین هوشمند پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
-                                <ServiceList pinOpenSiteMode={pinOpenSiteMode} />
+                                <ServiceList
+                                    pinOpenSiteMode={pinOpenSiteMode}
+                                    extensionEnabled={extensionEnabled}
+                                />
                             </div>
                         </div>
                         
@@ -1344,6 +1347,7 @@ function App() {
                         manualRtlSettings={manualRtlSettings}
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         onClose={() => handleSettingsOpenChange(false)}
+                        extensionEnabled={extensionEnabled}
                     />
                 </div>
                 <div className="popup-side-slot">
