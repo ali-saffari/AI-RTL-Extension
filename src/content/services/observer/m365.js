@@ -28,7 +28,7 @@ const MARKDOWN_SELECTOR = [
     // '[class*="chat"]',
     // '.msg-content'
 ].join(', ');
-const COPYRIGHT_SELECTOR = 'form, [class*="composer"], [class*="Composer"]';
+const COPYRIGHT_SELECTOR = '#suggestions-above-input-portal';
 
 const INPUT_OPTIONS = {
     fontClass: 'FontSet',
@@ -121,20 +121,20 @@ function processM365Markdown(element, rtlAlgorithm) {
     AQ(ICON_SELECTOR).removeClass('FontSet');
 }
 
-function processM365Copyright(form) {
+function processM365Copyright(portal) {
     if (!chrome.runtime?.id) {
         return;
     }
 
-    const $form = AQ(form);
-    if (!$form.has('textarea, [contenteditable="true"], [role="textbox"], .ProseMirror').length) {
+    const $target = AQ(portal).parent();
+    if (!$target.length) {
         return;
     }
 
     addCopyright(
-        $form,
+        $target,
         'AsBoxGemini AsBoxB',
-        'margin-top: 4px; margin-bottom: 4px; font-size: 13px;'
+        'margin-top: -8px; margin-bottom: -2px; font-size: 13px;'
     );
 }
 

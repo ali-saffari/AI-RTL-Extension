@@ -71,7 +71,7 @@ const services: Service[] = [
 
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', hosts: ['chatgpt.com', 'chat.openai.com'], keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', hosts: ['chat.deepseek.com'], keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
-    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.microsoft.com/', hosts: ['copilot.microsoft.com', 'bing.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
+    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.com/', hosts: ['copilot.com', 'www.copilot.com', 'copilot.microsoft.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'مایکروسافت', 'microsoft'] },
     { key: 'm365', name: '365 Copilot', icon: '/images/sites/m365.png', url: 'https://m365.cloud.microsoft/', new: true, hosts: ['m365.cloud.microsoft', 'copilot.cloud.microsoft'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Microsoft 365 Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی این سایت، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['m365', 'microsoft 365', 'مایکروسافت 365', 'کوپایلوت', 'copilot', 'آفیس', 'office', 'outlook', 'teams'] },
     { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', hosts: ['claude.ai'], keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
     { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', hosts: ['gemini.google.com'], keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
@@ -189,7 +189,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const [checked, setChecked] = useState<CheckedState>({
         chatGpt: true,
         claude: true,
-        copilot: true,
+        copilot: false,
         githubCopilot: true,
         // duckduckgo: true,
         perplexity: true,

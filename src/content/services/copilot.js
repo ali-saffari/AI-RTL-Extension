@@ -1,290 +1,156 @@
-// copilot.js service functions
+// copilot.js service functions (copilot.com — same UI as Microsoft 365 Copilot)
 import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, analyzeTextDirectionFirstWord , analyzeTextDirection } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced , setTextDirectionAndFont, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
+import { observeDomSections } from '../utils/domObserver.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
 const ICON_SELECTOR = 'i, svg, path, use, [class*="icon"], [class*="Icon"]';
-const ELEMENT_OPTIONS = {
-    fontClass: 'CopilotFontSet',
-    processedClass: 'AsOk'
+const CODE_BLOCK_SELECTOR = '.scriptor-component-code-block';
+const INPUT_IGNORE_SELECTOR = `${ICON_SELECTOR}, ${CODE_BLOCK_SELECTOR}`;
+const INPUT_SELECTOR = [
+    'textarea',
+    'input[type="text"]',
+    'input[type="search"]',
+    'input:not([type])',
+    '[contenteditable="true"]',
+    '[role="textbox"]',
+    '.ProseMirror'
+].join(', ');
+const MARKDOWN_SELECTOR = [
+    '[data-testid="markdown-reply"]',
+].join(', ');
+const COPYRIGHT_SELECTOR = '#suggestions-above-input-portal';
+
+const INPUT_OPTIONS = {
+    fontClass: 'FontSet',
+    setTextAlign: 'important'
 };
 
-function applyCopilotFont() {
+const MARKDOWN_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOkText',
+    rtlClass: 'AsRtl',
+    ltrClass: 'AsLtr',
+    isContainer: true,
+    setTextAlign: 'important',
+    includeTags: ['p']
+};
+
+function applyCopilotChrome() {
     if (!AQ('#copilot-font-style').length) {
         AQ(`<style id="copilot-font-style">
             html.ai-rtl-has-font, html.ai-rtl-has-font body,
-            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]):not(.scriptor-component-code-block) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre * {
+            code, pre, kbd, samp, code *, pre *,
+            .scriptor-component-code-block, .scriptor-component-code-block * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            }
+            .scriptor-component-code-block:not([dir="rtl"]),
+            .scriptor-component-code-block:not([dir="rtl"]) [role="textbox"],
+            .scriptor-component-code-block:not([dir="rtl"]) [aria-label="Code editor"],
+            [data-testid="markdown-reply"] pre:not([dir="rtl"]),
+            [data-testid="markdown-reply"] code:not([dir="rtl"]) {
+                direction: ltr !important;
+                text-align: left !important;
+                unicode-bidi: isolate !important;
+            }
+            .scriptor-component-code-block[dir="rtl"],
+            .scriptor-component-code-block[dir="rtl"] [role="textbox"],
+            .scriptor-component-code-block[dir="rtl"] [aria-label="Code editor"],
+            [data-testid="markdown-reply"] pre[dir="rtl"],
+            [data-testid="markdown-reply"] code[dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
+            }
+            /* اعداد باکس کد در فارسی */
+            [dir="rtl"] .bfdc9b3bfaf83e8b {
+                direction: ltr !important;
+                text-align: left !important;
             }
         </style>`).appendTo('head');
     }
 
     AQ('body').each(function () {
-        if (!AQ(this).hasClass('CopilotFontSet')) {
-            AQ(this).addClass('CopilotFontSet');
+        if (!AQ(this).hasClass('FontSet')) {
+            AQ(this).addClass('FontSet');
         }
     });
 
-    AQ(ICON_SELECTOR).removeClass('CopilotFontSet FontSet');
+    AQ(ICON_SELECTOR).removeClass('FontSet');
 }
 
-
-// Copilot/Bing service functions
-export function setItems_copilotBing(rtlAlgorithm) {
-    let fo = `.relative.max-h-full.w-expanded-composer.max-w-chat`
-    console.log("setItems_copilotBing")
-
-    applyCopilotFont();
-
-    if (chrome.runtime?.id) {
-        // Add copyright using utility function
-        const targetElement = AQ(fo);
-        // targetElement.addClass("red")
-
-        if (targetElement.length > 0) {
-            addCopyright(targetElement, 'AsBox_copilotBing AsBoxB', 'transform: scale(0.75); margin-top: 5px; padding: 0px;');
-        }
+function processCopilotInput(element, rtlAlgorithm) {
+    if (AQ(element).is(ICON_SELECTOR) || AQ(element).closest(CODE_BLOCK_SELECTOR).length) {
+        return;
     }
 
-    // Process all text elements using processTextElementsAdvanced
-    AQ('[data-content="ai-message"] .break-words').each(function (each) {
-    
-        applyRtlToContainer(this, rtlAlgorithm, {
-            fontClass: 'CopilotFontSet',
-            processedClass: 'AsOk',
-            isContainer: true,
-            // skipTags: ['span']
-        });
-           
-    });
+    applyRtlToElement(element, rtlAlgorithm, INPUT_OPTIONS);
+    AQ(ICON_SELECTOR).removeClass('FontSet');
 
-    AQ('[data-content="user-message"], [data-content="user-message"] .break-words').each(function (each) {
-        applyRtlToElement(this, rtlAlgorithm, ELEMENT_OPTIONS);
-    });
+    if (AQ(element).data('rtl-listener-added')) {
+        return;
+    }
+    AQ(element).data('rtl-listener-added', true);
 
-    AQ('[role="link"]').each(function () {
-        if (AQ(this).is(ICON_SELECTOR)) {
-            return;
-        }
-
-        const text = AQ(this).text();
-        if (!text || !text.trim()) {
-            return;
-        }
-
-        applyRtlToElement(this, rtlAlgorithm, ELEMENT_OPTIONS);
-    });
-
-        // Process listbox options for text direction detection
-        AQ('[role="listbox"] [role="option"]').each(function (each) {
-            const text = AQ(this).text();
-            if (text && text.trim()) {
-                applyRtlToElement(this, rtlAlgorithm, {
-                    ...ELEMENT_OPTIONS,
-                    rtlClass: 'listboxRtlCopilot'
-                });
-            }
-        });
-
-
-    // Process textarea elements for text direction detection
-    AQ('textarea').each(function (each) {
-        if (AQ(this).data('rtl-listener-added')) {
-            return;
-        }
-        AQ(this).data('rtl-listener-added', true);
-
-        
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'CopilotFontSet',
-            processedClass: 'AsOk'
-        });
-        
-        // Add event listener for real-time text direction detection
-        AQ(this).on('input keyup', function() {
-            applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: 'CopilotFontSet',
-            });
+    AQ(element).on('input keyup paste', function () {
+        requestAnimationFrame(() => {
+            applyRtlToElement(this, rtlAlgorithm, INPUT_OPTIONS);
+            AQ(ICON_SELECTOR).removeClass('FontSet');
         });
     });
-
-    applyCopilotFont();
-
-
-    
-    // AQ('.hljs-comment').each(function (each) {
-    //     const $element = AQ(this);
-        
-    //     // اگر قبلاً پردازش شده، رد شو
-    //     if ($element.hasClass('AsOk')) {
-    //         return;
-    //     }
-        
-    //     // علامت‌گذاری به عنوان پردازش شده
-    //     $element.addClass('AsOk');
-        
-    //     // دریافت متن
-    //     let text = $element.text() || $element.html() || '';
-        
-    //     if (!text || !text.trim()) {
-    //         return;
-    //     }
-        
-    //     const originalText = text.trim();
-    //     let commentPrefix = '';
-    //     let commentSuffix = '';
-    //     let cleanedText = originalText;
-
-    //     console.log("cleanedText:", cleanedText);
-        
-    //     // شناسایی و ذخیره علامت کامنت از ابتدا
-    //     if (cleanedText.startsWith('///')) {
-    //         // کامنت‌های سه‌خطی (مثل /// در C#)
-    //         commentPrefix = '///';
-    //         cleanedText = cleanedText.replace(/^\/\/\/\s*/, '');
-            
-    //         // برای کامنت‌های چندخطی با ///، حذف /// از ابتدای هر خط
-    //         const lines = cleanedText.split('\n');
-    //         const cleanedLines = lines.map(line => {
-    //             // حذف /// از ابتدای خط (با فاصله‌های اختیاری)
-    //             return line.replace(/^\s*\/\/\/\s*/, '').trim();
-    //         });
-    //         cleanedText = cleanedLines.join('\n').trim();
-    //     } else if (cleanedText.startsWith('//')) {
-    //         commentPrefix = '//';
-    //         cleanedText = cleanedText.replace(/^\/\/\s*/, '');
-    //     } else if (cleanedText.startsWith('/*')) {
-    //         commentPrefix = '/*';
-    //         if (cleanedText.endsWith('*/')) {
-    //             commentSuffix = '*/';
-    //             // حذف /* از ابتدا و */ از انتها
-    //             cleanedText = cleanedText.replace(/^\/\*\s*/, '').replace(/\s*\*\/$/, '');
-                
-    //             // برای کامنت‌های چندخطی، حذف * از ابتدای هر خط
-    //             const lines = cleanedText.split('\n');
-    //             const cleanedLines = lines.map(line => {
-    //                 // حذف * از ابتدای خط (با فاصله‌های اختیاری)
-    //                 return line.replace(/^\s*\*\s*/, '').trim();
-    //             });
-    //             cleanedText = cleanedLines.join('\n').trim();
-    //         } else {
-    //             cleanedText = cleanedText.replace(/^\/\*\s*/, '');
-    //             // حذف * از ابتدای هر خط
-    //             const lines = cleanedText.split('\n');
-    //             const cleanedLines = lines.map(line => {
-    //                 return line.replace(/^\s*\*\s*/, '').trim();
-    //             });
-    //             cleanedText = cleanedLines.join('\n').trim();
-    //         }
-    //     } else if (cleanedText.startsWith('#')) {
-    //         commentPrefix = '#';
-    //         cleanedText = cleanedText.replace(/^#\s*/, '');
-    //     } else if (cleanedText.startsWith('<!--')) {
-    //         commentPrefix = '<!--';
-    //         if (cleanedText.endsWith('-->')) {
-    //             commentSuffix = '-->';
-    //             cleanedText = cleanedText.replace(/^<!--\s*/, '').replace(/\s*-->$/, '');
-    //         } else {
-    //             cleanedText = cleanedText.replace(/^<!--\s*/, '');
-    //         }
-    //     } else if (cleanedText.startsWith('--')) {
-    //         commentPrefix = '--';
-    //         cleanedText = cleanedText.replace(/^--\s*/, '');
-    //     } else if (cleanedText.startsWith('%')) {
-    //         commentPrefix = '%';
-    //         cleanedText = cleanedText.replace(/^%\s*/, '');
-    //     } else if (cleanedText.startsWith(';')) {
-    //         commentPrefix = ';';
-    //         cleanedText = cleanedText.replace(/^;\s*/, '');
-    //     }
-        
-    //     // حذف فاصله‌های اضافی
-    //     cleanedText = cleanedText.trim();
-        
-    //     // اگر بعد از حذف کامنت‌ها متنی باقی ماند، بررسی راست‌چین بودن
-    //     if (cleanedText && cleanedText.length > 0) {
-    //         const direction = analyzeTextDirection(cleanedText);
-            
-    //         if (direction === 'rtl') {
-    //             // اگر علامت کامنت وجود دارد، آن را در سمت چپ نگه دار
-    //             if (commentPrefix) {
-    //                 // برای کامنت‌های چندخطی، باید خطوط را حفظ کنیم
-    //                 const isMultiline = cleanedText.includes('\n');
-                    
-    //                 if (isMultiline && commentPrefix === '/*') {
-    //                     // برای کامنت‌های چندخطی، هر خط را جداگانه پردازش می‌کنیم
-    //                     const lines = cleanedText.split('\n');
-    //                     const processedLines = lines.map((line, index) => {
-    //                         const trimmedLine = line.trim();
-    //                         // برای خط اول، علامت /* را اضافه می‌کنیم
-    //                         if (index === 0) {
-    //                             if (!trimmedLine) {
-    //                                 return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">/*</span>`;
-    //                             }
-    //                             return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">/*</span> <span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-    //                         }
-    //                         // برای خط آخر، علامت */ را اضافه می‌کنیم
-    //                         if (index === lines.length - 1) {
-    //                             if (!trimmedLine) {
-    //                                 return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">*/</span>`;
-    //                             }
-    //                             return `<span dir="rtl" class="FontSet">${trimmedLine}</span> <span dir="ltr" style="unicode-bidi: embed; display: inline-block;">*/</span>`;
-    //                         }
-    //                         // برای خطوط میانی
-    //                         if (!trimmedLine) {
-    //                             return '';
-    //                         }
-    //                         return `<span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-    //                     });
-    //                     // فیلتر کردن خطوط خالی و join کردن با <br>
-    //                     const htmlContent = processedLines.filter(line => line !== '').join('<br>');
-    //                     $element.html(htmlContent);
-    //                 } else if (isMultiline && commentPrefix === '///') {
-    //                     // برای کامنت‌های سه‌خطی چندخطی، هر خط را جداگانه پردازش می‌کنیم
-    //                     const lines = cleanedText.split('\n');
-    //                     const processedLines = lines.map((line) => {
-    //                         const trimmedLine = line.trim();
-    //                         if (!trimmedLine) {
-    //                             return '';
-    //                         }
-    //                         return `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">///</span> <span dir="rtl" class="FontSet">${trimmedLine}</span>`;
-    //                     });
-    //                     // فیلتر کردن خطوط خالی و join کردن با <br>
-    //                     const htmlContent = processedLines.filter(line => line !== '').join('<br>');
-    //                     $element.html(htmlContent);
-    //                 } else {
-    //                     // برای کامنت‌های تک خطی
-    //                     const prefixSpan = `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">${commentPrefix}</span>`;
-    //                     const contentSpan = `<span dir="rtl" class="FontSet">${cleanedText}</span>`;
-    //                     const suffixSpan = commentSuffix ? `<span dir="ltr" style="unicode-bidi: embed; display: inline-block;">${commentSuffix}</span>` : '';
-    //                     const htmlContent = prefixSpan + ' ' + contentSpan + suffixSpan;
-    //                     $element.html(htmlContent);
-    //                 }
-    //             } else {
-    //                 // اگر علامت کامنت نداریم، فقط dir را تنظیم کن
-    //                 $element.attr('dir', 'rtl');
-    //                 $element.addClass('FontSet');
-    //             }
-    //         }
-    //     }
-    // });
-
-
-
 }
 
+function processCopilotMarkdown(element, rtlAlgorithm) {
+    if (AQ(element).is(ICON_SELECTOR)) {
+        return;
+    }
 
+    applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_OPTIONS);
+    AQ(ICON_SELECTOR).removeClass('FontSet');
+}
 
-// Main activation function for Copilot
+function processCopilotCopyright(portal) {
+    if (!chrome.runtime?.id) {
+        return;
+    }
+
+    const $target = AQ(portal).parent();
+    if (!$target.length) {
+        return;
+    }
+
+    addCopyright(
+        $target,
+        'AsBox_copilotBing AsBoxB',
+        'margin-top: -8px; margin-bottom: -2px; font-size: 13px;'
+    );
+}
+
 export function activateCopilot(rtlAlgorithm = 'advanced_full') {
-    console.log("activateCopilot with RTL algorithm:", rtlAlgorithm);
-    setItems_copilotBing(rtlAlgorithm);
+    console.log('Copilot RTL activated with algorithm:', rtlAlgorithm);
 
-    setInterval(() => {
-        setItems_copilotBing(rtlAlgorithm);
-    }, 1000);
+    applyCopilotChrome();
+
+    observeDomSections([
+        {
+            selector: INPUT_SELECTOR,
+            ignore: INPUT_IGNORE_SELECTOR,
+            process: (el) => processCopilotInput(el, rtlAlgorithm),
+            debounceMs: 50
+        },
+        {
+            selector: MARKDOWN_SELECTOR,
+            ignore: ICON_SELECTOR,
+            exclude: INPUT_SELECTOR,
+            process: (el) => processCopilotMarkdown(el, rtlAlgorithm),
+            debounceMs: 150
+        },
+        {
+            selector: COPYRIGHT_SELECTOR,
+            process: processCopilotCopyright,
+            debounceMs: 200
+        }
+    ]);
 }
-

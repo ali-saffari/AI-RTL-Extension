@@ -15,6 +15,7 @@ export const FONT_SCALE_SITE_MODES = {
     'chat.openai.com': 'font-size',
 
     'claude.ai': 'font-size',
+    'copilot.com': 'font-size',
     'copilot.microsoft.com': 'font-size',
     'bing.com': 'font-size',
     'github.com': 'font-size',
@@ -105,6 +106,7 @@ export const FONT_SCALE_SITE_MODES = {
     'chat.openai.com': 'font-size',
 
     'claude.ai': 'zoom',
+    'copilot.com': 'zoom',
     'copilot.microsoft.com': 'zoom',
     'bing.com': 'zoom',
     'github.com': 'zoom',

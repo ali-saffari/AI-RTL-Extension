@@ -22,7 +22,7 @@ const devError = (...args) => { if (IS_DEV) console.error.apply(console, args); 
 // ============================================
 
 const SERVICE_FLAGS = {
-    chatGpt: true, claude: true, copilot: true, githubCopilot: true,
+    chatGpt: true, claude: true, githubCopilot: true,
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
@@ -880,7 +880,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // AI sites list for manual RTL
 const AI_SITES = [
-    'chatgpt.com', 'claude.ai', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
+    'chatgpt.com', 'claude.ai', 'copilot.com', 'www.copilot.com', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
     'github.com', 'perplexity.ai', 'www.perplexity.ai', 'duckduckgo.com',
     'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',
