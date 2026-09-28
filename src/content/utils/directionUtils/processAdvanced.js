@@ -253,8 +253,6 @@ export function processTextElementsAdvanced(container, options = {}) {
                             applyTextAlignByDirection(this, majorityDir, setTextAlign);
                             applyUnicodeBidiByDirection(this, majorityDir, setUnicodeBidi);
                         });
-                        
-                        console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount}) - Unified mode`);
                     }
                 }
                 // In individual mode, each header keeps its own direction (already set above)

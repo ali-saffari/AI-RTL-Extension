@@ -151,7 +151,7 @@ function processGeminiMarkdown(rtlAlgorithm) {
         applyRtlToContainer(this, rtlAlgorithm, {
             fontClass: 'FontSet',
             codeFontClass: false,
-            processedClass: 'AsOk',
+            processedClass: 'AsOkaaaaaaaaaaaaaaaaa',
             isContainer: true,
             setTextAlign: true
         });

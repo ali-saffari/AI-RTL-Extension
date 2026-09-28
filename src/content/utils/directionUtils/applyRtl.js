@@ -23,7 +23,7 @@ import {
 } from './lockedEditor.js';
 import { applyRemoveDirAuto, processTextElementsAdvanced } from './processAdvanced.js';
 import { isInvalidatedError, resolveRtlAlgorithm } from './settings.js';
-import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, unwrapElement } from './shared.js';
+import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, clearDebugSkipReason, logDebugProcess, logDebugSkipOnce, unwrapElement } from './shared.js';
 import { processTablesInContainer } from './tables.js';
 import {
     applyDirectionMarker,
@@ -177,8 +177,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         // Get current text content for length comparison
         const currentText = getAnalyzableText($element, processOptions);
         
-
-        
         const currentTextLength = currentText.length;
         
         // Get stored text length from attribute
@@ -189,10 +187,26 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
         
         // Count elements with processedClass in this section
-        const processedElementsCount = $element.find(`.${processedClass}`).length;
+        const processedElementsCount = processedClass
+            ? $element.find(`.${processedClass}`).length
+            : 0;
         
+        const reasons = [];
+        if (storedLength === null) {
+            reasons.push('no-stored-length');
+        }
+        if (lengthDifference > 3) {
+            reasons.push(`length-delta>${3} (${lengthDifference})`);
+        }
+        if (processedElementsCount < 2) {
+            reasons.push(`processed-count<2 (${processedElementsCount}, class=${processedClass || 'none'})`);
+        }
+
         // Only process if text length changed by more than 3 characters, if it's the first time (no attribute), or if fewer than 2 elements are processed
-        const shouldProcess = lengthDifference > 3 || storedLength === null || processedElementsCount < 2;
+        const shouldProcess = reasons.length > 0;
+        const skipReason = shouldProcess
+            ? null
+            : `stable-length (delta=${lengthDifference}<=3) | processed-count>=2 (${processedElementsCount}, class=${processedClass || 'none'}) | storedLength=${storedLength}`;
         
         return {
             shouldProcess,
@@ -200,17 +214,28 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             currentTextLength,
             storedLength,
             lengthDifference,
-            processedElementsCount
+            processedElementsCount,
+            reason: shouldProcess ? (reasons.join(' | ') || 'none') : skipReason
         };
     }
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
         
-        const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
+        const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, mergedOptions.processedClass);
         
         if (shouldProcess) {
             // console.log("applyRtlToContainer advanced_section", currentTextLength, storedLength, lengthDifference);
+            logDebugProcess('process', $element, {
+                algorithm: 'advanced_section',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedElementsCount,
+                processedClass: mergedOptions.processedClass
+            });
+            clearDebugSkipReason($element);
             processTextElementsAdvanced($element, mergedOptions);
 
             $element.attr('data-algorithm-rtl', 'advanced_section');
@@ -226,6 +251,16 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 processedClass: mergedOptions.processedClass
             }, true);
             flipRtlArrowsInTree($element);
+        } else {
+            logDebugSkipOnce($element, {
+                algorithm: 'advanced_section',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedElementsCount,
+                processedClass: mergedOptions.processedClass
+            });
         }
 
         if (mergedOptions.processTables !== false) {
@@ -272,12 +307,23 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
         
         const ignoreSelector = getIgnoreSelector(mergedOptions);
-        const { shouldProcess, currentText, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass, {
+        const { shouldProcess, currentText, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, mergedOptions.processedClass, {
             ignoreSelector
         });
         
         if (shouldProcess) {
             // console.log("applyRtlToContainer advanced_full", currentTextLength, storedLength, lengthDifference);
+            logDebugProcess('process', $element, {
+                algorithm: 'advanced_full',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedElementsCount,
+                processedClass: mergedOptions.processedClass,
+                isContainer: Boolean(mergedOptions.isContainer)
+            });
+            clearDebugSkipReason($element);
             setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
 
             const codeOptions = {
@@ -297,6 +343,17 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
             flipRtlArrowsInTree($element);
+        } else {
+            logDebugSkipOnce($element, {
+                algorithm: 'advanced_full',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedElementsCount,
+                processedClass: mergedOptions.processedClass,
+                isContainer: Boolean(mergedOptions.isContainer)
+            });
         }
 
         if (mergedOptions.processTables !== false && (mergedOptions.processTables || mergedOptions.isContainer)) {
@@ -325,10 +382,17 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         
         // Process tables in container for first_word algorithm (only if isContainer is true)
         if (options.isContainer) {
-            const { shouldProcess, currentTextLength } = shouldProcessElement($element, options.processedClass);
+            const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, options.processedClass);
             
             if (shouldProcess) {
                 // console.log("applyRtlToContainer first_word tables", currentTextLength, storedLength, lengthDifference);
+                logDebugProcess('process', $element, {
+                    algorithm: 'first_word',
+                    reason,
+                    currentTextLength,
+                    processedClass: options.processedClass
+                });
+                clearDebugSkipReason($element);
                 if (options.processTables !== false) {
                     processTablesInContainer($element, {
                         fontClass,
@@ -340,6 +404,16 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 }
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
+            } else {
+                logDebugSkipOnce($element, {
+                    algorithm: 'first_word',
+                    reason,
+                    currentTextLength,
+                    storedLength,
+                    lengthDifference,
+                    processedElementsCount,
+                    processedClass: options.processedClass
+                });
             }
         }
         
