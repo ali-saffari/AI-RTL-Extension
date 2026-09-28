@@ -151,10 +151,8 @@ export function logDebugSkipOnce(element, details = {}) {
         }
         lastSkipReasons.set(el, reason);
     }
-    console.log('[AI-RTL]', 'skip', el, {
-        ...describeDebugElement(el),
-        ...details
-    });
+    const info = { ...describeDebugElement(el), ...details };
+    // console.log(`[AI-RTL] skip ${info.tag}${info.className ? '.' + info.className : ''} reason=${info.reason || ''} textLength=${info.textLength ?? ''}`, el);
 }
 
 export function clearDebugSkipReason(element) {

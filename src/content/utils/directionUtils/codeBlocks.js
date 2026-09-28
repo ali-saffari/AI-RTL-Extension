@@ -5,7 +5,7 @@
  * applyRtlToContainer / processTextElementsAdvanced when applyAlgorithmToCode is on.
  */
 
-import { isRtlEngineActive, restoreElementFromSelf } from '../originalState.js';
+import { isRtlEngineActive, preserveOriginalDir, restoreElementFromSelf } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CODE_BLOCK_SELECTOR,
@@ -254,7 +254,10 @@ export function processCodeLikeElement($element, element, options = {}) {
     }
 
     setDebugAttr($element, 'data-debug-mode', 'code-element-normal');
-    $element.find('*').removeAttr('dir');
+    $element.find('[dir]').each(function () {
+        preserveOriginalDir(this);
+        this.removeAttribute('dir');
+    });
     applyCodeBlockDirection($targets, 'rtl', blockFontClass);
     markCodeBlockProcessed($element, options);
 }

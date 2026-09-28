@@ -1,13 +1,17 @@
 // Current ChatGPT UI. Active when #stage-sidebar-tiny-bar is not in the DOM.
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
-import { isRtlEngineActive } from '../utils/originalState.js';
+import { logDebug } from '../utils/directionUtils/shared.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../utils/originalState.js';
 
 let markdownObserver = null;
+let markdownVisibilityObserver = null;
 let markdownFlushRaf = 0;
 let markdownScanInterval = 0;
 let markdownProcessTimes = new WeakMap();
 const MARKDOWN_SCAN_INTERVAL_MS = 8000;
+const VIEWPORT_ROOT_MARGIN = '300px 0px';
+const VIEWPORT_MARGIN_PX = 300;
 const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
 const MARKDOWN_ASSISTANT_SELECTOR = '[data-assistant-markdown]';
 const MARKDOWN_SELECTOR = `${MARKDOWN_ROOT_SELECTOR}, ${MARKDOWN_ASSISTANT_SELECTOR}`;
@@ -17,6 +21,16 @@ const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-mes
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
+
+/** True when element is within viewport ± margin (same band as IntersectionObserver rootMargin). */
+function isNearViewport(element, marginPx = VIEWPORT_MARGIN_PX) {
+    if (!element || typeof element.getBoundingClientRect !== 'function') {
+        return false;
+    }
+    const rect = element.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+    return rect.bottom >= -marginPx && rect.top <= vh + marginPx;
+}
 
 const COMPOSER_LIVE_OPTIONS = {
     fontClass: 'FontSetGPT',
@@ -87,6 +101,8 @@ const MARKDOWN_PROCESS_OPTIONS = {
     isContainer: true,
     siteConfig: 'chatgpt',
     setTextAlign: true,
+    // Do not set text-align on MarkdownRoot / assistant markdown container.
+    setRootTextAlign: false,
     removeDirAuto: true,
     // Skip tables/code in advanced walk only (like ms-code-block), not via ignoreSelector.
     walkSkipSelector: MARKDOWN_IGNORE_SELECTOR,
@@ -97,8 +113,8 @@ function chatGptRtlOptions(base, rtlAlgorithm) {
     if (rtlAlgorithm !== 'advanced_full') {
         return base;
     }
-    // Unified mode: keep paragraph dir="auto", and force code blocks LTR.
-    return { ...base, removeDirAutoSkipSelector: 'p', forceCodeLtr: true };
+    // Unified mode: force code blocks LTR.
+    return { ...base, forceCodeLtr: true };
 }
 
 function isLockedMarkdownEditorEl(element) {
@@ -113,10 +129,12 @@ function isLockedMarkdownEditorEl(element) {
 
 function clearDirInTree(node) {
     if (node.hasAttribute('dir')) {
+        preserveOriginalDir(node);
         node.removeAttribute('dir');
     }
     const dirs = node.querySelectorAll('[dir]');
     for (let i = 0; i < dirs.length; i++) {
+        preserveOriginalDir(dirs[i]);
         dirs[i].removeAttribute('dir');
     }
 }
@@ -182,6 +200,10 @@ function processUserMessageNode(node, rtlAlgorithm) {
     );
 
     userMessages.each(function() {
+        if (!isNearViewport(this)) {
+            logDebug('skip viewport user-message', this);
+            return;
+        }
         applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
@@ -227,6 +249,10 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         markdownObserver.disconnect();
         markdownObserver = null;
     }
+    if (markdownVisibilityObserver) {
+        markdownVisibilityObserver.disconnect();
+        markdownVisibilityObserver = null;
+    }
     if (markdownFlushRaf) {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
@@ -240,9 +266,17 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     const pendingMarkdown = new Set();
     const pendingUserNodes = new Set();
     const pendingSuggestionNodes = new Set();
+    const visibleMarkdown = new Set();
+    const dirtyMarkdown = new Set();
+    const observedMarkdown = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
 
     const processMarkdownElement = (element) => {
         if (!isRtlEngineActive()) {
+            return;
+        }
+        if (!visibleMarkdown.has(element)) {
+            dirtyMarkdown.add(element);
+            logDebug('skip viewport markdown', element);
             return;
         }
         const throttleMs = isLockedMarkdownEditorEl(element) ? 150 : 500;
@@ -253,10 +287,44 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             return;
         }
         markdownProcessTimes.set(element, now);
+        dirtyMarkdown.delete(element);
 
+        logDebug('apply viewport markdown', element);
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, chatGptRtlOptions(MARKDOWN_PROCESS_OPTIONS, rtlAlgorithm));
         clearDirOnIgnoredMarkdown(element);
+    };
+
+    markdownVisibilityObserver = new IntersectionObserver((entries) => {
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            const el = entry.target;
+            if (entry.isIntersecting) {
+                visibleMarkdown.add(el);
+                if (dirtyMarkdown.has(el) || !markdownProcessTimes.has(el)) {
+                    processMarkdownElement(el);
+                }
+            } else {
+                visibleMarkdown.delete(el);
+            }
+        }
+    }, {
+        root: null,
+        rootMargin: VIEWPORT_ROOT_MARGIN,
+        threshold: 0
+    });
+
+    const observeMarkdown = (element) => {
+        if (!element || !markdownVisibilityObserver) {
+            return;
+        }
+        if (observedMarkdown) {
+            if (observedMarkdown.has(element)) {
+                return;
+            }
+            observedMarkdown.add(element);
+        }
+        markdownVisibilityObserver.observe(element);
     };
 
     const flushPending = () => {
@@ -294,6 +362,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         if (!element || element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
+        observeMarkdown(element);
         pendingMarkdown.add(element);
         scheduleFlush();
     };
@@ -363,19 +432,6 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             queueMarkdown(el);
         }
     });
-
-    // Rare catch-up only — live updates are owned by the MutationObserver.
-    markdownScanInterval = setInterval(() => {
-        if (!isRtlEngineActive()) {
-            return;
-        }
-        document.querySelectorAll(MARKDOWN_ROOT_SELECTOR).forEach(processMarkdownElement);
-        document.querySelectorAll(MARKDOWN_ASSISTANT_SELECTOR).forEach((el) => {
-            if (!el.closest(MARKDOWN_ROOT_SELECTOR)) {
-                processMarkdownElement(el);
-            }
-        });
-    }, MARKDOWN_SCAN_INTERVAL_MS);
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -487,6 +543,10 @@ export function stopChatGptNew() {
     if (markdownObserver) {
         markdownObserver.disconnect();
         markdownObserver = null;
+    }
+    if (markdownVisibilityObserver) {
+        markdownVisibilityObserver.disconnect();
+        markdownVisibilityObserver = null;
     }
     if (markdownFlushRaf) {
         cancelAnimationFrame(markdownFlushRaf);

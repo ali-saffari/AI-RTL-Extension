@@ -4,14 +4,14 @@
  */
 
 import { detectTextDirection } from '../analyzeDirection.js';
-import { isRtlEngineActive } from '../originalState.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     processCodeBlockNode,
     processCodeLikeElement,
     processCodeMirrorBlock
 } from './codeBlocks.js';
-import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
+import { processParagraphWithBreaks, setTextDirectionAndFont, isInlineSpanBdiBreakParagraph } from './applyElementDirection.js';
 import { isLockedMarkdownEditor } from './lockedEditor.js';
 import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
 import {
@@ -120,6 +120,8 @@ export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = 
         }
         const $el = AQ(this);
         if (!$el.hasClass('removeedDirAuto')) {
+            // Stamp original dir so restoreAllOriginals can put dir="auto" back.
+            preserveOriginalDir(this);
             $el.removeAttr('dir').addClass('removeedDirAuto');
         }
     });
@@ -462,6 +464,14 @@ export function processTextElementsAdvanced(container, options = {}) {
                 setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
                 setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 skipStructuredMedia($element, processedClass);
+                $element.addClass(processedClass);
+                return;
+            }
+
+            // ChatGPT step lists: only span/bdi + br → dir on the paragraph, leave children alone.
+            if (tagName === 'p' && isInlineSpanBdiBreakParagraph(this)) {
+                setDebugAttr($element, 'data-debug-mode', 'paragraph-span-bdi-breaks');
+                setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 $element.addClass(processedClass);
                 return;
             }

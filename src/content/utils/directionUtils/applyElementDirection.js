@@ -28,6 +28,33 @@ import {
 
 const loggedIgnoredEls = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
 
+/**
+ * True when a paragraph is only line-wrapped with span/bdi (+ br), e.g. ChatGPT steps:
+ * <p><span>…</span><br><span>…</span><bdi>۳</bdi></p>
+ * In that case set dir on the <p> only; do not rewrite / dir-wrap children.
+ */
+export function isInlineSpanBdiBreakParagraph(element) {
+    const el = unwrapElement(element);
+    if (!el || !el.children || !el.children.length) {
+        return false;
+    }
+    let hasBr = false;
+    let hasInline = false;
+    for (let i = 0; i < el.children.length; i++) {
+        const tag = el.children[i].tagName && el.children[i].tagName.toLowerCase();
+        if (tag === 'br') {
+            hasBr = true;
+            continue;
+        }
+        if (tag === 'span' || tag === 'bdi') {
+            hasInline = true;
+            continue;
+        }
+        return false;
+    }
+    return hasBr && hasInline;
+}
+
 export function getIgnoreSelector(options = {}) {
     const value = options.ignoreSelector;
     return typeof value === 'string' && value.length ? value : null;
@@ -238,6 +265,14 @@ export function processParagraphWithBreaks(element, fontClass = 'FontSet' , setT
     if (containsStructuredMarkup(el)) {
         setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi, ...directionClassOptions });
         skipStructuredMedia($element);
+        $element.data('rtl-processed', true);
+        return;
+    }
+
+    // ChatGPT-style lines: <p><span>…</span><br><span>…</span><bdi>…</bdi></p>
+    // Keep children intact; set direction only on the paragraph.
+    if (isInlineSpanBdiBreakParagraph(el)) {
+        setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi, ...directionClassOptions });
         $element.data('rtl-processed', true);
         return;
     }

@@ -106,6 +106,7 @@ export function getAttributeTextElements() {
  * @param {boolean} [options.isContainer] - Treat as a nested container. Default `true` for advanced_section. advanced_full: also process inner code blocks on first pass. first_word: also process tables
  * @param {string|false} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted. `false` skips applying a font class on code
  * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
+ * @param {boolean|'important'|false} [options.setRootTextAlign] - advanced_full only: text-align on the container root. Default follows setTextAlign; set `false` to leave the mother element without text-align (children/tables still use setTextAlign)
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
  * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess. `false` skips tables in every algorithm
@@ -333,7 +334,19 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 isContainer: Boolean(mergedOptions.isContainer)
             });
             clearDebugSkipReason($element);
-            setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
+            const rootSetTextAlign = mergedOptions.setRootTextAlign === undefined
+                ? mergedOptions.setTextAlign
+                : mergedOptions.setRootTextAlign;
+            setTextDirectionAndFont(element, {
+                ...mergedOptions,
+                ignoreSelector,
+                text: currentText,
+                setTextAlign: rootSetTextAlign
+            });
+            // Mother container: clear leftover inline text-align when root align is disabled.
+            if (rootSetTextAlign === false && el && el.style) {
+                el.style.removeProperty('text-align');
+            }
 
             $element.attr('data-algorithm-rtl', 'advanced_full');
             // Store the new text length

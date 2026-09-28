@@ -26,8 +26,8 @@ function chatGptRtlOptions(base, rtlAlgorithm) {
     if (rtlAlgorithm !== 'advanced_full') {
         return base;
     }
-    // Unified mode: keep paragraph dir="auto", and force code blocks LTR.
-    return { ...base, removeDirAutoSkipSelector: 'p', forceCodeLtr: true };
+    // Unified mode: force code blocks LTR.
+    return { ...base, forceCodeLtr: true };
 }
 const PRESENTATION = '.relative.flex.h-full ';
 
