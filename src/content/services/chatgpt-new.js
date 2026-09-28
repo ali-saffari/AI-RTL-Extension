@@ -83,7 +83,7 @@ function watchChatGptComposer(element, rtlAlgorithm) {
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
     codeFontClass: 'FontSetCodeBlocksGPT',
-    processedClass: 'AsOkText',
+    processedClass: 'AsOk',
     isContainer: true,
     siteConfig: 'chatgpt',
     setTextAlign: true,

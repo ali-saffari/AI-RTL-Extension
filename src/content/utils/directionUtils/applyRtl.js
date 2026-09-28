@@ -173,7 +173,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
      * @param {string} processedClass - Class name to count processed elements
      * @returns {Object} - Object containing shouldProcess boolean and currentTextLength number
      */
-    function shouldProcessElement($element, processedClass, processOptions = {}) {
+    function shouldProcessElement($element, _processedClass, processOptions = {}) {
         // Get current text content for length comparison
         const currentText = getAnalyzableText($element, processOptions);
         
@@ -185,12 +185,18 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         
         // Calculate the difference in text length
         const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
-        
-        // Count elements with processedClass in this section
-        const processedElementsCount = processedClass
-            ? $element.find(`.${processedClass}`).length
-            : 0;
-        
+
+        // Removed: processedClass child-count gate for containers.
+        // Previously we also reprocessed when fewer than 2 descendants had processedClass
+        // (`processedElementsCount < 2`), which forced endless passes on short messages.
+        // حذف شد: شرط تعداد فرزندان دارای processedClass برای کانتینرها.
+        // قبلاً اگر کمتر از ۲ فرزند کلاس پردازش داشتند دوباره پردازش می‌شد
+        // (`processedElementsCount < 2`) و روی پیام‌های کوتاه باعث پردازش تکراری می‌شد.
+        // const processedElementsCount = _processedClass
+        //     ? $element.find(`.${_processedClass}`).length
+        //     : 0;
+        // if (processedElementsCount < 2) { ... force shouldProcess ... }
+
         const reasons = [];
         if (storedLength === null) {
             reasons.push('no-stored-length');
@@ -198,15 +204,13 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         if (lengthDifference > 3) {
             reasons.push(`length-delta>${3} (${lengthDifference})`);
         }
-        if (processedElementsCount < 2) {
-            reasons.push(`processed-count<2 (${processedElementsCount}, class=${processedClass || 'none'})`);
-        }
 
-        // Only process if text length changed by more than 3 characters, if it's the first time (no attribute), or if fewer than 2 elements are processed
+        // Containers: decide only by text length (first visit or delta > 3).
+        // کانتینرها: فقط بر اساس طول متن تصمیم گرفته می‌شود (اولین بار یا اختلاف بیشتر از ۳).
         const shouldProcess = reasons.length > 0;
         const skipReason = shouldProcess
             ? null
-            : `stable-length (delta=${lengthDifference}<=3) | processed-count>=2 (${processedElementsCount}, class=${processedClass || 'none'}) | storedLength=${storedLength}`;
+            : `stable-length (delta=${lengthDifference}<=3) | storedLength=${storedLength}`;
         
         return {
             shouldProcess,
@@ -214,7 +218,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             currentTextLength,
             storedLength,
             lengthDifference,
-            processedElementsCount,
             reason: shouldProcess ? (reasons.join(' | ') || 'none') : skipReason
         };
     }
@@ -222,7 +225,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
         
-        const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, mergedOptions.processedClass);
+        const { shouldProcess, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, mergedOptions.processedClass);
         
         if (shouldProcess) {
             // console.log("applyRtlToContainer advanced_section", currentTextLength, storedLength, lengthDifference);
@@ -232,7 +235,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 currentTextLength,
                 storedLength,
                 lengthDifference,
-                processedElementsCount,
                 processedClass: mergedOptions.processedClass
             });
             clearDebugSkipReason($element);
@@ -258,7 +260,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 currentTextLength,
                 storedLength,
                 lengthDifference,
-                processedElementsCount,
                 processedClass: mergedOptions.processedClass
             });
         }
@@ -307,7 +308,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
         
         const ignoreSelector = getIgnoreSelector(mergedOptions);
-        const { shouldProcess, currentText, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, mergedOptions.processedClass, {
+        const { shouldProcess, currentText, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, mergedOptions.processedClass, {
             ignoreSelector
         });
         
@@ -319,7 +320,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 currentTextLength,
                 storedLength,
                 lengthDifference,
-                processedElementsCount,
                 processedClass: mergedOptions.processedClass,
                 isContainer: Boolean(mergedOptions.isContainer)
             });
@@ -350,7 +350,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 currentTextLength,
                 storedLength,
                 lengthDifference,
-                processedElementsCount,
                 processedClass: mergedOptions.processedClass,
                 isContainer: Boolean(mergedOptions.isContainer)
             });
@@ -382,7 +381,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         
         // Process tables in container for first_word algorithm (only if isContainer is true)
         if (options.isContainer) {
-            const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount, reason } = shouldProcessElement($element, options.processedClass);
+            const { shouldProcess, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, options.processedClass);
             
             if (shouldProcess) {
                 // console.log("applyRtlToContainer first_word tables", currentTextLength, storedLength, lengthDifference);
@@ -411,7 +410,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                     currentTextLength,
                     storedLength,
                     lengthDifference,
-                    processedElementsCount,
                     processedClass: options.processedClass
                 });
             }
