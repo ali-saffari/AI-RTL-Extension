@@ -90,6 +90,7 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 
 const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
+    'data-ai-rtl-code-len',
     ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_BIDI_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
     'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
     'data-org-dir', ORIG_CSS_DIRECTION_ATTR, HAD_TEXT_LEFT_ATTR, 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',

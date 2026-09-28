@@ -21,6 +21,14 @@ const MARKDOWN_PROCESS_OPTIONS = {
     removeDirAuto: true,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
+
+function chatGptRtlOptions(base, rtlAlgorithm) {
+    if (rtlAlgorithm !== 'advanced_full') {
+        return base;
+    }
+    // Unified mode: keep paragraph dir="auto", and force code blocks LTR.
+    return { ...base, removeDirAutoSkipSelector: 'p', forceCodeLtr: true };
+}
 const PRESENTATION = '.relative.flex.h-full ';
 
 function isLockedMarkdownEditorEl(element) {
@@ -60,12 +68,12 @@ function processUserMessageNode(node, rtlAlgorithm) {
     );
 
     userMessages.each(function() {
-        applyRtlToElement(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
             removeDirAuto: true
-        });
+        }, rtlAlgorithm));
     });
 }
 
@@ -168,7 +176,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         markdownProcessTimes.set(element, now);
 
         AQ(element).addClass('AsSetAlgorithm');
-        applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
+        applyRtlToContainer(element, rtlAlgorithm, chatGptRtlOptions(MARKDOWN_PROCESS_OPTIONS, rtlAlgorithm));
         processCodeMirrorBlocks(element, {
             fontClass: 'FontSetCodeBlocksGPT',
             setTextAlign: true
@@ -300,12 +308,12 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     });
 
     AQ('[data-message-author-role="user"]').each(function () {
-        applyRtlToElement(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
             removeDirAuto: true
-        });
+        }, rtlAlgorithm));
     });
 
     processPresentationBubbles();

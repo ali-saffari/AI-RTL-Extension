@@ -110,6 +110,7 @@ export function getAttributeTextElements() {
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
  * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess. `false` skips tables in every algorithm
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore when analyzing text; skipped if omitted
+ * @param {string} [options.walkSkipSelector] - Skip only in processTextElementsAdvanced (mark+return like ms-code-block); does not strip text for analysis
  * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
  * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM. `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) targets matching descendants as locked editors
  * @param {string[]} [options.includeTags] - Add tag names to the default block list (p, h1–h6, blockquote, pre, ul, ol). Extra tags get display:block in onlyCss
@@ -150,7 +151,13 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     }
 
     applyRemoveInnerDir($element, options);
-    applyRemoveDirAuto($element, options.removeDirAuto === true, getIgnoreSelector(options), options.onlyCss);
+    applyRemoveDirAuto(
+        $element,
+        options.removeDirAuto === true,
+        getIgnoreSelector(options),
+        options.onlyCss,
+        options.removeDirAutoSkipSelector
+    );
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -246,12 +253,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             // Reset skip log flag when processing happens
             $element.removeAttr('data-skip-log-sent');
 
-            processCodeBlocksInContainer($element, {
-                fontClass: mergedOptions.fontClass,
-                codeFontClass: mergedOptions.codeFontClass,
-                setTextAlign: mergedOptions.setTextAlign,
-                processedClass: mergedOptions.processedClass
-            }, true);
             flipRtlArrowsInTree($element);
         } else {
             logDebugSkipOnce($element, {
@@ -273,6 +274,14 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
+        // Independent of shouldProcess — code blocks have their own skip marker.
+        processCodeBlocksInContainer($element, {
+            fontClass: mergedOptions.fontClass,
+            codeFontClass: mergedOptions.codeFontClass,
+            setTextAlign: mergedOptions.setTextAlign,
+            processedClass: mergedOptions.processedClass,
+            forceCodeLtr: mergedOptions.forceCodeLtr === true
+        }, true);
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
@@ -326,19 +335,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             clearDebugSkipReason($element);
             setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
 
-            const codeOptions = {
-                fontClass: mergedOptions.fontClass,
-                codeFontClass: mergedOptions.codeFontClass,
-                setTextAlign: mergedOptions.setTextAlign,
-                processedClass: mergedOptions.processedClass
-            };
-
-            if (mergedOptions.isContainer) {
-                processCodeBlocksInContainer($element, codeOptions, true);
-            } else {
-                processCodeBlocksInContainer($element, codeOptions, false);
-            }
-            
             $element.attr('data-algorithm-rtl', 'advanced_full');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
@@ -353,6 +349,20 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 processedClass: mergedOptions.processedClass,
                 isContainer: Boolean(mergedOptions.isContainer)
             });
+        }
+
+        // Independent of shouldProcess — code blocks have their own skip marker.
+        const codeOptions = {
+            fontClass: mergedOptions.fontClass,
+            codeFontClass: mergedOptions.codeFontClass,
+            setTextAlign: mergedOptions.setTextAlign,
+            processedClass: mergedOptions.processedClass,
+            forceCodeLtr: mergedOptions.forceCodeLtr === true
+        };
+        if (mergedOptions.isContainer) {
+            processCodeBlocksInContainer($element, codeOptions, true);
+        } else {
+            processCodeBlocksInContainer($element, codeOptions, false);
         }
 
         if (mergedOptions.processTables !== false && (mergedOptions.processTables || mergedOptions.isContainer)) {
@@ -459,7 +469,7 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
         return;
     }
 
-    applyRemoveDirAuto($element, options.removeDirAuto === true, null, options.onlyCss);
+    applyRemoveDirAuto($element, options.removeDirAuto === true, null, options.onlyCss, options.removeDirAutoSkipSelector);
     
     // Default options for each algorithm
     const defaultOptions = {
