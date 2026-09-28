@@ -21,6 +21,43 @@ const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-mes
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
+const THREAD_FOOTER_SELECTOR = '[data-thread-scroll-footer="true"] [data-pip-obstacle="thread-footer"]';
+const COMPOSER_LAYOUT_BODY_SELECTOR = '[class^="ComposerLayoutBody"], [class*=" ComposerLayoutBody"]';
+const LEGACY_THREAD_BOTTOM_SELECTOR = '#thread-bottom .w-full .pointer-events-auto';
+
+function findCopyrightTargetFromComposerBody() {
+    const body = document.querySelector(COMPOSER_LAYOUT_BODY_SELECTOR);
+    if (!body || typeof body.closest !== 'function') {
+        return null;
+    }
+    const form = body.closest('form');
+    if (!form) {
+        return null;
+    }
+    // Two ancestors above the form (دو تا المنت قبل فرم).
+    const twoUp = form.parentElement && form.parentElement.parentElement;
+    return twoUp || null;
+}
+
+function ensureChatGptCopyright() {
+    if (!chrome.runtime?.id) {
+        return;
+    }
+    let $target = AQ(THREAD_FOOTER_SELECTOR);
+    if (!$target.length) {
+        const composerTarget = findCopyrightTargetFromComposerBody();
+        if (composerTarget) {
+            $target = AQ(composerTarget);
+        }
+    }
+    if (!$target.length) {
+        $target = AQ(LEGACY_THREAD_BOTTOM_SELECTOR);
+    }
+    if (!$target.length) {
+        return;
+    }
+    addCopyright($target, 'text-xs text-token-text-secondary AsBoxB', 'margin-top: 9px; margin-bottom: -11px;');
+}
 
 /** True when element is within viewport ± margin (same band as IntersectionObserver rootMargin). */
 function isNearViewport(element, marginPx = VIEWPORT_MARGIN_PX) {
@@ -445,7 +482,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         return;
     }
     if (chrome.runtime?.id) {
-        addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), 'text-xs text-token-text-secondary AsBoxB' , 'margin-top: 9px; margin-bottom: -11px;');
+        ensureChatGptCopyright();
     }
 
     AQ('body').addClass('FontSetGPT');
@@ -537,6 +574,7 @@ export function refreshChatGptLiveTargets(rtlAlgorithm = 'advanced_full') {
 
     initializeChatGptHistory(rtlAlgorithm);
     enforceAlgorithmRtlTargets(rtlAlgorithm);
+    ensureChatGptCopyright();
 }
 
 export function stopChatGptNew() {
