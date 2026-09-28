@@ -218,6 +218,13 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             $element.attr('data-text-length', currentTextLength.toString());
             // Reset skip log flag when processing happens
             $element.removeAttr('data-skip-log-sent');
+
+            processCodeBlocksInContainer($element, {
+                fontClass: mergedOptions.fontClass,
+                codeFontClass: mergedOptions.codeFontClass,
+                setTextAlign: mergedOptions.setTextAlign,
+                processedClass: mergedOptions.processedClass
+            }, true);
             flipRtlArrowsInTree($element);
         }
 
@@ -230,13 +237,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
-        processCodeBlocksInContainer($element, {
-            fontClass: mergedOptions.fontClass,
-            codeFontClass: mergedOptions.codeFontClass,
-            setTextAlign: mergedOptions.setTextAlign,
-            processedClass: mergedOptions.processedClass
-        }, true);
-        flipRtlArrowsInTree($element);
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
@@ -289,6 +289,8 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
 
             if (mergedOptions.isContainer) {
                 processCodeBlocksInContainer($element, codeOptions, true);
+            } else {
+                processCodeBlocksInContainer($element, codeOptions, false);
             }
             
             $element.attr('data-algorithm-rtl', 'advanced_full');
@@ -296,13 +298,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             $element.attr('data-text-length', currentTextLength.toString());
             flipRtlArrowsInTree($element);
         }
-
-        processCodeBlocksInContainer($element, {
-            fontClass: mergedOptions.fontClass,
-            codeFontClass: mergedOptions.codeFontClass,
-            setTextAlign: mergedOptions.setTextAlign,
-            processedClass: mergedOptions.processedClass
-        }, false);
 
         if (mergedOptions.processTables !== false && (mergedOptions.processTables || mergedOptions.isContainer)) {
             processTablesInContainer($element, {
@@ -313,8 +308,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
-
-        flipRtlArrowsInTree($element);
 
         if (ignoreSelector) {
             isolateIgnoredElements($element, ignoreSelector);
