@@ -7,26 +7,16 @@ let markdownObserver = null;
 let markdownFlushRaf = 0;
 let markdownScanInterval = 0;
 let markdownProcessTimes = new WeakMap();
-const MARKDOWN_SCAN_INTERVAL_MS = 1000;
-const MARKDOWN_SELECTOR = ' [class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown] , [data-writing-block-table-controls-container]';
+const MARKDOWN_SCAN_INTERVAL_MS = 8000;
+const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
+const MARKDOWN_ASSISTANT_SELECTOR = '[data-assistant-markdown]';
+const MARKDOWN_SELECTOR = `${MARKDOWN_ROOT_SELECTOR}, ${MARKDOWN_ASSISTANT_SELECTOR}`;
 const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
+const TABLE_CONTROLS_SELECTOR = '[data-writing-block-table-controls-container]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
-const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
+const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
-// const CHAT_PAGE_SELECTOR = '[data-app-shell-main-content-layout="thread-edge-scroll"]';
-
-// let lastLoggedPage = '';
-
-// function logChatPage() {
-//     const isChatPage = document.querySelector(CHAT_PAGE_SELECTOR) !== null;
-//     const signature = `${isChatPage}|${location.pathname}`;
-//     if (signature === lastLoggedPage) {
-//         return;
-//     }
-//     lastLoggedPage = signature;
-//     console.log('ChatGPT RTL: chat page', isChatPage, location.pathname);
-// }
 
 const COMPOSER_LIVE_OPTIONS = {
     fontClass: 'FontSetGPT',
@@ -56,23 +46,32 @@ function isInsideInlineCodePane(element) {
 }
 
 function isInsideTableControls(element) {
-    return Boolean(element && element.closest && element.closest('[data-writing-block-table-controls-container]'));
+    return Boolean(element && element.closest && element.closest(TABLE_CONTROLS_SELECTOR));
+}
+
+function shouldSkipComposer(element) {
+    return (
+        !element ||
+        element.id === 'mobile-composer-prompt' ||
+        element.id === 'prompt-textarea' ||
+        isProseMirrorInsideMarkdownRoot(element) ||
+        isInsideInlineCodePane(element) ||
+        isInsideTableControls(element)
+    );
 }
 
 function watchChatGptComposer(element, rtlAlgorithm) {
-    if (!element || element.id === 'mobile-composer-prompt' || element.id === 'prompt-textarea') {
-        return;
-    }
-    if (isProseMirrorInsideMarkdownRoot(element) || isInsideInlineCodePane(element) || isInsideTableControls(element)) {
+    if (shouldSkipComposer(element)) {
         return;
     }
 
-    applyChatGptComposerRtl(element, rtlAlgorithm);
-
+    // Already attached: do not strip skip-state / re-analyze every tick.
     if (AQ(element).data('rtl-listener-added')) {
         return;
     }
     AQ(element).data('rtl-listener-added', true);
+
+    applyChatGptComposerRtl(element, rtlAlgorithm);
 
     AQ(element).on('input keyup paste', function () {
         requestAnimationFrame(() => {
@@ -92,6 +91,7 @@ const MARKDOWN_PROCESS_OPTIONS = {
     ignoreSelector: MARKDOWN_IGNORE_SELECTOR,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
+
 function isLockedMarkdownEditorEl(element) {
     return Boolean(
         element &&
@@ -147,10 +147,19 @@ function closestMarkdown(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
         return null;
     }
-    if (node.matches && node.matches(MARKDOWN_SELECTOR)) {
+
+    // Prefer MarkdownRoot so nested assistant-markdown is not double-processed.
+    if (node.matches && node.matches(MARKDOWN_ROOT_SELECTOR)) {
         return node;
     }
-    return node.closest ? node.closest(MARKDOWN_SELECTOR) : null;
+    const root = node.closest ? node.closest(MARKDOWN_ROOT_SELECTOR) : null;
+    if (root) {
+        return root;
+    }
+    if (node.matches && node.matches(MARKDOWN_ASSISTANT_SELECTOR)) {
+        return node;
+    }
+    return node.closest ? node.closest(MARKDOWN_ASSISTANT_SELECTOR) : null;
 }
 
 function processUserMessageNode(node, rtlAlgorithm) {
@@ -164,7 +173,7 @@ function processUserMessageNode(node, rtlAlgorithm) {
     );
 
     userMessages.each(function() {
-            applyRtlToElement(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
@@ -204,8 +213,6 @@ function processSuggestionNode(node, rtlAlgorithm) {
     });
 }
 
-
-
 export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     if (markdownObserver) {
         markdownObserver.disconnect();
@@ -222,6 +229,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     markdownProcessTimes = new WeakMap();
 
     const pendingMarkdown = new Set();
+    const pendingUserNodes = new Set();
+    const pendingSuggestionNodes = new Set();
 
     const processMarkdownElement = (element) => {
         if (!isRtlEngineActive()) {
@@ -238,44 +247,66 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
 
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
-
-        // processCodeMirrorBlocks(element, {
-        //     fontClass: 'FontSetCodeBlocksGPT',
-        //     setTextAlign: true
-        // });
         clearDirOnIgnoredMarkdown(element);
     };
 
-    const flushPendingMarkdown = () => {
+    const flushPending = () => {
         markdownFlushRaf = 0;
+
         pendingMarkdown.forEach((element) => {
             if (element.isConnected) {
                 processMarkdownElement(element);
             }
         });
         pendingMarkdown.clear();
+
+        pendingUserNodes.forEach((node) => {
+            if (node.isConnected) {
+                processUserMessageNode(node, rtlAlgorithm);
+            }
+        });
+        pendingUserNodes.clear();
+
+        pendingSuggestionNodes.forEach((node) => {
+            if (node.isConnected) {
+                processSuggestionNode(node, rtlAlgorithm);
+            }
+        });
+        pendingSuggestionNodes.clear();
+    };
+
+    const scheduleFlush = () => {
+        if (!markdownFlushRaf) {
+            markdownFlushRaf = requestAnimationFrame(flushPending);
+        }
     };
 
     const queueMarkdown = (element) => {
         if (!element || element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
-        // Batch multiple mutation events into a single RAF flush.
         pendingMarkdown.add(element);
-        if (!markdownFlushRaf) {
-            markdownFlushRaf = requestAnimationFrame(flushPendingMarkdown);
-        }
+        scheduleFlush();
     };
 
     const queueAddedNode = (node) => {
         if (!node || node.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
-        if (node.matches && node.matches(MARKDOWN_SELECTOR)) {
+
+        if (node.matches && node.matches(MARKDOWN_ROOT_SELECTOR)) {
+            queueMarkdown(node);
+        } else if (node.matches && node.matches(MARKDOWN_ASSISTANT_SELECTOR) && !node.closest(MARKDOWN_ROOT_SELECTOR)) {
             queueMarkdown(node);
         }
-        if (node.querySelector && node.querySelector(MARKDOWN_SELECTOR)) {
-            node.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
+
+        if (node.querySelector) {
+            node.querySelectorAll(MARKDOWN_ROOT_SELECTOR).forEach(queueMarkdown);
+            node.querySelectorAll(MARKDOWN_ASSISTANT_SELECTOR).forEach((el) => {
+                if (!el.closest(MARKDOWN_ROOT_SELECTOR)) {
+                    queueMarkdown(el);
+                }
+            });
         }
     };
 
@@ -290,13 +321,15 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                         continue;
                     }
                     queueAddedNode(node);
-                    processUserMessageNode(node, rtlAlgorithm);
-                    processSuggestionNode(node, rtlAlgorithm);
+                    pendingUserNodes.add(node);
+                    pendingSuggestionNodes.add(node);
+                    scheduleFlush();
                 }
 
                 if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE &&
                     mutation.target.matches && mutation.target.matches('ul.divide-token-border-light')) {
-                    processSuggestionNode(mutation.target, rtlAlgorithm);
+                    pendingSuggestionNodes.add(mutation.target);
+                    scheduleFlush();
                 }
             }
 
@@ -315,13 +348,24 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         characterData: true
     });
 
-    document.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
+    document.querySelectorAll(MARKDOWN_ROOT_SELECTOR).forEach(queueMarkdown);
+    document.querySelectorAll(MARKDOWN_ASSISTANT_SELECTOR).forEach((el) => {
+        if (!el.closest(MARKDOWN_ROOT_SELECTOR)) {
+            queueMarkdown(el);
+        }
+    });
 
+    // Rare catch-up only — live updates are owned by the MutationObserver.
     markdownScanInterval = setInterval(() => {
         if (!isRtlEngineActive()) {
             return;
         }
-        document.querySelectorAll(MARKDOWN_SELECTOR).forEach(processMarkdownElement);
+        document.querySelectorAll(MARKDOWN_ROOT_SELECTOR).forEach(processMarkdownElement);
+        document.querySelectorAll(MARKDOWN_ASSISTANT_SELECTOR).forEach((el) => {
+            if (!el.closest(MARKDOWN_ROOT_SELECTOR)) {
+                processMarkdownElement(el);
+            }
+        });
     }, MARKDOWN_SCAN_INTERVAL_MS);
 }
 
@@ -348,11 +392,6 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    // processCodeMirrorBlocks(document.body, {
-    //     fontClass: 'FontSetCodeBlocksGPT',
-    //     setTextAlign: true
-    // });
-
     AQ(USER_MESSAGE_SELECTOR).each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
@@ -362,8 +401,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    AQ('textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]').each(function () {
-        if (this.id === 'mobile-composer-prompt' || this.id === 'prompt-textarea' || isProseMirrorInsideMarkdownRoot(this) || isInsideInlineCodePane(this) || isInsideTableControls(this)) {
+    AQ(COMPOSER_SELECTOR).each(function () {
+        if (shouldSkipComposer(this)) {
             return;
         }
 
@@ -381,40 +420,13 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         });
     });
 
-    // // Keep mobile composer isolated from generic input rules.
-    // AQ(MOBILE_COMPOSER_SELECTOR).each(function () {
-    //     const applyMobileComposer = () => {
-    //         applyRtlToElement(this, rtlAlgorithm, {
-    //             fontClass: 'FontSetGPT',
-    //             setTextAlign: true,
-    //             removeDirAuto: true
-    //         });
-    //     };
-
-    //     applyMobileComposer();
-
-    //     if (AQ(this).data('rtl-mobile-listener-added')) {
-    //         return;
-    //     }
-    //     AQ(this).data('rtl-mobile-listener-added', true);
-
-    //     AQ(this).on('beforeinput input keyup paste change compositionend', function () {
-    //         requestAnimationFrame(() => {
-    //             applyMobileComposer();
-    //         });
-    //     });
-    // });
-
     AQ('.text-token-text-secondary span').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
     });
-
 }
-
-
 
 function enforceAlgorithmRtlTargets(defaultAlgorithm = 'advanced_full') {
     if (!isRtlEngineActive()) {
@@ -431,7 +443,6 @@ function enforceAlgorithmRtlTargets(defaultAlgorithm = 'advanced_full') {
     });
 }
 
-
 export function initializeChatGptHistory(rtlAlgorithm = 'advanced_full') {
     if (!isRtlEngineActive()) {
         return;
@@ -446,8 +457,24 @@ export function initializeChatGptHistory(rtlAlgorithm = 'advanced_full') {
     });
 }
 
+/** Cheap periodic pass: new composers + sidebar only. Messages stay on the observer. */
+export function refreshChatGptLiveTargets(rtlAlgorithm = 'advanced_full') {
+    if (!isRtlEngineActive()) {
+        return;
+    }
+
+    AQ(COMPOSER_SELECTOR).each(function () {
+        const tag = this.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || this.classList.contains('ProseMirror')) {
+            watchChatGptComposer(this, rtlAlgorithm);
+        }
+    });
+
+    initializeChatGptHistory(rtlAlgorithm);
+    enforceAlgorithmRtlTargets(rtlAlgorithm);
+}
+
 export function stopChatGptNew() {
-    // lastLoggedPage = '';
     if (markdownObserver) {
         markdownObserver.disconnect();
         markdownObserver = null;
@@ -463,7 +490,6 @@ export function stopChatGptNew() {
 }
 
 export function runChatGptNew(rtlAlgorithm = 'advanced_full') {
-    // logChatPage();
     initializeChatGptElements(rtlAlgorithm);
     initializeChatGptHistory(rtlAlgorithm);
     enforceAlgorithmRtlTargets(rtlAlgorithm);
