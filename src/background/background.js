@@ -721,6 +721,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         })();
         return true; // Keep channel open for async response
+    } else if (message.action === 'requestPermissionsAndEnableServices') {
+        (async () => {
+            try {
+                const serviceKeys = Array.isArray(message.serviceKeys) ? message.serviceKeys : [];
+                const origins = [];
+                const validKeys = [];
+
+                serviceKeys.forEach((serviceKey) => {
+                    const service = DYNAMIC_SERVICES[serviceKey];
+                    if (!service?.origins?.length) {
+                        return;
+                    }
+                    validKeys.push(serviceKey);
+                    origins.push(...service.origins);
+                });
+
+                const uniqueOrigins = [...new Set(origins)];
+                if (!validKeys.length || !uniqueOrigins.length) {
+                    sendResponse?.({ success: false, error: 'No services to enable' });
+                    return;
+                }
+
+                const granted = await chrome.permissions.request({
+                    permissions: ['scripting'],
+                    origins: uniqueOrigins
+                });
+
+                if (!granted) {
+                    sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
+                    return;
+                }
+
+                const storageUpdate = {};
+                validKeys.forEach((serviceKey) => {
+                    storageUpdate[serviceKey] = true;
+                    if (serviceKey === 'googleNotebook') {
+                        storageUpdate.notebookNeedsReenable = false;
+                    }
+                });
+                await chrome.storage.sync.set(storageUpdate);
+                sendResponse?.({ success: true, granted: true, serviceKeys: validKeys });
+            } catch (error) {
+                devError('[Background] Error in requestPermissionsAndEnableServices:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true;
     } else if (message.action === 'requestPermissionsAndEnableService') {
         // Handle permission request and service activation from popup
         // Note: This is called from popup onClick (user gesture context)

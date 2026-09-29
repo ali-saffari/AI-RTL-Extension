@@ -28,6 +28,7 @@ import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermis
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { getDefaultPinOpenSiteMode, isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
 import SitePermissionsHint from './SitePermissionsHint';
+import MissingPermissionBanner from './MissingPermissionBanner';
 
 interface Service {
     key: string;
@@ -236,6 +237,39 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+
+    useEffect(() => {
+        const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+            if (area !== 'sync') {
+                return;
+            }
+            setChecked((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                services.forEach((service) => {
+                    const change = changes[service.key];
+                    if (change && typeof change.newValue === 'boolean' && next[service.key] !== change.newValue) {
+                        next[service.key] = change.newValue;
+                        changed = true;
+                    }
+                });
+                return changed ? next : prev;
+            });
+        };
+
+        try {
+            chrome.storage.onChanged.addListener(onStorageChange);
+        } catch {
+            return;
+        }
+        return () => {
+            try {
+                chrome.storage.onChanged.removeListener(onStorageChange);
+            } catch {
+                // Ignore
+            }
+        };
+    }, []);
     
     // Get browser language and determine "Allow" button text
     const getAllowButtonText = () => {
@@ -945,7 +979,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         sx={{ 
                             position: 'sticky',
                             top: 48,
-                            zIndex: 3,
+                            zIndex: 9,
                             overflow: 'hidden',
                             boxSizing: 'border-box',
                             p: 0,
@@ -1018,13 +1052,18 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         </Typography>
                     </Box>
                 )}
-                {groupedList.pinnedItems.map((item, index) =>
-                    renderServiceRow(
-                        item.service,
-                        true,
-                        index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
-                    )
-                )}
+                {groupedList.pinnedItems.map((item, index) => (
+                    <React.Fragment key={`pinned-${item.service.key}`}>
+                        {renderServiceRow(
+                            item.service,
+                            true,
+                            index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
+                        )}
+                        {!searchQuery.trim() && item.service.key === 'gemini' && (
+                            <MissingPermissionBanner isDarkMode={isDarkMode} />
+                        )}
+                    </React.Fragment>
+                ))}
                 {groupedList.groups.map((group) => (
                     <React.Fragment key={group.id}>
                         <ListSubheader
@@ -1079,9 +1118,17 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 {toPersianDigits(group.items.length)}
                             </Box>
                         </ListSubheader>
-                        {group.items.map((item, index) =>
-                            renderServiceRow(item.service, false, index < group.items.length - 1)
-                        )}
+                        {group.items.map((item, index) => (
+                            <React.Fragment key={`row-${item.service.key}`}>
+                                {renderServiceRow(item.service, false, index < group.items.length - 1)}
+                                {!searchQuery.trim()
+                                    && item.service.key === 'gemini'
+                                    && !groupedList.pinnedItems.some((pinned) => pinned.service.key === 'gemini')
+                                    && (
+                                        <MissingPermissionBanner isDarkMode={isDarkMode} />
+                                    )}
+                            </React.Fragment>
+                        ))}
                     </React.Fragment>
                 ))}
             </List>

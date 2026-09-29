@@ -1027,7 +1027,7 @@ function App() {
                             top: 0,
                             backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
                             color: '#ffffff',
-                            zIndex: 4,
+                            zIndex: 10,
                         }}
                     >
                         <Tabs
