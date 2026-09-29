@@ -11,6 +11,7 @@ const ARROW = 6;
 
 interface ExperimentalBadgeProps {
     isDarkMode: boolean;
+    disabled?: boolean;
 }
 
 interface TooltipPos {
@@ -66,12 +67,21 @@ function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
 }
 
-const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode }) => {
+const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode, disabled = false }) => {
     const [open, setOpen] = React.useState(false);
     const [pos, setPos] = React.useState<TooltipPos | null>(null);
     const chipRef = React.useRef<HTMLSpanElement>(null);
     const tooltipRef = React.useRef<HTMLSpanElement>(null);
     const tooltipBg = isDarkMode ? '#1f1f33' : '#1e293b';
+    const chipColor = disabled
+        ? (isDarkMode ? 'rgba(255, 255, 255, 0.38)' : 'rgba(0, 0, 0, 0.38)')
+        : (isDarkMode ? 'rgba(255, 183, 77, 0.9)' : '#e67e22');
+    const chipBorder = disabled
+        ? (isDarkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.14)')
+        : (isDarkMode ? 'rgba(255, 152, 0, 0.28)' : 'rgba(230, 126, 34, 0.28)');
+    const chipBackground = disabled
+        ? (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)')
+        : (isDarkMode ? 'rgba(255, 152, 0, 0.08)' : 'rgba(230, 126, 34, 0.08)');
 
     const updatePosition = React.useCallback(() => {
         const chip = chipRef.current;
@@ -213,10 +223,18 @@ const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode }) => 
         <>
             <span
                 ref={chipRef}
-                tabIndex={0}
-                onMouseEnter={() => setOpen(true)}
+                tabIndex={disabled ? -1 : 0}
+                onMouseEnter={() => {
+                    if (!disabled) {
+                        setOpen(true);
+                    }
+                }}
                 onMouseLeave={() => setOpen(false)}
-                onFocus={() => setOpen(true)}
+                onFocus={() => {
+                    if (!disabled) {
+                        setOpen(true);
+                    }
+                }}
                 onBlur={() => setOpen(false)}
                 style={{
                     display: 'inline-flex',
@@ -228,11 +246,12 @@ const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode }) => 
                     fontWeight: 500,
                     lineHeight: 1.5,
                     whiteSpace: 'nowrap',
-                    cursor: 'help',
+                    cursor: disabled ? 'default' : 'help',
                     outline: 'none',
-                    color: isDarkMode ? 'rgba(255, 183, 77, 0.9)' : '#e67e22',
-                    border: `1px solid ${isDarkMode ? 'rgba(255, 152, 0, 0.28)' : 'rgba(230, 126, 34, 0.28)'}`,
-                    background: isDarkMode ? 'rgba(255, 152, 0, 0.08)' : 'rgba(230, 126, 34, 0.08)',
+                    color: chipColor,
+                    border: `1px solid ${chipBorder}`,
+                    background: chipBackground,
+                    transition: 'color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
                 }}
             >
                 آزمایشی

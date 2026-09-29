@@ -24,12 +24,14 @@ interface PinOpenSiteModeSelectProps {
     value: PinOpenSiteMode;
     onChange: (mode: PinOpenSiteMode) => void;
     isDarkMode: boolean;
+    disabled?: boolean;
 }
 
 const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
     value,
     onChange,
     isDarkMode,
+    disabled = false,
 }) => {
     const options = getPinOpenSiteModeOptions();
     const [menuOpen, setMenuOpen] = React.useState(false);
@@ -69,14 +71,19 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
 
     return (
         <>
-            <FormControl size="small" sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
+            <FormControl size="small" disabled={disabled} sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
                 <Select
                     dir="rtl"
-                    open={menuOpen}
-                    onOpen={() => setMenuOpen(true)}
+                    open={disabled ? false : menuOpen}
+                    onOpen={() => {
+                        if (!disabled) {
+                            setMenuOpen(true);
+                        }
+                    }}
                     onClose={() => setMenuOpen(false)}
                     className="quick-settings-select"
                     value={options.some((option) => option.id === value) ? value : 'off'}
+                    disabled={disabled}
                     renderValue={(selected) =>
                         options.find((item) => item.id === selected)?.title
                         ?? options[0]?.title

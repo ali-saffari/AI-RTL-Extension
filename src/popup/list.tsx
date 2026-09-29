@@ -20,6 +20,7 @@ import {
     SvgIcon,
     Box,
     Paper,
+    Collapse,
 } from '@mui/material';
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid } from '@mdi/js';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
@@ -182,9 +183,15 @@ const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORIES)[number
 
 interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
+    extensionEnabled?: boolean;
+    onEnableExtension?: () => void;
 }
 
-export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMode() }: ServiceListProps) {
+export default function ServiceList({
+    pinOpenSiteMode = getDefaultPinOpenSiteMode(),
+    extensionEnabled = true,
+    onEnableExtension,
+}: ServiceListProps) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -288,6 +295,53 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const allowButtonText = getAllowButtonText();
 
     const pinOpenSiteInList = isPinOpenSiteEnabled(pinOpenSiteMode);
+    const activeCountTarget = extensionEnabled
+        ? Object.values(checked).filter(Boolean).length
+        : 0;
+    const [displayedActiveCount, setDisplayedActiveCount] = useState(activeCountTarget);
+    const displayedActiveCountRef = useRef(activeCountTarget);
+    const activeCountReadyRef = useRef(false);
+
+    useEffect(() => {
+        if (!activeCountReadyRef.current) {
+            activeCountReadyRef.current = true;
+            displayedActiveCountRef.current = activeCountTarget;
+            setDisplayedActiveCount(activeCountTarget);
+            return;
+        }
+
+        const from = displayedActiveCountRef.current;
+        const to = activeCountTarget;
+        if (from === to) {
+            return;
+        }
+
+        let frame = 0;
+        let cancelled = false;
+        const distance = Math.abs(to - from);
+        const duration = Math.min(520, Math.max(180, distance * 16));
+        const startedAt = performance.now();
+
+        const tick = (now: number) => {
+            if (cancelled) {
+                return;
+            }
+            const progress = Math.min(1, (now - startedAt) / duration);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const next = Math.round(from + (to - from) * eased);
+            displayedActiveCountRef.current = next;
+            setDisplayedActiveCount(next);
+            if (progress < 1) {
+                frame = window.requestAnimationFrame(tick);
+            }
+        };
+
+        frame = window.requestAnimationFrame(tick);
+        return () => {
+            cancelled = true;
+            window.cancelAnimationFrame(frame);
+        };
+    }, [activeCountTarget]);
 
     // Detect the currently open tab. Prefer tabs.query so the pin appears on first
     // popup open, without waiting for the background cache / content script.
@@ -756,9 +810,12 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     }, [listItems, searchQuery, showPermissionsHint]);
 
     const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.12)' : '#a2a2a2';
-    const categoryStickyTop = groupedList.pinnedItems.length > 0
+    const showDisabledBanner = !extensionEnabled;
+    const hasPinnedSlot = showDisabledBanner || groupedList.pinnedItems.length > 0;
+    const categoryStickyTop = hasPinnedSlot
         ? 'calc(48px + var(--service-search-h, 48px) + var(--service-pinned-h, 56px))'
         : 'calc(48px + var(--service-search-h, 48px))';
+    const pinnedStickyTop = 'calc(48px + var(--service-search-h, 48px))';
 
     const renderServiceRow = (service: Service, pinned: boolean, showDivider: boolean) => {
         const isActive = service.key === activeServiceKey;
@@ -771,7 +828,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                     style={{ direction: 'ltr' }}
                     sx={pinned ? {
                         position: 'sticky',
-                        top: 'calc(48px + var(--service-search-h, 48px))',
+                        top: pinnedStickyTop,
                         zIndex: 2,
                         backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                         boxShadow: 'none',
@@ -794,7 +851,13 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                             <ListItemIcon sx={{ minWidth: 40 }}>
                                 <Avatar
-                                    sx={{ width: 30, height: 30 }}
+                                    sx={{
+                                        width: 30,
+                                        height: 30,
+                                        filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                        opacity: extensionEnabled ? 1 : 0.55,
+                                        transition: 'filter 0.2s ease, opacity 0.2s ease',
+                                    }}
                                     alt={service.name}
                                     src={chrome.runtime.getURL(service.icon)}
                                 />
@@ -805,10 +868,13 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
                                         <Typography sx={{
-                                            color: isDarkMode ? '#ffffff' : '#000000',
+                                            color: extensionEnabled
+                                                ? (isDarkMode ? '#ffffff' : '#000000')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.42)' : 'rgba(0, 0, 0, 0.38)'),
                                             fontWeight: 500,
+                                            transition: 'color 0.2s ease',
                                             '&:hover': {
-                                                textDecoration: 'underline'
+                                                textDecoration: extensionEnabled ? 'underline' : 'none',
                                             }
                                         }}>
                                             {service.name}
@@ -862,14 +928,22 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                         <Box component="span" sx={{
                                             px: 1,
                                             py: 0.3,
-                                            bgcolor: isDarkMode
-                                                ? 'rgb(33, 46, 65)'
-                                                : 'rgba(30, 64, 175, 0.1)',
-                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            bgcolor: extensionEnabled
+                                                ? (isDarkMode ? 'rgb(33, 46, 65)' : 'rgba(30, 64, 175, 0.1)')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
+                                            border: `1px solid ${
+                                                extensionEnabled
+                                                    ? (isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)')
+                                                    : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
+                                            }`,
+                                            color: extensionEnabled
+                                                ? (isDarkMode ? '#00e9ff' : '#1c39bb')
+                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
                                             borderRadius: 1,
                                             fontSize: '0.6rem',
-                                            fontWeight: 600
+                                            fontWeight: 600,
+                                            filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                            transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                         }}>
                                             جدید
                                         </Box>
@@ -910,18 +984,25 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                             edge="start"
                             onChange={handleChange(service.key)}
                             checked={checked?.[service.key] || false}
-                            disabled={isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)}
+                            disabled={!extensionEnabled || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
                             data-list-switch="true"
                             inputProps={{
                                 'aria-labelledby': `switch-list-label-${service.key}`,
                             }}
                             sx={{
                                 transform: 'rotate(180deg)',
-                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
                                     color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-disabled': {
+                                    color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+                                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.12)',
+                                    opacity: 1,
                                 },
                                 '& .Mui-disabled': {
                                     opacity: 0.5
@@ -1012,7 +1093,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 className="service-list-search-input"
                             />
                         ) : (
-                            `تعداد کل: ${toPersianDigits(services.length)} | تعداد فعال: ${toPersianDigits(Object.values(checked).filter(Boolean).length)}`
+                            `تعداد کل: ${toPersianDigits(services.length)} | تعداد فعال: ${toPersianDigits(displayedActiveCount)}`
                         )}
                         <Box
                             component="button"
@@ -1052,18 +1133,113 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         </Typography>
                     </Box>
                 )}
-                {groupedList.pinnedItems.map((item, index) => (
-                    <React.Fragment key={`pinned-${item.service.key}`}>
-                        {renderServiceRow(
-                            item.service,
-                            true,
-                            index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
-                        )}
-                        {!searchQuery.trim() && item.service.key === 'gemini' && (
-                            <MissingPermissionBanner isDarkMode={isDarkMode} />
-                        )}
-                    </React.Fragment>
-                ))}
+                <Collapse
+                    in={showDisabledBanner}
+                    timeout={{ enter: 160, exit: 120 }}
+                    easing={{
+                        enter: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+                        exit: 'cubic-bezier(0.4, 0, 1, 1)',
+                    }}
+                    unmountOnExit
+                    sx={{
+                        position: 'sticky',
+                        top: pinnedStickyTop,
+                        zIndex: 2,
+                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                        '& .MuiCollapse-wrapperInner': {
+                            willChange: 'height',
+                        },
+                    }}
+                >
+                    <ListItem
+                        disablePadding
+                        className="service-list-pinned service-list-disabled-banner"
+                        style={{ direction: 'rtl' }}
+                        sx={{
+                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                            boxShadow: 'none',
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1.5,
+                                px: 1.5,
+                                py: 1,
+                                minHeight: 'var(--service-pinned-h, 56px)',
+                                boxSizing: 'border-box',
+                                backgroundColor: isDarkMode
+                                    ? 'rgba(26, 26, 46, 0.72)'
+                                    : 'rgba(255, 255, 255, 0.72)',
+                                borderTop: isDarkMode
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
+                                borderBottom: isDarkMode
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
+                                borderRadius: 0,
+                                direction: 'rtl',
+                            }}
+                        >
+                            <Button
+                                variant="text"
+                                size="small"
+                                onClick={() => onEnableExtension?.()}
+                                sx={{
+                                    flexShrink: 0,
+                                    px: 1,
+                                    py: 0.25,
+                                    minWidth: 0,
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    boxShadow: 'none',
+                                    border: 'none',
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: 'transparent',
+                                    '&:hover': {
+                                        border: 'none',
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(28, 57, 187, 0.06)',
+                                        boxShadow: 'none',
+                                        transform: 'none',
+                                    },
+                                }}
+                            >
+                                فعال کردن
+                            </Button>
+                            <Typography
+                                sx={{
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 300,
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.5,
+                                    color: isDarkMode ? '#ff8a8a' : '#ef5350',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                افزونه غیرفعال است
+                            </Typography>
+                        </Box>
+                    </ListItem>
+                </Collapse>
+                {!showDisabledBanner &&
+                    groupedList.pinnedItems.map((item, index) => (
+                        <React.Fragment key={`pinned-${item.service.key}`}>
+                            {renderServiceRow(
+                                item.service,
+                                true,
+                                index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
+                            )}
+                            {!searchQuery.trim() && item.service.key === 'gemini' && (
+                                <MissingPermissionBanner isDarkMode={isDarkMode} />
+                            )}
+                        </React.Fragment>
+                    ))}
                 {groupedList.groups.map((group) => (
                     <React.Fragment key={group.id}>
                         <ListSubheader
@@ -1108,11 +1284,19 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                     fontSize: '0.65rem',
                                     fontWeight: 700,
                                     lineHeight: 1,
-                                    bgcolor: isDarkMode
-                                        ? 'rgba(0, 233, 255, 0.14)'
-                                        : 'rgba(28, 57, 187, 0.1)',
-                                    border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)'}`,
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    bgcolor: extensionEnabled
+                                        ? (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(28, 57, 187, 0.1)')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
+                                    border: `1px solid ${
+                                        extensionEnabled
+                                            ? (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')
+                                            : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
+                                    }`,
+                                    color: extensionEnabled
+                                        ? (isDarkMode ? '#00e9ff' : '#1c39bb')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
+                                    filter: extensionEnabled ? 'none' : 'grayscale(1)',
+                                    transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                 }}
                             >
                                 {toPersianDigits(group.items.length)}
