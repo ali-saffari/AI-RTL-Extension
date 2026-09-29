@@ -9,10 +9,12 @@ import {
     versionChanges,
     chatgptAndCopilotChanges,
     chatgptPerfAndCopilotChanges,
+    filterVersionChangesForBrowser,
     splitVersionChanges,
     getSiteShortName,
 } from '../../constants/versionChanges.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
+import { isFirefoxRuntime } from '../../utils/isFirefox.js';
 
 let isModalShowing = false;
 
@@ -231,6 +233,7 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
     const iconUrl = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
     const currentVersion = manifest.version;
+    const visibleChanges = filterVersionChangesForBrowser(changes, isFirefoxRuntime());
 
     // متن استاتیک اصلی که کاملاً از لیست جدا شده است
     const staticAnnouncementHTML = `
@@ -772,7 +775,7 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
                         <div class="As-changes As-version-changes">
-                            ${renderChangeItems(changes)}
+                            ${renderChangeItems(visibleChanges)}
                         </div>
 
                         ${includeStory ? staticAnnouncementHTML : ''}

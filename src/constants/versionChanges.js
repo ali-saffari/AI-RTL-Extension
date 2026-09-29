@@ -9,6 +9,7 @@
  * @property {string} [shortName]
  * @property {string} [type]
  * @property {string} [group]
+ * @property {boolean} [chromeOnly]
  */
 
 /** @type {VersionChange} */
@@ -40,6 +41,7 @@ export const copilotUpdateChange = {
     group: 'feature',
 };
 
+/** Chrome-only: MissingPermissionBanner + enable-all (not shown on Firefox). */
 /** @type {VersionChange} */
 export const enableAllSitesChange = {
     id: '10',
@@ -47,6 +49,7 @@ export const enableAllSitesChange = {
     icon: 'logo/ai-rtl-logo.png',
     type: 'add',
     group: 'feature',
+    chromeOnly: true,
 };
 
 // Seen first modal (2026-09-20) but not the second (2026-09-26).
@@ -69,6 +72,18 @@ export const versionChanges = [
     { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },
     { id: '6', text: 'افزودن سایت MathGPT', icon: 'sites/mathgpt.png', type: 'add', group: 'site' },
 ];
+
+/**
+ * @param {VersionChange[]} [changes]
+ * @param {boolean} [isFirefox]
+ * @returns {VersionChange[]}
+ */
+export function filterVersionChangesForBrowser(changes = versionChanges, isFirefox = false) {
+    if (!isFirefox) {
+        return changes;
+    }
+    return changes.filter((change) => !change.chromeOnly);
+}
 
 /** @param {VersionChange} change */
 export function getSiteShortName(change) {
