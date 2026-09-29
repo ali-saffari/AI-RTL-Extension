@@ -82,7 +82,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     type="button"
                     dir="rtl"
                     className="site-permissions-hint-button"
-                    style={{ direction: 'rtl', textAlign: 'right' }}
+               
                     onClick={() => setModalOpen(true)}
                     aria-label="چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟"
                     sx={{
@@ -145,13 +145,15 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                 }}
             >
                 <DialogTitle
-                    sx={{
+                    style={{
                         direction: 'rtl',
                         textAlign: 'right',
+                        fontFamily: 'iranyekan',
                         fontSize: '1.05rem',
                         fontWeight: 700,
                         padding: '16px 16px 8px 16px',
-                        fontFamily: 'iranyekan',
+                    }}
+                    sx={{
                         color: accent,
                     }}
                 >

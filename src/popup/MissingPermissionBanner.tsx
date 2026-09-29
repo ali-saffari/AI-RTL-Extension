@@ -29,7 +29,35 @@ const ICON_LOW_PRIORITY_KEYS = [
     'businessGemini',
 ];
 
+/** Sites that need permission mainly because their URL changed. */
+const ADDRESS_CHANGED_KEYS = new Set([
+    'copilot',
+    'duckai',
+    'googleNotebook',
+    'notion',
+    'arena',
+]);
+
 const toPersianDigits = (value: number) => value.toLocaleString('fa-IR');
+
+function getPermissionReason(service: (typeof services)[number]) {
+    if (ADDRESS_CHANGED_KEYS.has(service.key)) {
+        return 'تغییر آدرس';
+    }
+    return 'جدید';
+}
+
+function getAllowButtonText() {
+    const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+    const langCode = browserLang.split('-')[0].toLowerCase();
+    if (langCode === 'fa') {
+        return 'اجازه دادن';
+    }
+    if (langCode === 'ar') {
+        return 'السماح';
+    }
+    return 'Allow';
+}
 
 function getIconPriorityRank(key: string) {
     const high = ICON_PRIORITY_KEYS.indexOf(key);
@@ -51,7 +79,9 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
     const [missingServices, setMissingServices] = useState<typeof services>([]);
     const [enablingAll, setEnablingAll] = useState(false);
     const [whyOpen, setWhyOpen] = useState(false);
+    const [enableOpen, setEnableOpen] = useState(false);
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+    const allowButtonText = getAllowButtonText();
 
     const refreshMissing = useCallback(async () => {
         if (isFirefoxRuntime()) {
@@ -112,6 +142,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
 
             if (response?.success) {
                 setMissingServices([]);
+                setEnableOpen(false);
             } else if (response?.granted === false) {
                 alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
             } else if (response) {
@@ -292,7 +323,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     variant="contained"
                     size="small"
                     disabled={enablingAll}
-                    onClick={enableAll}
+                    onClick={() => setEnableOpen(true)}
                     sx={{
                         flexShrink: 0,
                         minWidth: 0,
@@ -313,9 +344,189 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         },
                     }}
                 >
-                    {enablingAll ? '...' : 'فعال کردن همه'}
+                    فعال کردن همه
                 </Button>
             </Box>
+
+            <Dialog
+                open={enableOpen}
+                onClose={() => !enablingAll && setEnableOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                    zIndex: 1600,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                        maxHeight: '85vh',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontFamily: 'iranyekan',
+                        fontSize: '1.05rem',
+                        fontWeight: 700,
+                        padding: '16px 16px 8px 16px',
+                    }}
+                    sx={{
+                        color: isDarkMode ? '#00e9ff' : '#0067A5',
+                    }}
+                >
+                    فعال‌سازی سایت‌ها
+                </DialogTitle>
+                <DialogContent
+                    style={{ direction: 'rtl', padding: '8px 16px' }}
+                    sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+                >
+                    <Box
+                        sx={{
+                            position: 'sticky',
+                            top: 0,
+                            zIndex: 2,
+                            pb: 1.25,
+                            mb: 1,
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.1)'}`,
+                        }}
+                    >
+                        <Typography
+                            style={{ textAlign: 'justify' }}
+                            sx={{
+                                fontSize: '0.82rem',
+                                fontFamily: 'iranyekan',
+                                fontWeight: 500,
+                                lineHeight: 1.9,
+                                mb: 1,
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
+                            }}
+                        >
+                            روی دکمه دریافت مجوز کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
+                        </Typography>
+                        <Typography
+                            style={{ textAlign: 'justify' }}
+                            sx={{
+                                fontSize: '0.82rem',
+                                fontFamily: 'iranyekan',
+                                fontWeight: 500,
+                                lineHeight: 1.9,
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
+                            }}
+                        >
+                            این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
+                        </Typography>
+                    </Box>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: 1,
+                            overflowY: 'auto',
+                            minHeight: 0,
+                            flex: 1,
+                            pb: 0.5,
+                        }}
+                    >
+                        {sortedForIcons.map((service) => {
+                            const reason = getPermissionReason(service);
+                            const isAddressChange = reason === 'تغییر آدرس';
+                            return (
+                                <Box
+                                    key={service.key}
+                                    dir="ltr"
+                                    style={{ direction: 'ltr' }}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.75,
+                                        px: 1,
+                                        py: 0.7,
+                                        borderRadius: 1.25,
+                                        backgroundColor: isDarkMode
+                                            ? 'rgba(255, 255, 255, 0.05)'
+                                            : 'rgba(15, 23, 42, 0.04)',
+                                        border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(15, 23, 42, 0.08)'}`,
+                                    }}
+                                >
+                                    <Avatar
+                                        alt={service.name}
+                                        src={chrome.runtime.getURL(service.icon)}
+                                        sx={{ width: 22, height: 22, flexShrink: 0 }}
+                                    />
+                                    <Typography
+                                        sx={{
+                                            flex: 1,
+                                            minWidth: 0,
+                                            fontFamily: 'iranyekan',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 600,
+                                            color: isDarkMode ? '#ffffff' : '#0f172a',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            textAlign: 'left',
+                                        }}
+                                        style={{ textAlign: 'left' }}
+                                    >
+                                        {service.name}
+                                    </Typography>
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            flexShrink: 0,
+                                            px: 0.7,
+                                            py: 0.2,
+                                            borderRadius: 1,
+                                            fontFamily: 'iranyekan',
+                                            fontSize: '0.58rem',
+                                            fontWeight: 700,
+                                            lineHeight: 1.4,
+                                            color: isAddressChange
+                                                ? (isDarkMode ? '#ffcc80' : '#e65100')
+                                                : (isDarkMode ? '#00e9ff' : '#1c39bb'),
+                                            bgcolor: isAddressChange
+                                                ? (isDarkMode ? 'rgba(255, 152, 0, 0.18)' : 'rgba(230, 81, 0, 0.1)')
+                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(28, 57, 187, 0.1)'),
+                                            border: `1px solid ${isAddressChange
+                                                ? (isDarkMode ? 'rgba(255, 152, 0, 0.35)' : 'rgba(230, 81, 0, 0.28)')
+                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')}`,
+                                        }}
+                                    >
+                                        {reason}
+                                    </Box>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setEnableOpen(false)}
+                        variant="text"
+                        disabled={enablingAll}
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
+                    </Button>
+                    <Button
+                        onClick={enableAll}
+                        variant="contained"
+                        disabled={enablingAll}
+                        sx={{
+                            fontFamily: 'iranyekan',
+                            textTransform: 'none',
+                            backgroundColor: isDarkMode ? '#00e9ff' : '#0067A5',
+                            color: isDarkMode ? '#0b1220' : '#ffffff',
+                            '&:hover': {
+                                backgroundColor: isDarkMode ? '#7df4ff' : '#005589',
+                            },
+                        }}
+                    >
+                        {enablingAll ? 'در حال دریافت...' : 'دریافت مجوز'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Dialog
                 open={whyOpen}
@@ -331,13 +542,15 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 }}
             >
                 <DialogTitle
-                    sx={{
+                    style={{
                         direction: 'rtl',
                         textAlign: 'right',
+                        fontFamily: 'iranyekan',
                         fontSize: '1.05rem',
                         fontWeight: 700,
                         padding: '16px 16px 8px 16px',
-                        fontFamily: 'iranyekan',
+                    }}
+                    sx={{
                         color: isDarkMode ? '#00e9ff' : '#0067A5',
                     }}
                 >
