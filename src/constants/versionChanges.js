@@ -21,13 +21,47 @@ export const chatgptUpdateChange = {
     group: 'feature',
 };
 
-// Shown only to users who already closed the 2026-09-20 modal.
+/** @type {VersionChange} */
+export const chatgptPerfChange = {
+    id: '9',
+    text: 'بهبود عملکرد در ChatGPT',
+    icon: 'sites/openAi-icon.png',
+    type: 'update',
+    group: 'feature',
+};
+
+/** @type {VersionChange} */
+export const copilotUpdateChange = {
+    id: '8',
+    text: 'آپدیت Copilot',
+    note: 'برای استفاده باید از طریق منوی افزونه فعال کنید',
+    icon: 'sites/copilot-icon.png',
+    type: 'update',
+    group: 'feature',
+};
+
+/** @type {VersionChange} */
+export const enableAllSitesChange = {
+    id: '10',
+    text: 'قابلیت فعال کردن همه سایت‌ها با هم',
+    icon: 'logo/ai-rtl-logo.png',
+    type: 'add',
+    group: 'feature',
+};
+
+// Seen first modal (2026-09-20) but not the second (2026-09-26).
 /** @type {VersionChange[]} */
-export const chatgptOnlyChanges = [chatgptUpdateChange];
+export const chatgptAndCopilotChanges = [chatgptUpdateChange, copilotUpdateChange, enableAllSitesChange];
+
+// Seen second modal (2026-09-26) already.
+/** @type {VersionChange[]} */
+export const chatgptPerfAndCopilotChanges = [chatgptPerfChange, copilotUpdateChange, enableAllSitesChange];
 
 /** @type {VersionChange[]} */
 export const versionChanges = [
     chatgptUpdateChange,
+    copilotUpdateChange,
+    enableAllSitesChange,
     { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
     { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },

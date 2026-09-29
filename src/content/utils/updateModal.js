@@ -1,5 +1,17 @@
-import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, PREVIOUS_UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-import { versionChanges, chatgptOnlyChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import {
+    UPDATE_MODAL_ENABLED,
+    UPDATE_MODAL_ID,
+    FIRST_UPDATE_MODAL_ID,
+    SECOND_UPDATE_MODAL_ID,
+    UPDATE_MODAL_STORAGE_KEY,
+} from '../../constants/updateModalConfig.js';
+import {
+    versionChanges,
+    chatgptAndCopilotChanges,
+    chatgptPerfAndCopilotChanges,
+    splitVersionChanges,
+    getSiteShortName,
+} from '../../constants/versionChanges.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 
 let isModalShowing = false;
@@ -144,14 +156,25 @@ export function showUpdateModal(options = {}) {
                 return;
             }
 
-            if (closedId === PREVIOUS_UPDATE_MODAL_ID) {
+            // Saw the second modal → performance + Copilot follow-up
+            if (closedId === SECOND_UPDATE_MODAL_ID) {
                 mountUpdateModal(true, {
-                    changes: chatgptOnlyChanges,
+                    changes: chatgptPerfAndCopilotChanges,
                     includeStory: false,
                 });
                 return;
             }
 
+            // Saw the first modal but not the second → ChatGPT + Copilot
+            if (closedId === FIRST_UPDATE_MODAL_ID) {
+                mountUpdateModal(true, {
+                    changes: chatgptAndCopilotChanges,
+                    includeStory: false,
+                });
+                return;
+            }
+
+            // Never saw the first modal → full changelog + story
             mountUpdateModal(true);
         });
     } catch (error) {
