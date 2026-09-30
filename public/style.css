@@ -100,35 +100,82 @@ textarea.FontSetImportant{
     direction: ltr !important;
 }
 
+/* Text elements only. Keep in sync with applySelectedFont.js. */
 .FontSetGPT,
-.FontSetGPT * {
+.FontSetGPT :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+):where(:not(
+    .katex,
+    .cm-content,
+    .cm-line,
+    .cm-editor,
+    .md-code-block,
+    [data-streamdown="code-block"],
+    [data-language],
+    [class*="icon"],
+    [class*="Icon"],
+    [class*="symbol"],
+    [class*="Symbol"],
+    [class*="material-symbol"],
+    [class*="material-icon"],
+    [class*="iconfont"],
+    .google-symbols,
+    .lumi-symbols,
+    .lm-icon-m,
+    .mat-ligature-font,
+    .mat-icon-no-color,
+    [data-mat-icon-type="font"]
+)) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetGPT .katex,
-.FontSetGPT .katex * {
-    font-family: KaTeX_Main, "Times New Roman", serif !important;
-}
-
-.FontSetGPT pre,
-.FontSetGPT pre *,
-.FontSetGPT code,
-.FontSetGPT code *,
-.FontSetGPT .cm-content,
-.FontSetGPT .cm-content *,
-.FontSetGPT .cm-line,
-.FontSetGPT .cm-line *,
-.FontSetGPT .cm-editor,
-.FontSetGPT .cm-editor *,
-.FontSetGPT .md-code-block,
-.FontSetGPT .md-code-block * {
+.FontSetGPT:where(pre, code, kbd, samp, .cm-content, .cm-line, .cm-editor, .md-code-block, [data-streamdown="code-block"], [data-language]),
+.FontSetGPT :where(pre, code, kbd, samp, .cm-content, .cm-line, .cm-editor, .md-code-block, [data-streamdown="code-block"], [data-language]) :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+) {
     font-family: revert !important;
 }
 
+.FontSetGPT .katex,
+.FontSetGPT .katex :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+) {
+    font-family: KaTeX_Main, "Times New Roman", serif !important;
+}
+
 .FontSetGPT .FontSetCodeBlocksGPT,
-.FontSetGPT .FontSetCodeBlocksGPT *,
 .FontSetCodeBlocksGPT,
-.FontSetCodeBlocksGPT * {
+.FontSetGPT .FontSetCodeBlocksGPT :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+),
+.FontSetCodeBlocksGPT :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -154,7 +201,14 @@ textarea.FontSetImportant{
 .items-stretch .items-start code.FontSetCodeBlocksGPT,
 .items-stretch .items-start pre.FontSetCodeBlocksGPT,
 .items-stretch .items-start .FontSetCodeBlocksGPT,
-.items-stretch .items-start .FontSetCodeBlocksGPT * {
+.items-stretch .items-start .FontSetCodeBlocksGPT :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -325,21 +379,21 @@ html.ai-rtl-code-algorithm [data-ai-rtl-comment="body"] {
     text-align: right;
 }
 
-/* Persian/RTL code boxes: override site monospace on the block and nested spans */
+/* Persian/RTL code boxes: override site monospace on the block and its text elements */
 html.ai-rtl-code-algorithm code.FontSet,
-html.ai-rtl-code-algorithm code.FontSet *,
+html.ai-rtl-code-algorithm code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm pre.FontSet,
-html.ai-rtl-code-algorithm pre.FontSet *,
+html.ai-rtl-code-algorithm pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .cm-content.FontSet,
-html.ai-rtl-code-algorithm .cm-content.FontSet *,
+html.ai-rtl-code-algorithm .cm-content.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .cm-line.FontSet,
-html.ai-rtl-code-algorithm .cm-line.FontSet *,
+html.ai-rtl-code-algorithm .cm-line.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .md-code-block.FontSet,
-html.ai-rtl-code-algorithm .md-code-block.FontSet *,
+html.ai-rtl-code-algorithm .md-code-block.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet,
-html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet *,
+html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm [data-language].FontSet,
-html.ai-rtl-code-algorithm [data-language].FontSet * {
+html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -685,7 +739,7 @@ html:not(.ai-rtl-code-algorithm) .FontSetPerplexity code {
 }
 
 html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
-html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet * {
+html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
