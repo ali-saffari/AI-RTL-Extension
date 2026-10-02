@@ -6,6 +6,17 @@
     background: red !important;
 }
 
+/*
+ * Fix for CSS conflict with FontAra Extension v5.0.0.
+ * Restores the intended centered alignment of the Codex description.
+ */
+ 
+.text-center.text-codex-description {
+
+    text-align: center !important;
+}
+
+
 html:not(.ai-rtl-code-algorithm) .FontSet pre,
 html:not(.ai-rtl-code-algorithm) .FontSetGPT pre,
 html:not(.ai-rtl-code-algorithm) .FontSetImportant pre,
@@ -177,6 +188,36 @@ textarea.FontSetImportant{
 .AsRtl {
     direction: rtl !important;
     text-align: right !important;
+}
+
+/* ChatGPT markdown root (setRootTextAlign: 'class'). Prose only; code keeps its own align. */
+.AsAlignRtl {
+    text-align: right !important;
+}
+
+.AsAlignLtr {
+    text-align: left !important;
+}
+
+.AsAlignRtl :where(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption
+) {
+    text-align: right !important;
+}
+
+.AsAlignLtr :where(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption
+) {
+    text-align: left !important;
+}
+
+.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]),
+.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]) {
+    text-align: left !important;
 }
 
 .AsLtr {

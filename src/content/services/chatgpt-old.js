@@ -22,6 +22,8 @@ const MARKDOWN_PROCESS_OPTIONS = {
     isContainer: true,
     siteConfig: 'chatgpt',
     setTextAlign: true,
+    // Markdown root only: class in style.css, not an inline text-align write.
+    setRootTextAlign: 'class',
     removeDirAuto: true,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };

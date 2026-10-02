@@ -23,6 +23,7 @@ import {
     isTextAlignEnabled,
     isTextAlignImportant,
     parseUnicodeBidiOption,
+    textAlignClassFor,
     usesDirectionClasses
 } from './textStyles.js';
 
@@ -322,13 +323,17 @@ export function processParagraphWithBreaks(element, fontClass = 'FontSet' , setT
                             } else if (direction === 'ltr' && directionClassOptions.ltrClass) {
                                 dirClasses.push(directionClassOptions.ltrClass);
                             }
+                            const alignClass = textAlignClassFor(setTextAlign, direction);
+                            if (alignClass) {
+                                dirClasses.push(alignClass);
+                            }
                             const divClass = dirClasses.filter(Boolean).length ? ` class="${dirClasses.filter(Boolean).join(' ')}"` : '';
                             const dirAttr = usesDirectionClasses(directionClassOptions) ? '' : ` dir="${direction}"`;
                             const bidiParsed = parseUnicodeBidiOption(setUnicodeBidi);
                             const bidiStyle = bidiParsed.enabled && direction === 'rtl'
                                 ? `unicode-bidi:${bidiParsed.value}${bidiParsed.important ? ' !important' : ''}`
                                 : '';
-                            const align = isTextAlignEnabled(setTextAlign)
+                            const align = isTextAlignEnabled(setTextAlign) && setTextAlign !== 'class'
                                 ? `text-align:${direction === 'rtl' ? 'right' : 'left'}${isTextAlignImportant(setTextAlign) ? ' !important' : ''}`
                                 : '';
                             const styleAttr = [wrapperTag === 'span' ? 'display:block' : '', bidiStyle, align].filter(Boolean).join(';');

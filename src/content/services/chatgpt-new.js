@@ -8,6 +8,7 @@ let markdownObserver = null;
 let markdownVisibilityObserver = null;
 let markdownFlushRaf = 0;
 let markdownProcessTimes = new WeakMap();
+let recheckMissedMarkdown = null;
 const streamObservers = new Map();
 const markdownTrailingTimers = new Map();
 const VIEWPORT_ROOT_MARGIN = '300px 0px';
@@ -17,6 +18,14 @@ const LOCKED_EDITOR_THROTTLE_MS = 150;
 const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
 const MARKDOWN_ASSISTANT_SELECTOR = '[data-assistant-markdown]';
 const MARKDOWN_SELECTOR = `${MARKDOWN_ROOT_SELECTOR}, ${MARKDOWN_ASSISTANT_SELECTOR}`;
+// Already-directed roots stay out of the 1s recheck. AsSetAlgorithm covers the CSS-only editor path.
+const UNPROCESSED_MARKDOWN_SELECTOR = [
+    '[class^="MarkdownRoot-"]:not([data-text-length]):not(.AsSetAlgorithm)',
+    '[class*=" MarkdownRoot-"]:not([data-text-length]):not(.AsSetAlgorithm)',
+    '[data-assistant-markdown]:not([data-text-length]):not(.AsSetAlgorithm)'
+].join(', ');
+const MISSED_MARKDOWN_LOOK_BUDGET = 6;
+const MISSED_MARKDOWN_PROCESS_BUDGET = 3;
 const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
 const TABLE_CONTROLS_SELECTOR = '[data-writing-block-table-controls-container]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
@@ -141,9 +150,11 @@ const MARKDOWN_PROCESS_OPTIONS = {
     processedClass: 'AsOk',
     isContainer: true,
     siteConfig: 'chatgpt',
-    setTextAlign: true,
-    // Do not set text-align on MarkdownRoot / assistant markdown container.
-    setRootTextAlign: false,
+    setTextAlign: 'class',
+    // Markdown root and its blocks: AsAlignRtl / AsAlignLtr, not an inline text-align write.
+    setRootTextAlign: 'class',
+    rtlClass: 'AsAlignRtl',
+    ltrClass: 'AsAlignLtr',
     removeDirAuto: true,
     // Skip tables/code in advanced walk only (like ms-code-block), not via ignoreSelector.
     walkSkipSelector: MARKDOWN_IGNORE_SELECTOR,
@@ -390,6 +401,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     clearStreamObservers();
     clearAllMarkdownTrailing();
     markdownProcessTimes = new WeakMap();
+    recheckMissedMarkdown = null;
 
     const pendingMarkdown = new Set();
     const pendingUserNodes = new Set();
@@ -577,6 +589,62 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             queueMarkdown(el);
         }
     });
+
+    // Off-screen misses are observed once, then left to IntersectionObserver.
+    const offscreenMarkdown = new WeakSet();
+
+    const considerMissedMarkdown = (element, state) => {
+        if (!element || !element.isConnected || state.processed >= MISSED_MARKDOWN_PROCESS_BUDGET) {
+            return;
+        }
+        if (element.hasAttribute('data-text-length') || element.classList.contains('AsSetAlgorithm')) {
+            return;
+        }
+        if (
+            element.matches(MARKDOWN_ASSISTANT_SELECTOR) &&
+            !element.matches(MARKDOWN_ROOT_SELECTOR) &&
+            element.closest(MARKDOWN_ROOT_SELECTOR)
+        ) {
+            return;
+        }
+        if (offscreenMarkdown.has(element)) {
+            return;
+        }
+
+        observeMarkdown(element);
+        state.looked += 1;
+        if (!isNearViewport(element)) {
+            offscreenMarkdown.add(element);
+            return;
+        }
+
+        visibleMarkdown.add(element);
+        startStreamObserver(element, queueMarkdown);
+        processMarkdownElement(element);
+        state.processed += 1;
+    };
+
+    recheckMissedMarkdown = () => {
+        if (!isRtlEngineActive()) {
+            return;
+        }
+        const nodes = document.querySelectorAll(UNPROCESSED_MARKDOWN_SELECTOR);
+        if (!nodes.length) {
+            return;
+        }
+
+        const state = { looked: 0, processed: 0 };
+        for (let i = nodes.length - 1; i >= 0 && state.looked < MISSED_MARKDOWN_LOOK_BUDGET && state.processed < MISSED_MARKDOWN_PROCESS_BUDGET; i--) {
+            considerMissedMarkdown(nodes[i], state);
+        }
+        if (state.processed >= MISSED_MARKDOWN_PROCESS_BUDGET) {
+            return;
+        }
+        const lookedAtEnd = state.looked;
+        for (let i = 0; i < nodes.length && (state.looked - lookedAtEnd) < MISSED_MARKDOWN_LOOK_BUDGET && state.processed < MISSED_MARKDOWN_PROCESS_BUDGET; i++) {
+            considerMissedMarkdown(nodes[i], state);
+        }
+    };
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -683,6 +751,9 @@ export function refreshChatGptLiveTargets(rtlAlgorithm = 'advanced_full') {
     initializeChatGptHistory(rtlAlgorithm);
     enforceAlgorithmRtlTargets(rtlAlgorithm);
     ensureChatGptCopyright();
+    if (recheckMissedMarkdown) {
+        recheckMissedMarkdown();
+    }
 }
 
 export function stopChatGptNew() {
@@ -700,6 +771,7 @@ export function stopChatGptNew() {
     }
     clearStreamObservers();
     clearAllMarkdownTrailing();
+    recheckMissedMarkdown = null;
 }
 
 export function runChatGptNew(rtlAlgorithm = 'advanced_full') {

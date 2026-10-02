@@ -105,8 +105,8 @@ export function getAttributeTextElements() {
  * @param {string} [options.processedClass] - Class that marks already-processed nodes. Default `'AsOk'` for advanced_section; used to skip reprocessing and to count processed children
  * @param {boolean} [options.isContainer] - Treat as a nested container. Default `true` for advanced_section. advanced_full: also process inner code blocks on first pass. first_word: also process tables
  * @param {string|false} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted. `false` skips applying a font class on code
- * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
- * @param {boolean|'important'|false} [options.setRootTextAlign] - advanced_full only: text-align on the container root. Default follows setTextAlign; set `false` to leave the mother element without text-align (children/tables still use setTextAlign)
+ * @param {boolean|'important'|'class'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important; `'class'` toggles AsAlignRtl/AsAlignLtr instead of an inline style
+ * @param {boolean|'important'|'class'|false} [options.setRootTextAlign] - advanced_full only: text-align on the container root. Default follows setTextAlign; `false` leaves the mother element without text-align; `'class'` toggles AsAlignRtl/AsAlignLtr instead of an inline style (children/tables still use setTextAlign)
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
  * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess. `false` skips tables in every algorithm
