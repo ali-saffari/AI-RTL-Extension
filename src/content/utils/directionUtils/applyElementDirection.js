@@ -9,8 +9,8 @@ import { isRtlEngineActive } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CUSTOM_CODE_BLOCK_SELECTOR,
-    DEBUG_MODE,
     getElementClassName,
+    isDebugMode,
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
@@ -83,7 +83,7 @@ function queryIgnoredElements(root, selector, includeRoot = true) {
 }
 
 function logIgnoredIfSensed(el, selector) {
-    if (!DEBUG_MODE || !el || !el.isConnected) {
+    if (!isDebugMode() || !el || !el.isConnected) {
         return;
     }
     if (loggedIgnoredEls && loggedIgnoredEls.has(el)) {
@@ -219,7 +219,7 @@ export function setTextDirectionAndFont(element, options = {}) {
 
     const finalDirection = direction || 'auto';
 
-    if (DEBUG_MODE && ignoreSelector) {
+    if (isDebugMode() && ignoreSelector) {
         console.log('ignoreSelector analyzed text', {
             element: unwrapElement(element),
             selector: ignoreSelector,

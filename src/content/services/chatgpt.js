@@ -8,7 +8,6 @@ const UI_DETECT_INTERVAL_MS = 1000;
 
 let uiDetectInterval = 0;
 let activeMode = null;
-let sawOldUi = false;
 let activeRtlAlgorithm = 'advanced_full';
 
 function isOldChatGptUi() {
@@ -45,10 +44,7 @@ function switchToMode(next) {
 }
 
 function detectUiTick() {
-    if (isOldChatGptUi()) {
-        sawOldUi = true;
-    }
-    const next = sawOldUi ? 'old' : 'new';
+    const next = isOldChatGptUi() ? 'old' : 'new';
 
     if (next !== activeMode) {
         switchToMode(next);
@@ -68,14 +64,12 @@ export function stopChatGptRTL() {
     stopChatGptOld();
     stopChatGptNew();
     activeMode = null;
-    sawOldUi = false;
 }
 
 export function activateChatGptRTL(rtlAlgorithm = 'advanced_full') {
     activeRtlAlgorithm = rtlAlgorithm;
     clearUiDetectInterval();
     activeMode = null;
-    sawOldUi = false;
 
     console.log('AI RTL activated with algorithm:', rtlAlgorithm);
     detectUiTick();

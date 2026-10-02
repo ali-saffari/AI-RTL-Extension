@@ -80,7 +80,9 @@ export function isCodeMirrorCodeBlock($element) {
     return $element.hasClass('cm-content') || $element.hasClass('cm-editor') || $element.hasClass('md-code-block');
 }
 
-export const DEBUG_MODE = process.env.NODE_ENV !== 'production';
+// Off by default so ChatGPT streaming stays as light as the 4.0.18.4 production build.
+// Enable in DevTools with: window.__AI_RTL_DEBUG = true
+export const DEBUG_MODE = false;
 
 export function isDebugMode() {
     if (DEBUG_MODE) {

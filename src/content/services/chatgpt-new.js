@@ -1,23 +1,27 @@
 // Current ChatGPT UI. Active when #stage-sidebar-tiny-bar is not in the DOM.
 import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
+import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 import { logDebug } from '../utils/directionUtils/shared.js';
 import { isRtlEngineActive, preserveOriginalDir } from '../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownVisibilityObserver = null;
 let markdownFlushRaf = 0;
-let markdownScanInterval = 0;
 let markdownProcessTimes = new WeakMap();
-const MARKDOWN_SCAN_INTERVAL_MS = 8000;
+const streamObservers = new Map();
+const markdownTrailingTimers = new Map();
 const VIEWPORT_ROOT_MARGIN = '300px 0px';
 const VIEWPORT_MARGIN_PX = 300;
+const MARKDOWN_THROTTLE_MS = 650;
+const LOCKED_EDITOR_THROTTLE_MS = 150;
 const MARKDOWN_ROOT_SELECTOR = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
 const MARKDOWN_ASSISTANT_SELECTOR = '[data-assistant-markdown]';
 const MARKDOWN_SELECTOR = `${MARKDOWN_ROOT_SELECTOR}, ${MARKDOWN_ASSISTANT_SELECTOR}`;
 const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
 const TABLE_CONTROLS_SELECTOR = '[data-writing-block-table-controls-container]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
+const SUGGESTION_MATCH_SELECTOR = 'ul.divide-token-border-light, .whitespace-pre-wrap';
+const SUGGESTION_CONTAINS_SELECTOR = 'ul.divide-token-border-light .whitespace-pre-wrap';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
@@ -201,6 +205,95 @@ function clearDirOnIgnoredMarkdown(root) {
     }
 }
 
+function nodeMatchesOrContains(node, matchSelector, containsSelector = matchSelector) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return false;
+    }
+    try {
+        if (node.matches && node.matches(matchSelector)) {
+            return true;
+        }
+        return Boolean(node.querySelector && node.querySelector(containsSelector));
+    } catch {
+        return false;
+    }
+}
+
+function stopStreamObserver(element) {
+    const observer = streamObservers.get(element);
+    if (!observer) {
+        return;
+    }
+    observer.disconnect();
+    streamObservers.delete(element);
+}
+
+function clearStreamObservers() {
+    streamObservers.forEach((observer) => observer.disconnect());
+    streamObservers.clear();
+}
+
+function stopStreamObserversInTree(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+    }
+    const toStop = [];
+    streamObservers.forEach((_observer, element) => {
+        if (element === node || (node.contains && node.contains(element))) {
+            toStop.push(element);
+        }
+    });
+    for (let i = 0; i < toStop.length; i++) {
+        stopStreamObserver(toStop[i]);
+    }
+}
+
+function startStreamObserver(element, onStream) {
+    if (!element || streamObservers.has(element)) {
+        return;
+    }
+    const observer = new MutationObserver((mutations) => {
+        for (let i = 0; i < mutations.length; i++) {
+            const type = mutations[i].type;
+            if (type === 'characterData' || type === 'childList') {
+                onStream(element);
+                return;
+            }
+        }
+    });
+    observer.observe(element, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+    streamObservers.set(element, observer);
+}
+
+function clearMarkdownTrailing(element) {
+    const timer = markdownTrailingTimers.get(element);
+    if (!timer) {
+        return;
+    }
+    clearTimeout(timer);
+    markdownTrailingTimers.delete(element);
+}
+
+function clearAllMarkdownTrailing() {
+    markdownTrailingTimers.forEach((timer) => clearTimeout(timer));
+    markdownTrailingTimers.clear();
+}
+
+function scheduleMarkdownTrailing(element, delayMs, run) {
+    if (markdownTrailingTimers.has(element)) {
+        return;
+    }
+    const timer = setTimeout(() => {
+        markdownTrailingTimers.delete(element);
+        run(element);
+    }, Math.max(0, delayMs));
+    markdownTrailingTimers.set(element, timer);
+}
+
 function closestMarkdown(node) {
     if (!node) {
         return null;
@@ -294,10 +387,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
-    if (markdownScanInterval) {
-        clearInterval(markdownScanInterval);
-        markdownScanInterval = 0;
-    }
+    clearStreamObservers();
+    clearAllMarkdownTrailing();
     markdownProcessTimes = new WeakMap();
 
     const pendingMarkdown = new Set();
@@ -311,20 +402,27 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         if (!isRtlEngineActive()) {
             return;
         }
+        if (!element || !element.isConnected) {
+            return;
+        }
         if (!visibleMarkdown.has(element)) {
             dirtyMarkdown.add(element);
             logDebug('skip viewport markdown', element);
             return;
         }
-        const throttleMs = isLockedMarkdownEditorEl(element) ? 150 : 500;
+        const throttleMs = isLockedMarkdownEditorEl(element) ? LOCKED_EDITOR_THROTTLE_MS : MARKDOWN_THROTTLE_MS;
         const now = Date.now();
         const last = markdownProcessTimes.get(element) || 0;
+        const elapsed = now - last;
         // Throttle expensive DOM processing during token streaming.
-        if (now - last < throttleMs) {
+        if (elapsed < throttleMs) {
+            dirtyMarkdown.add(element);
+            scheduleMarkdownTrailing(element, throttleMs - elapsed, processMarkdownElement);
             return;
         }
         markdownProcessTimes.set(element, now);
         dirtyMarkdown.delete(element);
+        clearMarkdownTrailing(element);
 
         logDebug('apply viewport markdown', element);
         AQ(element).addClass('AsSetAlgorithm');
@@ -338,11 +436,14 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             const el = entry.target;
             if (entry.isIntersecting) {
                 visibleMarkdown.add(el);
+                startStreamObserver(el, queueMarkdown);
                 if (dirtyMarkdown.has(el) || !markdownProcessTimes.has(el)) {
                     processMarkdownElement(el);
                 }
             } else {
                 visibleMarkdown.delete(el);
+                dirtyMarkdown.add(el);
+                stopStreamObserver(el);
             }
         }
     }, {
@@ -429,38 +530,45 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         for (let i = 0; i < mutations.length; i++) {
             const mutation = mutations[i];
 
-            if (mutation.type === 'childList') {
-                for (let j = 0; j < mutation.addedNodes.length; j++) {
-                    const node = mutation.addedNodes[j];
-                    if (node.nodeType !== Node.ELEMENT_NODE) {
-                        continue;
-                    }
-                    queueAddedNode(node);
-                    pendingUserNodes.add(node);
-                    pendingSuggestionNodes.add(node);
-                    scheduleFlush();
-                }
-
-                if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE &&
-                    mutation.target.matches && mutation.target.matches('ul.divide-token-border-light')) {
-                    pendingSuggestionNodes.add(mutation.target);
-                    scheduleFlush();
-                }
+            if (mutation.type !== 'childList') {
+                continue;
             }
 
-            if (mutation.type === 'characterData' || mutation.type === 'childList') {
-                const markdown = closestMarkdown(mutation.target);
-                if (markdown) {
-                    queueMarkdown(markdown);
+            for (let j = 0; j < mutation.removedNodes.length; j++) {
+                stopStreamObserversInTree(mutation.removedNodes[j]);
+            }
+
+            for (let j = 0; j < mutation.addedNodes.length; j++) {
+                const node = mutation.addedNodes[j];
+                if (node.nodeType !== Node.ELEMENT_NODE) {
+                    continue;
                 }
+                queueAddedNode(node);
+                if (nodeMatchesOrContains(node, USER_MESSAGE_SELECTOR)) {
+                    pendingUserNodes.add(node);
+                }
+                if (nodeMatchesOrContains(node, SUGGESTION_MATCH_SELECTOR, SUGGESTION_CONTAINS_SELECTOR)) {
+                    pendingSuggestionNodes.add(node);
+                }
+                scheduleFlush();
+            }
+
+            if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE &&
+                mutation.target.matches && mutation.target.matches('ul.divide-token-border-light')) {
+                pendingSuggestionNodes.add(mutation.target);
+                scheduleFlush();
+            }
+
+            const markdown = closestMarkdown(mutation.target);
+            if (markdown) {
+                queueMarkdown(markdown);
             }
         }
     });
 
     markdownObserver.observe(document.body, {
         childList: true,
-        subtree: true,
-        characterData: true
+        subtree: true
     });
 
     document.querySelectorAll(MARKDOWN_ROOT_SELECTOR).forEach(queueMarkdown);
@@ -590,10 +698,8 @@ export function stopChatGptNew() {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
-    if (markdownScanInterval) {
-        clearInterval(markdownScanInterval);
-        markdownScanInterval = 0;
-    }
+    clearStreamObservers();
+    clearAllMarkdownTrailing();
 }
 
 export function runChatGptNew(rtlAlgorithm = 'advanced_full') {

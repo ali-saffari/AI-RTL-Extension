@@ -1,4 +1,4 @@
-﻿// ChatGPT 4.0.16 UI. Used when #stage-sidebar-tiny-bar is on the page.
+// ChatGPT 4.0.16 UI. Used when #stage-sidebar-tiny-bar is on the page.
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
@@ -6,10 +6,14 @@ import { isRtlEngineActive } from '../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
-let markdownScanInterval = 0;
 let markdownProcessTimes = new WeakMap();
-const MARKDOWN_SCAN_INTERVAL_MS = 8000;
+const markdownTrailingTimers = new Map();
+const MARKDOWN_THROTTLE_MS = 650;
+const LOCKED_EDITOR_THROTTLE_MS = 150;
 const MARKDOWN_SELECTOR = '.markdown';
+const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"]';
+const SUGGESTION_MATCH_SELECTOR = 'ul.divide-token-border-light, .whitespace-pre-wrap';
+const SUGGESTION_CONTAINS_SELECTOR = 'ul.divide-token-border-light .whitespace-pre-wrap';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
@@ -41,6 +45,45 @@ function isLockedMarkdownEditorEl(element) {
     );
 }
 
+function nodeMatchesOrContains(node, matchSelector, containsSelector = matchSelector) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return false;
+    }
+    try {
+        if (node.matches && node.matches(matchSelector)) {
+            return true;
+        }
+        return Boolean(node.querySelector && node.querySelector(containsSelector));
+    } catch {
+        return false;
+    }
+}
+
+function clearMarkdownTrailing(element) {
+    const timer = markdownTrailingTimers.get(element);
+    if (!timer) {
+        return;
+    }
+    clearTimeout(timer);
+    markdownTrailingTimers.delete(element);
+}
+
+function clearAllMarkdownTrailing() {
+    markdownTrailingTimers.forEach((timer) => clearTimeout(timer));
+    markdownTrailingTimers.clear();
+}
+
+function scheduleMarkdownTrailing(element, delayMs, run) {
+    if (markdownTrailingTimers.has(element)) {
+        return;
+    }
+    const timer = setTimeout(() => {
+        markdownTrailingTimers.delete(element);
+        run(element);
+    }, Math.max(0, delayMs));
+    markdownTrailingTimers.set(element, timer);
+}
+
 function closestMarkdown(node) {
     if (!node) {
         return null;
@@ -63,8 +106,8 @@ function processUserMessageNode(node, rtlAlgorithm) {
     }
 
     const $node = AQ(node);
-    const userMessages = $node.find('[data-message-author-role="user"]').add(
-        $node.filter('[data-message-author-role="user"]')
+    const userMessages = $node.find(USER_MESSAGE_SELECTOR).add(
+        $node.filter(USER_MESSAGE_SELECTOR)
     );
 
     userMessages.each(function() {
@@ -153,10 +196,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
-    if (markdownScanInterval) {
-        clearInterval(markdownScanInterval);
-        markdownScanInterval = 0;
-    }
+    clearAllMarkdownTrailing();
     markdownProcessTimes = new WeakMap();
 
     const pendingMarkdown = new Set();
@@ -167,13 +207,19 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         if (!isRtlEngineActive()) {
             return;
         }
-        const throttleMs = isLockedMarkdownEditorEl(element) ? 150 : 500;
+        if (!element || !element.isConnected) {
+            return;
+        }
+        const throttleMs = isLockedMarkdownEditorEl(element) ? LOCKED_EDITOR_THROTTLE_MS : MARKDOWN_THROTTLE_MS;
         const now = Date.now();
         const last = markdownProcessTimes.get(element) || 0;
-        if (now - last < throttleMs) {
+        const elapsed = now - last;
+        if (elapsed < throttleMs) {
+            scheduleMarkdownTrailing(element, throttleMs - elapsed, processMarkdownElement);
             return;
         }
         markdownProcessTimes.set(element, now);
+        clearMarkdownTrailing(element);
 
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, chatGptRtlOptions(MARKDOWN_PROCESS_OPTIONS, rtlAlgorithm));
@@ -245,8 +291,12 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                         continue;
                     }
                     queueAddedNode(node);
-                    pendingUserNodes.add(node);
-                    pendingSuggestionNodes.add(node);
+                    if (nodeMatchesOrContains(node, USER_MESSAGE_SELECTOR)) {
+                        pendingUserNodes.add(node);
+                    }
+                    if (nodeMatchesOrContains(node, SUGGESTION_MATCH_SELECTOR, SUGGESTION_CONTAINS_SELECTOR)) {
+                        pendingSuggestionNodes.add(node);
+                    }
                     scheduleFlush();
                 }
 
@@ -273,14 +323,6 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     });
 
     document.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
-
-    // Rare catch-up — live updates are owned by the MutationObserver.
-    markdownScanInterval = setInterval(() => {
-        if (!isRtlEngineActive()) {
-            return;
-        }
-        document.querySelectorAll(MARKDOWN_SELECTOR).forEach(processMarkdownElement);
-    }, MARKDOWN_SCAN_INTERVAL_MS);
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -307,7 +349,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         setTextAlign: true
     });
 
-    AQ('[data-message-author-role="user"]').each(function () {
+    AQ(USER_MESSAGE_SELECTOR).each(function () {
         applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
@@ -398,10 +440,7 @@ export function stopChatGptOld() {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
-    if (markdownScanInterval) {
-        clearInterval(markdownScanInterval);
-        markdownScanInterval = 0;
-    }
+    clearAllMarkdownTrailing();
 }
 
 export function runChatGptOld(rtlAlgorithm = 'advanced_full') {
