@@ -403,8 +403,26 @@ export function processTextElementsAdvanced(container, options = {}) {
         
 
 
-        // Special handling for div elements with ds-scroll-area class
+        // DeepSeek tables: the custom bar reads scrollLeft and writes `left`.
+        // dir=rtl on .ds-scroll-area flips that origin, so the thumb no longer tracks.
+        // Keep the scroller LTR. processTablesInContainer sets dir on the table.
         if (tagName === 'div' && $element.hasClass('ds-scroll-area')) {
+            const $directTable = $element.children('table');
+            if ($directTable.length) {
+                setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-table-ltr');
+                $element.attr('dir', 'ltr');
+                $element.removeAttr('data-direction');
+                if (fontClass) {
+                    $element.addClass(fontClass);
+                }
+                $element.addClass('AsOk2');
+                const $gutters = $element.children('.ds-scroll-area__gutters');
+                $gutters.addClass(processedClass);
+                $gutters.find('*').addClass(processedClass);
+                $element.addClass(processedClass);
+                return;
+            }
+
             setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-processed');
             const text = $element.text();
             if (text && text.trim()) {

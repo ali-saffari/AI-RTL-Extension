@@ -865,6 +865,11 @@ textarea#search-input-textarea {
 
 /*deep*/
 
+/* DeepSeek positions .ds-scroll-area__horizontal-bar from scrollLeft. */
+.ds-scroll-area:has(> table) {
+    direction: ltr !important;
+}
+
 html.ai-rtl-has-font .ds-markdown h1,
 html.ai-rtl-has-font .ds-markdown h2,
 html.ai-rtl-has-font .ds-markdown h3,

@@ -3,6 +3,73 @@ import { addCopyright } from '../utils/copyright.js';
 import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
 import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 
+// RTL table columns start on the right. The scroller stays LTR so DeepSeek's
+// scrollLeft math works, and we show that right edge until the user scrolls.
+const dsTableScrollPin = new WeakMap();
+const dsTableScrollWatch = new WeakSet();
+const dsTableGutterBound = new WeakMap();
+
+function markDeepSeekTableScrolled(el) {
+    const prev = dsTableScrollPin.get(el);
+    dsTableScrollPin.set(el, { max: prev ? prev.max : el.scrollLeft, user: true });
+}
+
+function watchDeepSeekTableScroll(el) {
+    if (!dsTableScrollWatch.has(el)) {
+        dsTableScrollWatch.add(el);
+        el.addEventListener('wheel', () => markDeepSeekTableScrolled(el), { passive: true, capture: true });
+    }
+    const gutter = el.querySelector('.ds-scroll-area__horizontal-gutter');
+    if (!gutter || dsTableGutterBound.get(el) === gutter) {
+        return;
+    }
+    dsTableGutterBound.set(el, gutter);
+    gutter.addEventListener('pointerdown', () => markDeepSeekTableScrolled(el));
+}
+
+function repairDeepSeekTableScrollAreas() {
+    const areas = document.querySelectorAll('.ds-scroll-area');
+    for (let i = 0; i < areas.length; i++) {
+        const el = areas[i];
+        const table = el.querySelector(':scope > table');
+        if (!table) {
+            continue;
+        }
+        if (el.getAttribute('dir') !== 'ltr') {
+            el.setAttribute('dir', 'ltr');
+        }
+        if (el.hasAttribute('data-direction')) {
+            el.removeAttribute('data-direction');
+        }
+        if (!table.getAttribute('dir')) {
+            const direction = detectTextDirection((table.textContent || '').trim());
+            if (direction === 'rtl' || direction === 'ltr') {
+                table.setAttribute('dir', direction);
+            }
+        }
+        if (table.getAttribute('dir') !== 'rtl') {
+            continue;
+        }
+        watchDeepSeekTableScroll(el);
+        const max = el.scrollWidth - el.clientWidth;
+        if (max <= 1) {
+            continue;
+        }
+        const prev = dsTableScrollPin.get(el);
+        if (prev && prev.user) {
+            continue;
+        }
+        const awayFromPin = prev && Math.abs(el.scrollLeft - prev.max) >= 2 && el.scrollLeft >= 2;
+        if (awayFromPin) {
+            continue;
+        }
+        if (Math.abs(el.scrollLeft - max) > 2) {
+            el.scrollLeft = max;
+        }
+        dsTableScrollPin.set(el, { max, user: false });
+    }
+}
+
 export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#deepseek-font-style').length) {
         AQ(`<style id="deepseek-font-style">
@@ -88,6 +155,7 @@ export function setDeepSeek(rtlAlgorithm = 'advanced_full') {
         });
     });
 
+    repairDeepSeekTableScrollAreas();
 }
 
 // Main activation function for DeepSeek
