@@ -4,14 +4,14 @@
  */
 
 import { detectTextDirection } from '../analyzeDirection.js';
-import { isRtlEngineActive } from '../originalState.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     processCodeBlockNode,
     processCodeLikeElement,
     processCodeMirrorBlock
 } from './codeBlocks.js';
-import { processParagraphWithBreaks, setTextDirectionAndFont } from './applyElementDirection.js';
+import { processParagraphWithBreaks, setTextDirectionAndFont, isInlineSpanBdiBreakParagraph } from './applyElementDirection.js';
 import { isLockedMarkdownEditor } from './lockedEditor.js';
 import { getMixedTitleDisplayMode, isInvalidatedError } from './settings.js';
 import {
@@ -47,6 +47,24 @@ function isInsideIgnored(el, ignoreSelector) {
     }
 }
 
+function matchesWalkSkip(el, walkSkipSelector) {
+    if (!walkSkipSelector || !el || typeof el.matches !== 'function') {
+        return false;
+    }
+    try {
+        return el.matches(walkSkipSelector) || Boolean(el.closest && el.closest(walkSkipSelector));
+    } catch {
+        return false;
+    }
+}
+
+function skipWalkElement($element, processedClass, debugMode) {
+    setDebugAttr($element, 'data-debug-mode', debugMode);
+    // Same pattern as ms-code-block: mark and leave without RTL walk.
+    $element.addClass(processedClass);
+    $element.find('*').addClass(processedClass);
+}
+
 function onlyCssSkipSelector(onlyCss) {
     if (onlyCss === true) {
         return true;
@@ -61,21 +79,49 @@ function onlyCssSkipSelector(onlyCss) {
     return null;
 }
 
-export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = null, onlyCss = null) {
-    if (!enabled) {
-        return;
-    }
+export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = null, onlyCss = null, skipSelector = null) {
     const onlyCssScope = onlyCssSkipSelector(onlyCss);
     if (onlyCssScope === true) {
         return;
     }
     const $container = AQ(container);
+
+    // ChatGPT unified (advanced_full): keep paragraph dir, and put dir="auto" back if we stripped it earlier.
+    if (skipSelector) {
+        $container.find(skipSelector).addBack(skipSelector).each(function () {
+            if (isInsideIgnored(this, ignoreSelector) || isInsideIgnored(this, onlyCssScope)) {
+                return;
+            }
+            if (!this.classList || !this.classList.contains('removeedDirAuto')) {
+                return;
+            }
+            if (!this.hasAttribute('dir')) {
+                this.setAttribute('dir', 'auto');
+            }
+            this.classList.remove('removeedDirAuto');
+        });
+    }
+
+    if (!enabled) {
+        return;
+    }
     $container.find('[dir="auto"]').addBack('[dir="auto"]').each(function () {
         if (isInsideIgnored(this, ignoreSelector) || isInsideIgnored(this, onlyCssScope)) {
             return;
         }
+        if (skipSelector) {
+            try {
+                if (this.matches(skipSelector)) {
+                    return;
+                }
+            } catch {
+                return;
+            }
+        }
         const $el = AQ(this);
         if (!$el.hasClass('removeedDirAuto')) {
+            // Stamp original dir so restoreAllOriginals can put dir="auto" back.
+            preserveOriginalDir(this);
             $el.removeAttr('dir').addClass('removeedDirAuto');
         }
     });
@@ -105,6 +151,11 @@ export function processTextElementsAdvanced(container, options = {}) {
     const ignoreSelector = typeof options.ignoreSelector === 'string' && options.ignoreSelector.length
         ? options.ignoreSelector
         : null;
+    // Walk-only skip (e.g. ChatGPT tables/code): mark like ms-code-block, no getAnalyzableText ignore.
+    // اسکیپ فقط در پیمایش advanced (مثل ms-code-block)؛ بدون ignoreSelector سنگین برای تحلیل متن.
+    const walkSkipSelector = typeof options.walkSkipSelector === 'string' && options.walkSkipSelector.length
+        ? options.walkSkipSelector
+        : null;
     const directionClassOptions = { rtlClass, ltrClass };
     // console.log(`processTextElemntsAdvanced  ` , container[0] , {
     //     setTextAlign,
@@ -127,7 +178,7 @@ export function processTextElementsAdvanced(container, options = {}) {
             !['code', 'pre'].includes(tag)
         );
         container.find(allTagsSetFont.join(',')).each(function() {
-            if (isInsideIgnored(this, ignoreSelector)) {
+            if (isInsideIgnored(this, ignoreSelector) || matchesWalkSkip(this, walkSkipSelector)) {
                 return;
             }
             const $element = AQ(this);
@@ -165,6 +216,12 @@ export function processTextElementsAdvanced(container, options = {}) {
 
         if (isInsideIgnored(this, ignoreSelector)) {
             setDebugAttr($element, 'data-debug-mode', 'ignore-selector-skipped');
+            return;
+        }
+
+        // ChatGPT-style walk skip: same as ms-code-block (mark + return, no text analysis ignore).
+        if (matchesWalkSkip(this, walkSkipSelector)) {
+            skipWalkElement($element, processedClass, 'walk-skip-selector-skipped');
             return;
         }
         
@@ -253,8 +310,6 @@ export function processTextElementsAdvanced(container, options = {}) {
                             applyTextAlignByDirection(this, majorityDir, setTextAlign);
                             applyUnicodeBidiByDirection(this, majorityDir, setUnicodeBidi);
                         });
-                        
-                        console.log(`Header ${tagName} direction set to ${majorityDir} (RTL: ${rtlCount}, LTR: ${ltrCount}) - Unified mode`);
                     }
                 }
                 // In individual mode, each header keeps its own direction (already set above)
@@ -266,9 +321,7 @@ export function processTextElementsAdvanced(container, options = {}) {
         // Skip ms-code-block elements completely (for AI Studio code sections)
         if (tagName === 'ms-code-block') {
             // console.log("processTextElementsAdvanced: ms-code-block skipped", $element);
-            setDebugAttr($element, 'data-debug-mode', 'ms-code-block-skipped');
-            // Mark all children as processed without processing them
-            $element.find('*').addClass(processedClass);
+            skipWalkElement($element, processedClass, 'ms-code-block-skipped');
             return;
         }
         
@@ -350,8 +403,26 @@ export function processTextElementsAdvanced(container, options = {}) {
         
 
 
-        // Special handling for div elements with ds-scroll-area class
+        // DeepSeek tables: the custom bar reads scrollLeft and writes `left`.
+        // dir=rtl on .ds-scroll-area flips that origin, so the thumb no longer tracks.
+        // Keep the scroller LTR. processTablesInContainer sets dir on the table.
         if (tagName === 'div' && $element.hasClass('ds-scroll-area')) {
+            const $directTable = $element.children('table');
+            if ($directTable.length) {
+                setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-table-ltr');
+                $element.attr('dir', 'ltr');
+                $element.removeAttr('data-direction');
+                if (fontClass) {
+                    $element.addClass(fontClass);
+                }
+                $element.addClass('AsOk2');
+                const $gutters = $element.children('.ds-scroll-area__gutters');
+                $gutters.addClass(processedClass);
+                $gutters.find('*').addClass(processedClass);
+                $element.addClass(processedClass);
+                return;
+            }
+
             setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-processed');
             const text = $element.text();
             if (text && text.trim()) {
@@ -411,6 +482,14 @@ export function processTextElementsAdvanced(container, options = {}) {
                 setDebugAttr($element, 'data-debug-mode', 'paragraph-with-structured-media');
                 setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 skipStructuredMedia($element, processedClass);
+                $element.addClass(processedClass);
+                return;
+            }
+
+            // ChatGPT step lists: only span/bdi + br → dir on the paragraph, leave children alone.
+            if (tagName === 'p' && isInlineSpanBdiBreakParagraph(this)) {
+                setDebugAttr($element, 'data-debug-mode', 'paragraph-span-bdi-breaks');
+                setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass });
                 $element.addClass(processedClass);
                 return;
             }

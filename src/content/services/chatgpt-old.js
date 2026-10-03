@@ -1,4 +1,4 @@
-﻿// ChatGPT 4.0.16 UI. Used when #stage-sidebar-tiny-bar is on the page.
+// ChatGPT 4.0.16 UI. Used when #stage-sidebar-tiny-bar is on the page.
 import { isRTL } from '../utils/analyzeDirection.js';
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
@@ -6,7 +6,14 @@ import { isRtlEngineActive } from '../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;
-const markdownProcessTimes = new WeakMap();
+let markdownProcessTimes = new WeakMap();
+const markdownTrailingTimers = new Map();
+const MARKDOWN_THROTTLE_MS = 650;
+const LOCKED_EDITOR_THROTTLE_MS = 150;
+const MARKDOWN_SELECTOR = '.markdown';
+const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"]';
+const SUGGESTION_MATCH_SELECTOR = 'ul.divide-token-border-light, .whitespace-pre-wrap';
+const SUGGESTION_CONTAINS_SELECTOR = 'ul.divide-token-border-light .whitespace-pre-wrap';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror.markdown[contenteditable]';
 const MARKDOWN_PROCESS_OPTIONS = {
     fontClass: 'FontSetGPT',
@@ -15,15 +22,20 @@ const MARKDOWN_PROCESS_OPTIONS = {
     isContainer: true,
     siteConfig: 'chatgpt',
     setTextAlign: true,
+    // Markdown root only: class in style.css, not an inline text-align write.
+    setRootTextAlign: 'class',
     removeDirAuto: true,
     onlyCss: CHATGPT_LOCKED_EDITOR_SELECTOR
 };
-const COMPOSER_CSS_OPTIONS = {
-    fontClass: 'FontSetGPT',
-    processedClass: 'AsOk',
-    setTextAlign: true,
-    onlyCss: true
-};
+
+function chatGptRtlOptions(base, rtlAlgorithm) {
+    if (rtlAlgorithm !== 'advanced_full') {
+        return base;
+    }
+    // Unified mode: force code blocks LTR.
+    return { ...base, forceCodeLtr: true };
+}
+const PRESENTATION = '.relative.flex.h-full ';
 
 function isLockedMarkdownEditorEl(element) {
     return Boolean(
@@ -33,6 +45,45 @@ function isLockedMarkdownEditorEl(element) {
         element.classList.contains('ProseMirror') &&
         element.isContentEditable
     );
+}
+
+function nodeMatchesOrContains(node, matchSelector, containsSelector = matchSelector) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return false;
+    }
+    try {
+        if (node.matches && node.matches(matchSelector)) {
+            return true;
+        }
+        return Boolean(node.querySelector && node.querySelector(containsSelector));
+    } catch {
+        return false;
+    }
+}
+
+function clearMarkdownTrailing(element) {
+    const timer = markdownTrailingTimers.get(element);
+    if (!timer) {
+        return;
+    }
+    clearTimeout(timer);
+    markdownTrailingTimers.delete(element);
+}
+
+function clearAllMarkdownTrailing() {
+    markdownTrailingTimers.forEach((timer) => clearTimeout(timer));
+    markdownTrailingTimers.clear();
+}
+
+function scheduleMarkdownTrailing(element, delayMs, run) {
+    if (markdownTrailingTimers.has(element)) {
+        return;
+    }
+    const timer = setTimeout(() => {
+        markdownTrailingTimers.delete(element);
+        run(element);
+    }, Math.max(0, delayMs));
+    markdownTrailingTimers.set(element, timer);
 }
 
 function closestMarkdown(node) {
@@ -48,7 +99,7 @@ function closestMarkdown(node) {
     if (node.classList && node.classList.contains('markdown')) {
         return node;
     }
-    return node.closest ? node.closest('.markdown') : null;
+    return node.closest ? node.closest(MARKDOWN_SELECTOR) : null;
 }
 
 function processUserMessageNode(node, rtlAlgorithm) {
@@ -57,17 +108,17 @@ function processUserMessageNode(node, rtlAlgorithm) {
     }
 
     const $node = AQ(node);
-    const userMessages = $node.find('[data-message-author-role="user"]').add(
-        $node.filter('[data-message-author-role="user"]')
+    const userMessages = $node.find(USER_MESSAGE_SELECTOR).add(
+        $node.filter(USER_MESSAGE_SELECTOR)
     );
 
     userMessages.each(function() {
-        applyRtlToElement(this, rtlAlgorithm, {
+        applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
             removeDirAuto: true
-        });
+        }, rtlAlgorithm));
     });
 }
 
@@ -102,6 +153,42 @@ function processSuggestionNode(node, rtlAlgorithm) {
     });
 }
 
+function watchPromptTextarea(rtlAlgorithm) {
+    AQ('#prompt-textarea').each(function () {
+        if (AQ(this).data('rtl-listener-added')) {
+            return;
+        }
+        AQ(this).data('rtl-listener-added', true);
+
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSetGPT',
+            processedClass: 'AsOk'
+        });
+
+        AQ(this).on('keyup paste', function() {
+            requestAnimationFrame(() => {
+                applyRtlToElement(this, rtlAlgorithm, {
+                    fontClass: 'FontSetGPT',
+                });
+            });
+        });
+    });
+}
+
+function processPresentationBubbles() {
+    AQ(PRESENTATION + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function () {
+        if (AQ(this).parent().hasClass('AsOk')) {
+            return;
+        }
+        AQ(this).parent().addClass('AsOk');
+        const text = AQ(this).text();
+        AQ(this).addClass('FontSetGPT');
+        if (isRTL(text)) {
+            AQ(this).parent().addClass('setRight');
+        }
+    });
+}
+
 export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     if (markdownObserver) {
         markdownObserver.disconnect();
@@ -111,37 +198,68 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
+    clearAllMarkdownTrailing();
+    markdownProcessTimes = new WeakMap();
 
     const pendingMarkdown = new Set();
+    const pendingUserNodes = new Set();
+    const pendingSuggestionNodes = new Set();
 
     const processMarkdownElement = (element) => {
         if (!isRtlEngineActive()) {
             return;
         }
-        const throttleMs = isLockedMarkdownEditorEl(element) ? 150 : 500;
+        if (!element || !element.isConnected) {
+            return;
+        }
+        const throttleMs = isLockedMarkdownEditorEl(element) ? LOCKED_EDITOR_THROTTLE_MS : MARKDOWN_THROTTLE_MS;
         const now = Date.now();
         const last = markdownProcessTimes.get(element) || 0;
-        if (now - last < throttleMs) {
+        const elapsed = now - last;
+        if (elapsed < throttleMs) {
+            scheduleMarkdownTrailing(element, throttleMs - elapsed, processMarkdownElement);
             return;
         }
         markdownProcessTimes.set(element, now);
+        clearMarkdownTrailing(element);
 
         AQ(element).addClass('AsSetAlgorithm');
-        applyRtlToContainer(element, rtlAlgorithm, MARKDOWN_PROCESS_OPTIONS);
+        applyRtlToContainer(element, rtlAlgorithm, chatGptRtlOptions(MARKDOWN_PROCESS_OPTIONS, rtlAlgorithm));
         processCodeMirrorBlocks(element, {
             fontClass: 'FontSetCodeBlocksGPT',
             setTextAlign: true
         });
     };
 
-    const flushPendingMarkdown = () => {
+    const flushPending = () => {
         markdownFlushRaf = 0;
+
         pendingMarkdown.forEach((element) => {
             if (element.isConnected) {
                 processMarkdownElement(element);
             }
         });
         pendingMarkdown.clear();
+
+        pendingUserNodes.forEach((node) => {
+            if (node.isConnected) {
+                processUserMessageNode(node, rtlAlgorithm);
+            }
+        });
+        pendingUserNodes.clear();
+
+        pendingSuggestionNodes.forEach((node) => {
+            if (node.isConnected) {
+                processSuggestionNode(node, rtlAlgorithm);
+            }
+        });
+        pendingSuggestionNodes.clear();
+    };
+
+    const scheduleFlush = () => {
+        if (!markdownFlushRaf) {
+            markdownFlushRaf = requestAnimationFrame(flushPending);
+        }
     };
 
     const queueMarkdown = (element) => {
@@ -149,9 +267,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             return;
         }
         pendingMarkdown.add(element);
-        if (!markdownFlushRaf) {
-            markdownFlushRaf = requestAnimationFrame(flushPendingMarkdown);
-        }
+        scheduleFlush();
     };
 
     const queueAddedNode = (node) => {
@@ -161,8 +277,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         if (node.classList && node.classList.contains('markdown')) {
             queueMarkdown(node);
         }
-        if (node.querySelector && node.querySelector('.markdown')) {
-            node.querySelectorAll('.markdown').forEach(queueMarkdown);
+        if (node.querySelector && node.querySelector(MARKDOWN_SELECTOR)) {
+            node.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
         }
     };
 
@@ -177,13 +293,19 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                         continue;
                     }
                     queueAddedNode(node);
-                    processUserMessageNode(node, rtlAlgorithm);
-                    processSuggestionNode(node, rtlAlgorithm);
+                    if (nodeMatchesOrContains(node, USER_MESSAGE_SELECTOR)) {
+                        pendingUserNodes.add(node);
+                    }
+                    if (nodeMatchesOrContains(node, SUGGESTION_MATCH_SELECTOR, SUGGESTION_CONTAINS_SELECTOR)) {
+                        pendingSuggestionNodes.add(node);
+                    }
+                    scheduleFlush();
                 }
 
                 if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE &&
                     mutation.target.matches && mutation.target.matches('ul.divide-token-border-light')) {
-                    processSuggestionNode(mutation.target, rtlAlgorithm);
+                    pendingSuggestionNodes.add(mutation.target);
+                    scheduleFlush();
                 }
             }
 
@@ -202,7 +324,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         characterData: true
     });
 
-    document.querySelectorAll('.markdown').forEach(queueMarkdown);
+    document.querySelectorAll(MARKDOWN_SELECTOR).forEach(queueMarkdown);
 }
 
 export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
@@ -213,122 +335,102 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
         console.log('React is still hydrating, skipping...');
         return;
     }
-    let presentation = ".relative.flex.h-full "
     if (chrome.runtime?.id) {
-        addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), "text-xs text-token-text-secondary AsBoxB" , 'margin-top: 9px; margin-bottom: -11px;');
+        addCopyright(AQ('#thread-bottom').find('.w-full .pointer-events-auto'), 'text-xs text-token-text-secondary AsBoxB' , 'margin-top: 9px; margin-bottom: -11px;');
     }
 
-    AQ('.hljs-comment').each(function (each) {
+    AQ('.hljs-comment').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
-    })
+    });
 
     processCodeMirrorBlocks(document.body, {
         fontClass: 'FontSetCodeBlocksGPT',
         setTextAlign: true
     });
 
-    AQ('[data-message-author-role="user"]').each(function () {
-        applyRtlToElement(this, rtlAlgorithm, {
+    AQ(USER_MESSAGE_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, chatGptRtlOptions({
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
             removeDirAuto: true
-        });
+        }, rtlAlgorithm));
     });
 
-    AQ(presentation + '.h-full .w-full.text-token-text-primary .relative.rounded-3xl').each(function (each) {
-        if (!AQ(this).parent().hasClass("AsOk")) {
-            AQ(this).parent().addClass('AsOk');
-            const text = AQ(this).text()
-            AQ(this).addClass('FontSetGPT');
-            if (isRTL(text)) {
-                AQ(this).parent().addClass("setRight")
-            }
+    processPresentationBubbles();
 
-        }
-    })
+    AQ('body').addClass('FontSetGPT');
+    AQ(PRESENTATION).addClass('FontSetGPT');
 
-
-    AQ('body').each(function (each) {
-        AQ(this).addClass('FontSetGPT');
-    })
-
-    AQ(presentation).each(function (each) {
-        AQ(this).addClass('FontSetGPT');
-    })
-
-    AQ(presentation + '#prosemirror-editor-container').each(function (each) {
+    AQ(PRESENTATION + '#prosemirror-editor-container').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             rtlClass: 'flex-row-reverse'
         });
-    })
+    });
 
-    AQ("#prompt-textarea").each(function (each) {
-        if (AQ(this).data('rtl-listener-added')) {
-            return;
-        }
-        AQ(this).data('rtl-listener-added', true);
+    watchPromptTextarea(rtlAlgorithm);
 
-        
+    AQ('.text-token-text-secondary span').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk'
         });
-        
-        AQ(this).on('keyup paste', function() {
-            requestAnimationFrame(() => {
-                applyRtlToElement(this, rtlAlgorithm, {
-                    fontClass: 'FontSetGPT',
-                });
-            });
-        });
-    })
-
-    
-    AQ('.text-token-text-secondary span').each(function (each) {
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'FontSetGPT',
-            processedClass: 'AsOk'
-        });
-    })
-
-
+    });
 }
 
 export function initializeChatGptHistory() {
     if (!isRtlEngineActive()) {
         return;
     }
-    AQ('#history .__menu-item').each(function (each) {
-        const text = AQ(this).text()
-        let p = isRTL(text);
+    AQ('#history .__menu-item').each(function () {
+        const text = AQ(this).text();
+        const p = isRTL(text);
 
-        if ((text !== "New chat") && !AQ(this).hasClass("AsOkList")) {
+        if ((text !== 'New chat') && !AQ(this).hasClass('AsOkList')) {
             AQ(this).addClass('AsOkList');
 
             if (p) {
-                AQ(this).attr("dir", "rtl");
+                AQ(this).attr('dir', 'rtl');
                 AQ(this).addClass('AsRtlList');
                 AQ(this).addClass('FontSetGPT');
                 AQ(this).parent().addClass('AsRtlList_parent');
             }
         }
 
-        let absoluteItem = AQ(this).parent().parent().find(".absolute.bottom-0")
+        const absoluteItem = AQ(this).parent().parent().find('.absolute.bottom-0');
 
-        if (!absoluteItem.hasClass("AsOk")) {
+        if (!absoluteItem.hasClass('AsOk')) {
             absoluteItem.addClass('AsOk');
 
             if (p) {
                 absoluteItem.addClass('AsOkList_absolute');
             }
         }
-    })
+    });
+}
+
+/** Cheap periodic pass: composer + history + bubbles. Messages stay on the observer. */
+export function refreshChatGptOldLiveTargets(rtlAlgorithm = 'advanced_full') {
+    if (!isRtlEngineActive()) {
+        return;
+    }
+
+    watchPromptTextarea(rtlAlgorithm);
+    processPresentationBubbles();
+    initializeChatGptHistory();
+
+    AQ(PRESENTATION + '#prosemirror-editor-container').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSetGPT',
+            processedClass: 'AsOk',
+            rtlClass: 'flex-row-reverse'
+        });
+    });
 }
 
 export function stopChatGptOld() {
@@ -340,6 +442,7 @@ export function stopChatGptOld() {
         cancelAnimationFrame(markdownFlushRaf);
         markdownFlushRaf = 0;
     }
+    clearAllMarkdownTrailing();
 }
 
 export function runChatGptOld(rtlAlgorithm = 'advanced_full') {

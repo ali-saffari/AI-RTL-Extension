@@ -9,8 +9,8 @@ import { isRtlEngineActive } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CUSTOM_CODE_BLOCK_SELECTOR,
-    DEBUG_MODE,
     getElementClassName,
+    isDebugMode,
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
@@ -23,10 +23,38 @@ import {
     isTextAlignEnabled,
     isTextAlignImportant,
     parseUnicodeBidiOption,
+    textAlignClassFor,
     usesDirectionClasses
 } from './textStyles.js';
 
 const loggedIgnoredEls = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+
+/**
+ * True when a paragraph is only line-wrapped with span/bdi (+ br), e.g. ChatGPT steps:
+ * <p><span>…</span><br><span>…</span><bdi>۳</bdi></p>
+ * In that case set dir on the <p> only; do not rewrite / dir-wrap children.
+ */
+export function isInlineSpanBdiBreakParagraph(element) {
+    const el = unwrapElement(element);
+    if (!el || !el.children || !el.children.length) {
+        return false;
+    }
+    let hasBr = false;
+    let hasInline = false;
+    for (let i = 0; i < el.children.length; i++) {
+        const tag = el.children[i].tagName && el.children[i].tagName.toLowerCase();
+        if (tag === 'br') {
+            hasBr = true;
+            continue;
+        }
+        if (tag === 'span' || tag === 'bdi') {
+            hasInline = true;
+            continue;
+        }
+        return false;
+    }
+    return hasBr && hasInline;
+}
 
 export function getIgnoreSelector(options = {}) {
     const value = options.ignoreSelector;
@@ -56,7 +84,7 @@ function queryIgnoredElements(root, selector, includeRoot = true) {
 }
 
 function logIgnoredIfSensed(el, selector) {
-    if (!DEBUG_MODE || !el || !el.isConnected) {
+    if (!isDebugMode() || !el || !el.isConnected) {
         return;
     }
     if (loggedIgnoredEls && loggedIgnoredEls.has(el)) {
@@ -192,7 +220,7 @@ export function setTextDirectionAndFont(element, options = {}) {
 
     const finalDirection = direction || 'auto';
 
-    if (DEBUG_MODE && ignoreSelector) {
+    if (isDebugMode() && ignoreSelector) {
         console.log('ignoreSelector analyzed text', {
             element: unwrapElement(element),
             selector: ignoreSelector,
@@ -242,6 +270,14 @@ export function processParagraphWithBreaks(element, fontClass = 'FontSet' , setT
         return;
     }
 
+    // ChatGPT-style lines: <p><span>…</span><br><span>…</span><bdi>…</bdi></p>
+    // Keep children intact; set direction only on the paragraph.
+    if (isInlineSpanBdiBreakParagraph(el)) {
+        setTextDirectionAndFont(element, { fontClass, setTextAlign, setUnicodeBidi, ...directionClassOptions });
+        $element.data('rtl-processed', true);
+        return;
+    }
+
     const htmlContent = $element.html();
     const hasNestedElements = Boolean(el && el.children && el.children.length > 0);
     const hasBrTags = Boolean(htmlContent && /<br\b/i.test(htmlContent));
@@ -287,13 +323,17 @@ export function processParagraphWithBreaks(element, fontClass = 'FontSet' , setT
                             } else if (direction === 'ltr' && directionClassOptions.ltrClass) {
                                 dirClasses.push(directionClassOptions.ltrClass);
                             }
+                            const alignClass = textAlignClassFor(setTextAlign, direction);
+                            if (alignClass) {
+                                dirClasses.push(alignClass);
+                            }
                             const divClass = dirClasses.filter(Boolean).length ? ` class="${dirClasses.filter(Boolean).join(' ')}"` : '';
                             const dirAttr = usesDirectionClasses(directionClassOptions) ? '' : ` dir="${direction}"`;
                             const bidiParsed = parseUnicodeBidiOption(setUnicodeBidi);
                             const bidiStyle = bidiParsed.enabled && direction === 'rtl'
                                 ? `unicode-bidi:${bidiParsed.value}${bidiParsed.important ? ' !important' : ''}`
                                 : '';
-                            const align = isTextAlignEnabled(setTextAlign)
+                            const align = isTextAlignEnabled(setTextAlign) && setTextAlign !== 'class'
                                 ? `text-align:${direction === 'rtl' ? 'right' : 'left'}${isTextAlignImportant(setTextAlign) ? ' !important' : ''}`
                                 : '';
                             const styleAttr = [wrapperTag === 'span' ? 'display:block' : '', bidiStyle, align].filter(Boolean).join(';');

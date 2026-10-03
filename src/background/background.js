@@ -22,7 +22,7 @@ const devError = (...args) => { if (IS_DEV) console.error.apply(console, args); 
 // ============================================
 
 const SERVICE_FLAGS = {
-    chatGpt: true, claude: true, copilot: true, githubCopilot: true,
+    chatGpt: true, claude: true, githubCopilot: true,
     duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
     youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
     grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
@@ -721,6 +721,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         })();
         return true; // Keep channel open for async response
+    } else if (message.action === 'requestPermissionsAndEnableServices') {
+        (async () => {
+            try {
+                const serviceKeys = Array.isArray(message.serviceKeys) ? message.serviceKeys : [];
+                const origins = [];
+                const validKeys = [];
+
+                serviceKeys.forEach((serviceKey) => {
+                    const service = DYNAMIC_SERVICES[serviceKey];
+                    if (!service?.origins?.length) {
+                        return;
+                    }
+                    validKeys.push(serviceKey);
+                    origins.push(...service.origins);
+                });
+
+                const uniqueOrigins = [...new Set(origins)];
+                if (!validKeys.length || !uniqueOrigins.length) {
+                    sendResponse?.({ success: false, error: 'No services to enable' });
+                    return;
+                }
+
+                const granted = await chrome.permissions.request({
+                    permissions: ['scripting'],
+                    origins: uniqueOrigins
+                });
+
+                if (!granted) {
+                    sendResponse?.({ success: false, granted: false, error: 'Permissions denied' });
+                    return;
+                }
+
+                const storageUpdate = {};
+                validKeys.forEach((serviceKey) => {
+                    storageUpdate[serviceKey] = true;
+                    if (serviceKey === 'googleNotebook') {
+                        storageUpdate.notebookNeedsReenable = false;
+                    }
+                });
+                await chrome.storage.sync.set(storageUpdate);
+                sendResponse?.({ success: true, granted: true, serviceKeys: validKeys });
+            } catch (error) {
+                devError('[Background] Error in requestPermissionsAndEnableServices:', error);
+                sendResponse?.({ success: false, error: error.message });
+            }
+        })();
+        return true;
     } else if (message.action === 'requestPermissionsAndEnableService') {
         // Handle permission request and service activation from popup
         // Note: This is called from popup onClick (user gesture context)
@@ -880,7 +927,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // AI sites list for manual RTL
 const AI_SITES = [
-    'chatgpt.com', 'claude.ai', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
+    'chatgpt.com', 'claude.ai', 'copilot.com', 'www.copilot.com', 'copilot.microsoft.com', 'bing.com', 'www.bing.com',
     'github.com', 'perplexity.ai', 'www.perplexity.ai', 'duckduckgo.com',
     'aistudio.google.com', 'chat.deepseek.com', 'you.com', 'chat.qwenlm.ai',
     'chat.qwen.ai', 'poe.com', 'monica.im', 'gemini.google.com', 'business.gemini.google', 'grok.com',

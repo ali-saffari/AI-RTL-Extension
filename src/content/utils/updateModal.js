@@ -1,6 +1,20 @@
-import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, PREVIOUS_UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
-import { versionChanges, chatgptOnlyChanges, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import {
+    UPDATE_MODAL_ENABLED,
+    UPDATE_MODAL_ID,
+    FIRST_UPDATE_MODAL_ID,
+    SECOND_UPDATE_MODAL_ID,
+    UPDATE_MODAL_STORAGE_KEY,
+} from '../../constants/updateModalConfig.js';
+import {
+    versionChanges,
+    chatgptAndCopilotChanges,
+    chatgptPerfAndCopilotChanges,
+    filterVersionChangesForBrowser,
+    splitVersionChanges,
+    getSiteShortName,
+} from '../../constants/versionChanges.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
+import { isFirefoxRuntime } from '../../utils/isFirefox.js';
 
 let isModalShowing = false;
 
@@ -144,14 +158,25 @@ export function showUpdateModal(options = {}) {
                 return;
             }
 
-            if (closedId === PREVIOUS_UPDATE_MODAL_ID) {
+            // Saw the second modal → performance + Copilot follow-up
+            if (closedId === SECOND_UPDATE_MODAL_ID) {
                 mountUpdateModal(true, {
-                    changes: chatgptOnlyChanges,
+                    changes: chatgptPerfAndCopilotChanges,
                     includeStory: false,
                 });
                 return;
             }
 
+            // Saw the first modal but not the second → ChatGPT + Copilot
+            if (closedId === FIRST_UPDATE_MODAL_ID) {
+                mountUpdateModal(true, {
+                    changes: chatgptAndCopilotChanges,
+                    includeStory: false,
+                });
+                return;
+            }
+
+            // Never saw the first modal → full changelog + story
             mountUpdateModal(true);
         });
     } catch (error) {
@@ -208,6 +233,7 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
     const iconUrl = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
     const currentVersion = manifest.version;
+    const visibleChanges = filterVersionChangesForBrowser(changes, isFirefoxRuntime());
 
     // متن استاتیک اصلی که کاملاً از لیست جدا شده است
     const staticAnnouncementHTML = `
@@ -749,7 +775,7 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
                             افزونه با موفقیت به‌روزرسانی شد
                         </h3>
                         <div class="As-changes As-version-changes">
-                            ${renderChangeItems(changes)}
+                            ${renderChangeItems(visibleChanges)}
                         </div>
 
                         ${includeStory ? staticAnnouncementHTML : ''}

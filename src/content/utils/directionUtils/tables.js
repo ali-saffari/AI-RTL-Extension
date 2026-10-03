@@ -70,7 +70,6 @@ export function processTablesInContainer(container, options = {}) {
 
 
 
-        console.log('siteConfig', siteConfig);
         setDebugAttr($table, 'data-debug-mode-site', siteConfig);
         setDebugAttr($table, 'data-debug-mode-2', 'table-element');
 
@@ -83,9 +82,6 @@ export function processTablesInContainer(container, options = {}) {
             applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
             return;
         }
-
-        console.log("processTablesInContainer", $table)
-
 
         let allTableText = '';
         const tableElements = $table.find('th, td, caption').add($table.find('tr').not(':has(th, td)'));

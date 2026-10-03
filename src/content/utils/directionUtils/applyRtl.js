@@ -23,7 +23,7 @@ import {
 } from './lockedEditor.js';
 import { applyRemoveDirAuto, processTextElementsAdvanced } from './processAdvanced.js';
 import { isInvalidatedError, resolveRtlAlgorithm } from './settings.js';
-import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, unwrapElement } from './shared.js';
+import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, clearDebugSkipReason, logDebugProcess, logDebugSkipOnce, unwrapElement } from './shared.js';
 import { processTablesInContainer } from './tables.js';
 import {
     applyDirectionMarker,
@@ -105,11 +105,13 @@ export function getAttributeTextElements() {
  * @param {string} [options.processedClass] - Class that marks already-processed nodes. Default `'AsOk'` for advanced_section; used to skip reprocessing and to count processed children
  * @param {boolean} [options.isContainer] - Treat as a nested container. Default `true` for advanced_section. advanced_full: also process inner code blocks on first pass. first_word: also process tables
  * @param {string|false} [options.codeFontClass] - Font class for code blocks; falls back to fontClass if omitted. `false` skips applying a font class on code
- * @param {boolean|'important'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important
+ * @param {boolean|'important'|'class'|string} [options.setTextAlign] - Set text-align from detected direction. `true` enables it; `'important'` uses !important; `'class'` toggles AsAlignRtl/AsAlignLtr instead of an inline style
+ * @param {boolean|'important'|'class'|false} [options.setRootTextAlign] - advanced_full only: text-align on the container root. Default follows setTextAlign; `false` leaves the mother element without text-align; `'class'` toggles AsAlignRtl/AsAlignLtr instead of an inline style (children/tables still use setTextAlign)
  * @param {boolean|'important'|'isolate'|'plaintext'|'embed'|'bidi-override'|'isolate-override'|string} [options.setUnicodeBidi] - unicode-bidi value for RTL items (`true` = isolate). Combine with important, e.g. `'isolate important'`. Removed when RTL is turned off
  * @param {string} [options.siteConfig] - Site key for table-specific tweaks (e.g. `'chatgpt'`, `'grok'`, `'aistudio'`)
  * @param {boolean} [options.processTables] - advanced_full: process tables even when isContainer is false; runs independently of shouldProcess. `false` skips tables in every algorithm
  * @param {string} [options.ignoreSelector] - CSS selector of elements to ignore when analyzing text; skipped if omitted
+ * @param {string} [options.walkSkipSelector] - Skip only in processTextElementsAdvanced (mark+return like ms-code-block); does not strip text for analysis
  * @param {boolean} [options.removeInnerDir] - If true, before processing save each inner dir to data-ai-rtl-orig-dir and strip it (restored when RTL is turned off). Code/katex/svg are skipped
  * @param {boolean|string|string[]} [options.onlyCss] - Handle with CSS instead of mutating child DOM. `true`: this element only. A selector (e.g. `.tiptap.ProseMirror`) targets matching descendants as locked editors
  * @param {string[]} [options.includeTags] - Add tag names to the default block list (p, h1–h6, blockquote, pre, ul, ol). Extra tags get display:block in onlyCss
@@ -150,7 +152,13 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
     }
 
     applyRemoveInnerDir($element, options);
-    applyRemoveDirAuto($element, options.removeDirAuto === true, getIgnoreSelector(options), options.onlyCss);
+    applyRemoveDirAuto(
+        $element,
+        options.removeDirAuto === true,
+        getIgnoreSelector(options),
+        options.onlyCss,
+        options.removeDirAutoSkipSelector
+    );
     
     // Default options for each algorithm
     const defaultOptions = {
@@ -173,11 +181,9 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
      * @param {string} processedClass - Class name to count processed elements
      * @returns {Object} - Object containing shouldProcess boolean and currentTextLength number
      */
-    function shouldProcessElement($element, processedClass, processOptions = {}) {
+    function shouldProcessElement($element, _processedClass, processOptions = {}) {
         // Get current text content for length comparison
         const currentText = getAnalyzableText($element, processOptions);
-        
-
         
         const currentTextLength = currentText.length;
         
@@ -187,12 +193,32 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         
         // Calculate the difference in text length
         const lengthDifference = storedLength !== null ? Math.abs(currentTextLength - storedLength) : 0;
-        
-        // Count elements with processedClass in this section
-        const processedElementsCount = $element.find(`.${processedClass}`).length;
-        
-        // Only process if text length changed by more than 3 characters, if it's the first time (no attribute), or if fewer than 2 elements are processed
-        const shouldProcess = lengthDifference > 3 || storedLength === null || processedElementsCount < 2;
+
+        // Removed: processedClass child-count gate for containers.
+        // Previously we also reprocessed when fewer than 2 descendants had processedClass
+        // (`processedElementsCount < 2`), which forced endless passes on short messages.
+        // حذف شد: شرط تعداد فرزندان دارای processedClass برای کانتینرها.
+        // قبلاً اگر کمتر از ۲ فرزند کلاس پردازش داشتند دوباره پردازش می‌شد
+        // (`processedElementsCount < 2`) و روی پیام‌های کوتاه باعث پردازش تکراری می‌شد.
+        // const processedElementsCount = _processedClass
+        //     ? $element.find(`.${_processedClass}`).length
+        //     : 0;
+        // if (processedElementsCount < 2) { ... force shouldProcess ... }
+
+        const reasons = [];
+        if (storedLength === null) {
+            reasons.push('no-stored-length');
+        }
+        if (lengthDifference > 3) {
+            reasons.push(`length-delta>${3} (${lengthDifference})`);
+        }
+
+        // Containers: decide only by text length (first visit or delta > 3).
+        // کانتینرها: فقط بر اساس طول متن تصمیم گرفته می‌شود (اولین بار یا اختلاف بیشتر از ۳).
+        const shouldProcess = reasons.length > 0;
+        const skipReason = shouldProcess
+            ? null
+            : `stable-length (delta=${lengthDifference}<=3) | storedLength=${storedLength}`;
         
         return {
             shouldProcess,
@@ -200,17 +226,26 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             currentTextLength,
             storedLength,
             lengthDifference,
-            processedElementsCount
+            reason: shouldProcess ? (reasons.join(' | ') || 'none') : skipReason
         };
     }
     
     if (rtlAlgorithm === 'advanced_section') {
         const mergedOptions = { ...defaultOptions.advanced_section, ...options };
         
-        const { shouldProcess, currentTextLength, storedLength, lengthDifference, processedElementsCount } = shouldProcessElement($element, mergedOptions.processedClass);
+        const { shouldProcess, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, mergedOptions.processedClass);
         
         if (shouldProcess) {
             // console.log("applyRtlToContainer advanced_section", currentTextLength, storedLength, lengthDifference);
+            logDebugProcess('process', $element, {
+                algorithm: 'advanced_section',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedClass: mergedOptions.processedClass
+            });
+            clearDebugSkipReason($element);
             processTextElementsAdvanced($element, mergedOptions);
 
             $element.attr('data-algorithm-rtl', 'advanced_section');
@@ -218,7 +253,17 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             $element.attr('data-text-length', currentTextLength.toString());
             // Reset skip log flag when processing happens
             $element.removeAttr('data-skip-log-sent');
+
             flipRtlArrowsInTree($element);
+        } else {
+            logDebugSkipOnce($element, {
+                algorithm: 'advanced_section',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedClass: mergedOptions.processedClass
+            });
         }
 
         if (mergedOptions.processTables !== false) {
@@ -230,13 +275,14 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
+        // Independent of shouldProcess — code blocks have their own skip marker.
         processCodeBlocksInContainer($element, {
             fontClass: mergedOptions.fontClass,
             codeFontClass: mergedOptions.codeFontClass,
             setTextAlign: mergedOptions.setTextAlign,
-            processedClass: mergedOptions.processedClass
+            processedClass: mergedOptions.processedClass,
+            forceCodeLtr: mergedOptions.forceCodeLtr === true
         }, true);
-        flipRtlArrowsInTree($element);
         //  else {
         //     // Log when processing is skipped (only once)
         //     const skipLogSent = $element.attr('data-skip-log-sent');
@@ -272,37 +318,65 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         const mergedOptions = { ...defaultOptions.advanced_full, ...options };
         
         const ignoreSelector = getIgnoreSelector(mergedOptions);
-        const { shouldProcess, currentText, currentTextLength } = shouldProcessElement($element, mergedOptions.processedClass, {
+        const { shouldProcess, currentText, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, mergedOptions.processedClass, {
             ignoreSelector
         });
         
         if (shouldProcess) {
             // console.log("applyRtlToContainer advanced_full", currentTextLength, storedLength, lengthDifference);
-            setTextDirectionAndFont(element, { ...mergedOptions, ignoreSelector, text: currentText });
-
-            const codeOptions = {
-                fontClass: mergedOptions.fontClass,
-                codeFontClass: mergedOptions.codeFontClass,
-                setTextAlign: mergedOptions.setTextAlign,
-                processedClass: mergedOptions.processedClass
-            };
-
-            if (mergedOptions.isContainer) {
-                processCodeBlocksInContainer($element, codeOptions, true);
+            logDebugProcess('process', $element, {
+                algorithm: 'advanced_full',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedClass: mergedOptions.processedClass,
+                isContainer: Boolean(mergedOptions.isContainer)
+            });
+            clearDebugSkipReason($element);
+            const rootSetTextAlign = mergedOptions.setRootTextAlign === undefined
+                ? mergedOptions.setTextAlign
+                : mergedOptions.setRootTextAlign;
+            setTextDirectionAndFont(element, {
+                ...mergedOptions,
+                ignoreSelector,
+                text: currentText,
+                setTextAlign: rootSetTextAlign
+            });
+            // Mother container: clear leftover inline text-align when root align is disabled.
+            if (rootSetTextAlign === false && el && el.style) {
+                el.style.removeProperty('text-align');
             }
-            
+
             $element.attr('data-algorithm-rtl', 'advanced_full');
             // Store the new text length
             $element.attr('data-text-length', currentTextLength.toString());
             flipRtlArrowsInTree($element);
+        } else {
+            logDebugSkipOnce($element, {
+                algorithm: 'advanced_full',
+                reason,
+                currentTextLength,
+                storedLength,
+                lengthDifference,
+                processedClass: mergedOptions.processedClass,
+                isContainer: Boolean(mergedOptions.isContainer)
+            });
         }
 
-        processCodeBlocksInContainer($element, {
+        // Independent of shouldProcess — code blocks have their own skip marker.
+        const codeOptions = {
             fontClass: mergedOptions.fontClass,
             codeFontClass: mergedOptions.codeFontClass,
             setTextAlign: mergedOptions.setTextAlign,
-            processedClass: mergedOptions.processedClass
-        }, false);
+            processedClass: mergedOptions.processedClass,
+            forceCodeLtr: mergedOptions.forceCodeLtr === true
+        };
+        if (mergedOptions.isContainer) {
+            processCodeBlocksInContainer($element, codeOptions, true);
+        } else {
+            processCodeBlocksInContainer($element, codeOptions, false);
+        }
 
         if (mergedOptions.processTables !== false && (mergedOptions.processTables || mergedOptions.isContainer)) {
             processTablesInContainer($element, {
@@ -313,8 +387,6 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 removeDirAuto: mergedOptions.removeTableDirAuto === true
             });
         }
-
-        flipRtlArrowsInTree($element);
 
         if (ignoreSelector) {
             isolateIgnoredElements($element, ignoreSelector);
@@ -332,10 +404,17 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         
         // Process tables in container for first_word algorithm (only if isContainer is true)
         if (options.isContainer) {
-            const { shouldProcess, currentTextLength } = shouldProcessElement($element, options.processedClass);
+            const { shouldProcess, currentTextLength, storedLength, lengthDifference, reason } = shouldProcessElement($element, options.processedClass);
             
             if (shouldProcess) {
                 // console.log("applyRtlToContainer first_word tables", currentTextLength, storedLength, lengthDifference);
+                logDebugProcess('process', $element, {
+                    algorithm: 'first_word',
+                    reason,
+                    currentTextLength,
+                    processedClass: options.processedClass
+                });
+                clearDebugSkipReason($element);
                 if (options.processTables !== false) {
                     processTablesInContainer($element, {
                         fontClass,
@@ -347,6 +426,15 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                 }
                 // Store the new text length
                 $element.attr('data-text-length', currentTextLength.toString());
+            } else {
+                logDebugSkipOnce($element, {
+                    algorithm: 'first_word',
+                    reason,
+                    currentTextLength,
+                    storedLength,
+                    lengthDifference,
+                    processedClass: options.processedClass
+                });
             }
         }
         
@@ -394,7 +482,7 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
         return;
     }
 
-    applyRemoveDirAuto($element, options.removeDirAuto === true, null, options.onlyCss);
+    applyRemoveDirAuto($element, options.removeDirAuto === true, null, options.onlyCss, options.removeDirAutoSkipSelector);
     
     // Default options for each algorithm
     const defaultOptions = {

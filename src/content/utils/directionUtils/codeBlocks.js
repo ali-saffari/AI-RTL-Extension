@@ -5,12 +5,13 @@
  * applyRtlToContainer / processTextElementsAdvanced when applyAlgorithmToCode is on.
  */
 
-import { isRtlEngineActive, restoreElementFromSelf } from '../originalState.js';
+import { isRtlEngineActive, preserveOriginalDir, restoreElementFromSelf } from '../originalState.js';
 import { flipRtlArrowsInTree } from './arrows.js';
 import {
     CODE_BLOCK_SELECTOR,
     CUSTOM_CODE_BLOCK_SELECTOR,
     isCodeMirrorCodeBlock,
+    logDebugProcess,
     setDebugAttr,
     unwrapElement
 } from './shared.js';
@@ -183,40 +184,82 @@ function getCodeBlockDirectionTargets($element) {
     return $inner.length ? $element.add($inner) : $element;
 }
 
+const CODE_PROCESSED_CLASS = 'AsOkCode';
+const CODE_PROCESSED_LEN_ATTR = 'data-ai-rtl-code-len';
+
+function getCodeTextLength($element) {
+    return (($element.text && $element.text()) || '').length;
+}
+
+/** Independent skip for code blocks — not tied to container shouldProcess. */
+function shouldProcessCodeBlock($element) {
+    const el = unwrapElement($element);
+    if (!el) {
+        return true;
+    }
+    if (!$element.hasClass(CODE_PROCESSED_CLASS)) {
+        return true;
+    }
+    const storedAttr = el.getAttribute(CODE_PROCESSED_LEN_ATTR);
+    if (storedAttr === null) {
+        return true;
+    }
+    const storedLength = parseInt(storedAttr, 10);
+    const currentLength = getCodeTextLength($element);
+    return Math.abs(currentLength - storedLength) > 3;
+}
+
+function markCodeBlockProcessed($element, options = {}) {
+    const el = unwrapElement($element);
+    $element.addClass(CODE_PROCESSED_CLASS);
+    if (options.processedClass) {
+        $element.addClass(options.processedClass);
+    }
+    if (el) {
+        el.setAttribute(CODE_PROCESSED_LEN_ATTR, String(getCodeTextLength($element)));
+    }
+}
+
 export function processCodeLikeElement($element, element, options = {}) {
     if (!isApplyAlgorithmToCodeEnabled()) {
         return;
     }
-    const { fontClass, processedClass, codeFontClass } = options;
-    const blockFontClass = resolveCodeFontClass(fontClass, codeFontClass);
-    if (processedClass) {
-        $element.addClass(processedClass);
+    if (!shouldProcessCodeBlock($element)) {
+        return;
     }
+    const { fontClass, codeFontClass, forceCodeLtr = false } = options;
+    const blockFontClass = resolveCodeFontClass(fontClass, codeFontClass);
 
     const text = $element.text();
     const $targets = getCodeBlockDirectionTargets($element);
     const kind = codeBlockKind(unwrapElement($element));
-    if (kind === 'prose') {
+    if (!forceCodeLtr && kind === 'prose') {
         setDebugAttr($element, 'data-debug-mode', 'code-prose-rtl');
         $targets.each(function() {
             applyProseCodeRtl(AQ(this));
         });
+        markCodeBlockProcessed($element, options);
         return;
     }
-    if (kind === 'code' || !shouldApplyRtlToCodeBlock(text)) {
-        setDebugAttr($element, 'data-debug-mode', kind === 'code' ? 'code-lang-ltr' : 'code-element-ltr');
+    if (forceCodeLtr || kind === 'code' || !shouldApplyRtlToCodeBlock(text)) {
+        setDebugAttr($element, 'data-debug-mode', forceCodeLtr ? 'code-forced-ltr' : (kind === 'code' ? 'code-lang-ltr' : 'code-element-ltr'));
         $targets.each(function() {
             applyForcedCodeLtr(AQ(this));
         });
         if (kind === 'code') {
             alignCodeCommentsIn(unwrapElement($element));
         }
+        markCodeBlockProcessed($element, options);
         return;
     }
 
     setDebugAttr($element, 'data-debug-mode', 'code-element-normal');
-    $element.find('*').removeAttr('dir');
+    $element.find('[dir]').each(function () {
+        preserveOriginalDir(this);
+        this.removeAttribute('dir');
+    });
     applyCodeBlockDirection($targets, 'rtl', blockFontClass);
+    markCodeBlockProcessed($element, options);
 }
 
 export function processCodeBlockNode($codeElement, options = {}) {
@@ -233,9 +276,26 @@ export function processCodeBlocksInContainer($container, options = {}, includeSt
         return;
     }
     const selector = includeStandard ? CODE_BLOCK_SELECTOR : CUSTOM_CODE_BLOCK_SELECTOR;
-    $container.find(selector).add($container.filter(selector)).each(function() {
+    const $targets = $container.find(selector).add($container.filter(selector));
+    let processedCount = 0;
+    let skippedCount = 0;
+    $targets.each(function() {
+        if (!shouldProcessCodeBlock(AQ(this))) {
+            skippedCount += 1;
+            return;
+        }
+        processedCount += 1;
         processCodeBlockNode(AQ(this), options);
     });
+    if (processedCount > 0) {
+        logDebugProcess('code', $container, {
+            includeStandard,
+            forceCodeLtr: options.forceCodeLtr === true,
+            matchCount: $targets.length,
+            processedCount,
+            skippedCount
+        });
+    }
 }
 
 function getCodeMirrorTargets($element, $content) {
@@ -270,7 +330,10 @@ export function processCodeMirrorBlock($element, element, options = {}) {
     if (!isApplyAlgorithmToCodeEnabled()) {
         return;
     }
-    const { fontClass, processedClass, codeFontClass } = options;
+    if (!shouldProcessCodeBlock($element)) {
+        return;
+    }
+    const { fontClass, codeFontClass, forceCodeLtr = false } = options;
     const blockFontClass = resolveCodeFontClass(fontClass, codeFontClass);
     const $content = $element.hasClass('cm-content')
         ? $element
@@ -278,33 +341,34 @@ export function processCodeMirrorBlock($element, element, options = {}) {
 
     ensureCodeMirrorDirectionStyles();
 
-    if (processedClass) {
-        $element.addClass(processedClass);
-        $element.find('*').addClass(processedClass);
-    }
-
     const $targets = getCodeMirrorTargets($element, $content);
 
     const blockText = $content.text();
     const kind = codeBlockKind($content[0] || unwrapElement($element));
-    if (kind === 'prose') {
+    if (!forceCodeLtr && kind === 'prose') {
         setDebugAttr($element, 'data-debug-mode', 'cm-code-prose-rtl');
         $targets.each(function() {
             applyProseCodeRtl(AQ(this));
         });
+        markCodeBlockProcessed($element, options);
+        $element.find('*').addClass(CODE_PROCESSED_CLASS);
         return;
     }
-    if (kind === 'code' || !shouldApplyRtlToCodeBlock(blockText)) {
-        setDebugAttr($element, 'data-debug-mode', kind === 'code' ? 'cm-code-lang-ltr' : 'cm-code-block-ltr');
+    if (forceCodeLtr || kind === 'code' || !shouldApplyRtlToCodeBlock(blockText)) {
+        setDebugAttr($element, 'data-debug-mode', forceCodeLtr ? 'cm-code-forced-ltr' : (kind === 'code' ? 'cm-code-lang-ltr' : 'cm-code-block-ltr'));
         applyCodeBlockDirection($targets, 'ltr', blockFontClass);
         if (kind === 'code') {
             alignCodeCommentsIn($content[0] || unwrapElement($element));
         }
+        markCodeBlockProcessed($element, options);
+        $element.find('*').addClass(CODE_PROCESSED_CLASS);
         return;
     }
 
     setDebugAttr($element, 'data-debug-mode', 'cm-code-block-persian');
     applyCodeBlockDirection($targets, 'rtl', blockFontClass);
+    markCodeBlockProcessed($element, options);
+    $element.find('*').addClass(CODE_PROCESSED_CLASS);
 }
 
 export function processCodeMirrorBlocks(container, options = {}) {

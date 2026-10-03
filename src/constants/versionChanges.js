@@ -9,6 +9,7 @@
  * @property {string} [shortName]
  * @property {string} [type]
  * @property {string} [group]
+ * @property {boolean} [chromeOnly]
  */
 
 /** @type {VersionChange} */
@@ -21,13 +22,49 @@ export const chatgptUpdateChange = {
     group: 'feature',
 };
 
-// Shown only to users who already closed the 2026-09-20 modal.
+/** @type {VersionChange} */
+export const chatgptPerfChange = {
+    id: '9',
+    text: 'بهبود عملکرد در ChatGPT',
+    icon: 'sites/openAi-icon.png',
+    type: 'update',
+    group: 'feature',
+};
+
+/** @type {VersionChange} */
+export const copilotUpdateChange = {
+    id: '8',
+    text: 'آپدیت Copilot',
+    note: 'برای استفاده باید از طریق منوی افزونه فعال کنید',
+    icon: 'sites/copilot-icon.png',
+    type: 'update',
+    group: 'feature',
+};
+
+/** Chrome-only: MissingPermissionBanner + enable-all (not shown on Firefox). */
+/** @type {VersionChange} */
+export const enableAllSitesChange = {
+    id: '10',
+    text: 'قابلیت فعال کردن همه سایت‌ها با هم',
+    icon: 'logo/ai-rtl-logo.png',
+    type: 'add',
+    group: 'feature',
+    chromeOnly: true,
+};
+
+// Seen first modal (2026-09-20) but not the second (2026-09-26).
 /** @type {VersionChange[]} */
-export const chatgptOnlyChanges = [chatgptUpdateChange];
+export const chatgptAndCopilotChanges = [chatgptUpdateChange, copilotUpdateChange, enableAllSitesChange];
+
+// Seen second modal (2026-09-26) already.
+/** @type {VersionChange[]} */
+export const chatgptPerfAndCopilotChanges = [chatgptPerfChange, copilotUpdateChange, enableAllSitesChange];
 
 /** @type {VersionChange[]} */
 export const versionChanges = [
     chatgptUpdateChange,
+    copilotUpdateChange,
+    enableAllSitesChange,
     { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
     { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
@@ -35,6 +72,18 @@ export const versionChanges = [
     { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },
     { id: '6', text: 'افزودن سایت MathGPT', icon: 'sites/mathgpt.png', type: 'add', group: 'site' },
 ];
+
+/**
+ * @param {VersionChange[]} [changes]
+ * @param {boolean} [isFirefox]
+ * @returns {VersionChange[]}
+ */
+export function filterVersionChangesForBrowser(changes = versionChanges, isFirefox = false) {
+    if (!isFirefox) {
+        return changes;
+    }
+    return changes.filter((change) => !change.chromeOnly);
+}
 
 /** @param {VersionChange} change */
 export function getSiteShortName(change) {

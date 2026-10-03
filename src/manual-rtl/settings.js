@@ -8,6 +8,8 @@ function getAISitesList() {
     manualRtlState.aiSitesList = [
         'chatgpt.com',
         'claude.ai',
+        'copilot.com',
+        'www.copilot.com',
         'copilot.microsoft.com',
         'bing.com',
         'www.bing.com',

@@ -28,6 +28,7 @@ import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermis
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { getDefaultPinOpenSiteMode, isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
 import SitePermissionsHint from './SitePermissionsHint';
+import MissingPermissionBanner from './MissingPermissionBanner';
 
 interface Service {
     key: string;
@@ -71,7 +72,7 @@ const services: Service[] = [
 
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', hosts: ['chatgpt.com', 'chat.openai.com'], keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', hosts: ['chat.deepseek.com'], keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
-    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.microsoft.com/', hosts: ['copilot.microsoft.com', 'bing.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'bing', 'بینگ', 'مایکروسافت', 'microsoft'] },
+    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.com/', hosts: ['copilot.com', 'www.copilot.com', 'copilot.microsoft.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'مایکروسافت', 'microsoft'] },
     { key: 'm365', name: '365 Copilot', icon: '/images/sites/m365.png', url: 'https://m365.cloud.microsoft/', new: true, hosts: ['m365.cloud.microsoft', 'copilot.cloud.microsoft'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Microsoft 365 Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی این سایت، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['m365', 'microsoft 365', 'مایکروسافت 365', 'کوپایلوت', 'copilot', 'آفیس', 'office', 'outlook', 'teams'] },
     { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', hosts: ['claude.ai'], keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
     { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', hosts: ['gemini.google.com'], keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
@@ -189,7 +190,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     const [checked, setChecked] = useState<CheckedState>({
         chatGpt: true,
         claude: true,
-        copilot: true,
+        copilot: false,
         githubCopilot: true,
         // duckduckgo: true,
         perplexity: true,
@@ -236,6 +237,39 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     
     // Detect Edge browser
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
+
+    useEffect(() => {
+        const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+            if (area !== 'sync') {
+                return;
+            }
+            setChecked((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                services.forEach((service) => {
+                    const change = changes[service.key];
+                    if (change && typeof change.newValue === 'boolean' && next[service.key] !== change.newValue) {
+                        next[service.key] = change.newValue;
+                        changed = true;
+                    }
+                });
+                return changed ? next : prev;
+            });
+        };
+
+        try {
+            chrome.storage.onChanged.addListener(onStorageChange);
+        } catch {
+            return;
+        }
+        return () => {
+            try {
+                chrome.storage.onChanged.removeListener(onStorageChange);
+            } catch {
+                // Ignore
+            }
+        };
+    }, []);
     
     // Get browser language and determine "Allow" button text
     const getAllowButtonText = () => {
@@ -945,7 +979,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         sx={{ 
                             position: 'sticky',
                             top: 48,
-                            zIndex: 3,
+                            zIndex: 9,
                             overflow: 'hidden',
                             boxSizing: 'border-box',
                             p: 0,
@@ -1018,13 +1052,18 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                         </Typography>
                     </Box>
                 )}
-                {groupedList.pinnedItems.map((item, index) =>
-                    renderServiceRow(
-                        item.service,
-                        true,
-                        index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
-                    )
-                )}
+                {groupedList.pinnedItems.map((item, index) => (
+                    <React.Fragment key={`pinned-${item.service.key}`}>
+                        {renderServiceRow(
+                            item.service,
+                            true,
+                            index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
+                        )}
+                        {!searchQuery.trim() && item.service.key === 'gemini' && (
+                            <MissingPermissionBanner isDarkMode={isDarkMode} />
+                        )}
+                    </React.Fragment>
+                ))}
                 {groupedList.groups.map((group) => (
                     <React.Fragment key={group.id}>
                         <ListSubheader
@@ -1079,9 +1118,17 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 {toPersianDigits(group.items.length)}
                             </Box>
                         </ListSubheader>
-                        {group.items.map((item, index) =>
-                            renderServiceRow(item.service, false, index < group.items.length - 1)
-                        )}
+                        {group.items.map((item, index) => (
+                            <React.Fragment key={`row-${item.service.key}`}>
+                                {renderServiceRow(item.service, false, index < group.items.length - 1)}
+                                {!searchQuery.trim()
+                                    && item.service.key === 'gemini'
+                                    && !groupedList.pinnedItems.some((pinned) => pinned.service.key === 'gemini')
+                                    && (
+                                        <MissingPermissionBanner isDarkMode={isDarkMode} />
+                                    )}
+                            </React.Fragment>
+                        ))}
                     </React.Fragment>
                 ))}
             </List>

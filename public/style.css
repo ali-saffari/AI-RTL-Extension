@@ -6,6 +6,17 @@
     background: red !important;
 }
 
+/*
+ * Fix for CSS conflict with FontAra Extension v5.0.0.
+ * Restores the intended centered alignment of the Codex description.
+ */
+ 
+.text-center.text-codex-description {
+
+    text-align: center !important;
+}
+
+
 html:not(.ai-rtl-code-algorithm) .FontSet pre,
 html:not(.ai-rtl-code-algorithm) .FontSetGPT pre,
 html:not(.ai-rtl-code-algorithm) .FontSetImportant pre,
@@ -100,35 +111,40 @@ textarea.FontSetImportant{
     direction: ltr !important;
 }
 
-.FontSetGPT,
-.FontSetGPT * {
+.FontSetGPT {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetGPT .katex,
-.FontSetGPT .katex * {
+/* ChatGPT assistant Markdown often applies its own font on semantic text blocks.
+   Enforce the selected Persian font only on actual prose blocks instead of
+   the old expensive `.FontSetGPT *` universal descendant selector.
+   Keep in sync with applySelectedFont.js. */
+.FontSetGPT :where(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption,
+    td, th
+) {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+.FontSetGPT .katex {
     font-family: KaTeX_Main, "Times New Roman", serif !important;
 }
 
 .FontSetGPT pre,
-.FontSetGPT pre *,
 .FontSetGPT code,
-.FontSetGPT code *,
 .FontSetGPT .cm-content,
-.FontSetGPT .cm-content *,
 .FontSetGPT .cm-line,
-.FontSetGPT .cm-line *,
 .FontSetGPT .cm-editor,
-.FontSetGPT .cm-editor *,
 .FontSetGPT .md-code-block,
-.FontSetGPT .md-code-block * {
+.FontSetGPT [data-streamdown="code-block"],
+.FontSetGPT [data-language] {
     font-family: revert !important;
 }
 
 .FontSetGPT .FontSetCodeBlocksGPT,
-.FontSetGPT .FontSetCodeBlocksGPT *,
-.FontSetCodeBlocksGPT,
-.FontSetCodeBlocksGPT * {
+.FontSetCodeBlocksGPT {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -154,7 +170,14 @@ textarea.FontSetImportant{
 .items-stretch .items-start code.FontSetCodeBlocksGPT,
 .items-stretch .items-start pre.FontSetCodeBlocksGPT,
 .items-stretch .items-start .FontSetCodeBlocksGPT,
-.items-stretch .items-start .FontSetCodeBlocksGPT * {
+.items-stretch .items-start .FontSetCodeBlocksGPT :where(
+    p, span, div, mark, a,
+    h1, h2, h3, h4, h5, h6,
+    li, label, button, input, textarea, select, option,
+    em, strong, b, i, small, time, cite, q, blockquote,
+    figcaption, summary, dt, dd, th, td, caption, legend,
+    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
+) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -165,6 +188,36 @@ textarea.FontSetImportant{
 .AsRtl {
     direction: rtl !important;
     text-align: right !important;
+}
+
+/* ChatGPT markdown root (setRootTextAlign: 'class'). Prose only; code keeps its own align. */
+.AsAlignRtl {
+    text-align: right !important;
+}
+
+.AsAlignLtr {
+    text-align: left !important;
+}
+
+.AsAlignRtl :where(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption
+) {
+    text-align: right !important;
+}
+
+.AsAlignLtr :where(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption
+) {
+    text-align: left !important;
+}
+
+.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]),
+.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]) {
+    text-align: left !important;
 }
 
 .AsLtr {
@@ -325,21 +378,21 @@ html.ai-rtl-code-algorithm [data-ai-rtl-comment="body"] {
     text-align: right;
 }
 
-/* Persian/RTL code boxes: override site monospace on the block and nested spans */
+/* Persian/RTL code boxes: override site monospace on the block and its text elements */
 html.ai-rtl-code-algorithm code.FontSet,
-html.ai-rtl-code-algorithm code.FontSet *,
+html.ai-rtl-code-algorithm code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm pre.FontSet,
-html.ai-rtl-code-algorithm pre.FontSet *,
+html.ai-rtl-code-algorithm pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .cm-content.FontSet,
-html.ai-rtl-code-algorithm .cm-content.FontSet *,
+html.ai-rtl-code-algorithm .cm-content.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .cm-line.FontSet,
-html.ai-rtl-code-algorithm .cm-line.FontSet *,
+html.ai-rtl-code-algorithm .cm-line.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm .md-code-block.FontSet,
-html.ai-rtl-code-algorithm .md-code-block.FontSet *,
+html.ai-rtl-code-algorithm .md-code-block.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet,
-html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet *,
+html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
 html.ai-rtl-code-algorithm [data-language].FontSet,
-html.ai-rtl-code-algorithm [data-language].FontSet * {
+html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -685,7 +738,7 @@ html:not(.ai-rtl-code-algorithm) .FontSetPerplexity code {
 }
 
 html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
-html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet * {
+html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -811,6 +864,34 @@ textarea#search-input-textarea {
 
 
 /*deep*/
+
+/* DeepSeek positions .ds-scroll-area__horizontal-bar from scrollLeft. */
+.ds-scroll-area:has(> table) {
+    direction: ltr !important;
+}
+
+/* DeepSeek keeps margin-left: calc(-1 * var(--padding-left)) so the scrollport
+   spans the list. Leave that margin. padding-right is 0 so the pinned table
+   meets the message edge; the 54px inset moves to the left. */
+.ds-scroll-area:has(> table[dir="rtl"]) {
+    padding-left: var(--padding-right) !important;
+    padding-right: 0 !important;
+}
+.ds-scroll-area > table[dir="rtl"] {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    width: max-content;
+}
+/* LTR zeros padding-right on td:last-child, the right edge. In RTL that edge is the first cell. */
+.ds-markdown table[dir="rtl"] td:last-child {
+    padding-right: 16px !important;
+}
+.ds-markdown table[dir="rtl"] td:first-child {
+    padding-right: 0 !important;
+}
+
+
+
 
 html.ai-rtl-has-font .ds-markdown h1,
 html.ai-rtl-has-font .ds-markdown h2,

@@ -145,7 +145,7 @@ const serviceConfig = {
         activate: activateClaude
     },
     copilot: {
-        urls: ["copilot.microsoft.com", "bing.com", "www.bing.com"],
+        urls: ["copilot.com", "www.copilot.com", "copilot.microsoft.com"],
         activate: activateCopilot
     },
     githubCopilot: {

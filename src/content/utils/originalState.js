@@ -55,7 +55,7 @@ const KNOWN_EXTENSION_CLASSES = new Set([
     'AsOkRList', 'AsOkCode', 'AsOkCodeBlock', 'AsOkFontSet', 'AsOkNotebooklm',
     'AsOkUser', 'AsOkBtn', 'AsOkCON', 'AsSet', 'AsSetAlgorithm', 'AsSetLtr',
     'AsRtl', 'AsLtr', 'AsRtlList', 'AsRtlList_parent', 'AsRtl_rowReverse', 'AsRtlClaudeList',
-    'AsRtlClaudeUser', 'AsRtlPerplexity', 'AsJustRtl', 'AsAlignRtl', 'AsRed',
+    'AsRtlClaudeUser', 'AsRtlPerplexity', 'AsJustRtl', 'AsAlignRtl', 'AsAlignLtr', 'AsRed',
     'AsDonateOk', 'AsDonate', 'AsSBtn', 'AsBox', 'AsBoxB', 'AsBoxGemini',
     'AsBoxClaude', 'AsBoxPerplexity', 'AsBoxDuckduckgo', 'AsBoxMonica',
     'AsBoxgrok', 'AsBoxqwenlm', 'AsBox_copilotBing', 'AsBox_copilotBingBlock',
@@ -90,6 +90,7 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 
 const FALLBACK_ATTRS = [
     'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
+    'data-ai-rtl-code-len',
     ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_BIDI_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
     'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
     'data-org-dir', ORIG_CSS_DIRECTION_ATTR, HAD_TEXT_LEFT_ATTR, 'data-ai-rtl-bq-mirrored', 'data-ai-rtl-bq-tw', 'data-debug-mode',

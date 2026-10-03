@@ -80,11 +80,90 @@ export function isCodeMirrorCodeBlock($element) {
     return $element.hasClass('cm-content') || $element.hasClass('cm-editor') || $element.hasClass('md-code-block');
 }
 
+// Off by default so ChatGPT streaming stays as light as the 4.0.18.4 production build.
+// Enable in DevTools with: window.__AI_RTL_DEBUG = true
 export const DEBUG_MODE = false;
 
-export function setDebugAttr($element, attrName, value) {
+export function isDebugMode() {
     if (DEBUG_MODE) {
+        return true;
+    }
+    try {
+        return typeof window !== 'undefined' && window.__AI_RTL_DEBUG === true;
+    } catch {
+        return false;
+    }
+}
+
+export function setDebugAttr($element, attrName, value) {
+    if (isDebugMode()) {
         $element.attr(attrName, value);
+    }
+}
+
+export function logDebug(...args) {
+    if (!isDebugMode()) {
+        return;
+    }
+    console.log('[AI-RTL]', ...args);
+}
+
+function describeDebugElement(element) {
+    const el = unwrapElement(element);
+    if (!el || !el.tagName) {
+        return { tag: 'unknown' };
+    }
+    const className = typeof el.className === 'string'
+        ? el.className.trim().split(/\s+/).slice(0, 3).join('.')
+        : '';
+    return {
+        tag: el.tagName.toLowerCase(),
+        className: className || undefined,
+        textLength: typeof el.textContent === 'string' ? el.textContent.length : undefined
+    };
+}
+
+export function logDebugProcess(section, element, details = {}) {
+    if (!isDebugMode()) {
+        return;
+    }
+    const el = unwrapElement(element);
+    // Pass the live DOM node so DevTools hover highlights it on the page.
+    console.log('[AI-RTL]', section, el, {
+        ...describeDebugElement(el),
+        ...details
+    });
+}
+
+const lastSkipReasons = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+/** Log skip once per element, again only when the skip reason changes. */
+export function logDebugSkipOnce(element, details = {}) {
+    if (!isDebugMode()) {
+        return;
+    }
+    const el = unwrapElement(element);
+    if (!el) {
+        return;
+    }
+    const reason = details.reason || '';
+    if (lastSkipReasons) {
+        if (lastSkipReasons.get(el) === reason) {
+            return;
+        }
+        lastSkipReasons.set(el, reason);
+    }
+    const info = { ...describeDebugElement(el), ...details };
+    // console.log(`[AI-RTL] skip ${info.tag}${info.className ? '.' + info.className : ''} reason=${info.reason || ''} textLength=${info.textLength ?? ''}`, el);
+}
+
+export function clearDebugSkipReason(element) {
+    if (!lastSkipReasons) {
+        return;
+    }
+    const el = unwrapElement(element);
+    if (el) {
+        lastSkipReasons.delete(el);
     }
 }
 

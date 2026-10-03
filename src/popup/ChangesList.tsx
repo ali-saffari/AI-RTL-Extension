@@ -1,12 +1,15 @@
 import React from 'react';
 import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useTheme, SvgIcon } from '@mui/material';
 import { mdiFormatListBulleted, mdiArrowUp, mdiCheck } from '@mdi/js';
-import { previousChanges, splitVersionChanges, getSiteShortName, versionChanges } from '../constants/versionChanges';
+import { previousChanges, splitVersionChanges, getSiteShortName, versionChanges, filterVersionChangesForBrowser } from '../constants/versionChanges';
+import { isFirefoxRuntime } from '../utils/isFirefox';
 
 const ChangesList: React.FC = () => {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
-    const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(versionChanges);
+    const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(
+        filterVersionChangesForBrowser(versionChanges, isFirefoxRuntime())
+    );
 
     const renderSiteGrid = (siteList: typeof updatedSites) => (
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(86px, 1fr))', gap: 0.75 }}>

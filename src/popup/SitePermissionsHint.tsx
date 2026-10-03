@@ -82,7 +82,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     type="button"
                     dir="rtl"
                     className="site-permissions-hint-button"
-                    style={{ direction: 'rtl', textAlign: 'right' }}
+               
                     onClick={() => setModalOpen(true)}
                     aria-label="چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟"
                     sx={{
@@ -148,10 +148,13 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     style={{
                         direction: 'rtl',
                         textAlign: 'right',
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        padding: '16px 16px 8px 16px',
                         fontFamily: 'iranyekan',
+                        fontSize: '1.05rem',
+                        fontWeight: 700,
+                        padding: '16px 16px 8px 16px',
+                    }}
+                    sx={{
+                        color: accent,
                     }}
                 >
                     چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟
@@ -159,33 +162,35 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography
                         sx={{
-                            fontSize: '0.82rem',
+                            fontSize: '0.88rem',
                             fontFamily: 'iranyekan',
-                            lineHeight: 1.9,
+                            fontWeight: 500,
+                            lineHeight: 2,
                             mb: 1.5,
-                            color: muted,
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
-                        این افزونه در ابتدا فقط برای چت‌جی‌پی‌تی (ChatGPT) طراحی شده بود، اما به‌مرور زمان و بنا بر درخواست شما، وب‌سایت‌های دیگر یکی‌یکی به آن اضافه شدند. اوایل با اضافه شدن هر سایت جدید، مجوز پایه افزونه تغییر می‌کرد و مرورگر هم با هر تغییر دسترسی، افزونه را برای همه کاربران خودبه‌خود غیرفعال می‌کرد. برای جلوگیری از این مشکل و قطع نشدن دسترسی شما، تصمیم گرفتیم سایت‌های جدید را به‌صورت اختیاری بگذاریم تا هر زمان که نیاز داشتید، فقط برای همان سایت مجوز بدهید.
+                        این افزونه در ابتدا فقط برای چت‌جی‌پی‌تی (ChatGPT) طراحی شده بود، اما به‌مرور زمان و بنا بر درخواست شما، وب‌سایت‌های دیگر یکی‌یکی به آن اضافه شدند. اوایل با اضافه شدن هر سایت جدید، مجوز پایه افزونه تغییر می‌کرد و مرورگر هم با هر تغییر دسترسی، افزونه را برای همه کاربران خودبه‌خود غیرفعال می‌کرد. برای جلوگیری از این مشکل و قطع نشدن دسترسی شما، تصمیم گرفتیم سایت‌های جدید را به‌صورت اختیاری بگذاریم تا هر زمان که نیاز داشتید فعال کنید.
                     </Typography>
                     <Typography
                         sx={{
-                            fontSize: '0.85rem',
+                            fontSize: '0.9rem',
                             fontFamily: 'iranyekan',
                             fontWeight: 700,
                             lineHeight: 1.9,
                             mb: 1,
-                            color: isDarkMode ? '#ffffff' : '#1e293b',
+                            color: isDarkMode ? '#7df4ff' : '#005589',
                         }}
                     >
-                        چرا از همان اول دسترسی همه سایت‌ها را به‌صورت یک‌جا نگرفتیم؟
+                        چرا از همان اول دسترسی همه سایت‌ها (کل اینترنت) را به‌صورت یک‌جا نگرفتیم؟
                     </Typography>
                     <Typography
                         sx={{
-                            fontSize: '0.82rem',
+                            fontSize: '0.88rem',
                             fontFamily: 'iranyekan',
-                            lineHeight: 1.9,
-                            color: muted,
+                            fontWeight: 500,
+                            lineHeight: 2,
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
                         من به عنوان سازنده وقتی خودم را جای کاربر می‌گذارم، از دسترسی‌های گسترده، پیش‌فرض و غیرضروری حس ناامنی می‌گیرم. باور دارم حق کاربر است که بداند دقیقاً چه دسترسی‌هایی و به چه دلیلی به یک افزونه داده می‌شود. به همین دلیل شفافیت و حفظ اعتماد شما را در اولویت گذاشتم تا کنترل کامل افزونه دست خودتان باشد.

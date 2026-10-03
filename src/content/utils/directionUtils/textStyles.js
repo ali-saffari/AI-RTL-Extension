@@ -13,13 +13,41 @@ export function isTextAlignImportant(setTextAlign) {
     return setTextAlign === 'important';
 }
 
+const ALIGN_RTL_CLASS = 'AsAlignRtl';
+const ALIGN_LTR_CLASS = 'AsAlignLtr';
+
+export function textAlignClassFor(setTextAlign, direction) {
+    if (setTextAlign !== 'class') {
+        return '';
+    }
+    if (direction === 'rtl') {
+        return ALIGN_RTL_CLASS;
+    }
+    if (direction === 'ltr') {
+        return ALIGN_LTR_CLASS;
+    }
+    return '';
+}
+
 export function applyTextAlignStyle(target, align, setTextAlign) {
     if (!isTextAlignEnabled(setTextAlign) || !align) {
         return;
     }
+    const useClass = setTextAlign === 'class';
     const priority = isTextAlignImportant(setTextAlign) ? 'important' : '';
     const applyOne = (el) => {
-        if (el && el.nodeType === 1 && el.style) {
+        if (!el || el.nodeType !== 1) {
+            return;
+        }
+        if (useClass) {
+            el.classList.toggle(ALIGN_RTL_CLASS, align === 'right');
+            el.classList.toggle(ALIGN_LTR_CLASS, align === 'left');
+            if (el.style) {
+                el.style.removeProperty('text-align');
+            }
+            return;
+        }
+        if (el.style) {
             el.style.setProperty('text-align', align, priority);
         }
     };
