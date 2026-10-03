@@ -77,11 +77,31 @@ import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
 import { activateYoutube, stopYoutube } from './services/youtube.js';
 import { activateM365 } from './services/observer/m365.js';
-import { syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
+import { setHalfSpaceHotkeyEnabled, syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
+import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled.js';
 
 // Global variables
 let site = window.location.hostname;
 let lastTrackedService = null;
+let extensionEnabled = true;
+
+async function loadExtensionEnabled() {
+    try {
+        const result = await chrome.storage.sync.get(EXTENSION_ENABLED_STORAGE_KEY);
+        extensionEnabled = isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY]);
+    } catch (error) {
+        extensionEnabled = true;
+    }
+    return extensionEnabled;
+}
+
+async function startExtensionFeatures() {
+    if (!extensionEnabled) {
+        return;
+    }
+    initializeHalfSpaceHotkey();
+    await enqueueRtlTask(() => initializeAllServices(applyToken));
+}
 
 function isInvalidatedContextMessage(value) {
     const message = value?.message || String(value || '');
@@ -105,21 +125,18 @@ window.addEventListener('unhandledrejection', (event) => {
 // Listen for content script activation event - register early
 window.addEventListener('contentScriptActivate', async () => {
     console.log('[Content] Content script activation event received');
-    // Re-initialize all services to ensure they are activated
     try {
-        // Wait a bit to ensure DOM is ready
+        await loadExtensionEnabled();
+        if (!extensionEnabled) {
+            return;
+        }
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', async () => {
-                console.log('[Content] DOMContentLoaded event received, initializing services');
-                initializeHalfSpaceHotkey();
-                await enqueueRtlTask(() => initializeAllServices(applyToken));
+            document.addEventListener('DOMContentLoaded', () => {
+                void startExtensionFeatures();
             });
         } else {
-            console.log('[Content] DOM already ready, initializing services');
-            // Small delay to ensure everything is loaded
-            setTimeout(async () => {
-                initializeHalfSpaceHotkey();
-                await enqueueRtlTask(() => initializeAllServices(applyToken));
+            setTimeout(() => {
+                void startExtensionFeatures();
             }, 200);
         }
     } catch (error) {
@@ -460,7 +477,7 @@ function deactivateCurrentRtl() {
 }
 
 async function initializeAllServices(token = applyToken) {
-    if (token !== applyToken) {
+    if (token !== applyToken || !extensionEnabled) {
         return;
     }
 
@@ -561,6 +578,9 @@ function requestRtlDisable() {
 }
 
 function requestRtlEnable() {
+    if (!extensionEnabled) {
+        return Promise.resolve();
+    }
     const token = ++applyToken;
     return enqueueRtlTask(async () => {
         if (token !== applyToken) {
@@ -582,6 +602,21 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         if (!sessionManager.analyticsEnabled) {
             await sessionManager.stop();
         }
+    }
+
+    if (changes[EXTENSION_ENABLED_STORAGE_KEY]) {
+        extensionEnabled = isExtensionEnabledValue(changes[EXTENSION_ENABLED_STORAGE_KEY].newValue);
+        if (extensionEnabled) {
+            await startExtensionFeatures();
+        } else {
+            setHalfSpaceHotkeyEnabled(false);
+            await requestRtlDisable();
+        }
+        return;
+    }
+
+    if (!extensionEnabled) {
+        return;
     }
     
     if (!isCurrentSiteInServiceConfig()) return; 
@@ -661,6 +696,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         return true; // Keep channel open for async response
     } else if (message.action === 'enableRtl') {
+        if (!extensionEnabled) {
+            sendResponse({ success: false, error: 'extension disabled' });
+            return true;
+        }
         requestRtlEnable()
             .then(() => sendResponse({ success: true }))
             .catch((error) => sendResponse({ success: false, error: error?.message }));
@@ -690,15 +729,17 @@ function initializeHalfSpaceHotkey() {
     void syncHalfSpaceHotkeyForService(getCurrentServiceKey());
 }
 
-// Initialize when DOM is ready
+async function bootContentScript() {
+    await loadExtensionEnabled();
+    await startExtensionFeatures();
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', async () => {
-        initializeHalfSpaceHotkey();
-        await enqueueRtlTask(() => initializeAllServices(applyToken));
+    document.addEventListener('DOMContentLoaded', () => {
+        void bootContentScript();
     });
 } else {
-    initializeHalfSpaceHotkey();
-    enqueueRtlTask(() => initializeAllServices(applyToken));
+    void bootContentScript();
 }
 
 

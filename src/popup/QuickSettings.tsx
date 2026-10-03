@@ -16,7 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { mdiCog, mdiOpenInNew, mdiClose, mdiInformationOutline } from '@mdi/js';
+import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiClose } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -74,6 +74,8 @@ interface QuickSettingsProps {
     activeServiceKey?: string | null;
     focusSiteKey?: string | null;
     focusNonce?: number;
+    extensionEnabled?: boolean;
+    onEnableExtension?: () => void;
 }
 
 const ALGORITHMS = [
@@ -121,6 +123,8 @@ const THEME_MODES = [
     { id: 'light', title: 'روشن' },
 ] as const;
 
+const SPONSOR_NOTE_DISMISSED_KEY = 'sponsorNoteDismissed';
+
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
@@ -147,6 +151,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     activeServiceKey = null,
     focusSiteKey = null,
     focusNonce = 0,
+    extensionEnabled = true,
+    onEnableExtension,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
@@ -154,6 +160,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
+    const [sponsorNoteDismissed, setSponsorNoteDismissed] = React.useState(false);
+    const [sponsorNoteReady, setSponsorNoteReady] = React.useState(false);
+    const [sponsorNoteConfirmOpen, setSponsorNoteConfirmOpen] = React.useState(false);
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -166,6 +175,48 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         };
         checkTabsPermission();
     }, []);
+
+    React.useEffect(() => {
+        try {
+            chrome.storage.sync.get([SPONSOR_NOTE_DISMISSED_KEY], (result) => {
+                setSponsorNoteDismissed(result[SPONSOR_NOTE_DISMISSED_KEY] === true);
+                setSponsorNoteReady(true);
+            });
+        } catch {
+            setSponsorNoteReady(true);
+        }
+
+        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+            if (areaName !== 'sync' || !changes[SPONSOR_NOTE_DISMISSED_KEY]) {
+                return;
+            }
+            setSponsorNoteDismissed(changes[SPONSOR_NOTE_DISMISSED_KEY].newValue === true);
+        };
+
+        try {
+            chrome.storage.onChanged.addListener(handleStorageChange);
+        } catch {
+            // Storage events are unavailable outside the extension runtime.
+        }
+
+        return () => {
+            try {
+                chrome.storage.onChanged.removeListener(handleStorageChange);
+            } catch {
+                // Ignore cleanup when storage is unavailable.
+            }
+        };
+    }, []);
+
+    const hideSponsorNote = () => {
+        setSponsorNoteDismissed(true);
+        setSponsorNoteConfirmOpen(false);
+        try {
+            chrome.storage.sync.set({ [SPONSOR_NOTE_DISMISSED_KEY]: true });
+        } catch {
+            // Keep the note hidden for this session if storage fails.
+        }
+    };
 
     React.useEffect(() => {
         let cancelled = false;
@@ -204,13 +255,26 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
 
     const switchSx = {
-        '& .MuiSwitch-switchBase.Mui-checked': {
+        '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
             color: isDarkMode ? '#00e9ff' : '#1c39bb',
         },
-        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+        '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
             backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
         },
+        '& .MuiSwitch-switchBase.Mui-disabled': {
+            color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
+        },
+        '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.12)',
+            opacity: 1,
+        },
+        '& .Mui-disabled': {
+            opacity: 0.5,
+        },
     };
+
+    const disabledControlColor = isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.26)';
+    const controlsDisabled = !extensionEnabled;
 
     const openOptions = (hash = '') => {
         const page = hash ? `options.html#${hash}` : 'options.html';
@@ -251,85 +315,181 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     return (
         <Box className="quick-settings" dir="rtl">
-            <Box className="quick-settings-header">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+            <Box className="quick-settings-body">
+                {!extensionEnabled ? (
                     <Box
-                        component={onClose ? 'button' : 'div'}
-                        type={onClose ? 'button' : undefined}
-                        onClick={onClose}
-                        aria-label={onClose ? 'بستن تنظیمات' : undefined}
+                        className="popup-disabled-overlay"
+                        role="status"
+                        aria-live="polite"
                         sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.75,
-                            minWidth: 0,
-                            p: 0,
-                            m: 0,
-                            border: 0,
-                            background: 'none',
-                            cursor: onClose ? 'pointer' : 'default',
-                            color: 'inherit',
-                            font: 'inherit',
-                            textAlign: 'right',
-                            '&:hover .quick-settings-title': onClose
-                                ? { color: accent }
-                                : undefined,
+                            backgroundColor: isDarkMode ? 'rgba(10, 14, 28, 0.38)' : 'rgba(226, 232, 240, 0.42)',
                         }}
                     >
-                        <SvgIcon sx={{ fontSize: '1.1rem', color: accent }}>
-                            <path d={mdiCog} />
-                        </SvgIcon>
-                        <Typography
-                            className="quick-settings-title"
-                            sx={{ fontWeight: 700, fontSize: '0.9rem', color: isDarkMode ? '#ffffff' : '#1e293b' }}
+                        <Box
+                            className="popup-disabled-overlay-card"
+                            sx={{
+                                backgroundColor: isDarkMode ? 'rgba(26, 26, 46, 0.72)' : 'rgba(255, 255, 255, 0.72)',
+                                borderTop: isDarkMode
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
+                                borderBottom: isDarkMode
+                                    ? '2px solid rgba(255, 138, 138, 0.75)'
+                                    : '2px solid rgba(239, 83, 80, 0.75)',
+                                borderLeft: 'none',
+                                borderRight: 'none',
+                                borderRadius: 0,
+                            }}
                         >
-                            تنظیمات
-                        </Typography>
-                    </Box>
-                    {onClose ? (
-                        <Tooltip title="بستن تنظیمات">
-                            <IconButton
-                                size="small"
-                                onClick={onClose}
-                                aria-label="بستن تنظیمات"
+                            <Typography
                                 sx={{
-                                    p: 0.5,
-                                    color: muted,
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 300,
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.5,
+                                    color: isDarkMode ? '#ff8a8a' : '#ef5350',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                افزونه غیرفعال است
+                            </Typography>
+                            <Button
+                                variant="text"
+                                size="small"
+                                onClick={() => onEnableExtension?.()}
+                                sx={{
+                                    flexShrink: 0,
+                                    px: 1,
+                                    py: 0.25,
+                                    minWidth: 0,
+                                    borderRadius: '8px',
+                                    textTransform: 'none',
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    boxShadow: 'none',
+                                    border: 'none',
+                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: 'transparent',
                                     '&:hover': {
-                                        backgroundColor: selectedBg,
-                                        color: accent,
+                                        border: 'none',
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(28, 57, 187, 0.06)',
+                                        boxShadow: 'none',
+                                        transform: 'none',
                                     },
                                 }}
                             >
-                                <SvgIcon sx={{ fontSize: '1.05rem' }}>
+                                فعال کردن
+                            </Button>
+                        </Box>
+                    </Box>
+                ) : null}
+                <Box
+                    className={`quick-settings-body-scroll${controlsDisabled ? ' is-disabled' : ''}`}
+                >
+                <Box className="popup-sponsors popup-sponsors--scroll" aria-label="حامیان ویژه و اسپانسرها">
+                    <div className="popup-sponsors-top">
+                        <Typography className="popup-sponsors-caption" component="span">
+                            اسپانسرهای ارزشمند ما
+                        </Typography>
+                        <a
+                            className="popup-sponsors-cta"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            همکاری و حمایت
+                        </a>
+                    </div>
+                    <a
+                        className="popup-sponsors-box popup-sponsors-box--full"
+                        href="https://t.me/ai_rtl_support"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        این اکستنشن اسپانسر می‌پذیرد
+                    </a>
+                    <div className="popup-sponsors-slots">
+                        <a
+                            className="popup-sponsors-box popup-sponsors-box--half"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            جای لوگوی قشنگتون
+                        </a>
+                        <a
+                            className="popup-sponsors-box popup-sponsors-box--half"
+                            href="https://t.me/ai_rtl_support"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            جای لوگوی قشنگتون
+                        </a>
+                    </div>
+                    {sponsorNoteReady && !sponsorNoteDismissed ? (
+                        <div className="popup-sponsors-note">
+                            <button
+                                type="button"
+                                className="popup-sponsors-note-close"
+                                aria-label="پنهان کردن این پیام"
+                                onClick={() => setSponsorNoteConfirmOpen(true)}
+                            >
+                                <SvgIcon sx={{ fontSize: '1rem' }}>
                                     <path d={mdiClose} />
                                 </SvgIcon>
-                            </IconButton>
-                        </Tooltip>
+                            </button>
+                            <Typography className="popup-sponsors-note-text" component="p">
+                                حمایت‌های شما دلگرمی بزرگی است. ما عاشق این پروژه‌ایم و می‌خواهیم وقت خیلی بیشتری پایش بگذاریم، به همین دلیل تصمیم گرفتیم برای اکستنشن اسپانسر بگیریم.
+                            </Typography>
+                        </div>
                     ) : null}
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
+                <Box
+                    className="quick-settings-section-title"
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        px: 0.25,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, minWidth: 0 }}>
+                        <SvgIcon sx={{ fontSize: '1rem', color: accent, flexShrink: 0 }}>
+                            <path d={mdiCog} />
+                        </SvgIcon>
+                        <Typography
+                            sx={{
+                                fontFamily: 'iranyekan',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                color: isDarkMode ? '#ffffff' : '#1e293b',
+                            }}
+                        >
+                            تنظیمات سریع
+                        </Typography>
+                    </Box>
                     <Button
                         variant="text"
                         size="small"
                         onClick={() => openOptions()}
                         endIcon={
-                            <SvgIcon sx={{ fontSize: '0.85rem !important' }}>
+                            <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
                                 <path d={mdiOpenInNew} />
                             </SvgIcon>
                         }
                         sx={{
                             minWidth: 0,
-                            px: 0.75,
-                            py: 0.25,
+                            px: 0.5,
+                            py: 0,
                             color: accent,
                             textTransform: 'none',
                             fontFamily: 'iranyekan',
-                            fontSize: '0.75rem',
+                            fontSize: '0.72rem',
                             fontWeight: 600,
-                            flexShrink: 0,
                             '&:hover': {
-                                backgroundColor: selectedBg,
+                                backgroundColor: 'transparent',
+                                textDecoration: 'underline',
                                 transform: 'none',
                             },
                         }}
@@ -337,9 +497,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         تنظیمات پیشرفته
                     </Button>
                 </Box>
-            </Box>
-
-            <Box className="quick-settings-body">
                 <SiteSettingsSection
                     isDarkMode={isDarkMode}
                     activeServiceKey={activeServiceKey}
@@ -398,11 +555,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Button>
                     </Box>
 
-                    <FormControl fullWidth size="small">
+                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
                         <Select
                             dir="rtl"
                             className="quick-settings-select"
                             value={rtlAlgorithm}
+                            disabled={controlsDisabled}
                             renderValue={(value) => ALGORITHMS.find((item) => item.id === value)?.title ?? ''}
                             onChange={(event) => onRtlAlgorithmChange(event.target.value)}
                             MenuProps={{
@@ -525,11 +683,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Typography className="quick-settings-label" sx={{ mb: 1 }}>
                                 نحوه نمایش عنوان‌ها
                             </Typography>
-                            <FormControl fullWidth size="small">
+                            <FormControl fullWidth size="small" disabled={controlsDisabled}>
                                 <Select
                                     dir="rtl"
                                     className="quick-settings-select"
                                     value={mixedTitleDisplayMode}
+                                    disabled={controlsDisabled}
                                     renderValue={(value) => TITLE_MODES.find((item) => item.id === value)?.title ?? ''}
                                     onChange={(event) => onMixedTitleDisplayModeChange(event.target.value)}
                                     MenuProps={{
@@ -600,11 +759,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <Typography className="quick-settings-label">
                                     برعکس کردن فلش‌ها در متن راست‌چین
                                 </Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Switch
                                 size="small"
                                 checked={flipRtlArrows}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onFlipRtlArrowsChange(event.target.checked)}
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
@@ -645,11 +805,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         <path d={mdiInformationOutline} />
                                     </SvgIcon>
                                 </IconButton>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Switch
                                 size="small"
                                 checked={applyAlgorithmToCode}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onApplyAlgorithmToCodeChange(event.target.checked)}
                                 sx={switchSx}
                                 inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
@@ -708,13 +869,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Typography className="quick-settings-label">
                             فونت
                         </Typography>
-                        <ExperimentalBadge isDarkMode={isDarkMode} />
+                        <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                     </Box>
-                    <FormControl fullWidth size="small">
+                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
                         <Select
                             dir="rtl"
                             className="quick-settings-select"
                             value={selectedFont}
+                            disabled={controlsDisabled}
                             renderValue={(value) => {
                                 if (value === NONE_FONT_ID) {
                                     return NONE_FONT_TITLE;
@@ -815,7 +977,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 <Typography className="quick-settings-label">اندازه فونت</Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted }}>
                                 {formatFontScaleLabel(fontScale)}
@@ -828,19 +990,24 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             max={MAX_FONT_SCALE}
                             step={FONT_SCALE_STEP}
                             marks={[{ value: DEFAULT_FONT_SCALE }]}
+                            disabled={controlsDisabled}
                             onChange={(_, value) => onFontScaleChange(value as number)}
                             onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
                             sx={{
                                 mt: 0.5,
-                                color: accent,
+                                color: controlsDisabled ? disabledControlColor : accent,
                                 '& .MuiSlider-rail': {
                                     opacity: 0.35
                                 },
                                 '& .MuiSlider-mark': {
-                                    backgroundColor: accent,
+                                    backgroundColor: controlsDisabled ? disabledControlColor : accent,
                                     height: 8,
                                     width: 2
-                                }
+                                },
+                                '&.Mui-disabled': {
+                                    color: disabledControlColor,
+                                    opacity: 0.55,
+                                },
                             }}
                         />
                     </Box>
@@ -858,11 +1025,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Typography className="quick-settings-label">تم منو اکستشن</Typography>
-                        <FormControl size="small" sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
+                        <FormControl size="small" disabled={controlsDisabled} sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
                             <Select
                                 dir="rtl"
                                 className="quick-settings-select"
                                 value={isDarkMode ? 'dark' : 'light'}
+                                disabled={controlsDisabled}
                                 renderValue={(value) => THEME_MODES.find((item) => item.id === value)?.title ?? ''}
                                 onChange={(event) => onDarkModeChange(event.target.value === 'dark')}
                                 MenuProps={{
@@ -940,6 +1108,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 void handlePinOpenSiteModeSelect(mode);
                             }}
                             isDarkMode={isDarkMode}
+                            disabled={controlsDisabled}
                         />
                     </Box>
                 </Box>
@@ -956,7 +1125,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
                                 <Typography className="quick-settings-label">چینش دستی</Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} />
+                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
                                 راست‌چین یا چپ‌چین کردن متن در هر سایت
@@ -967,6 +1136,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Switch
                                 size="small"
                                 checked={manualEnabled}
+                                disabled={controlsDisabled}
                                 onChange={(event) => {
                                     onManualRtlSettingsChange({
                                         ...manualRtlSettings,
@@ -980,6 +1150,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Button
                                 variant="outlined"
                                 size="small"
+                                disabled={controlsDisabled}
                                 onClick={() => openOptions('manual-rtl')}
                                 sx={{
                                     flexShrink: 0,
@@ -1025,7 +1196,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 sx={{
                                     fontSize: '0.65rem',
                                     fontWeight: 600,
-                                    color: supportHide ? muted : accent,
+                                    color: controlsDisabled
+                                        ? muted
+                                        : (supportHide ? muted : accent),
                                     whiteSpace: 'nowrap',
                                 }}
                             >
@@ -1034,6 +1207,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <Switch
                                 size="small"
                                 checked={supportHide}
+                                disabled={controlsDisabled}
                                 onChange={(event) => onSupportChange(event.target.checked)}
                                 data-settings-switch="true"
                                 sx={switchSx}
@@ -1041,6 +1215,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             />
                         </Box>
                     </Box>
+                </Box>
                 </Box>
             </Box>
             <Dialog
@@ -1233,6 +1408,60 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={sponsorNoteConfirmOpen}
+                onClose={() => setSponsorNoteConfirmOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    پنهان کردن پیام
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        این توضیح دیگر نمایش داده نشود؟
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
+                    <Button
+                        onClick={() => setSponsorNoteConfirmOpen(false)}
+                        variant="text"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        انصراف
+                    </Button>
+                    <Button
+                        onClick={hideSponsorNote}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        پنهان کردن
                     </Button>
                 </DialogActions>
             </Dialog>
