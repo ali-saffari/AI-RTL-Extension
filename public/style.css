@@ -870,13 +870,28 @@ textarea#search-input-textarea {
     direction: ltr !important;
 }
 
-/* Wide tables break out with padding-left / margin-left. Mirror that to the right. */
+/* DeepSeek keeps margin-left: calc(-1 * var(--padding-left)) so the scrollport
+   spans the list. Leave that margin. padding-right is 0 so the pinned table
+   meets the message edge; the 54px inset moves to the left. */
 .ds-scroll-area:has(> table[dir="rtl"]) {
     padding-left: var(--padding-right) !important;
-    padding-right: var(--padding-left) !important;
-    margin-left: 0 !important;
-    margin-right: calc(-1 * var(--padding-left)) !important;
+    padding-right: 0 !important;
 }
+.ds-scroll-area > table[dir="rtl"] {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    width: max-content;
+}
+/* LTR zeros padding-right on td:last-child, the right edge. In RTL that edge is the first cell. */
+.ds-markdown table[dir="rtl"] td:last-child {
+    padding-right: 16px !important;
+}
+.ds-markdown table[dir="rtl"] td:first-child {
+    padding-right: 0 !important;
+}
+
+
+
 
 html.ai-rtl-has-font .ds-markdown h1,
 html.ai-rtl-has-font .ds-markdown h2,
