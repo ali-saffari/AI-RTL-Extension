@@ -85,6 +85,7 @@ const services: Service[] = [
     { key: 'googleDrive', name: 'Google Drive', icon: '/images/sites/google-docs.png', url: 'https://drive.google.com/', new: true, hosts: ['docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com'], helpText: 'با فعال‌سازی این گزینه، راست‌چین برای <strong>جمینی در گوگل درایو</strong> فعال می‌شود. این سرویس شامل Drive، Docs، Sheets، Slides و Forms است.', keywords: ['docs', 'drive', 'sheets', 'slides', 'forms', 'گوگل درایو', 'گوگل داکس', 'گوگل داکز', 'جمینی', 'gemini', 'workspace', 'فایل'] },
     { key: 'googleAnalytics', name: 'Google Analytics', icon: '/images/sites/google-analytics.png', url: 'https://analytics.google.com/', new: true, hosts: ['analytics.google.com'], keywords: ['analytics', 'آنالیتیکس', 'آنالیتیک', 'ga4', 'گوگل آنالیتیکس', 'گوگل', 'google'] },
     { key: 'youtubeStudio', name: 'YouTube Studio', icon: '/images/sites/youtube-studio.png', url: 'https://studio.youtube.com/', new: true, hosts: ['studio.youtube.com'], keywords: ['youtube', 'یوتیوب', 'studio', 'استودیو', 'یوتوب'] },
+    { key: 'youtube', name: 'YouTube', icon: '/images/sites/youtube.png', url: 'https://www.youtube.com/', new: true, hosts: ['www.youtube.com', 'youtube.com', 'm.youtube.com'], helpText: 'راست‌چین فقط روی پنل <strong>پرسش از این ویدیو</strong> (Ask about this video) فعال می‌شود، نه روی بقیه صفحه یوتیوب.', keywords: ['youtube', 'یوتیوب', 'یوتوب', 'ask', 'پرسش', 'ویدیو', 'ویدئو'] },
     { key: 'meta', name: 'Meta AI', icon: '/images/sites/meta.png', url: 'https://www.meta.ai/', new: true, hosts: ['meta.ai'], keywords: ['meta', 'متا', 'llama', 'لاما', 'facebook', 'فیسبوک', 'instagram'] },
     { key: 'grok', name: 'Grok', icon: '/images/sites/gork.png', url: 'https://grok.com/', hosts: ['grok.com'], keywords: ['grok', 'گروک', 'xai', 'ایکس ای آی', 'توییتر', 'twitter', 'ایلان'] },
     { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/sites/qwen.png', url: 'https://chat.qwen.ai', hosts: ['chat.qwen.ai', 'chat.qwenlm.ai'], keywords: ['qwen', 'کوئن', 'alibaba', 'علی بابا', 'علی‌بابا', 'tongyi'] },
@@ -151,7 +152,7 @@ const SERVICE_CATEGORIES = [
 
 const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], string[]> = {
     chat: [
-        'chatGpt', 'claude', 'gemini', 'businessGemini', 'copilot', 'deepseek', 'grok',
+        'chatGpt', 'claude', 'gemini', 'youtube', 'businessGemini', 'copilot', 'deepseek', 'grok',
         'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
         'characterAi', 'lumo', 'sakana', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
     ],

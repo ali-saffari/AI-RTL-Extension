@@ -1,5 +1,6 @@
 export const FONT_SCALE_MODE_ZOOM = 'zoom';
 export const FONT_SCALE_MODE_FONT_SIZE = 'font-size';
+export const FONT_SCALE_MODE_NONE = 'none';
 export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_FONT_SIZE;
 
 /**
@@ -11,7 +12,7 @@ export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_FONT_SIZE;
  * Unlisted sites (including manual RTL) use DEFAULT_FONT_SCALE_MODE.
  */
 export const FONT_SCALE_SITE_MODES = {
-    'chatgpt.com': 'font-size',
+    'chatgpt.com': 'zoom',
     'chat.openai.com': 'font-size',
 
     'claude.ai': 'font-size',
@@ -83,6 +84,9 @@ export const FONT_SCALE_SITE_MODES = {
     'forms.google.com': 'font-size',
     'analytics.google.com': 'font-size',
     'studio.youtube.com': 'font-size',
+    // Watch page keeps its own root font-size. A page-wide percent or zoom enlarges all of YouTube.
+    'youtube.com': 'none',
+    'm.youtube.com': 'none',
     'www-veo3.com': 'font-size',
     'fal.ai': 'font-size',
     'bfl.ai': 'font-size',
@@ -204,7 +208,7 @@ export function getFontScaleMode(hostname) {
         return DEFAULT_FONT_SCALE_MODE;
     }
 
-    if (FONT_SCALE_SITE_MODES[host]) {
+    if (Object.prototype.hasOwnProperty.call(FONT_SCALE_SITE_MODES, host)) {
         return FONT_SCALE_SITE_MODES[host];
     }
 

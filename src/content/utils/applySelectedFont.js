@@ -11,7 +11,7 @@ import {
     normalizeFontScale,
     normalizeSelectedFontId,
 } from '../../utils/fonts';
-import { FONT_SCALE_MODE_FONT_SIZE, getFontScaleMode } from '../../utils/fontScaleSites';
+import { FONT_SCALE_MODE_FONT_SIZE, FONT_SCALE_MODE_NONE, getFontScaleMode } from '../../utils/fontScaleSites';
 
 const STYLE_ID = 'ai-rtl-selected-font-style';
 const FONT_SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
@@ -122,6 +122,9 @@ function clearLegacyElementScales() {
 
 function buildFontScaleCss(value) {
     const mode = getFontScaleMode();
+    if (mode === FONT_SCALE_MODE_NONE) {
+        return '';
+    }
     if (mode === FONT_SCALE_MODE_FONT_SIZE) {
         return `html { font-size: ${value}% !important; }`;
     }
@@ -136,10 +139,15 @@ export function applyFontScale(scale) {
     }
 
     clearLegacyElementScales();
-    root.style.removeProperty('font-size');
-    root.style.removeProperty('zoom');
+    const css = buildFontScaleCss(value);
+    // Mode "none" must not strip a site's own html font-size or zoom.
+    // YouTube sets that inline; removing it leaves the page larger after toggle-off.
+    if (css) {
+        root.style.removeProperty('font-size');
+        root.style.removeProperty('zoom');
+    }
 
-    if (value === DEFAULT_FONT_SCALE) {
+    if (value === DEFAULT_FONT_SCALE || !css) {
         const style = document.getElementById(FONT_SCALE_STYLE_ID);
         if (style) {
             style.textContent = '';
@@ -147,7 +155,7 @@ export function applyFontScale(scale) {
         return;
     }
 
-    ensureStyleElement(FONT_SCALE_STYLE_ID).textContent = buildFontScaleCss(value);
+    ensureStyleElement(FONT_SCALE_STYLE_ID).textContent = css;
 }
 
 async function loadFontFaces(font) {

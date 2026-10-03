@@ -87,6 +87,7 @@
         "*://lovable.dev/*",
         "*://lumo.proton.me/*",
         "*://manus.im/*",
+        "*://m.youtube.com/*",
         "*://m365.cloud.microsoft/*",
         "*://meta.ai/*",
         "*://monica.im/*",
@@ -145,8 +146,10 @@
         "*://www.t3.chat/*",
         "*://www.typingmind.com/*",
         "*://www.wenxin.baidu.com/*",
+        "*://www.youtube.com/*",
         "*://www.zerve.ai/*",
         "*://you.com/*",
+        "*://youtube.com/*",
         "*://zerve.ai/*"
     ],
     "description": "__MSG_extension_description__",
@@ -381,6 +384,7 @@
                 "*://lovable.dev/*",
                 "*://lumo.proton.me/*",
                 "*://manus.im/*",
+                "*://m.youtube.com/*",
                 "*://m365.cloud.microsoft/*",
                 "*://meta.ai/*",
                 "*://monica.im/*",
@@ -439,8 +443,10 @@
                 "*://www.t3.chat/*",
                 "*://www.typingmind.com/*",
                 "*://www.wenxin.baidu.com/*",
+                "*://www.youtube.com/*",
                 "*://www.zerve.ai/*",
                 "*://you.com/*",
+                "*://youtube.com/*",
                 "*://zerve.ai/*"
             ]
         }

@@ -18,6 +18,7 @@ const ICON_PRIORITY_KEYS = [
     'cursor',
     'googleLabs',
     'arena',
+    'youtube',
     'youtubeStudio',
     'meta',
    

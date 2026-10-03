@@ -67,6 +67,7 @@ export const versionChanges = [
     enableAllSitesChange,
     { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
     { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
+    { id: '11', text: 'افزودن سایت YouTube', note: 'راست‌چین پنل پرسش از ویدیو', icon: 'sites/youtube.png', type: 'add', group: 'site' },
     { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
     { id: '4', text: 'افزودن سایت Elicit', icon: 'sites/elicit.png', type: 'add', group: 'site' },
     { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },

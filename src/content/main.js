@@ -75,6 +75,7 @@ import { activateSakana } from './services/observer/sakana.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
+import { activateYoutube, stopYoutube } from './services/youtube.js';
 import { activateM365 } from './services/observer/m365.js';
 import { syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
 
@@ -388,6 +389,11 @@ const serviceConfig = {
         urls: ["studio.youtube.com"],
         activate: activateYoutubeStudio
     },
+    youtube: {
+        urls: ["youtube.com", "www.youtube.com", "m.youtube.com"],
+        exact: true,
+        activate: activateYoutube
+    },
     m365: {
         urls: ["m365.cloud.microsoft", "copilot.cloud.microsoft"],
         activate: activateM365
@@ -399,11 +405,14 @@ const serviceConfig = {
 };
 
 // Check if current site matches service URLs
-function isCurrentSite(urls) {
+function isCurrentSite(urls, exact = false) {
     if (Array.isArray(urls)) {
         return urls.some(url => {
             if (url === "github.com") {
                 return site === "github.com" && window.location.pathname.startsWith('/copilot');
+            }
+            if (exact) {
+                return url === site;
             }
             return url === site || site.endsWith('.' + url);
         });
@@ -413,12 +422,12 @@ function isCurrentSite(urls) {
 
 // Check if current site is in any serviceConfig
 function isCurrentSiteInServiceConfig() {
-    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls));
+    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls, config.exact === true));
 }
 
 function getCurrentServiceKey() {
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (isCurrentSite(config.urls)) {
+        if (isCurrentSite(config.urls, config.exact === true)) {
             return serviceKey;
         }
     }
@@ -443,6 +452,7 @@ function enqueueRtlTask(task) {
 
 function deactivateCurrentRtl() {
     applyToken += 1;
+    stopYoutube();
     stopChatGptRTL();
     disconnectAllDomObservers();
     stopRtlEngine();
@@ -481,7 +491,7 @@ async function initializeAllServices(token = applyToken) {
     let activeService = null;
     
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (results[serviceKey] !== false && isCurrentSite(config.urls)) {
+        if (results[serviceKey] !== false && isCurrentSite(config.urls, config.exact === true)) {
             activeService = serviceKey;
             if (typeof window.AQ !== 'undefined') {
                 if (token !== applyToken) {
@@ -535,6 +545,7 @@ function requestRtlDisable() {
         if (token !== applyToken) {
             return;
         }
+        stopYoutube();
         stopChatGptRTL();
         disconnectAllDomObservers();
         stopRtlEngine();
@@ -555,6 +566,7 @@ function requestRtlEnable() {
         if (token !== applyToken) {
             return;
         }
+        stopYoutube();
         stopChatGptRTL();
         disconnectAllDomObservers();
         stopRtlEngine();
@@ -605,7 +617,7 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     }
     
     for (const serviceKey of Object.keys(serviceConfig)) {
-        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls)) {
+        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls, serviceConfig[serviceKey].exact === true)) {
             if (changes[serviceKey].newValue === false) {
                 await requestRtlDisable();
             } else {

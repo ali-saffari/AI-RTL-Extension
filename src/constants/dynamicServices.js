@@ -148,6 +148,16 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://studio.youtube.com/*'],
         hostnames: ['studio.youtube.com']
     },
+    youtube: {
+        name: 'YouTube',
+        origins: [
+            '*://youtube.com/*',
+            '*://www.youtube.com/*',
+            '*://m.youtube.com/*'
+        ],
+        hostnames: ['youtube.com', 'www.youtube.com', 'm.youtube.com'],
+        exactHostnames: true
+    },
     veo3: {
         name: 'Veo 3',
         origins: ['*://www-veo3.com/*'],
@@ -254,7 +264,15 @@ export const DYNAMIC_SERVICES = {
 export function getServiceNameFromHostname(hostname) {
     const host = String(hostname || '').toLowerCase();
     for (const [key, service] of Object.entries(DYNAMIC_SERVICES)) {
-        if (service.hostnames.some((allowed) => host === allowed || host.endsWith('.' + allowed))) {
+        if (service.hostnames.some((allowed) => {
+            if (host === allowed) {
+                return true;
+            }
+            if (service.exactHostnames) {
+                return false;
+            }
+            return host.endsWith('.' + allowed);
+        })) {
             return key;
         }
     }
