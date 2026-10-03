@@ -870,6 +870,14 @@ textarea#search-input-textarea {
     direction: ltr !important;
 }
 
+/* Wide tables break out with padding-left / margin-left. Mirror that to the right. */
+.ds-scroll-area:has(> table[dir="rtl"]) {
+    padding-left: var(--padding-right) !important;
+    padding-right: var(--padding-left) !important;
+    margin-left: 0 !important;
+    margin-right: calc(-1 * var(--padding-left)) !important;
+}
+
 html.ai-rtl-has-font .ds-markdown h1,
 html.ai-rtl-has-font .ds-markdown h2,
 html.ai-rtl-has-font .ds-markdown h3,
