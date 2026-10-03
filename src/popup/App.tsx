@@ -223,6 +223,8 @@ function App() {
     const [algorithmHintDismissed, setAlgorithmHintDismissed] = React.useState<boolean>(true);
     const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [siteSettingsFocus, setSiteSettingsFocus] = React.useState<{ key: string; nonce: number } | null>(null);
+    const [openServiceKey, setOpenServiceKey] = React.useState<string | null>(null);
     const [settingsHintActive, setSettingsHintActive] = React.useState(false);
     const settingsHintTimer = React.useRef<number | null>(null);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
@@ -542,6 +544,18 @@ function App() {
             // Silently handle save errors
         }
     }, []);
+
+    const handleOpenServiceKeyChange = React.useCallback((serviceKey: string | null) => {
+        setOpenServiceKey(serviceKey);
+    }, []);
+
+    const handleOpenSiteSettings = React.useCallback((serviceKey: string) => {
+        setSiteSettingsFocus((current) => ({
+            key: serviceKey,
+            nonce: (current?.nonce || 0) + 1,
+        }));
+        handleSettingsOpenChange(true);
+    }, [handleSettingsOpenChange]);
 
     const unlockHoverExpand = React.useCallback(() => {
         setHoverExpandLocked(false);
@@ -1094,7 +1108,11 @@ function App() {
                                راست چین هوشمند پشتیبانی میشود
                             </Typography>
                             <div className="listSite">
-                                <ServiceList pinOpenSiteMode={pinOpenSiteMode} />
+                                <ServiceList
+                                    pinOpenSiteMode={pinOpenSiteMode}
+                                    onOpenSiteSettings={handleOpenSiteSettings}
+                                    onOpenServiceKeyChange={handleOpenServiceKeyChange}
+                                />
                             </div>
                         </div>
                         
@@ -1305,6 +1323,9 @@ function App() {
                         manualRtlSettings={manualRtlSettings}
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         onClose={() => handleSettingsOpenChange(false)}
+                        activeServiceKey={openServiceKey}
+                        focusSiteKey={siteSettingsFocus?.key || null}
+                        focusNonce={siteSettingsFocus?.nonce || 0}
                     />
                 </div>
                 <div className="popup-side-slot">

@@ -39,6 +39,7 @@ import {
     requestTabsPermission,
 } from '../../utils/pinOpenSite';
 import PinOpenSiteModeSelect from '../../components/PinOpenSiteModeSelect';
+import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../../constants/siteSettings';
 
 interface OtherSettingsTabProps {
     supportHide: boolean;
@@ -119,6 +120,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     mixedTitleDisplayMode: allSettings.mixedTitleDisplayMode,
                     manualRtlSettings: allSettings.manualRtlSettings,
                     manualRtlActiveSites: allSettings.manualRtlActiveSites,
+                    [SITE_SETTINGS_STORAGE_KEY]: allSettings[SITE_SETTINGS_STORAGE_KEY],
                     analytics: allSettings.analytics,
                     previewEnabled: allSettings.previewEnabled,
                     // Export all service flags
@@ -135,6 +137,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             key !== 'mixedTitleDisplayMode' && 
                             key !== 'manualRtlSettings' && 
                             key !== 'manualRtlActiveSites' && 
+                            key !== SITE_SETTINGS_STORAGE_KEY &&
                             key !== 'analytics' && 
                             key !== 'previewEnabled' &&
                             typeof allSettings[key] === 'boolean') {
@@ -232,6 +235,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             if (importData.settings.manualRtlActiveSites !== undefined) {
                 settingsToImport.manualRtlActiveSites = importData.settings.manualRtlActiveSites;
             }
+            if (importData.settings[SITE_SETTINGS_STORAGE_KEY] !== undefined) {
+                settingsToImport[SITE_SETTINGS_STORAGE_KEY] = normalizeSiteSettings(
+                    importData.settings[SITE_SETTINGS_STORAGE_KEY]
+                );
+            }
             if (importData.settings.analytics !== undefined) {
                 settingsToImport.analytics = importData.settings.analytics;
             }
@@ -252,6 +260,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     key !== 'mixedTitleDisplayMode' &&
                     key !== 'manualRtlSettings' && 
                     key !== 'manualRtlActiveSites' && 
+                    key !== SITE_SETTINGS_STORAGE_KEY &&
                     key !== 'analytics' && 
                     key !== 'previewEnabled' &&
                     typeof importData.settings[key] === 'boolean') {

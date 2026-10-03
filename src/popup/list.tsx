@@ -10,6 +10,7 @@ import {
     Divider,
     ListItemButton,
     IconButton,
+    Tooltip,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -21,7 +22,8 @@ import {
     Box,
     Paper,
 } from '@mui/material';
-import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid } from '@mdi/js';
+import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid, mdiWrench } from '@mdi/js';
+import { serviceHasSiteSettings } from '../constants/siteSettings';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
@@ -183,9 +185,15 @@ const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORIES)[number
 
 interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
+    onOpenSiteSettings?: (serviceKey: string) => void;
+    onOpenServiceKeyChange?: (serviceKey: string | null) => void;
 }
 
-export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMode() }: ServiceListProps) {
+export default function ServiceList({
+    pinOpenSiteMode = getDefaultPinOpenSiteMode(),
+    onOpenSiteSettings,
+    onOpenServiceKeyChange,
+}: ServiceListProps) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -295,10 +303,17 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
     useEffect(() => {
         if (!pinOpenSiteInList) {
             setActiveServiceKey(null);
-            return;
         }
         let isMounted = true;
         let applySeq = 0;
+
+        const publishOpenService = (serviceKey: string | null) => {
+            onOpenServiceKeyChange?.(serviceKey);
+        };
+
+        const publishPinnedService = (serviceKey: string | null) => {
+            setActiveServiceKey(pinOpenSiteInList ? serviceKey : null);
+        };
 
         const isHttpUrl = (url?: string) => Boolean(url && /^https?:/i.test(url));
         const isExtensionPage = (url?: string) =>
@@ -326,7 +341,8 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             }
             if (!hostname) {
                 if (clearIfMissing && seq === applySeq) {
-                    setActiveServiceKey(null);
+                    publishOpenService(null);
+                    publishPinnedService(null);
                 }
                 return false;
             }
@@ -334,20 +350,23 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
             const service = findMatchingService(hostname);
             if (!service) {
                 if (seq === applySeq) {
-                    setActiveServiceKey(null);
+                    publishOpenService(null);
+                    publishPinnedService(null);
                 }
                 return false;
             }
 
             if (pinOpenSiteMode === 'limited' && !(await canShowInLimitedMode(service))) {
                 if (isMounted && seq === applySeq) {
-                    setActiveServiceKey(null);
+                    publishOpenService(service.key);
+                    publishPinnedService(null);
                 }
                 return false;
             }
 
             if (isMounted && seq === applySeq) {
-                setActiveServiceKey(service.key);
+                publishOpenService(service.key);
+                publishPinnedService(service.key);
             }
             return true;
         };
@@ -414,7 +433,8 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                     return true;
                 }
                 if (hasVisibleRestrictedUrl(tabs)) {
-                    setActiveServiceKey(null);
+                    publishOpenService(null);
+                    publishPinnedService(null);
                     return true;
                 }
                 if (await hostnameFromContentScript(tabs)) {
@@ -514,7 +534,7 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                 // Ignore
             }
         };
-    }, [pinOpenSiteInList, pinOpenSiteMode]);
+    }, [onOpenServiceKeyChange, pinOpenSiteInList, pinOpenSiteMode]);
 
     useEffect(() => {
         try {
@@ -878,6 +898,33 @@ export default function ServiceList({ pinOpenSiteMode = getDefaultPinOpenSiteMod
                                 </Box>
                             }
                         />
+
+                        {serviceHasSiteSettings(service.key) && (
+                            <Tooltip title="تنظیمات اختصاصی">
+                                <IconButton
+                                    size="small"
+                                    aria-label={`تنظیمات اختصاصی ${service.name}`}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        onOpenSiteSettings?.(service.key);
+                                    }}
+                                    sx={{
+                                        ml: 0.5,
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        '&:hover': {
+                                            backgroundColor: isDarkMode
+                                                ? 'rgba(0, 233, 255, 0.12)'
+                                                : 'rgba(30, 64, 175, 0.08)',
+                                        },
+                                    }}
+                                >
+                                    <SvgIcon sx={{ fontSize: '1.15rem' }}>
+                                        <path d={mdiWrench} />
+                                    </SvgIcon>
+                                </IconButton>
+                            </Tooltip>
+                        )}
 
                         {service.helpText && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
                             <IconButton

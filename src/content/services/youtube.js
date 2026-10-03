@@ -2,6 +2,11 @@
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
+import {
+    installYoutubeSiteFontWatcher,
+    stopYoutubeSiteFont,
+    syncYoutubeSiteFont,
+} from './youtubeSiteFont.js';
 
 const PANEL_SELECTOR = 'ytd-engagement-panel-section-list-renderer[target-id="PAyouchat"]';
 const MARKDOWN_SELECTOR = 'markdown-div';
@@ -495,6 +500,7 @@ function clearYoutubeFontScale() {
 
 export function stopYoutube() {
     youtubeSession += 1;
+    stopYoutubeSiteFont();
     if (youtubeInterval) {
         clearInterval(youtubeInterval);
         youtubeInterval = null;
@@ -526,6 +532,9 @@ export function setYoutube(rtlAlgorithm = 'advanced_full') {
 
 export function activateYoutube(rtlAlgorithm = 'advanced_full') {
     console.log('YouTube RTL activated with algorithm:', rtlAlgorithm);
+
+    installYoutubeSiteFontWatcher();
+    syncYoutubeSiteFont();
 
     const session = ++youtubeSession;
     if (youtubeInterval) {

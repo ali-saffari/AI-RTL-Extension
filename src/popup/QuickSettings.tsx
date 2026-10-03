@@ -43,6 +43,8 @@ import {
     injectPreviewFontFaces,
     loadFontsConfig,
 } from '../utils/fonts';
+import SiteSettingsSection from './SiteSettingsSection';
+import { serviceHasSiteSettings } from '../constants/siteSettings';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
@@ -69,6 +71,9 @@ interface QuickSettingsProps {
     manualRtlSettings: ManualRtlSettings;
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     onClose?: () => void;
+    activeServiceKey?: string | null;
+    focusSiteKey?: string | null;
+    focusNonce?: number;
 }
 
 const ALGORITHMS = [
@@ -139,6 +144,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     manualRtlSettings,
     onManualRtlSettingsChange,
     onClose,
+    activeServiceKey = null,
+    focusSiteKey = null,
+    focusNonce = 0,
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
@@ -332,6 +340,25 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
             </Box>
 
             <Box className="quick-settings-body">
+                <SiteSettingsSection
+                    isDarkMode={isDarkMode}
+                    activeServiceKey={activeServiceKey}
+                    focusSiteKey={focusSiteKey}
+                    focusNonce={focusNonce}
+                />
+                {activeServiceKey && serviceHasSiteSettings(activeServiceKey) ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, px: 0.5, pt: 0.5 }}>
+                        <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
+                            <path d={mdiCog} />
+                        </SvgIcon>
+                        <Typography
+                            className="quick-settings-label"
+                            sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
+                        >
+                            تنظیمات عمومی
+                        </Typography>
+                    </Box>
+                ) : null}
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{

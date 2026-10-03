@@ -517,6 +517,14 @@ body[data-theme="light"] .quick-settings-header {
     flex-direction: column;
 }
 
+.site-settings-card-focus {
+    box-shadow: 0 0 0 2px rgba(0, 233, 255, 0.75);
+}
+
+body[data-theme="light"] .site-settings-card-focus {
+    box-shadow: 0 0 0 2px rgba(28, 57, 187, 0.45);
+}
+
 .quick-settings-card-head {
     display: flex;
     flex-direction: column;
