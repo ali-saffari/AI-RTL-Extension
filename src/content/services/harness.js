@@ -1,7 +1,7 @@
 // harness.js — DeepSeek Harness local web UI, port 3080.
-// Selectors match the Harness plugin: markdown containers, the user stack
-// whose class ends with _userStack, and the composer at data-composer-input.
-import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
+// Same targets as the Harness plugin: markdown, the composer, a user stack
+// whose class ends with _userStack, and text fields. Checkboxes are skipped.
+import { applyRtlToContainer, applyRtlToElement, detectTextDirection, getAnalyzableText } from '../utils/directionUtils/index.js';
 import { setHarnessFontsSuppressed } from '../utils/applySelectedFont.js';
 import {
     clearUntrackedTimeout,
@@ -20,6 +20,14 @@ const ATTR_PRESENT = 'data-ai-rtl-dsh-present';
 
 const HANDOFF_MS = 500;
 const HARNESS_FONT_CLASS = 'AiRtlHarnessFont';
+const MARKDOWN_CONTAINER_SELECTOR = '[class*="markdown"]';
+const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], textarea, input, [data-composer-input]';
+const COMPOSER_BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote';
+const TEXT_INPUT_TYPES = new Set(['', 'text', 'search', 'email', 'url', 'tel', 'password', 'number']);
+const ELEMENT_OPTIONS = {
+    fontClass: HARNESS_FONT_CLASS,
+    setTextAlign: true
+};
 
 let timer = 0;
 let handoffTimer = 0;
@@ -124,44 +132,176 @@ function isUserStack(el) {
     return value.split(/\s+/).some((name) => name.endsWith('_userStack'));
 }
 
-function setHarness(rtlAlgorithm) {
-    AQ('[data-composer-input]').each(function () {
-        const blocks = this.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, blockquote');
-        if (!blocks.length) {
-            if (!(this.textContent || '').trim()) return;
-            applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: HARNESS_FONT_CLASS,
-                processedClass: 'AsRtl'
-            });
-            return;
+function isTextInput(el) {
+    if (el.matches('[data-composer-input]')) return true;
+    const tag = el.tagName;
+    if (tag === 'TEXTAREA') return true;
+    if (tag !== 'INPUT') return false;
+    const type = (el.getAttribute('type') || 'text').toLowerCase();
+    return TEXT_INPUT_TYPES.has(type);
+}
+
+function elementText(el) {
+    const tag = el.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return el.value || '';
+    return el.textContent || '';
+}
+
+function clearElementDirection(el) {
+    if (el.hasAttribute('dir')) el.removeAttribute('dir');
+    if (el.style && el.style.getPropertyValue('text-align')) el.style.removeProperty('text-align');
+}
+
+function clearComposerShell(el) {
+    clearElementDirection(el);
+    if (el.hasAttribute('data-direction')) el.removeAttribute('data-direction');
+    if (el.hasAttribute('data-algorithm-rtl')) el.removeAttribute('data-algorithm-rtl');
+}
+
+// Lexical keeps dir=auto on each paragraph. Direction on the editor shell
+// inherits text-align onto those lines and fights the paragraph.
+function applyComposer(root, rtlAlgorithm) {
+    clearComposerShell(root);
+    const blocks = root.querySelectorAll(COMPOSER_BLOCK_SELECTOR);
+    if (!blocks.length) {
+        if (!elementText(root).trim()) return;
+        applyRtlToElement(root, rtlAlgorithm, ELEMENT_OPTIONS);
+        return;
+    }
+    const sharedText = rtlAlgorithm === 'advanced_full' ? elementText(root).trim() : '';
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const own = elementText(block).trim();
+        if (sharedText) {
+            applyRtlToElement(block, rtlAlgorithm, { ...ELEMENT_OPTIONS, text: sharedText });
+            continue;
         }
-        blocks.forEach((block) => {
-            if (!(block.textContent || '').trim()) return;
-            applyRtlToElement(block, rtlAlgorithm, {
+        if (!own) {
+            clearElementDirection(block);
+            continue;
+        }
+        applyRtlToElement(block, rtlAlgorithm, ELEMENT_OPTIONS);
+    }
+}
+
+function applyElementTarget(el, rtlAlgorithm) {
+    if (!elementText(el).trim()) {
+        clearElementDirection(el);
+        return;
+    }
+    applyRtlToElement(el, rtlAlgorithm, ELEMENT_OPTIONS);
+}
+
+function lockDirLtr(selector, root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const nodes = scope.querySelectorAll(selector);
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute('dir') !== 'ltr') nodes[i].setAttribute('dir', 'ltr');
+    }
+}
+
+function ownedTables(root) {
+    const found = root.querySelectorAll('table, [role="table"]');
+    const tables = [];
+    for (let i = 0; i < found.length; i++) {
+        const table = found[i];
+        if (table.closest(MARKDOWN_CONTAINER_SELECTOR) !== root) continue;
+        const parent = table.parentElement;
+        if (parent && parent.closest('table, [role="table"]')) continue;
+        tables.push(table);
+    }
+    return tables;
+}
+
+function tableDirectionCounts(root) {
+    const tables = ownedTables(root);
+    let rtl = 0;
+    let ltr = 0;
+    for (let i = 0; i < tables.length; i++) {
+        const dir = tables[i].getAttribute('dir');
+        if (dir === 'rtl') rtl += 1;
+        else if (dir === 'ltr') ltr += 1;
+    }
+    return { rtl, ltr };
+}
+
+function outermostMarkdowns() {
+    const found = document.querySelectorAll(MARKDOWN_CONTAINER_SELECTOR);
+    const list = [];
+    for (let i = 0; i < found.length; i++) {
+        const el = found[i];
+        const parent = el.parentElement;
+        if (parent && parent.closest(MARKDOWN_CONTAINER_SELECTOR)) continue;
+        list.push(el);
+    }
+    return list;
+}
+
+function wholeChatDirection(containers) {
+    let text = '';
+    for (let i = 0; i < containers.length; i++) {
+        const part = getAnalyzableText(containers[i]);
+        if (part && part.trim()) text += ` ${part.trim()}`;
+    }
+    return detectTextDirection(text.trim()) === 'rtl' ? 'rtl' : 'ltr';
+}
+
+// Section mode puts one dir on the markdown. A dir taken from the whole
+// message fights the table. Match the plugin: majority of this markdown's
+// tables, and the chat direction when the tables do not pick a side.
+function applySectionMarkdownDirection(containers, rtlAlgorithm) {
+    if (rtlAlgorithm !== 'advanced_section' || !containers || !containers.length) return;
+    const chatRoots = outermostMarkdowns();
+    let chatDirection = null;
+    for (let i = 0; i < containers.length; i++) {
+        const el = containers[i];
+        if (!el || !el.isConnected) continue;
+        const { rtl, ltr } = tableDirectionCounts(el);
+        let direction;
+        if (rtl > ltr) direction = 'rtl';
+        else if (ltr > rtl) direction = 'ltr';
+        else {
+            if (chatDirection == null) chatDirection = wholeChatDirection(chatRoots);
+            direction = chatDirection;
+        }
+        if (el.getAttribute('dir') !== direction) el.setAttribute('dir', direction);
+        const align = direction === 'rtl' ? 'right' : 'left';
+        if (el.style.getPropertyValue('text-align') !== align) {
+            el.style.setProperty('text-align', align);
+        }
+    }
+}
+
+function setHarness(rtlAlgorithm) {
+    if (typeof AQ !== 'function' || !document.body) return;
+    const nodes = document.body.querySelectorAll(WATCH_TARGET_SELECTOR);
+    const seen = new Set();
+    const markdownRoots = [];
+    for (let i = 0; i < nodes.length; i++) {
+        const el = nodes[i];
+        if (!el || !el.isConnected || seen.has(el)) continue;
+        seen.add(el);
+        if (el.matches('[data-composer-input]')) {
+            applyComposer(el, rtlAlgorithm);
+            continue;
+        }
+        if (el.matches(MARKDOWN_CONTAINER_SELECTOR)) {
+            applyRtlToContainer(el, rtlAlgorithm, {
                 fontClass: HARNESS_FONT_CLASS,
-                processedClass: 'AsRtl'
+                processedClass: 'AsOk',
+                isContainer: true,
+                setTextAlign: true
             });
-        });
-    });
-
-    AQ('[class*="markdown"]').each(function () {
-        applyRtlToContainer(this, rtlAlgorithm, {
-            fontClass: HARNESS_FONT_CLASS,
-            processedClass: 'AsOk',
-            isContainer: true,
-            setTextAlign: true
-        });
-    });
-
-    AQ('[class*="_userStack"]').each(function () {
-        if (!isUserStack(this) || !(this.textContent || '').trim()) return;
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: HARNESS_FONT_CLASS,
-            processedClass: 'AsRtl'
-        });
-    });
-
-    AQ('[data-code-wrap], .katex-display').attr('dir', 'ltr');
+            lockDirLtr('.katex-display', el);
+            lockDirLtr('[data-code-wrap]', el);
+            markdownRoots.push(el);
+            continue;
+        }
+        if (isUserStack(el) || isTextInput(el)) applyElementTarget(el, rtlAlgorithm);
+    }
+    applySectionMarkdownDirection(markdownRoots, rtlAlgorithm);
+    lockDirLtr('.katex-display');
+    lockDirLtr('[data-code-wrap]');
 }
 
 function armTimer() {

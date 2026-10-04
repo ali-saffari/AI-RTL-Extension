@@ -81,9 +81,14 @@ html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir] {
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
     span, div, a, strong, em, b,
-    td, th, caption
+    table, thead, tbody, tfoot, tr, th, td, caption
 ) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+body.rtl-algorithm-active [data-code-wrap] {
+    direction: ltr !important;
+    text-align: left !important;
 }
 
 .AiRtlHarnessFont :is(pre, code, kbd, samp) {

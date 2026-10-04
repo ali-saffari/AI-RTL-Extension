@@ -77,7 +77,7 @@ html.ai-rtl-font-none .AiRtlHarnessFont :is(
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
     span, div, a, strong, em, b,
-    td, th, caption
+    table, thead, tbody, tfoot, tr, th, td, caption
 ) {
     font-family: unset !important;
 }
