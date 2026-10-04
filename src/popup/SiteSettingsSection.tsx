@@ -10,6 +10,7 @@ import {
 interface SiteChoice {
     value: string;
     label: string;
+    icon?: string;
 }
 
 interface SiteField {
@@ -160,7 +161,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             sx={{
                                 width: 22,
                                 height: 22,
-                                borderRadius: '6px',
+                                borderRadius: '50%',
                                 objectFit: 'cover',
                                 flexShrink: 0,
                             }}
@@ -217,19 +218,32 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                                         onClick={() => updateField(field.key, option.value)}
                                         sx={{
                                             flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 0.5,
                                             border: 0,
                                             borderRadius: '8px',
                                             py: 0.75,
                                             px: 0.5,
                                             font: 'inherit',
                                             fontWeight: 700,
-                                            fontSize: '0.78rem',
+                                            fontSize: '0.72rem',
                                             lineHeight: 1.4,
                                             cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
                                             background: selected ? accent : 'transparent',
                                             color: selected ? (isDarkMode ? '#041018' : '#ffffff') : titleColor,
                                         }}
                                     >
+                                        {option.icon ? (
+                                            <Box
+                                                component="img"
+                                                src={chrome.runtime.getURL(option.icon)}
+                                                alt=""
+                                                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+                                            />
+                                        ) : null}
                                         {option.label}
                                     </Box>
                                 );

@@ -1,6 +1,10 @@
 /**
  * Shared Firefox detection (background, content, popup, options).
  */
+export function browserExtensionName() {
+    return isFirefoxRuntime() ? 'اکستشن فایرفاکس' : 'اکستشن کروم';
+}
+
 export function isFirefoxRuntime() {
     try {
         if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {

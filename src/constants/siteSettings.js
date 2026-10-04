@@ -1,3 +1,5 @@
+import { browserExtensionName } from '../utils/isFirefox.js';
+
 export const SITE_SETTINGS_STORAGE_KEY = 'siteSettings';
 
 export const YOUTUBE_FONT_SCOPE_AI = 'ai';
@@ -35,8 +37,8 @@ export const SITE_SETTINGS_REGISTRY = [
                 type: 'choice',
                 defaultValue: 'chrome',
                 options: [
-                    { value: 'chrome', label: 'افزونه کروم' },
-                    { value: 'dsh', label: 'پلاگین هارنس' },
+                    { value: 'chrome', label: browserExtensionName(), icon: '/images/logo/ai-rtl-logo.png' },
+                    { value: 'dsh', label: 'پلاگین هاردنس', icon: '/images/logo/dsh-extension.png' },
                 ],
             },
         ],

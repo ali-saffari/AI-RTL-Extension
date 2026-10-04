@@ -20,6 +20,10 @@
     }
 
     root.setAttribute(CHROME_PRESENT, 'on');
+    root.setAttribute(
+        'data-ai-rtl-browser',
+        (chrome.runtime.getURL('') || '').indexOf('moz-extension:') === 0 ? 'firefox' : 'chrome'
+    );
 
     var echo = false;
     var linked = false;
