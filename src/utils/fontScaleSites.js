@@ -103,6 +103,7 @@ export const FONT_SCALE_SITE_MODES = {
     'chat.sakana.ai': 'font-size',
     'm365.cloud.microsoft': 'font-size',
     'copilot.cloud.microsoft': 'font-size',
+    'app.notta.ai': 'font-size',
 };
 
 /*

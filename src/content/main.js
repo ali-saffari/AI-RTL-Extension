@@ -72,6 +72,7 @@ import { activateHuggingFace } from './services/observer/huggingface.js';
 import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
+import { activateNotta } from './services/notta.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
@@ -393,6 +394,10 @@ const serviceConfig = {
     sakana: {
         urls: ["chat.sakana.ai", "www.chat.sakana.ai"],
         activate: activateSakana
+    },
+    notta: {
+        urls: ["app.notta.ai"],
+        activate: activateNotta
     },
     googleDrive: {
         urls: ["docs.google.com", "drive.google.com", "sheets.google.com", "slides.google.com", "forms.google.com"],

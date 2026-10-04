@@ -238,6 +238,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://chat.sakana.ai/*', '*://www.chat.sakana.ai/*'],
         hostnames: ['chat.sakana.ai', 'www.chat.sakana.ai']
     },
+    notta: {
+        name: 'Notta Brain',
+        origins: ['*://app.notta.ai/*'],
+        hostnames: ['app.notta.ai']
+    },
     copilot: {
         name: 'Copilot',
         origins: [
