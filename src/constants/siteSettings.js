@@ -15,7 +15,7 @@ export const SITE_SETTINGS_REGISTRY = [
         fields: [
             {
                 key: 'fontScope',
-                label: 'تغییر کل فونت سایت',
+                label: 'اعمال فونت روی کل سایت',
                 type: 'switch',
                 defaultValue: YOUTUBE_FONT_SCOPE_AI,
                 onValue: YOUTUBE_FONT_SCOPE_SITE,

@@ -44,7 +44,6 @@ import {
     loadFontsConfig,
 } from '../utils/fonts';
 import SiteSettingsSection from './SiteSettingsSection';
-import { serviceHasSiteSettings } from '../constants/siteSettings';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
@@ -444,29 +443,22 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </div>
                     ) : null}
                 </Box>
-                <Box
-                    className="quick-settings-section-title"
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1,
-                        px: 0.25,
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, minWidth: 0 }}>
-                        <SvgIcon sx={{ fontSize: '1rem', color: accent, flexShrink: 0 }}>
+                <SiteSettingsSection
+                    isDarkMode={isDarkMode}
+                    activeServiceKey={activeServiceKey}
+                    focusSiteKey={focusSiteKey}
+                    focusNonce={focusNonce}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5, pt: 0.5, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
+                        <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
                             <path d={mdiCog} />
                         </SvgIcon>
                         <Typography
-                            sx={{
-                                fontFamily: 'iranyekan',
-                                fontWeight: 700,
-                                fontSize: '0.82rem',
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                            }}
+                            className="quick-settings-label"
+                            sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
                         >
-                            تنظیمات سریع
+                            تنظیمات عمومی
                         </Typography>
                     </Box>
                     <Button
@@ -497,25 +489,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         تنظیمات پیشرفته
                     </Button>
                 </Box>
-                <SiteSettingsSection
-                    isDarkMode={isDarkMode}
-                    activeServiceKey={activeServiceKey}
-                    focusSiteKey={focusSiteKey}
-                    focusNonce={focusNonce}
-                />
-                {activeServiceKey && serviceHasSiteSettings(activeServiceKey) ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, px: 0.5, pt: 0.5 }}>
-                        <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
-                            <path d={mdiCog} />
-                        </SvgIcon>
-                        <Typography
-                            className="quick-settings-label"
-                            sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
-                        >
-                            تنظیمات عمومی
-                        </Typography>
-                    </Box>
-                ) : null}
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
                     <Box
                         sx={{
