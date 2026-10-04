@@ -139,7 +139,8 @@ const services: Service[] = [
     { key: 'dash0', name: 'Dash0', icon: '/images/sites/dash0.png', url: 'https://app.dash0.com/', new: true, hosts: ['dash0.com', 'app.dash0.com'], keywords: ['dash0', 'دش صفر', 'دش'] },
     { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, hosts: ['zerve.ai', 'app.zerve.ai'], keywords: ['zerve', 'زرو'] },
     { key: 'sakana', name: 'Sakana Chat', icon: '/images/sites/sakana.png', url: 'https://chat.sakana.ai/', new: true, hosts: ['chat.sakana.ai'], keywords: ['sakana', 'ساکانا', 'namazu', 'fugu', 'ژاپن', 'japan'] },
-    { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] }
+    { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
+    { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] }
 ];
 
 
@@ -158,7 +159,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], s
     chat: [
         'chatGpt', 'claude', 'gemini', 'youtube', 'businessGemini', 'copilot', 'deepseek', 'grok',
         'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
-        'characterAi', 'lumo', 'sakana', 'notta', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
+        'characterAi', 'lumo', 'sakana', 'notta', 'roboflow', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
     ],
     search: [
         'perplexity', 'genspark', 'youCom', 'consensus', 'scispace', 'elicit',

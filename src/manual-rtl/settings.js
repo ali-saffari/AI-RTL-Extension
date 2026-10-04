@@ -122,7 +122,8 @@ function getAISitesList() {
         'm.youtube.com',
         'm365.cloud.microsoft',
         'copilot.cloud.microsoft',
-        'app.notta.ai'
+        'app.notta.ai',
+        'app.roboflow.com'
     ];
 
     return manualRtlState.aiSitesList;

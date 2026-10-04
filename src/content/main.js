@@ -73,6 +73,7 @@ import { activateDash0 } from './services/observer/dash0.js';
 import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateNotta } from './services/notta.js';
+import { activateRoboflow } from './services/roboflow.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
@@ -398,6 +399,10 @@ const serviceConfig = {
     notta: {
         urls: ["app.notta.ai"],
         activate: activateNotta
+    },
+    roboflow: {
+        urls: ["app.roboflow.com"],
+        activate: activateRoboflow
     },
     googleDrive: {
         urls: ["docs.google.com", "drive.google.com", "sheets.google.com", "slides.google.com", "forms.google.com"],

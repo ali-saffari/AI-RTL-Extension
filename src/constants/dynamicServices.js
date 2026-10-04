@@ -243,6 +243,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://app.notta.ai/*'],
         hostnames: ['app.notta.ai']
     },
+    roboflow: {
+        name: 'Roboflow',
+        origins: ['*://app.roboflow.com/*'],
+        hostnames: ['app.roboflow.com']
+    },
     copilot: {
         name: 'Copilot',
         origins: [
