@@ -70,7 +70,15 @@ html.ai-rtl-font-none .AsRtl .font-display,
 html.ai-rtl-font-none pending-request,
 html.ai-rtl-font-none .AsOkNotebooklm[dir="rtl"] .ng-star-inserted,
 html.ai-rtl-font-none .FontSetVivadoInput,
-html.ai-rtl-font-none .FontSetVivado {
+html.ai-rtl-font-none .FontSetVivado,
+html.ai-rtl-font-none .AiRtlHarnessFont,
+html.ai-rtl-font-none .AiRtlHarnessFont :is(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption,
+    span, div, a, strong, em, b,
+    td, th, caption
+) {
     font-family: unset !important;
 }
 `;

@@ -75,6 +75,21 @@ html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir] {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
+.AiRtlHarnessFont,
+.AiRtlHarnessFont :is(
+    p, li, dt, dd,
+    h1, h2, h3, h4, h5, h6,
+    blockquote, figcaption,
+    span, div, a, strong, em, b,
+    td, th, caption
+) {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+.AiRtlHarnessFont :is(pre, code, kbd, samp) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+}
+
 span.FontSet,
 .FontSet .body-sm,
 [data-sidebar="menu-item"].FontSet span {

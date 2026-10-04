@@ -488,13 +488,31 @@ function enqueueRtlTask(task) {
     return rtlTaskChain;
 }
 
+function isHarnessPage() {
+    const config = serviceConfig.harness;
+    return !!(config && isCurrentSite(config.urls, config.exact === true, config.port));
+}
+
+function pluginOwnsHarnessPage() {
+    return isHarnessPage() && document.documentElement?.getAttribute('data-ai-rtl-owner') === 'dsh';
+}
+
+// On Harness, stopHarness removes this extension's own marks and then goes idle.
+// A second restore here deletes dir markers the plugin has already written.
+function stopPageRtlEngine() {
+    if (isHarnessPage()) {
+        return;
+    }
+    stopRtlEngine();
+}
+
 function deactivateCurrentRtl() {
     applyToken += 1;
     stopYoutube();
     stopHarness();
     stopChatGptRTL();
     disconnectAllDomObservers();
-    stopRtlEngine();
+    stopPageRtlEngine();
     resetRtlDomCaches();
 }
 
@@ -576,7 +594,7 @@ async function initializeAllServices(token = applyToken) {
     } else if (!activeService && lastTrackedService) {
         await sessionManager.stop();
         lastTrackedService = null;
-        if (document.body) {
+        if (document.body && !pluginOwnsHarnessPage()) {
             document.body.classList.remove('rtl-algorithm-active');
         }
     }
@@ -596,13 +614,13 @@ function requestRtlDisable() {
         stopHarness();
         stopChatGptRTL();
         disconnectAllDomObservers();
-        stopRtlEngine();
+        stopPageRtlEngine();
         resetRtlDomCaches();
         if (lastTrackedService) {
             await sessionManager.stop();
             lastTrackedService = null;
         }
-        if (document.body) {
+        if (document.body && !pluginOwnsHarnessPage()) {
             document.body.classList.remove('rtl-algorithm-active');
         }
     });
@@ -620,7 +638,13 @@ function requestRtlEnable() {
         stopYoutube();
         stopChatGptRTL();
         disconnectAllDomObservers();
-        stopRtlEngine();
+        if (!pluginOwnsHarnessPage()) {
+            if (isHarnessPage()) {
+                if (isRtlEngineActive()) stopRtlEngine({ followup: false });
+            } else {
+                stopRtlEngine();
+            }
+        }
         resetRtlDomCaches();
         await initializeAllServices(token);
     });

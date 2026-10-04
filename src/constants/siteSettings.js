@@ -59,6 +59,10 @@ export function defaultSiteSettings() {
     return settings;
 }
 
+/**
+ * @param {unknown} stored
+ * @returns {Record<string, Record<string, string>>}
+ */
 export function normalizeSiteSettings(stored) {
     const defaults = defaultSiteSettings();
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {

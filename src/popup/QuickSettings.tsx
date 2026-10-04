@@ -221,7 +221,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     React.useEffect(() => {
         const applyEngine = (stored: unknown) => {
-            const engine = normalizeSiteSettings(stored)?.harness?.engine;
+            const engine = (normalizeSiteSettings(stored) as { harness?: { engine?: string } }).harness?.engine;
             setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
         };
 

@@ -275,7 +275,7 @@ export default function ServiceList({
                 return changed ? next : prev;
             });
             if (changes[SITE_SETTINGS_STORAGE_KEY]) {
-                const engine = normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue)?.harness?.engine;
+                const engine = (normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue) as { harness?: { engine?: string } }).harness?.engine;
                 setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
             }
         };
@@ -606,7 +606,7 @@ export default function ServiceList({
             chrome.storage.sync.get(
                 [SITE_SETTINGS_STORAGE_KEY, ...services.map(service => service.key)],
                 async (data) => {
-                    const engine = normalizeSiteSettings(data[SITE_SETTINGS_STORAGE_KEY])?.harness?.engine;
+                    const engine = (normalizeSiteSettings(data[SITE_SETTINGS_STORAGE_KEY]) as { harness?: { engine?: string } }).harness?.engine;
                     setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
                     const updatedData = { ...data };
                     // If Edge, force Microsoft sites to be disabled

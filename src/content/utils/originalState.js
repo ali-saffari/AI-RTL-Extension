@@ -756,14 +756,21 @@ function scheduleFollowupRestore(pass) {
     nativeSetTimeout(rerun, 50);
 }
 
-export function stopRtlEngine() {
+export function stopRtlEngine(options) {
     rtlEngineActive = false;
     capturing = false;
     const pass = ++restorePass;
     stopTrackedJobs();
-    restoreAllOriginals();
-    stripExtensionArtifacts();
-    scheduleFollowupRestore(pass);
+    const restore = !options || options.restore !== false;
+    if (restore) {
+        restoreAllOriginals();
+        stripExtensionArtifacts();
+    }
+    // Harness yields with followup:false. A later pass would strip the
+    // other engine, which writes the same dir markers on this page.
+    if (!options || options.followup !== false) {
+        scheduleFollowupRestore(pass);
+    }
 }
 
 export function installOriginalStateHooks() {

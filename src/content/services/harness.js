@@ -19,6 +19,7 @@ const ATTR_OWNER = 'data-ai-rtl-owner';
 const ATTR_PRESENT = 'data-ai-rtl-dsh-present';
 
 const HANDOFF_MS = 500;
+const HARNESS_FONT_CLASS = 'AiRtlHarnessFont';
 
 let timer = 0;
 let handoffTimer = 0;
@@ -26,6 +27,7 @@ let healTimer = 0;
 let observer = null;
 let algorithm = 'advanced_full';
 let yielded = false;
+let engaged = false;
 let session = 0;
 let lastOwner = '';
 let extensionCssRemoved = false;
@@ -65,9 +67,34 @@ function ownerValue() {
     return rootEl()?.getAttribute(ATTR_OWNER) || '';
 }
 
-// Harness owns the page completely. This extension must not add RTL or fonts.
+// This extension applies only while its own switch is on and it owns the page.
+// An empty owner counts as chrome. Harness as owner means apply nothing.
 function chromeShouldApply() {
-    return ownerValue() !== 'dsh';
+    const el = rootEl();
+    return !!el && el.getAttribute(ATTR_CHROME) === 'on' && el.getAttribute(ATTR_OWNER) !== 'dsh';
+}
+
+function stripOwnFontClass() {
+    const nodes = document.querySelectorAll('.' + HARNESS_FONT_CLASS);
+    for (let i = 0; i < nodes.length; i++) {
+        nodes[i].classList.remove(HARNESS_FONT_CLASS);
+    }
+}
+
+// Stop watching first, then undo only the marks this engine wrote.
+// No follow-up: that pass kept deleting the plugin's dir after this side was off.
+function releaseOwnEngine() {
+    if (timer) {
+        clearInterval(timer);
+        timer = 0;
+    }
+    clearHandoff();
+    clearHeal();
+    if (isRtlEngineActive()) {
+        stopRtlEngine({ followup: false });
+    }
+    stripOwnFontClass();
+    releaseExtensionAdditions();
 }
 
 function setExtensionCss(enabled) {
@@ -103,7 +130,7 @@ function setHarness(rtlAlgorithm) {
         if (!blocks.length) {
             if (!(this.textContent || '').trim()) return;
             applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
+                fontClass: HARNESS_FONT_CLASS,
                 processedClass: 'AsRtl'
             });
             return;
@@ -111,7 +138,7 @@ function setHarness(rtlAlgorithm) {
         blocks.forEach((block) => {
             if (!(block.textContent || '').trim()) return;
             applyRtlToElement(block, rtlAlgorithm, {
-                fontClass: 'FontSet',
+                fontClass: HARNESS_FONT_CLASS,
                 processedClass: 'AsRtl'
             });
         });
@@ -119,7 +146,7 @@ function setHarness(rtlAlgorithm) {
 
     AQ('[class*="markdown"]').each(function () {
         applyRtlToContainer(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
+            fontClass: HARNESS_FONT_CLASS,
             processedClass: 'AsOk',
             isContainer: true,
             setTextAlign: true
@@ -129,7 +156,7 @@ function setHarness(rtlAlgorithm) {
     AQ('[class*="_userStack"]').each(function () {
         if (!isUserStack(this) || !(this.textContent || '').trim()) return;
         applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
+            fontClass: HARNESS_FONT_CLASS,
             processedClass: 'AsRtl'
         });
     });
@@ -175,6 +202,7 @@ function scheduleHeal() {
 }
 
 function applyNow() {
+    if (!engaged) return;
     const owner = ownerValue() === 'dsh' ? 'dsh' : 'chrome';
     const ownerChanged = lastOwner !== '' && lastOwner !== owner;
 
@@ -182,15 +210,12 @@ function applyNow() {
         clearHandoff();
         clearHeal();
         lastOwner = owner;
-        releaseExtensionAdditions();
         if (!yielded) {
             yielded = true;
-            if (timer) {
-                clearInterval(timer);
-                timer = 0;
-            }
-            stopRtlEngine();
+            releaseOwnEngine();
             ensureOwnerWatch();
+        } else {
+            releaseExtensionAdditions();
         }
         return;
     }
@@ -249,6 +274,7 @@ export function activateHarness(rtlAlgorithm = 'advanced_full') {
     console.log('DeepSeek Harness RTL activated with algorithm:', rtlAlgorithm);
     const current = ++session;
     algorithm = rtlAlgorithm;
+    engaged = true;
     yielded = false;
     if (ownerValue() === 'dsh') {
         releaseExtensionAdditions();
@@ -276,22 +302,31 @@ export function activateHarness(rtlAlgorithm = 'advanced_full') {
 }
 
 export function stopHarness() {
+    const wasEngaged = engaged;
+    engaged = false;
     session += 1;
+    yielded = true;
+    lastOwner = '';
     if (timer) {
         clearInterval(timer);
         timer = 0;
     }
     clearHandoff();
     clearHeal();
-    lastOwner = '';
     if (observer) {
         observer.disconnect();
         observer = null;
+    }
+    // Undo our own marks before the switch goes off. If the plugin owns the
+    // page and this engine never started, leave its dir and font class alone.
+    if (wasEngaged && (ownerValue() !== 'dsh' || isRtlEngineActive())) {
+        releaseOwnEngine();
+    } else if (wasEngaged) {
+        releaseExtensionAdditions();
     }
     // Drop the mirrored plugin switch before the Chrome flag, so the plugin
     // does not start applying in the gap after this extension leaves.
     // While Harness is the engine, this side must not change that switch.
     if (ownerValue() !== 'dsh') setDshSwitch(false);
     publishChrome(false);
-    yielded = false;
 }
