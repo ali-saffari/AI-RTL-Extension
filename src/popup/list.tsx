@@ -42,6 +42,7 @@ interface Service {
     new?: boolean;
     keywords?: string[];
     hosts?: string[];
+    port?: string;
 }
 
 interface CheckedState {
@@ -140,7 +141,8 @@ const services: Service[] = [
     { key: 'zerve', name: 'Zerve', icon: '/images/sites/zerve.png', url: 'https://app.zerve.ai/', new: true, hosts: ['zerve.ai', 'app.zerve.ai'], keywords: ['zerve', 'زرو'] },
     { key: 'sakana', name: 'Sakana Chat', icon: '/images/sites/sakana.png', url: 'https://chat.sakana.ai/', new: true, hosts: ['chat.sakana.ai'], keywords: ['sakana', 'ساکانا', 'namazu', 'fugu', 'ژاپن', 'japan'] },
     { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
-    { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] }
+    { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
+    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'راست‌چین فقط روی DeepSeek Harness محلی (<strong>dsh web</strong>) در پورت <strong>۳۰۸۰</strong> فعال می‌شود.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
 ];
 
 
@@ -159,7 +161,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], s
     chat: [
         'chatGpt', 'claude', 'gemini', 'youtube', 'businessGemini', 'copilot', 'deepseek', 'grok',
         'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
-        'characterAi', 'lumo', 'sakana', 'notta', 'roboflow', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
+        'characterAi', 'lumo', 'sakana', 'notta', 'roboflow', 'harness', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
     ],
     search: [
         'perplexity', 'genspark', 'youCom', 'consensus', 'scispace', 'elicit',
@@ -373,11 +375,14 @@ export default function ServiceList({
         const isExtensionPage = (url?: string) =>
             Boolean(url && /^(moz-extension:|chrome-extension:|about:)/i.test(url));
 
-        const findMatchingService = (hostname: string) => {
+        const findMatchingService = (hostname: string, port?: string) => {
             const normalizedHostname = normalizeHost(hostname);
-            return services.find((service) =>
-                getServiceHosts(service).some((host) => hostMatches(normalizedHostname, host))
-            ) || null;
+            return services.find((service) => {
+                if (service.port && String(service.port) !== String(port || '')) {
+                    return false;
+                }
+                return getServiceHosts(service).some((host) => hostMatches(normalizedHostname, host));
+            }) || null;
         };
 
         const canShowInLimitedMode = async (service: Service) => {
@@ -388,7 +393,7 @@ export default function ServiceList({
             return hasHostPermission(dynamic.origins);
         };
 
-        const applyHostname = async (hostname?: string | null, clearIfMissing = false) => {
+        const applyHostname = async (hostname?: string | null, clearIfMissing = false, port?: string) => {
             const seq = ++applySeq;
             if (!isMounted) {
                 return false;
@@ -401,7 +406,7 @@ export default function ServiceList({
                 return false;
             }
 
-            const service = findMatchingService(hostname);
+            const service = findMatchingService(hostname, port);
             if (!service) {
                 if (seq === applySeq) {
                     publishOpenService(null);
@@ -432,7 +437,8 @@ export default function ServiceList({
             if (!isHttpUrl(url)) {
                 return applyHostname(null, clearIfMissing);
             }
-            return applyHostname(new URL(url).hostname, clearIfMissing);
+            const parsed = new URL(url);
+            return applyHostname(parsed.hostname, clearIfMissing, parsed.port);
         };
 
         const hostnameFromTabs = async (tabs?: chrome.tabs.Tab[], clearIfMissing = false) => {
@@ -474,7 +480,7 @@ export default function ServiceList({
                 }
                 const pageInfo = await sendTabMessage(tab.id, { action: 'getPageInfo' });
                 if (pageInfo?.success && pageInfo.hostname) {
-                    return applyHostname(pageInfo.hostname);
+                    return applyHostname(pageInfo.hostname, false, pageInfo.port);
                 }
             }
             return false;
@@ -520,14 +526,14 @@ export default function ServiceList({
                 if (!isMounted) {
                     return;
                 }
-                void applyHostname(response?.tabInfo?.hostname);
+                void applyHostname(response?.tabInfo?.hostname, false, response?.tabInfo?.port);
             });
         };
 
         const handleActiveTabUpdate = (message: any) => {
             if (!isMounted || !message) return;
             if (message.action === 'activeTabInfoUpdated') {
-                void applyHostname(message.payload?.hostname);
+                void applyHostname(message.payload?.hostname, false, message.payload?.port);
             }
         };
 

@@ -74,6 +74,7 @@ import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateNotta } from './services/notta.js';
 import { activateRoboflow } from './services/roboflow.js';
+import { activateHarness } from './services/harness.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
@@ -404,6 +405,12 @@ const serviceConfig = {
         urls: ["app.roboflow.com"],
         activate: activateRoboflow
     },
+    harness: {
+        urls: ["127.0.0.1", "localhost"],
+        port: "3080",
+        exact: true,
+        activate: activateHarness
+    },
     googleDrive: {
         urls: ["docs.google.com", "drive.google.com", "sheets.google.com", "slides.google.com", "forms.google.com"],
         activate: activateGoogleDrive
@@ -432,7 +439,10 @@ const serviceConfig = {
 };
 
 // Check if current site matches service URLs
-function isCurrentSite(urls, exact = false) {
+function isCurrentSite(urls, exact = false, port) {
+    if (port != null && String(port) !== '' && String(window.location.port || '') !== String(port)) {
+        return false;
+    }
     if (Array.isArray(urls)) {
         return urls.some(url => {
             if (url === "github.com") {
@@ -449,12 +459,12 @@ function isCurrentSite(urls, exact = false) {
 
 // Check if current site is in any serviceConfig
 function isCurrentSiteInServiceConfig() {
-    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls, config.exact === true));
+    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls, config.exact === true, config.port));
 }
 
 function getCurrentServiceKey() {
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (isCurrentSite(config.urls, config.exact === true)) {
+        if (isCurrentSite(config.urls, config.exact === true, config.port)) {
             return serviceKey;
         }
     }
@@ -518,7 +528,7 @@ async function initializeAllServices(token = applyToken) {
     let activeService = null;
     
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (results[serviceKey] !== false && isCurrentSite(config.urls, config.exact === true)) {
+        if (results[serviceKey] !== false && isCurrentSite(config.urls, config.exact === true, config.port)) {
             activeService = serviceKey;
             if (typeof window.AQ !== 'undefined') {
                 if (token !== applyToken) {
@@ -662,7 +672,7 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     }
     
     for (const serviceKey of Object.keys(serviceConfig)) {
-        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls, serviceConfig[serviceKey].exact === true)) {
+        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls, serviceConfig[serviceKey].exact === true, serviceConfig[serviceKey].port)) {
             if (changes[serviceKey].newValue === false) {
                 await requestRtlDisable();
             } else {
@@ -689,6 +699,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({
                     success: true,
                     hostname: hostname,
+                    port: window.location.port || '',
                     favicon: favicon,
                     url: url
                 });

@@ -408,6 +408,7 @@ function getActiveTabSnapshot() {
     return {
         tabId: activeTabInfo.tabId ?? null,
         hostname: activeTabInfo.hostname || '',
+        port: activeTabInfo.port || '',
         favicon: activeTabInfo.favicon || '',
         hasHostname: Boolean(activeTabInfo.hostname),
         activatedAt: activeTabInfo.activatedAt,
@@ -472,6 +473,7 @@ function resetActiveTabInfo(tabId) {
                 try {
                     const url = new URL(tab.url);
                     activeTabInfo.hostname = url.hostname;
+                    activeTabInfo.port = url.port || '';
                     activeTabInfo.favicon = tab.favIconUrl || '';
                     activeTabInfo.lastUpdatedAt = Date.now();
                     broadcastActiveTabInfo('reset-tab-details');
@@ -491,6 +493,7 @@ function resetActiveTabInfo(tabId) {
                     return;
                 }
                 activeTabInfo.hostname = pageInfo.hostname || '';
+                activeTabInfo.port = pageInfo.port || '';
                 activeTabInfo.favicon = pageInfo.favicon || activeTabInfo.favicon || '';
                 activeTabInfo.lastUpdatedAt = Date.now();
                 broadcastActiveTabInfo('reset-page-info');
@@ -697,6 +700,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     const enhancedSnapshot = {
                         tabId: activeTabId,
                         hostname: pageInfo.hostname || '',
+                        port: pageInfo.port || '',
                         favicon: pageInfo.favicon || '',
                         hasHostname: Boolean(pageInfo.hostname),
                         activatedAt: (snapshot?.tabId === activeTabId ? snapshot.activatedAt : Date.now()) || Date.now(),
@@ -1189,8 +1193,8 @@ async function activateDynamicServiceOnMatchingTabs(serviceKey) {
         }
 
         try {
-            const hostname = new URL(tab.url).hostname;
-            if (getServiceNameFromHostname(hostname) !== serviceKey) {
+            const parsedUrl = new URL(tab.url);
+            if (getServiceNameFromHostname(parsedUrl.hostname, parsedUrl.port) !== serviceKey) {
                 continue;
             }
         } catch {
@@ -1219,7 +1223,7 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         devLog('[Background] tab.url', tab.url);
 
         const url = new URL(tab.url);
-        const serviceName = getServiceNameFromHostname(url.hostname);
+        const serviceName = getServiceNameFromHostname(url.hostname, url.port);
         
         if (!serviceName) {
             return;

@@ -152,7 +152,9 @@
         "*://www.zerve.ai/*",
         "*://you.com/*",
         "*://youtube.com/*",
-        "*://zerve.ai/*"
+        "*://zerve.ai/*",
+        "http://127.0.0.1/*",
+        "http://localhost/*"
     ],
     "description": "__MSG_extension_description__",
     "manifest_version": 3,
@@ -453,7 +455,9 @@
                 "*://www.zerve.ai/*",
                 "*://you.com/*",
                 "*://youtube.com/*",
-                "*://zerve.ai/*"
+                "*://zerve.ai/*",
+                "http://127.0.0.1/*",
+                "http://localhost/*"
             ]
         }
     ],

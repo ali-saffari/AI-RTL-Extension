@@ -248,6 +248,13 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://app.roboflow.com/*'],
         hostnames: ['app.roboflow.com']
     },
+    harness: {
+        name: 'DeepSeek Harness',
+        origins: ['http://127.0.0.1/*', 'http://localhost/*'],
+        hostnames: ['127.0.0.1', 'localhost'],
+        port: '3080',
+        exactHostnames: true
+    },
     copilot: {
         name: 'Copilot',
         origins: [
@@ -271,9 +278,13 @@ export const DYNAMIC_SERVICES = {
 
 
 // Helper function to get service name from hostname (for background script)
-export function getServiceNameFromHostname(hostname) {
+export function getServiceNameFromHostname(hostname, port) {
     const host = String(hostname || '').toLowerCase();
+    const currentPort = port == null ? '' : String(port);
     for (const [key, service] of Object.entries(DYNAMIC_SERVICES)) {
+        if (service.port && String(service.port) !== currentPort) {
+            continue;
+        }
         if (service.hostnames.some((allowed) => {
             if (host === allowed) {
                 return true;
