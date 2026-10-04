@@ -82,6 +82,7 @@ import { activateYoutube, stopYoutube } from './services/youtube.js';
 import { activateM365 } from './services/observer/m365.js';
 import { setHalfSpaceHotkeyEnabled, syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled.js';
+import { SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -511,7 +512,7 @@ async function initializeAllServices(token = applyToken) {
     let rtlAlgorithm = 'advanced_full';
     
     try {
-        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText']);
+        results = await chrome.storage.sync.get([...Object.keys(serviceConfig), SITE_SETTINGS_STORAGE_KEY, 'rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText']);
     } catch (error) {
         console.log('Storage access failed:', error);
     }
@@ -536,9 +537,17 @@ async function initializeAllServices(token = applyToken) {
                     return;
                 }
                 setActiveRtlAlgorithm(rtlAlgorithm);
-                startRtlEngine();
-                if (document.body) {
-                    document.body.classList.add('rtl-algorithm-active');
+                const ownerAttr = document.documentElement?.getAttribute('data-ai-rtl-owner');
+                const storedEngine = results?.[SITE_SETTINGS_STORAGE_KEY]?.harness?.engine;
+                const liveOwner = ownerAttr === 'dsh' || ownerAttr === 'chrome'
+                    ? ownerAttr
+                    : (storedEngine === 'dsh' ? 'dsh' : 'chrome');
+                const harnessStandsDown = serviceKey === 'harness' && liveOwner === 'dsh';
+                if (!harnessStandsDown) {
+                    startRtlEngine();
+                    if (document.body) {
+                        document.body.classList.add('rtl-algorithm-active');
+                    }
                 }
                 config.activate(rtlAlgorithm);
                 if (token !== applyToken) {

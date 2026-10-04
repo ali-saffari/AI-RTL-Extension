@@ -31,10 +31,6 @@
         return root.getAttribute(OWNER) || '';
     }
 
-    function ownerIsChrome() {
-        return ownerAttr() !== 'dsh';
-    }
-
     function pluginPresent() {
         return root.getAttribute(PRESENT) === 'on';
     }
@@ -126,13 +122,13 @@
         setAttr(DSH, on ? 'on' : null);
     }
 
-    // First contact copies the Chrome switch onto the plugin.
-    // After that, either switch copies onto the other.
+    // First contact copies the active engine's switch onto the visual one.
+    // After that, only the active side changes the shared on/off state.
     function enterLink() {
         if (linked || linking) {
             return;
         }
-        if (!pluginPresent() || !ownerIsChrome()) {
+        if (!pluginPresent()) {
             return;
         }
         linking = true;
@@ -142,20 +138,26 @@
                 return;
             }
             linking = false;
-            if (!pluginPresent() || !ownerIsChrome()) {
+            if (!pluginPresent()) {
                 linked = false;
                 return;
             }
             linked = true;
             var chromeOn = !!(data && data[SERVICE_KEY] === true);
-            if (pluginOn() !== chromeOn) {
-                setPluginSwitch(chromeOn);
+            if (pluginOn() === chromeOn) {
+                return;
             }
+            // The inactive switch is only a mirror. Copy the active side onto it.
+            if (ownerAttr() === 'dsh') {
+                setChromeSwitch(pluginOn());
+                return;
+            }
+            setPluginSwitch(chromeOn);
         });
     }
 
     function followChromeSwitch(on) {
-        if (!pluginPresent() || !ownerIsChrome()) {
+        if (!pluginPresent()) {
             linked = false;
             linking = false;
             linkGeneration += 1;
@@ -165,6 +167,10 @@
         linkGeneration += 1;
         linking = false;
         linked = true;
+        // Harness is the engine. Chrome's switch only displays that state.
+        if (ownerAttr() === 'dsh') {
+            return;
+        }
         setPluginSwitch(on);
     }
 
@@ -177,7 +183,7 @@
         if (owner === 'chrome' || owner === 'dsh') {
             saveEngine(owner);
         }
-        if (!pluginPresent() || !ownerIsChrome()) {
+        if (!pluginPresent()) {
             linked = false;
             linking = false;
             linkGeneration += 1;
@@ -214,13 +220,7 @@
                 // Drop an older save that would write the previous engine back.
                 saveGeneration += 1;
                 setAttr(OWNER, engine);
-                if (engine === 'dsh') {
-                    linked = false;
-                    linking = false;
-                    linkGeneration += 1;
-                } else {
-                    enterLink();
-                }
+                enterLink();
             }
         }
         if (changes[SERVICE_KEY]) {

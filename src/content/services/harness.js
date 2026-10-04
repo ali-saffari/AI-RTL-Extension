@@ -45,11 +45,10 @@ function dshSwitchOn() {
     return rootEl()?.getAttribute(ATTR_DSH) === 'on';
 }
 
-// Power stays linked only while the plugin is loaded and Chrome is the engine.
+// Power stays linked while the plugin is loaded, whichever engine is selected.
 function pluginLinked() {
     const el = rootEl();
-    if (!el || el.getAttribute(ATTR_PRESENT) !== 'on') return false;
-    return el.getAttribute(ATTR_OWNER) !== 'dsh';
+    return !!(el && el.getAttribute(ATTR_PRESENT) === 'on');
 }
 
 function setDshSwitch(on) {
@@ -251,11 +250,15 @@ export function activateHarness(rtlAlgorithm = 'advanced_full') {
     const current = ++session;
     algorithm = rtlAlgorithm;
     yielded = false;
+    if (ownerValue() === 'dsh') {
+        releaseExtensionAdditions();
+    }
     publishChrome(true);
     watchOwner();
     const start = () => {
         if (current !== session) return;
-        setDshSwitch(true);
+        // Chrome is only showing the plugin switch. Do not write it.
+        if (ownerValue() !== 'dsh') setDshSwitch(true);
         applyNow();
     };
     try {
@@ -285,9 +288,10 @@ export function stopHarness() {
         observer.disconnect();
         observer = null;
     }
-    // Drop the plugin switch before the Chrome flag, so the plugin does not
-    // start applying in the gap after this extension leaves.
-    setDshSwitch(false);
+    // Drop the mirrored plugin switch before the Chrome flag, so the plugin
+    // does not start applying in the gap after this extension leaves.
+    // While Harness is the engine, this side must not change that switch.
+    if (ownerValue() !== 'dsh') setDshSwitch(false);
     publishChrome(false);
     yielded = false;
 }

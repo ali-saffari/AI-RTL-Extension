@@ -27,7 +27,7 @@ export const SITE_SETTINGS_REGISTRY = [
         serviceKey: 'harness',
         title: 'DeepSeek Harness',
         icon: '/images/sites/harness.png',
-        description: 'اگر افزونه کروم انتخاب باشد و پلاگین هارنس وصل باشد، خاموش و روشن این سایت در افزونه و پلاگین با هم عوض می‌شود.',
+        description: 'دکمه روشن و خاموش طرفی که انتخاب نشده فقط وضعیت را نشان می‌دهد و موتور آن خاموش است.',
         fields: [
             {
                 key: 'engine',

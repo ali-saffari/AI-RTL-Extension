@@ -24,7 +24,7 @@ import {
     Collapse,
 } from '@mui/material';
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid, mdiWrench } from '@mdi/js';
-import { serviceHasSiteSettings } from '../constants/siteSettings';
+import { normalizeSiteSettings, serviceHasSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
@@ -142,7 +142,7 @@ const services: Service[] = [
     { key: 'sakana', name: 'Sakana Chat', icon: '/images/sites/sakana.png', url: 'https://chat.sakana.ai/', new: true, hosts: ['chat.sakana.ai'], keywords: ['sakana', 'ساکانا', 'namazu', 'fugu', 'ژاپن', 'japan'] },
     { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
     { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
-    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'پلاگین اختصاصی DeepSeek Harness برای <strong>نسخه دسکتاپ</strong> است. اگر برنامه دسکتاپ را دارید، همان پلاگین را نصب کنید.<br><br>اگر از <strong>نسخه وب</strong> استفاده می‌کنید، هم این افزونه و هم پلاگین کار می‌کنند. برای وب <strong>همین افزونه</strong> را پیشنهاد می‌کنیم، چون آپدیت‌ها خودکار می‌آیند. پلاگین را برای دسکتاپ نگه دارید.<br><br>راست‌چین این سایت فقط روی پورت <strong>۳۰۸۰</strong> فعال می‌شود. اگر هر دو روشن باشند، داخل هارنس می‌گوید افزونه کروم AI RTL شناسایی شده و یکی را انتخاب می‌کنید. هر دو همزمان اعمال نمی‌شوند. انتخاب موتور در <strong>تنظیمات مخصوص</strong> همین سایت است. اگر افزونه کروم انتخاب باشد و پلاگین وصل باشد، خاموش و روشن هر دو یکی می‌شود.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
+    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'پلاگین اختصاصی DeepSeek Harness برای <strong>نسخه دسکتاپ</strong> است. اگر برنامه دسکتاپ را دارید، همان پلاگین را نصب کنید.<br><br>اگر از <strong>نسخه وب</strong> استفاده می‌کنید، هم این افزونه و هم پلاگین کار می‌کنند. برای وب <strong>همین افزونه</strong> را پیشنهاد می‌کنیم، چون آپدیت‌ها خودکار می‌آیند. پلاگین را برای دسکتاپ نگه دارید.<br><br>راست‌چین این سایت فقط روی پورت <strong>۳۰۸۰</strong> فعال می‌شود. اگر هر دو روشن باشند، داخل هارنس می‌گوید افزونه کروم AI RTL شناسایی شده و یکی را انتخاب می‌کنید. هر دو همزمان اعمال نمی‌شوند. انتخاب موتور در <strong>تنظیمات مخصوص</strong> همین سایت است. دکمه روشن و خاموش طرفی که انتخاب نشده فقط وضعیت را نشان می‌دهد و موتور آن خاموش است.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
 ];
 
 
@@ -248,6 +248,7 @@ export default function ServiceList({
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showPermissionsHint, setShowPermissionsHint] = useState(false);
+    const [harnessEngine, setHarnessEngine] = useState('chrome');
     const searchInputRef = useRef<HTMLInputElement>(null);
     const lovableItemRef = useRef<HTMLLIElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
@@ -273,6 +274,10 @@ export default function ServiceList({
                 });
                 return changed ? next : prev;
             });
+            if (changes[SITE_SETTINGS_STORAGE_KEY]) {
+                const engine = normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue)?.harness?.engine;
+                setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
+            }
         };
 
         try {
@@ -599,8 +604,10 @@ export default function ServiceList({
     useEffect(() => {
         try {
             chrome.storage.sync.get(
-                services.map(service => service.key),
+                [SITE_SETTINGS_STORAGE_KEY, ...services.map(service => service.key)],
                 async (data) => {
+                    const engine = normalizeSiteSettings(data[SITE_SETTINGS_STORAGE_KEY])?.harness?.engine;
+                    setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
                     const updatedData = { ...data };
                     // If Edge, force Microsoft sites to be disabled
                     if (isEdge) {
@@ -629,6 +636,7 @@ export default function ServiceList({
                         }
                     }
 
+                    delete updatedData[SITE_SETTINGS_STORAGE_KEY];
                     setChecked(updatedData);
                 }
             );
@@ -647,6 +655,9 @@ export default function ServiceList({
     const handleChange = (key: string) => async (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
         // Prevent enabling Microsoft sites in Edge
         if (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(key)) {
+            return;
+        }
+        if (key === 'harness' && harnessEngine === 'dsh') {
             return;
         }
         
@@ -1038,7 +1049,7 @@ export default function ServiceList({
                             edge="start"
                             onChange={handleChange(service.key)}
                             checked={checked?.[service.key] || false}
-                            disabled={!extensionEnabled || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
+                            disabled={!extensionEnabled || (service.key === 'harness' && harnessEngine === 'dsh') || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
                             data-list-switch="true"
                             inputProps={{
                                 'aria-labelledby': `switch-list-label-${service.key}`,

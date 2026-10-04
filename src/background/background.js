@@ -553,6 +553,12 @@ async function insertHarnessCssIfWanted(tabId, target) {
     if (latest.want == null) latest.want = true;
 }
 
+async function prepareHarnessCss(tabId) {
+    const data = await chrome.storage.sync.get([SITE_SETTINGS_STORAGE_KEY]);
+    const engine = data?.[SITE_SETTINGS_STORAGE_KEY]?.harness?.engine;
+    await setHarnessExtensionCss(tabId, engine !== 'dsh');
+}
+
 async function setHarnessExtensionCss(tabId, enabled) {
     if (!tabId) return;
     const want = enabled !== false;
@@ -1380,9 +1386,13 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         }
         
         try {
+            const manageHarnessCss = serviceName === 'harness';
+            if (manageHarnessCss) {
+                await prepareHarnessCss(tabId);
+            }
             await injectContentFiles(tabId, {
                 allFrames: serviceName === 'googleNotebook' || shouldInjectNotebookAllFrames(url.hostname),
-                manageHarnessCss: serviceName === 'harness'
+                manageHarnessCss
             });
             devLog(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
@@ -1421,6 +1431,9 @@ async function injectTabNow(tabId, options = {}) {
         }
 
         try {
+            if (manageHarnessCss) {
+                await prepareHarnessCss(tabId);
+            }
             await injectContentFiles(tabId, { allFrames, manageHarnessCss });
         } catch (injectError) {
             if (isMissingTabError(injectError) || (injectError.message && injectError.message.includes('error page'))) {
