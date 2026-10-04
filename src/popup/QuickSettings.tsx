@@ -44,6 +44,7 @@ import {
     loadFontsConfig,
 } from '../utils/fonts';
 import SiteSettingsSection from './SiteSettingsSection';
+import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
@@ -162,6 +163,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [sponsorNoteDismissed, setSponsorNoteDismissed] = React.useState(false);
     const [sponsorNoteReady, setSponsorNoteReady] = React.useState(false);
     const [sponsorNoteConfirmOpen, setSponsorNoteConfirmOpen] = React.useState(false);
+    const [harnessEngine, setHarnessEngine] = React.useState('chrome');
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -216,6 +218,42 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
             // Keep the note hidden for this session if storage fails.
         }
     };
+
+    React.useEffect(() => {
+        const applyEngine = (stored: unknown) => {
+            const engine = normalizeSiteSettings(stored)?.harness?.engine;
+            setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
+        };
+
+        try {
+            chrome.storage.sync.get([SITE_SETTINGS_STORAGE_KEY], (result) => {
+                applyEngine(result?.[SITE_SETTINGS_STORAGE_KEY]);
+            });
+        } catch {
+            applyEngine(undefined);
+        }
+
+        const handleEngineChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+            if (areaName !== 'sync' || !changes[SITE_SETTINGS_STORAGE_KEY]) {
+                return;
+            }
+            applyEngine(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
+        };
+
+        try {
+            chrome.storage.onChanged.addListener(handleEngineChange);
+        } catch {
+            // Storage events are unavailable outside the extension runtime.
+        }
+
+        return () => {
+            try {
+                chrome.storage.onChanged.removeListener(handleEngineChange);
+            } catch {
+                // Ignore cleanup when storage is unavailable.
+            }
+        };
+    }, []);
 
     React.useEffect(() => {
         let cancelled = false;
@@ -273,7 +311,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     };
 
     const disabledControlColor = isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.26)';
-    const controlsDisabled = !extensionEnabled;
+    const extensionOff = !extensionEnabled;
+    const harnessQuickLocked = !extensionOff && activeServiceKey === 'harness' && harnessEngine === 'dsh';
+    const controlsDisabled = extensionOff || harnessQuickLocked;
 
     const openOptions = (hash = '') => {
         const page = hash ? `options.html#${hash}` : 'options.html';
@@ -383,7 +423,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Box>
                 ) : null}
                 <Box
-                    className={`quick-settings-body-scroll${controlsDisabled ? ' is-disabled' : ''}`}
+                    className={`quick-settings-body-scroll${extensionOff ? ' is-disabled' : ''}`}
                 >
                 <Box className="popup-sponsors popup-sponsors--scroll" aria-label="حامیان ویژه و اسپانسرها">
                     <div className="popup-sponsors-top">
@@ -449,6 +489,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     focusSiteKey={focusSiteKey}
                     focusNonce={focusNonce}
                 />
+                <Box className={`quick-settings-lock${harnessQuickLocked ? ' is-locked' : ''}`}>
+                {harnessQuickLocked ? (
+                    <Box className="quick-settings-lock-layer" role="status">
+                        <Typography className="quick-settings-lock-card" component="p">
+                            از افزونه داخل هارنس استفاده کنید
+                        </Typography>
+                    </Box>
+                ) : null}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5, pt: 0.5, minWidth: 0 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
                         <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
@@ -464,6 +512,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     <Button
                         variant="text"
                         size="small"
+                        disabled={controlsDisabled}
                         onClick={() => openOptions()}
                         endIcon={
                             <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
@@ -502,6 +551,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Button
                             variant="text"
                             size="small"
+                            disabled={controlsDisabled}
                             onClick={() => openOptions('algorithm')}
                             endIcon={
                                 <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
@@ -632,6 +682,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         {selectedAlgo.hint}
                         <IconButton
                             size="small"
+                            disabled={controlsDisabled}
                             aria-label={`توضیحات ${selectedAlgo.title}`}
                             onClick={() => setInfoAlgoId(selectedAlgo.id)}
                             sx={{
@@ -763,6 +814,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 </Typography>
                                 <IconButton
                                     size="small"
+                                    disabled={controlsDisabled}
                                     aria-label="توضیحات اعمال روی باکس کدها"
                                     onClick={() => setCodeInfoOpen(true)}
                                     sx={{
@@ -1188,6 +1240,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             />
                         </Box>
                     </Box>
+                </Box>
                 </Box>
                 </Box>
             </Box>

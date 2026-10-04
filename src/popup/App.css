@@ -562,6 +562,68 @@ body[data-theme="light"] .quick-settings-header {
     pointer-events: none;
 }
 
+.quick-settings-lock {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quick-settings-lock.is-locked::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    border-radius: 12px;
+    pointer-events: auto;
+    backdrop-filter: blur(0.6px);
+}
+
+body[data-theme="dark"] .quick-settings-lock.is-locked::before {
+    background: rgba(10, 14, 28, 0.38);
+}
+
+body[data-theme="light"] .quick-settings-lock.is-locked::before {
+    background: rgba(226, 232, 240, 0.42);
+}
+
+.quick-settings-lock-layer {
+    position: sticky;
+    top: 38%;
+    z-index: 5;
+    height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.quick-settings-lock-card {
+    margin: 0;
+    transform: translateY(-50%);
+    padding: 10px 14px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: iranyekan, sans-serif;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    line-height: 1.6 !important;
+    max-width: calc(100% - 24px);
+    box-sizing: border-box;
+}
+
+body[data-theme="dark"] .quick-settings-lock-card {
+    color: #ffffff !important;
+    background: rgba(26, 26, 46, 0.92);
+    border: 1px solid rgba(0, 233, 255, 0.28);
+}
+
+body[data-theme="light"] .quick-settings-lock-card {
+    color: #1e293b !important;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
 .quick-settings-card {
     border: 1px solid;
     border-radius: 12px;
