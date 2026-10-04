@@ -569,6 +569,7 @@ body[data-theme="light"] .quick-settings-header {
     gap: 10px;
 }
 
+
 .quick-settings-lock.is-locked::before {
     content: "";
     position: absolute;
@@ -587,17 +588,20 @@ body[data-theme="light"] .quick-settings-lock.is-locked::before {
     background: rgba(226, 232, 240, 0.42);
 }
 
+
+
 .quick-settings-lock-layer {
-    position: sticky;
-    top: 38%;
+    position: absolute;
+    top: 140px;
     z-index: 5;
     height: 0;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     pointer-events: none;
+    right: 0;
+    left: 0;
 }
-
 .quick-settings-lock-card {
     margin: 0;
     transform: translateY(-50%);
