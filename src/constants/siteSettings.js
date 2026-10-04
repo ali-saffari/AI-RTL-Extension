@@ -23,6 +23,24 @@ export const SITE_SETTINGS_REGISTRY = [
             },
         ],
     },
+    {
+        serviceKey: 'harness',
+        title: 'DeepSeek Harness',
+        icon: '/images/sites/harness.png',
+        description: 'اگر افزونه کروم انتخاب باشد و پلاگین هارنس وصل باشد، خاموش و روشن این سایت در افزونه و پلاگین با هم عوض می‌شود.',
+        fields: [
+            {
+                key: 'engine',
+                label: 'اعمال راست‌چین با',
+                type: 'choice',
+                defaultValue: 'chrome',
+                options: [
+                    { value: 'chrome', label: 'افزونه کروم' },
+                    { value: 'dsh', label: 'پلاگین هارنس' },
+                ],
+            },
+        ],
+    },
 ];
 
 export function serviceHasSiteSettings(serviceKey) {
@@ -54,8 +72,8 @@ export function normalizeSiteSettings(stored) {
         if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
             entry.fields.forEach((field) => {
                 const value = raw[field.key];
-                if (field.type === 'select') {
-                    const allowed = field.options.map((option) => option.value);
+                if (field.type === 'select' || field.type === 'choice') {
+                    const allowed = (field.options || []).map((option) => option.value);
                     if (allowed.indexOf(value) !== -1) {
                         site[field.key] = value;
                     }

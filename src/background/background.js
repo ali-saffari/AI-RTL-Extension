@@ -508,6 +508,83 @@ function resetActiveTabInfo(tabId) {
 /**
  * True when this background is running inside Firefox.
  */
+const harnessCssSlots = new Map();
+
+function harnessCssSlot(tabId) {
+    let slot = harnessCssSlots.get(tabId);
+    if (!slot) {
+        slot = { want: null, applied: false, chain: Promise.resolve() };
+        harnessCssSlots.set(tabId, slot);
+    }
+    return slot;
+}
+
+function enqueueHarnessCss(tabId, job) {
+    const slot = harnessCssSlot(tabId);
+    const run = slot.chain.then(job, job);
+    slot.chain = run.then(() => {}, () => {});
+    return run;
+}
+
+function harnessExtensionCssFiles() {
+    return isFirefoxRuntime()
+        ? ['style.css']
+        : ['css/fontiran-iranyekan.css', 'style.css'];
+}
+
+// Insert and remove stay on one chain. The content script can yield before
+// insertCSS finishes; a later insert must not put the sheet back.
+async function insertHarnessCssIfWanted(tabId, target) {
+    const slot = harnessCssSlot(tabId);
+    if (slot.want === false || slot.applied) return;
+    const files = harnessExtensionCssFiles();
+    await chrome.scripting.insertCSS({ target, files });
+    const latest = harnessCssSlot(tabId);
+    if (latest.want === false) {
+        try {
+            await chrome.scripting.removeCSS({ target, files });
+        } catch {
+            // The sheet was already gone.
+        }
+        latest.applied = false;
+        return;
+    }
+    latest.applied = true;
+    if (latest.want == null) latest.want = true;
+}
+
+async function setHarnessExtensionCss(tabId, enabled) {
+    if (!tabId) return;
+    const want = enabled !== false;
+    harnessCssSlot(tabId).want = want;
+    await enqueueHarnessCss(tabId, async () => {
+        const slot = harnessCssSlot(tabId);
+        const files = harnessExtensionCssFiles();
+        const target = { tabId };
+        if (slot.want === true) {
+            if (slot.applied) return;
+            await chrome.scripting.insertCSS({ target, files });
+            if (harnessCssSlot(tabId).want !== true) {
+                try {
+                    await chrome.scripting.removeCSS({ target, files });
+                } catch {
+                    // The sheet was already gone.
+                }
+                harnessCssSlot(tabId).applied = false;
+                return;
+            }
+            harnessCssSlot(tabId).applied = true;
+            return;
+        }
+        try {
+            await chrome.scripting.removeCSS({ target, files });
+        } catch {
+            // Not inserted yet. The queued inject sees want === false and skips.
+        }
+        harnessCssSlot(tabId).applied = false;
+    });
+}
+
 function isFirefoxRuntime() {
     try {
         return chrome.runtime.getURL('').startsWith('moz-extension:');
@@ -613,6 +690,15 @@ function isMissingTabError(error) {
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'setHarnessExtensionCss') {
+        const tabId = sender?.tab?.id;
+        setHarnessExtensionCss(tabId, message.enabled !== false).then(() => {
+            sendResponse({ success: true });
+        }).catch((error) => {
+            sendResponse({ success: false, error: error?.message });
+        });
+        return true;
+    }
     if (message.action === 'getToolbarPinState') {
         (async () => {
             try {
@@ -1046,12 +1132,14 @@ async function injectContentFiles(tabId, options = {}) {
     if (options.allFrames) {
         target.allFrames = true;
     }
+    const files = harnessExtensionCssFiles();
     if (isFirefoxRuntime()) {
         // Sequential files: Firefox does not always run a files[] array in order.
-        await chrome.scripting.insertCSS({
-            target,
-            files: ['style.css']
-        }).catch(() => {});
+        if (options.manageHarnessCss) {
+            await enqueueHarnessCss(tabId, () => insertHarnessCssIfWanted(tabId, target));
+        } else {
+            await chrome.scripting.insertCSS({ target, files }).catch(() => {});
+        }
         await chrome.scripting.executeScript({
             target,
             files: ['js/inject-fonts.js']
@@ -1067,11 +1155,18 @@ async function injectContentFiles(tabId, options = {}) {
         return;
     }
 
-    await Promise.all([
-        chrome.scripting.insertCSS({
+    if (options.manageHarnessCss) {
+        const cssReady = enqueueHarnessCss(tabId, () => insertHarnessCssIfWanted(tabId, target));
+        await chrome.scripting.executeScript({
             target,
-            files: ['css/fontiran-iranyekan.css', 'style.css']
-        }),
+            files: ['js/myJquery-3.7.1.js', 'js/content.js']
+        });
+        await cssReady;
+        return;
+    }
+
+    await Promise.all([
+        chrome.scripting.insertCSS({ target, files }),
         chrome.scripting.executeScript({
             target,
             files: ['js/myJquery-3.7.1.js', 'js/content.js']
@@ -1205,6 +1300,27 @@ async function activateDynamicServiceOnMatchingTabs(serviceKey) {
     }
 }
 
+async function injectHarnessBridge(tabId) {
+    try {
+        const hasScripting = await chrome.permissions.contains({ permissions: ['scripting'] });
+        if (!hasScripting) {
+            return;
+        }
+        const allowed = await hasHostPermission(DYNAMIC_SERVICES.harness.origins);
+        if (!allowed) {
+            return;
+        }
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: ['js/harness-bridge.js']
+        });
+    } catch (error) {
+        if (!isMissingTabError(error)) {
+            devLog('[Background] Harness bridge skipped', error);
+        }
+    }
+}
+
 async function activateContentScriptForDynamicSites(tabId, options = {}) {
     if (!tabId) return;
     const ignoreComplete = options.ignoreComplete === true;
@@ -1228,7 +1344,11 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         if (!serviceName) {
             return;
         }
-        
+
+        if (serviceName === 'harness') {
+            await injectHarnessBridge(tabId);
+        }
+
         // Get service setting from storage first
         const storage = await chrome.storage.sync.get([serviceName, 'rtlAlgorithmMode']);
         const serviceEnabled = storage[serviceName] === true;
@@ -1261,7 +1381,8 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         
         try {
             await injectContentFiles(tabId, {
-                allFrames: serviceName === 'googleNotebook' || shouldInjectNotebookAllFrames(url.hostname)
+                allFrames: serviceName === 'googleNotebook' || shouldInjectNotebookAllFrames(url.hostname),
+                manageHarnessCss: serviceName === 'harness'
             });
             devLog(`[Background] All files (CSS and JavaScript) injected for ${url.hostname} (${serviceName}) tab`, tabId);
         } catch (injectError) {
@@ -1290,14 +1411,17 @@ async function injectTabNow(tabId, options = {}) {
         }
 
         let allFrames = false;
+        let manageHarnessCss = false;
         try {
-            allFrames = shouldInjectNotebookAllFrames(new URL(tab.url).hostname);
+            const parsed = new URL(tab.url);
+            allFrames = shouldInjectNotebookAllFrames(parsed.hostname);
+            manageHarnessCss = getServiceNameFromHostname(parsed.hostname, parsed.port) === 'harness';
         } catch {
             allFrames = false;
         }
 
         try {
-            await injectContentFiles(tabId, { allFrames });
+            await injectContentFiles(tabId, { allFrames, manageHarnessCss });
         } catch (injectError) {
             if (isMissingTabError(injectError) || (injectError.message && injectError.message.includes('error page'))) {
                 return;
@@ -1361,6 +1485,7 @@ function setupEventListeners() {
 
     chrome.tabs.onRemoved.addListener((tabId) => {
         if (tabId) {
+            harnessCssSlots.delete(tabId);
             devLog('[Events] Tab removed', tabId);
             if (activeTabInfo?.tabId === tabId) {
                 activeTabInfo = null;

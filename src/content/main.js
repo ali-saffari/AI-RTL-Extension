@@ -74,7 +74,7 @@ import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateNotta } from './services/notta.js';
 import { activateRoboflow } from './services/roboflow.js';
-import { activateHarness } from './services/harness.js';
+import { activateHarness, stopHarness } from './services/harness.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
@@ -490,6 +490,7 @@ function enqueueRtlTask(task) {
 function deactivateCurrentRtl() {
     applyToken += 1;
     stopYoutube();
+    stopHarness();
     stopChatGptRTL();
     disconnectAllDomObservers();
     stopRtlEngine();
@@ -583,6 +584,7 @@ function requestRtlDisable() {
             return;
         }
         stopYoutube();
+        stopHarness();
         stopChatGptRTL();
         disconnectAllDomObservers();
         stopRtlEngine();

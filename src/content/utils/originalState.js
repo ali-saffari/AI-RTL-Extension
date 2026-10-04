@@ -39,6 +39,7 @@ const trackedRafs = new Set();
 const injectedNodes = new Set();
 const styleOwners = new WeakMap();
 
+const nativeMutationObserver = window.MutationObserver;
 const nativeSetTimeout = window.setTimeout.bind(window);
 const nativeClearTimeout = window.clearTimeout.bind(window);
 const nativeSetInterval = window.setInterval.bind(window);
@@ -701,6 +702,20 @@ function stripExtensionArtifacts() {
 
 export function isRtlEngineActive() {
     return rtlEngineActive;
+}
+
+// Handshake watchers must survive stopRtlEngine. The wrapped
+// MutationObserver is disconnected with every other tracked observer.
+export function createUntrackedMutationObserver(callback) {
+    return new nativeMutationObserver(callback);
+}
+
+export function untrackedTimeout(callback, delay) {
+    return nativeSetTimeout(callback, delay);
+}
+
+export function clearUntrackedTimeout(id) {
+    nativeClearTimeout(id);
 }
 
 export function startRtlEngine() {

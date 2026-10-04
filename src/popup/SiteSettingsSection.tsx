@@ -7,6 +7,11 @@ import {
     normalizeSiteSettings,
 } from '../constants/siteSettings';
 
+interface SiteChoice {
+    value: string;
+    label: string;
+}
+
 interface SiteField {
     key: string;
     label: string;
@@ -14,12 +19,14 @@ interface SiteField {
     defaultValue: string;
     onValue?: string;
     offValue?: string;
+    options?: SiteChoice[];
 }
 
 interface SiteEntry {
     serviceKey: string;
     title: string;
     icon?: string;
+    description?: string;
     fields: SiteField[];
 }
 
@@ -101,10 +108,12 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const cardBg = isDarkMode ? 'rgba(47, 47, 65, 0.9)' : '#ffffff';
     const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.12)';
     const titleColor = isDarkMode ? '#ffffff' : '#1e293b';
+    const mutedColor = isDarkMode ? '#94a3b8' : '#64748b';
     const siteValues = settings[entry.serviceKey] || {};
     const switchFields = entry.fields.filter((field) => field.type === 'switch' && field.onValue && field.offValue);
+    const choiceFields = entry.fields.filter((field) => field.type === 'choice' && field.options && field.options.length > 0);
 
-    if (!switchFields.length) {
+    if (!switchFields.length && !choiceFields.length) {
         return null;
     }
 
@@ -174,6 +183,61 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                 className="quick-settings-card"
                 sx={{ background: cardBg, borderColor: cardBorder, gap: 0, p: 0 }}
             >
+            {choiceFields.map((field, index) => {
+                const value = siteValues[field.key] || field.defaultValue;
+                return (
+                    <Box
+                        key={field.key}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 0.75,
+                            px: 1.5,
+                            py: 1.25,
+                            borderTop: index > 0 ? `1px solid ${cardBorder}` : 'none',
+                        }}
+                    >
+                        <Typography className="quick-settings-label">{field.label}</Typography>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                p: '3px',
+                                borderRadius: '10px',
+                                background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(28,57,187,0.08)',
+                            }}
+                        >
+                            {(field.options || []).map((option) => {
+                                const selected = value === option.value;
+                                return (
+                                    <Box
+                                        key={option.value}
+                                        component="button"
+                                        type="button"
+                                        aria-pressed={selected}
+                                        onClick={() => updateField(field.key, option.value)}
+                                        sx={{
+                                            flex: 1,
+                                            border: 0,
+                                            borderRadius: '8px',
+                                            py: 0.75,
+                                            px: 0.5,
+                                            font: 'inherit',
+                                            fontWeight: 700,
+                                            fontSize: '0.78rem',
+                                            lineHeight: 1.4,
+                                            cursor: 'pointer',
+                                            background: selected ? accent : 'transparent',
+                                            color: selected ? (isDarkMode ? '#041018' : '#ffffff') : titleColor,
+                                        }}
+                                    >
+                                        {option.label}
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    </Box>
+                );
+            })}
             {switchFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;
                 const checked = value === field.onValue;
@@ -187,7 +251,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             gap: 1,
                             px: 1.5,
                             py: 1.25,
-                            borderTop: index > 0 ? `1px solid ${cardBorder}` : 'none',
+                            borderTop: index > 0 || choiceFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
                         }}
                     >
                         <Typography className="quick-settings-label">{field.label}</Typography>
@@ -210,6 +274,20 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     </Box>
                 );
             })}
+            {entry.description ? (
+                <Typography
+                    sx={{
+                        px: 1.5,
+                        pb: 1.25,
+                        fontSize: '0.72rem',
+                        fontWeight: 500,
+                        lineHeight: 1.7,
+                        color: mutedColor,
+                    }}
+                >
+                    {entry.description}
+                </Typography>
+            ) : null}
             </Box>
         </Box>
     );

@@ -23,6 +23,7 @@ const loadedFontIds = new Set();
 let initialized = false;
 let applyingFontId = null;
 let pageEffectsEnabled = true;
+let harnessFontsSuppressed = false;
 
 const NONE_FONT_OVERRIDE_CSS = `
 html.ai-rtl-font-none .FontSet,
@@ -153,7 +154,7 @@ function clearPageEffects() {
 function restorePageEffectsFromStorage() {
     try {
         chrome.storage.sync.get([SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY], (result) => {
-            if (!pageEffectsEnabled) {
+            if (!pageEffectsEnabled || harnessFontsSuppressed) {
                 return;
             }
             applySelectedFont(result[SELECTED_FONT_STORAGE_KEY]);
@@ -165,8 +166,21 @@ function restorePageEffectsFromStorage() {
     }
 }
 
+export function setHarnessFontsSuppressed(suppressed) {
+    const next = suppressed === true;
+    if (harnessFontsSuppressed === next) {
+        return;
+    }
+    harnessFontsSuppressed = next;
+    if (!pageEffectsEnabled || harnessFontsSuppressed) {
+        clearPageEffects();
+        return;
+    }
+    restorePageEffectsFromStorage();
+}
+
 export function applyFontScale(scale) {
-    if (!pageEffectsEnabled) {
+    if (!pageEffectsEnabled || harnessFontsSuppressed) {
         return;
     }
     const value = normalizeFontScale(scale);
@@ -234,7 +248,7 @@ async function loadFontFaces(font) {
 }
 
 export async function applySelectedFont(fontId) {
-    if (!pageEffectsEnabled) {
+    if (!pageEffectsEnabled || harnessFontsSuppressed) {
         return;
     }
     const selectedId = normalizeSelectedFontId(fontId);
@@ -247,7 +261,7 @@ export async function applySelectedFont(fontId) {
 
     try {
         const config = await loadFontsConfig();
-        if (applyingFontId !== selectedId || !pageEffectsEnabled) {
+        if (applyingFontId !== selectedId || !pageEffectsEnabled || harnessFontsSuppressed) {
             return;
         }
         const font = getFontById(config, selectedId) || getFontById(config, DEFAULT_FONT_ID);
@@ -256,12 +270,12 @@ export async function applySelectedFont(fontId) {
             return;
         }
         await loadFontFaces(font);
-        if (applyingFontId !== selectedId || !pageEffectsEnabled) {
+        if (applyingFontId !== selectedId || !pageEffectsEnabled || harnessFontsSuppressed) {
             return;
         }
         setRootFontState(getFontFamilyCssValue(font), false);
     } catch (error) {
-        if (!pageEffectsEnabled) {
+        if (!pageEffectsEnabled || harnessFontsSuppressed) {
             return;
         }
         if (selectedId === DEFAULT_FONT_ID) {
@@ -294,13 +308,13 @@ export function initSelectedFont() {
             }
             if (changes[EXTENSION_ENABLED_STORAGE_KEY]) {
                 pageEffectsEnabled = isExtensionEnabledValue(changes[EXTENSION_ENABLED_STORAGE_KEY].newValue);
-                if (!pageEffectsEnabled) {
+                if (!pageEffectsEnabled || harnessFontsSuppressed) {
                     clearPageEffects();
                     return;
                 }
                 restorePageEffectsFromStorage();
             }
-            if (!pageEffectsEnabled) {
+            if (!pageEffectsEnabled || harnessFontsSuppressed) {
                 return;
             }
             if (changes[SELECTED_FONT_STORAGE_KEY]) {
@@ -312,7 +326,7 @@ export function initSelectedFont() {
         });
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message && message.action === 'previewFontScale') {
-                if (pageEffectsEnabled) {
+                if (pageEffectsEnabled && !harnessFontsSuppressed) {
                     applyFontScale(message.scale);
                 }
                 sendResponse({ success: true });
