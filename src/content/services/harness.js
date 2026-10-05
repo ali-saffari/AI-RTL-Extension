@@ -22,14 +22,17 @@ const ATTR_PRESENT = 'data-ai-rtl-dsh-present';
 
 const HANDOFF_MS = 500;
 const PLUGIN_WAIT_MS = 600;
-const HARNESS_FONT_CLASS = 'AiRtlHarnessFont';
+const FONT_CLASS = 'FontSet';
 const COPYRIGHT_BOX = 'AsBoxHarness';
 const MARKDOWN_CONTAINER_SELECTOR = '[class*="markdown"]';
-const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], textarea, input, [data-composer-input]';
+const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], textarea, input, [data-composer-input], [role="treeitem"]';
+const TREE_TITLE_WRAP = 'ai-rtl-tree-title';
+const TITLE_HOVER_CLASS = 'ai-rtl-hover-scroll';
+const TITLE_HOVER_END = 'ai-rtl-hover-scroll-end';
 const COMPOSER_BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote';
 const TEXT_INPUT_TYPES = new Set(['', 'text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 const ELEMENT_OPTIONS = {
-    fontClass: HARNESS_FONT_CLASS,
+    fontClass: FONT_CLASS,
     setTextAlign: true
 };
 
@@ -48,6 +51,8 @@ let extensionCssRemoved = false;
 let sawPlugin = false;
 let pluginOffMirrored = false;
 let pluginOffGeneration = 0;
+let titleHoverBound = false;
+let titleHoverItem = null;
 
 function rootEl() {
     return document.documentElement;
@@ -160,9 +165,9 @@ function mirrorPluginPower() {
 }
 
 function stripOwnFontClass() {
-    const nodes = document.querySelectorAll('.' + HARNESS_FONT_CLASS);
+    const nodes = document.querySelectorAll('.' + FONT_CLASS);
     for (let i = 0; i < nodes.length; i++) {
-        nodes[i].classList.remove(HARNESS_FONT_CLASS);
+        nodes[i].classList.remove(FONT_CLASS);
     }
 }
 
@@ -179,6 +184,7 @@ function releaseOwnEngine() {
         stopRtlEngine({ followup: false });
     }
     stripOwnFontClass();
+    unwrapTreeTitles();
     releaseExtensionAdditions();
 }
 
@@ -274,6 +280,159 @@ function applyElementTarget(el, rtlAlgorithm) {
         return;
     }
     applyRtlToElement(el, rtlAlgorithm, ELEMENT_OPTIONS);
+}
+
+function isTitleEl(el) {
+    const value = typeof el.className === 'string' ? el.className : '';
+    if (!value.includes('_title')) return false;
+    return value.split(/\s+/).some((name) => name.endsWith('_title'));
+}
+
+function findTreeTitle(treeitem) {
+    const nodes = treeitem.querySelectorAll('[class*="_title"]');
+    let title = null;
+    for (let i = 0; i < nodes.length; i++) {
+        if (!isTitleEl(nodes[i])) continue;
+        if (nodes[i].closest('[role="treeitem"]') !== treeitem) continue;
+        title = nodes[i];
+    }
+    return title;
+}
+
+function wrapTreeTitle(titleEl) {
+    let wrap = titleEl.querySelector(':scope > .' + TREE_TITLE_WRAP);
+    if (wrap) return wrap;
+    wrap = document.createElement('span');
+    wrap.className = TREE_TITLE_WRAP;
+    while (titleEl.firstChild) wrap.appendChild(titleEl.firstChild);
+    titleEl.appendChild(wrap);
+    return wrap;
+}
+
+function unwrapTitle(titleEl) {
+    const wraps = titleEl.querySelectorAll('.' + TREE_TITLE_WRAP);
+    for (let i = 0; i < wraps.length; i++) {
+        const wrap = wraps[i];
+        wrap.style.removeProperty('transform');
+        const parent = wrap.parentElement;
+        if (parent) {
+            while (wrap.firstChild) parent.insertBefore(wrap.firstChild, wrap);
+        }
+        wrap.remove();
+    }
+    stopRtlTitleScroll(titleEl);
+    if (titleEl.hasAttribute('dir')) titleEl.removeAttribute('dir');
+}
+
+function measureTitleOverflow(title, wrap) {
+    const width = title.clientWidth;
+    if (!width) return 0;
+    const full = wrap.scrollWidth || wrap.offsetWidth;
+    return Math.max(0, full - width);
+}
+
+function onTitleScrollEnd(event) {
+    if (event.propertyName && event.propertyName !== 'transform') return;
+    const wrap = event.currentTarget;
+    const title = wrap && wrap.parentElement;
+    if (!title || !title.classList.contains(TITLE_HOVER_CLASS)) return;
+    title.classList.add(TITLE_HOVER_END);
+}
+
+function startRtlTitleScroll(title) {
+    const wrap = title.querySelector(':scope > .' + TREE_TITLE_WRAP) || wrapTreeTitle(title);
+    const overflow = measureTitleOverflow(title, wrap);
+    if (overflow <= 1) {
+        stopRtlTitleScroll(title);
+        return;
+    }
+    const ms = Math.min(12000, Math.max(1800, overflow * 22));
+    title.classList.remove(TITLE_HOVER_END);
+    title.classList.add(TITLE_HOVER_CLASS);
+    wrap.removeEventListener('transitionend', onTitleScrollEnd);
+    wrap.addEventListener('transitionend', onTitleScrollEnd);
+    title.style.setProperty('--ai-rtl-marquee-ms', ms + 'ms');
+    title.style.setProperty('--ai-rtl-marquee-x', '0px');
+    wrap.offsetWidth;
+    title.style.setProperty('--ai-rtl-marquee-x', overflow + 8 + 'px');
+}
+
+function stopRtlTitleScroll(title) {
+    if (!title) return;
+    title.classList.remove(TITLE_HOVER_CLASS, TITLE_HOVER_END);
+    title.style.removeProperty('--ai-rtl-marquee-x');
+    title.style.removeProperty('--ai-rtl-marquee-ms');
+    title.style.removeProperty('transform');
+    title.style.removeProperty('translate');
+    title.style.removeProperty('transition');
+    const wrap = title.querySelector(':scope > .' + TREE_TITLE_WRAP);
+    if (wrap) {
+        wrap.removeEventListener('transitionend', onTitleScrollEnd);
+        wrap.style.removeProperty('transform');
+    }
+}
+
+function treeitemFromEvent(event) {
+    const node = event.target;
+    if (!node || !node.closest) return null;
+    return node.closest('[role="treeitem"]');
+}
+
+function onTreePointerOver(event) {
+    const item = treeitemFromEvent(event);
+    const from = event.relatedTarget && event.relatedTarget.closest ? event.relatedTarget.closest('[role="treeitem"]') : null;
+    if (!item || item === from) return;
+    if (item.getAttribute('dir') !== 'rtl') return;
+    const title = findTreeTitle(item);
+    if (!title) return;
+    if (titleHoverItem && titleHoverItem !== title) stopRtlTitleScroll(titleHoverItem);
+    titleHoverItem = title;
+    startRtlTitleScroll(title);
+}
+
+function onTreePointerOut(event) {
+    const item = treeitemFromEvent(event);
+    const to = event.relatedTarget && event.relatedTarget.closest ? event.relatedTarget.closest('[role="treeitem"]') : null;
+    if (!item || item === to) return;
+    const title = findTreeTitle(item);
+    if (title) stopRtlTitleScroll(title);
+    if (titleHoverItem === title) titleHoverItem = null;
+}
+
+function ensureTitleHoverScroll() {
+    if (titleHoverBound || !document.body) return;
+    document.addEventListener('pointerover', onTreePointerOver, true);
+    document.addEventListener('pointerout', onTreePointerOut, true);
+    titleHoverBound = true;
+}
+
+function stopTitleHoverScroll() {
+    if (titleHoverBound) {
+        document.removeEventListener('pointerover', onTreePointerOver, true);
+        document.removeEventListener('pointerout', onTreePointerOut, true);
+        titleHoverBound = false;
+    }
+    titleHoverItem = null;
+}
+
+function applyTreeTitle(treeitem, rtlAlgorithm) {
+    const title = findTreeTitle(treeitem);
+    applyElementTarget(treeitem, rtlAlgorithm);
+    if (!title) return;
+    if (treeitem.getAttribute('dir') === 'rtl') {
+        wrapTreeTitle(title);
+        ensureTitleHoverScroll();
+        return;
+    }
+    unwrapTitle(title);
+}
+
+function unwrapTreeTitles() {
+    stopTitleHoverScroll();
+    const titles = document.querySelectorAll('[class*="_title"]');
+    for (let i = 0; i < titles.length; i++) {
+        if (isTitleEl(titles[i])) unwrapTitle(titles[i]);
+    }
 }
 
 function lockDirLtr(selector, root) {
@@ -424,13 +583,17 @@ function setHarness(rtlAlgorithm) {
         const el = nodes[i];
         if (!el || !el.isConnected || seen.has(el)) continue;
         seen.add(el);
+        if (el.getAttribute('role') === 'treeitem') {
+            applyTreeTitle(el, rtlAlgorithm);
+            continue;
+        }
         if (el.matches('[data-composer-input]')) {
             applyComposer(el, rtlAlgorithm);
             continue;
         }
         if (el.matches(MARKDOWN_CONTAINER_SELECTOR)) {
             applyRtlToContainer(el, rtlAlgorithm, {
-                fontClass: HARNESS_FONT_CLASS,
+                fontClass: FONT_CLASS,
                 processedClass: 'AsOk',
                 isContainer: true,
                 setTextAlign: true
@@ -571,6 +734,9 @@ export function activateHarness(rtlAlgorithm = 'advanced_full') {
     if (pluginLinked()) sawPlugin = true;
     if (ownerValue() === 'dsh') {
         releaseExtensionAdditions();
+    } else {
+        // New document: previous insertCSS is gone. Ask background again.
+        extensionCssRemoved = true;
     }
     publishChrome(true);
     watchOwner();

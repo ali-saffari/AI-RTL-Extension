@@ -75,8 +75,8 @@ html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir] {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.AiRtlHarnessFont,
-.AiRtlHarnessFont :is(
+.FontSet,
+.FontSet :is(
     p, li, dt, dd,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
@@ -91,7 +91,7 @@ body.rtl-algorithm-active [data-code-wrap] {
     text-align: left !important;
 }
 
-.AiRtlHarnessFont :is(pre, code, kbd, samp) {
+.FontSet :is(pre, code, kbd, samp) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }
 
@@ -1205,6 +1205,48 @@ a.AsSBtn.AsDonate {
 
 .AsBoxHarness a {
     vertical-align: middle;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"] {
+    animation: none !important;
+    overflow: hidden !important;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"] .ai-rtl-tree-title {
+    display: inline-block;
+    white-space: nowrap;
+    max-width: none;
+    vertical-align: bottom;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll {
+    text-overflow: clip !important;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end,
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end[data-clip] {
+    mask: none !important;
+    -webkit-mask: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end::before,
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end::after,
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end[data-clip]::before,
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll-end[data-clip]::after {
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+[role="treeitem"][dir="rtl"] [class*="_title"].ai-rtl-hover-scroll .ai-rtl-tree-title {
+    transition: transform var(--ai-rtl-marquee-ms, 3s) linear;
+    transform: translateX(var(--ai-rtl-marquee-x, 0px));
 }
 
 /* Custom Blue Scrollbar Styles */

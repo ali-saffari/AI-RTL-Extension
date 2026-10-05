@@ -513,7 +513,7 @@ const harnessCssSlots = new Map();
 function harnessCssSlot(tabId) {
     let slot = harnessCssSlots.get(tabId);
     if (!slot) {
-        slot = { want: null, applied: false, chain: Promise.resolve() };
+        slot = { want: null, applied: false, nav: 0, appliedNav: -1, chain: Promise.resolve() };
         harnessCssSlots.set(tabId, slot);
     }
     return slot;
@@ -532,25 +532,47 @@ function harnessExtensionCssFiles() {
         : ['css/fontiran-iranyekan.css', 'style.css'];
 }
 
+function harnessCssOnThisDocument(slot) {
+    return slot.applied === true && slot.appliedNav === slot.nav;
+}
+
+// insertCSS dies with the document. The tab id stays, so a refresh must
+// not reuse applied from the previous page.
+function noteHarnessCssNavigation(tabId) {
+    const slot = harnessCssSlots.get(tabId);
+    if (!slot) return;
+    slot.nav += 1;
+    slot.applied = false;
+}
+
+async function dropHarnessCss(target, files) {
+    try {
+        await chrome.scripting.removeCSS({ target, files });
+    } catch {
+        // The sheet was already gone.
+    }
+}
+
+async function commitHarnessCssInsert(tabId, target, files, nav) {
+    await chrome.scripting.insertCSS({ target, files });
+    const latest = harnessCssSlot(tabId);
+    if (latest.want === false || latest.nav !== nav) {
+        await dropHarnessCss(target, files);
+        if (latest.nav === nav) latest.applied = false;
+        return;
+    }
+    latest.applied = true;
+    latest.appliedNav = nav;
+    if (latest.want == null) latest.want = true;
+}
+
 // Insert and remove stay on one chain. The content script can yield before
 // insertCSS finishes; a later insert must not put the sheet back.
 async function insertHarnessCssIfWanted(tabId, target) {
     const slot = harnessCssSlot(tabId);
-    if (slot.want === false || slot.applied) return;
-    const files = harnessExtensionCssFiles();
-    await chrome.scripting.insertCSS({ target, files });
-    const latest = harnessCssSlot(tabId);
-    if (latest.want === false) {
-        try {
-            await chrome.scripting.removeCSS({ target, files });
-        } catch {
-            // The sheet was already gone.
-        }
-        latest.applied = false;
-        return;
-    }
-    latest.applied = true;
-    if (latest.want == null) latest.want = true;
+    if (slot.want === false || harnessCssOnThisDocument(slot)) return;
+    const nav = slot.nav;
+    await commitHarnessCssInsert(tabId, target, harnessExtensionCssFiles(), nav);
 }
 
 async function prepareHarnessCss(tabId) {
@@ -568,25 +590,12 @@ async function setHarnessExtensionCss(tabId, enabled) {
         const files = harnessExtensionCssFiles();
         const target = { tabId };
         if (slot.want === true) {
-            if (slot.applied) return;
-            await chrome.scripting.insertCSS({ target, files });
-            if (harnessCssSlot(tabId).want !== true) {
-                try {
-                    await chrome.scripting.removeCSS({ target, files });
-                } catch {
-                    // The sheet was already gone.
-                }
-                harnessCssSlot(tabId).applied = false;
-                return;
-            }
-            harnessCssSlot(tabId).applied = true;
+            if (harnessCssOnThisDocument(slot)) return;
+            const nav = slot.nav;
+            await commitHarnessCssInsert(tabId, target, files, nav);
             return;
         }
-        try {
-            await chrome.scripting.removeCSS({ target, files });
-        } catch {
-            // Not inserted yet. The queued inject sees want === false and skips.
-        }
+        await dropHarnessCss(target, files);
         harnessCssSlot(tabId).applied = false;
     });
 }
@@ -1533,6 +1542,11 @@ function setupEventListeners() {
         }
 
 
+
+        // Injected CSS is dropped with the document; the tab id is reused.
+        if (changeInfo?.status === 'loading') {
+            noteHarnessCssNavigation(tabId);
+        }
 
         // Inject content script for dynamic sites (not in manifest) when page is complete
         if (changeInfo?.status === 'complete') {
