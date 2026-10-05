@@ -1,6 +1,6 @@
 // Copyright utility functions
 import { extensionIconPath, saffariLink, textSaffari } from './constants.js';
-import { modalDonateFun, modalDonate, BtnDonate } from './modal.js';
+import { BtnDonate } from './modal.js';
 
 /**
  * Adds copyright to target element with custom class and style
@@ -33,11 +33,15 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         supportHide = false;
     }
     
+    const leftoverModal = document.getElementById('Asmodal');
+    if (leftoverModal) leftoverModal.remove();
+    document.body?.classList.remove('AsDonateOk');
+
     // If supportHide is enabled, don't show copyright
     if (supportHide === true) {
         return;
     }
-    
+
     if (!$element.hasClass("AsOk")) {
         $element.addClass("AsOk");
         
@@ -62,14 +66,6 @@ ${BtnDonate()}
                 </div>`);
 
             }
-            
-            AQ('body').each(function (each) {
-                if (!AQ(this).hasClass("AsDonateOk")) {
-                    AQ(this).append(modalDonate());
-                    AQ(this).addClass("AsDonateOk");
-                }
-            });
-            modalDonateFun();
       
     }
 }

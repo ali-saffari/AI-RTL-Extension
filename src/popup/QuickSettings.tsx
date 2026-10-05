@@ -44,6 +44,7 @@ import {
     loadFontsConfig,
 } from '../utils/fonts';
 import SiteSettingsSection from './SiteSettingsSection';
+import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 
 interface QuickSettingsProps {
@@ -164,6 +165,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [sponsorNoteReady, setSponsorNoteReady] = React.useState(false);
     const [sponsorNoteConfirmOpen, setSponsorNoteConfirmOpen] = React.useState(false);
     const [harnessEngine, setHarnessEngine] = React.useState('chrome');
+    const harnessPluginPresent = useHarnessPluginPresent(activeServiceKey === 'harness');
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -312,7 +314,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     const disabledControlColor = isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.26)';
     const extensionOff = !extensionEnabled;
-    const harnessQuickLocked = !extensionOff && activeServiceKey === 'harness' && harnessEngine === 'dsh';
+    const harnessQuickLocked = !extensionOff && activeServiceKey === 'harness' && harnessEngine === 'dsh' && harnessPluginPresent !== false;
     const controlsDisabled = extensionOff || harnessQuickLocked;
 
     const openOptions = (hash = '') => {

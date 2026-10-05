@@ -6,6 +6,7 @@ import {
     SITE_SETTINGS_STORAGE_KEY,
     normalizeSiteSettings,
 } from '../constants/siteSettings';
+import { useHarnessPluginPresent } from './harnessPluginPresence';
 
 interface SiteChoice {
     value: string;
@@ -28,6 +29,7 @@ interface SiteEntry {
     title: string;
     icon?: string;
     description?: string;
+    missingPluginNote?: string;
     fields: SiteField[];
 }
 
@@ -53,6 +55,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     );
     const [highlightedKey, setHighlightedKey] = React.useState<string | null>(null);
     const entry = registry.find((item) => item.serviceKey === activeServiceKey) || null;
+    const harnessPluginPresent = useHarnessPluginPresent(entry?.serviceKey === 'harness');
 
     React.useEffect(() => {
         let cancelled = false;
@@ -113,6 +116,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const siteValues = settings[entry.serviceKey] || {};
     const switchFields = entry.fields.filter((field) => field.type === 'switch' && field.onValue && field.offValue);
     const choiceFields = entry.fields.filter((field) => field.type === 'choice' && field.options && field.options.length > 0);
+    const pluginMissing = entry.serviceKey === 'harness' && harnessPluginPresent === false;
+    const waitingForPlugin = entry.serviceKey === 'harness' && harnessPluginPresent === null;
+    const visibleChoiceFields = pluginMissing || waitingForPlugin ? [] : choiceFields;
 
     if (!switchFields.length && !choiceFields.length) {
         return null;
@@ -180,11 +186,26 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     </Typography>
                 </Box>
             </Box>
+            {waitingForPlugin ? null : (
             <Box
                 className="quick-settings-card"
                 sx={{ background: cardBg, borderColor: cardBorder, gap: 0, p: 0 }}
             >
-            {choiceFields.map((field, index) => {
+            {pluginMissing ? (
+                <Typography
+                    sx={{
+                        px: 1.5,
+                        py: 1.25,
+                        fontSize: '0.78rem',
+                        fontWeight: 500,
+                        lineHeight: 1.8,
+                        color: mutedColor,
+                    }}
+                >
+                    {entry.missingPluginNote}
+                </Typography>
+            ) : null}
+            {visibleChoiceFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;
                 return (
                     <Box
@@ -265,7 +286,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             gap: 1,
                             px: 1.5,
                             py: 1.25,
-                            borderTop: index > 0 || choiceFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
+                            borderTop: index > 0 || visibleChoiceFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
                         }}
                     >
                         <Typography className="quick-settings-label">{field.label}</Typography>
@@ -288,7 +309,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     </Box>
                 );
             })}
-            {entry.description ? (
+            {!pluginMissing && entry.description ? (
                 <Typography
                     sx={{
                         px: 1.5,
@@ -303,6 +324,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                 </Typography>
             ) : null}
             </Box>
+            )}
         </Box>
     );
 };

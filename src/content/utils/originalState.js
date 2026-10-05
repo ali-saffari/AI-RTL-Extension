@@ -57,7 +57,7 @@ const KNOWN_EXTENSION_CLASSES = new Set([
     'AsOkUser', 'AsOkBtn', 'AsOkCON', 'AsSet', 'AsSetAlgorithm', 'AsSetLtr',
     'AsRtl', 'AsLtr', 'AsRtlList', 'AsRtlList_parent', 'AsRtl_rowReverse', 'AsRtlClaudeList',
     'AsRtlClaudeUser', 'AsRtlPerplexity', 'AsJustRtl', 'AsAlignRtl', 'AsAlignLtr', 'AsRed',
-    'AsDonateOk', 'AsDonate', 'AsSBtn', 'AsBox', 'AsBoxB', 'AsBoxGemini',
+    'AsDonateOk', 'AsDonate', 'AsSBtn', 'AsBox', 'AsBoxB', 'AsBoxHarness', 'AsBoxGemini',
     'AsBoxClaude', 'AsBoxPerplexity', 'AsBoxDuckduckgo', 'AsBoxMonica',
     'AsBoxgrok', 'AsBoxqwenlm', 'AsBox_copilotBing', 'AsBox_copilotBingBlock',
     'AsBoxBusinessGemini', 'AsBinBox', 'AsMistral', 'AsKimi',
@@ -237,7 +237,7 @@ function rememberInjected(node) {
         injectedNodes.add(node);
         return;
     }
-    if (node.classList && (node.classList.contains('AsBox') || node.classList.contains('As-modal-backdrop'))) {
+    if (node.classList && (node.classList.contains('AsBox') || node.classList.contains('AsBoxHarness') || node.classList.contains('As-modal-backdrop'))) {
         injectedNodes.add(node);
     }
 }

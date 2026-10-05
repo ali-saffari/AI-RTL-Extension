@@ -30,6 +30,7 @@ export const SITE_SETTINGS_REGISTRY = [
         title: 'DeepSeek Harness',
         icon: '/images/sites/harness.png',
         description: 'دکمه روشن و خاموش طرفی که انتخاب نشده فقط وضعیت را نشان می‌دهد و موتور آن خاموش است.',
+        missingPluginNote: 'برای هارنس پلاگین داریم و در نسخه دسکتاپ می‌توانید از آن استفاده کنید.',
         fields: [
             {
                 key: 'engine',

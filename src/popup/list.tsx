@@ -30,6 +30,7 @@ import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js'
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { getDefaultPinOpenSiteMode, isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
+import { useHarnessPluginPresent } from './harnessPluginPresence';
 import SitePermissionsHint from './SitePermissionsHint';
 import MissingPermissionBanner from './MissingPermissionBanner';
 
@@ -249,6 +250,9 @@ export default function ServiceList({
     const [searchQuery, setSearchQuery] = useState('');
     const [showPermissionsHint, setShowPermissionsHint] = useState(false);
     const [harnessEngine, setHarnessEngine] = useState('chrome');
+    const [openedServiceKey, setOpenedServiceKey] = useState<string | null>(null);
+    const harnessPluginPresent = useHarnessPluginPresent(openedServiceKey === 'harness');
+    const harnessSwitchIsMirror = harnessEngine === 'dsh' && harnessPluginPresent !== false;
     const searchInputRef = useRef<HTMLInputElement>(null);
     const lovableItemRef = useRef<HTMLLIElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
@@ -369,6 +373,7 @@ export default function ServiceList({
         let applySeq = 0;
 
         const publishOpenService = (serviceKey: string | null) => {
+            setOpenedServiceKey(serviceKey);
             onOpenServiceKeyChange?.(serviceKey);
         };
 
@@ -657,7 +662,7 @@ export default function ServiceList({
         if (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(key)) {
             return;
         }
-        if (key === 'harness' && harnessEngine === 'dsh') {
+        if (key === 'harness' && harnessSwitchIsMirror) {
             return;
         }
         
@@ -1049,7 +1054,7 @@ export default function ServiceList({
                             edge="start"
                             onChange={handleChange(service.key)}
                             checked={checked?.[service.key] || false}
-                            disabled={!extensionEnabled || (service.key === 'harness' && harnessEngine === 'dsh') || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
+                            disabled={!extensionEnabled || (service.key === 'harness' && harnessSwitchIsMirror) || (isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key))}
                             data-list-switch="true"
                             inputProps={{
                                 'aria-labelledby': `switch-list-label-${service.key}`,

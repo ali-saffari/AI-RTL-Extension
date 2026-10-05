@@ -2,6 +2,8 @@
 // Same targets as the Harness plugin: markdown, the composer, a user stack
 // whose class ends with _userStack, and text fields. Checkboxes are skipped.
 import { applyRtlToContainer, applyRtlToElement, detectTextDirection, getAnalyzableText } from '../utils/directionUtils/index.js';
+import { saffariLink, textSaffari } from '../utils/constants.js';
+import { BtnDonate } from '../utils/modal.js';
 import { setHarnessFontsSuppressed } from '../utils/applySelectedFont.js';
 import {
     clearUntrackedTimeout,
@@ -19,7 +21,9 @@ const ATTR_OWNER = 'data-ai-rtl-owner';
 const ATTR_PRESENT = 'data-ai-rtl-dsh-present';
 
 const HANDOFF_MS = 500;
+const PLUGIN_WAIT_MS = 600;
 const HARNESS_FONT_CLASS = 'AiRtlHarnessFont';
+const COPYRIGHT_BOX = 'AsBoxHarness';
 const MARKDOWN_CONTAINER_SELECTOR = '[class*="markdown"]';
 const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], textarea, input, [data-composer-input]';
 const COMPOSER_BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote';
@@ -32,6 +36,8 @@ const ELEMENT_OPTIONS = {
 let timer = 0;
 let handoffTimer = 0;
 let healTimer = 0;
+let pluginWaitTimer = 0;
+let pluginMissing = false;
 let observer = null;
 let algorithm = 'advanced_full';
 let yielded = false;
@@ -39,6 +45,9 @@ let engaged = false;
 let session = 0;
 let lastOwner = '';
 let extensionCssRemoved = false;
+let sawPlugin = false;
+let pluginOffMirrored = false;
+let pluginOffGeneration = 0;
 
 function rootEl() {
     return document.documentElement;
@@ -75,11 +84,79 @@ function ownerValue() {
     return rootEl()?.getAttribute(ATTR_OWNER) || '';
 }
 
-// This extension applies only while its own switch is on and it owns the page.
-// An empty owner counts as chrome. Harness as owner means apply nothing.
+// This extension applies while its own switch is on, unless the loaded plugin
+// owns the page. A saved dsh owner with no plugin yet waits, then this side applies.
 function chromeShouldApply() {
     const el = rootEl();
-    return !!el && el.getAttribute(ATTR_CHROME) === 'on' && el.getAttribute(ATTR_OWNER) !== 'dsh';
+    if (!el || el.getAttribute(ATTR_CHROME) !== 'on') return false;
+    if (el.getAttribute(ATTR_OWNER) !== 'dsh') return true;
+    return pluginMissing && !pluginLinked();
+}
+
+function clearPluginWait() {
+    if (!pluginWaitTimer) return;
+    clearUntrackedTimeout(pluginWaitTimer);
+    pluginWaitTimer = 0;
+}
+
+// Give the plugin a moment to announce. If it never does, this extension applies.
+function considerMissingPlugin() {
+    if (!engaged || ownerValue() !== 'dsh' || pluginLinked() || pluginMissing || pluginWaitTimer) return;
+    const current = session;
+    pluginWaitTimer = untrackedTimeout(() => {
+        pluginWaitTimer = 0;
+        if (current !== session || !engaged || ownerValue() !== 'dsh' || pluginLinked()) return;
+        pluginMissing = true;
+        applyNow();
+    }, PLUGIN_WAIT_MS);
+}
+
+// Plugin owns the page and its switch is off, or it was here and then unloaded.
+// Absent at startup is not off: the plugin may not have announced yet.
+function pluginReportsOff() {
+    if (ownerValue() !== 'dsh') return false;
+    if (pluginLinked()) {
+        sawPlugin = true;
+        return !dshSwitchOn();
+    }
+    return sawPlugin;
+}
+
+// The bridge mirrors this too. Write here as well so a missed bridge callback
+// still turns the Harness site switch off. Skip when the saved value is already false.
+function mirrorPluginPower() {
+    if (!engaged) return;
+    if (!pluginReportsOff()) {
+        pluginOffMirrored = false;
+        return;
+    }
+    if (pluginOffMirrored) return;
+    pluginOffMirrored = true;
+    const generation = ++pluginOffGeneration;
+    const current = session;
+    let storage;
+    try {
+        storage = chrome.storage;
+    } catch {
+        pluginOffMirrored = false;
+        return;
+    }
+    if (!storage || !storage.sync) {
+        pluginOffMirrored = false;
+        return;
+    }
+    storage.sync.get(['harness'], (data) => {
+        if (generation !== pluginOffGeneration || current !== session || !engaged) {
+            if (generation === pluginOffGeneration) pluginOffMirrored = false;
+            return;
+        }
+        if (!pluginReportsOff()) {
+            pluginOffMirrored = false;
+            return;
+        }
+        if (data && data.harness === false) return;
+        storage.sync.set({ harness: false });
+    });
 }
 
 function stripOwnFontClass() {
@@ -119,6 +196,7 @@ function setExtensionCss(enabled) {
 function releaseExtensionAdditions() {
     setHarnessFontsSuppressed(true);
     setExtensionCss(false);
+    removeHarnessCopyright();
 }
 
 function restoreExtensionAdditions() {
@@ -130,6 +208,12 @@ function isUserStack(el) {
     const value = typeof el.className === 'string' ? el.className : '';
     if (!value.includes('_userStack')) return false;
     return value.split(/\s+/).some((name) => name.endsWith('_userStack'));
+}
+
+function isDock(el) {
+    const value = typeof el.className === 'string' ? el.className : '';
+    if (!value.includes('_dock')) return false;
+    return value.split(/\s+/).some((name) => name.endsWith('_dock'));
 }
 
 function isTextInput(el) {
@@ -272,8 +356,67 @@ function applySectionMarkdownDirection(containers, rtlAlgorithm) {
     }
 }
 
+function removeHarnessDonateModal() {
+    const modal = document.getElementById('Asmodal');
+    if (modal) modal.remove();
+    document.body?.classList.remove('AsDonateOk');
+}
+
+function findDockParent() {
+    if (!document.body || typeof AQ !== 'function') return AQ();
+    const nodes = document.body.querySelectorAll('[class*="_dock"]');
+    let dock = null;
+    for (let i = 0; i < nodes.length; i++) {
+        if (isDock(nodes[i])) dock = nodes[i];
+    }
+    return dock ? AQ(dock).parent() : AQ();
+}
+
+function removeHarnessCopyrightBox() {
+    const nodes = document.querySelectorAll('.' + COPYRIGHT_BOX + '[data-ai-rtl-engine="chrome"], .AsBox:not([data-ai-rtl-engine])');
+    for (let i = 0; i < nodes.length; i++) nodes[i].remove();
+}
+
+function removeHarnessCopyright() {
+    removeHarnessCopyrightBox();
+    removeHarnessDonateModal();
+}
+
+function addHarnessCopyright() {
+    if (typeof AQ !== 'function' || !chrome.runtime?.id || !document.body) return;
+    const current = session;
+    const finish = (supportHide) => {
+        if (current !== session || !engaged || !chromeShouldApply()) return;
+        if (supportHide) {
+            removeHarnessCopyright();
+            return;
+        }
+        if (document.querySelector('.' + COPYRIGHT_BOX + '[data-ai-rtl-engine="chrome"]')) return;
+        const leftovers = document.querySelectorAll('.' + COPYRIGHT_BOX + ', .AsBox');
+        for (let i = 0; i < leftovers.length; i++) leftovers[i].remove();
+        const $host = findDockParent();
+        if (!$host.length) return;
+        const logo = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
+        $host.append(`<div class="AsRtl FontSet AsBox AsBoxB ${COPYRIGHT_BOX}" data-ai-rtl-engine="chrome">
+            <a href="${saffariLink}" target="_blank" rel="noopener noreferrer">
+                <img src="${logo}" alt="AI RTL" width="22" height="22">
+            </a>
+            ${textSaffari}
+            ${BtnDonate()}
+        </div>`);
+    };
+    try {
+        chrome.storage.sync.get(['supportHide'], (data) => {
+            finish(data?.supportHide === true);
+        });
+    } catch {
+        finish(false);
+    }
+}
+
 function setHarness(rtlAlgorithm) {
     if (typeof AQ !== 'function' || !document.body) return;
+    addHarnessCopyright();
     const nodes = document.body.querySelectorAll(WATCH_TARGET_SELECTOR);
     const seen = new Set();
     const markdownRoots = [];
@@ -343,6 +486,11 @@ function scheduleHeal() {
 
 function applyNow() {
     if (!engaged) return;
+    mirrorPluginPower();
+    if (pluginLinked() || ownerValue() !== 'dsh') {
+        pluginMissing = false;
+        clearPluginWait();
+    }
     const owner = ownerValue() === 'dsh' ? 'dsh' : 'chrome';
     const ownerChanged = lastOwner !== '' && lastOwner !== owner;
 
@@ -357,6 +505,7 @@ function applyNow() {
         } else {
             releaseExtensionAdditions();
         }
+        if (ownerValue() === 'dsh' && !pluginLinked()) considerMissingPlugin();
         return;
     }
 
@@ -416,6 +565,10 @@ export function activateHarness(rtlAlgorithm = 'advanced_full') {
     algorithm = rtlAlgorithm;
     engaged = true;
     yielded = false;
+    pluginMissing = false;
+    clearPluginWait();
+    pluginOffMirrored = false;
+    if (pluginLinked()) sawPlugin = true;
     if (ownerValue() === 'dsh') {
         releaseExtensionAdditions();
     }
@@ -453,6 +606,8 @@ export function stopHarness() {
     }
     clearHandoff();
     clearHeal();
+    clearPluginWait();
+    pluginMissing = false;
     if (observer) {
         observer.disconnect();
         observer = null;

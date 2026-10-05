@@ -26,10 +26,15 @@
     );
 
     var echo = false;
+    var syncScheduled = false;
     var linked = false;
     var linking = false;
     var linkGeneration = 0;
     var saveGeneration = 0;
+    var switchGeneration = 0;
+    // Set once the plugin has announced itself. A missing plugin at startup
+    // is "not loaded yet", not "the user turned it off".
+    var sawPlugin = false;
 
     function ownerAttr() {
         return root.getAttribute(OWNER) || '';
@@ -110,11 +115,45 @@
         });
     }
 
+    // A missing harness key is still "on" for the content script. Writing false
+    // has to be explicit, and a late callback must match the page now.
+    function pageWantsChromeOn() {
+        return pluginPresent() && pluginOn();
+    }
+
+    function pageWantsChromeOff() {
+        // Plugin owns the page: its switch, or the plugin leaving, is the real off.
+        if (ownerAttr() === 'dsh') {
+            if (pluginPresent()) {
+                return !pluginOn();
+            }
+            return sawPlugin;
+        }
+        // Chrome owns the page. The plugin switch is a mirror. Follow it off
+        // only while this extension's flag is still on.
+        return pluginPresent() && !pluginOn() && root.getAttribute('data-ai-rtl-chrome') === 'on';
+    }
+
     function setChromeSwitch(on) {
+        var generation = ++switchGeneration;
         chrome.storage.sync.get([SERVICE_KEY], function (data) {
-            var current = !!(data && data[SERVICE_KEY] === true);
-            if (current === on) {
+            if (generation !== switchGeneration) {
                 return;
+            }
+            if (on) {
+                if (!pageWantsChromeOn()) {
+                    return;
+                }
+                if (data && data[SERVICE_KEY] === true) {
+                    return;
+                }
+            } else {
+                if (!pageWantsChromeOff()) {
+                    return;
+                }
+                if (data && data[SERVICE_KEY] === false) {
+                    return;
+                }
             }
             var payload = {};
             payload[SERVICE_KEY] = on;
@@ -147,15 +186,17 @@
                 return;
             }
             linked = true;
+            // Plugin is the engine. Copy its switch, including an explicit off
+            // when the saved site key is missing (the content script treats that as on).
+            if (ownerAttr() === 'dsh') {
+                setChromeSwitch(pluginOn());
+                return;
+            }
             var chromeOn = !!(data && data[SERVICE_KEY] === true);
             if (pluginOn() === chromeOn) {
                 return;
             }
             // The inactive switch is only a mirror. Copy the active side onto it.
-            if (ownerAttr() === 'dsh') {
-                setChromeSwitch(pluginOn());
-                return;
-            }
             setPluginSwitch(chromeOn);
         });
     }
@@ -178,19 +219,23 @@
         setPluginSwitch(on);
     }
 
-    var observer = new MutationObserver(function () {
-        if (echo) {
-            echo = false;
-            return;
-        }
+    function syncFromPage() {
         var owner = ownerAttr();
         if (owner === 'chrome' || owner === 'dsh') {
             saveEngine(owner);
+        }
+        if (pluginPresent()) {
+            sawPlugin = true;
         }
         if (!pluginPresent()) {
             linked = false;
             linking = false;
             linkGeneration += 1;
+            // The plugin unloaded while it was the engine. Follow it off.
+            // Chrome as owner keeps applying; do not clear its site switch.
+            if (owner === 'dsh' && sawPlugin) {
+                setChromeSwitch(false);
+            }
             return;
         }
         if (!linked) {
@@ -200,18 +245,57 @@
         if (linking) {
             return;
         }
-        // Plugin off while the extension flag is already gone is this extension
-        // stopping. Do not clear the saved site switch in that case.
+        if (owner === 'dsh') {
+            // The plugin switch is the real one, including after this extension
+            // has yielded and dropped data-ai-rtl-chrome.
+            setChromeSwitch(pluginOn());
+            return;
+        }
+        // Chrome owns the page. The plugin switch is only a mirror. Follow it
+        // off only while this extension's own flag is still on; otherwise this
+        // side is already stopped and must not write the site switch again.
         if (pluginOn()) {
             setChromeSwitch(true);
         } else if (root.getAttribute('data-ai-rtl-chrome') === 'on') {
             setChromeSwitch(false);
         }
+    }
+
+    function scheduleSync() {
+        if (syncScheduled) {
+            return;
+        }
+        syncScheduled = true;
+        Promise.resolve().then(function () {
+            syncScheduled = false;
+            syncFromPage();
+        });
+    }
+
+    var observer = new MutationObserver(function () {
+        // Our own write shares this callback with a plugin change. Read again
+        // after the callback so that change is not dropped.
+        if (echo) {
+            echo = false;
+            scheduleSync();
+            return;
+        }
+        syncFromPage();
     });
 
+    if (pluginPresent()) {
+        sawPlugin = true;
+    }
     observer.observe(root, {
         attributes: true,
         attributeFilter: [PRESENT, DSH, OWNER]
+    });
+
+    chrome.runtime.onMessage.addListener(function (message, _sender, sendResponse) {
+        if (!message || message.action !== 'harnessPluginPresent') {
+            return;
+        }
+        sendResponse({ present: pluginPresent() });
     });
 
     chrome.storage.onChanged.addListener(function (changes, area) {
