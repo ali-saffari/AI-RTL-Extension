@@ -1142,6 +1142,11 @@ a.AsSBtn.AsDonate {
 }
 
 .AsBoxHarness {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
     text-align: center !important;
     margin-top: -1px;
     margin-bottom: -6px;
@@ -1149,19 +1154,23 @@ a.AsSBtn.AsDonate {
     margin-right: auto;
     color: #888888;
     transform: scale(0.8);
-    display: block;
+    direction: rtl;
 }
 
 .AsBoxHarness img {
-    display: initial;
-    margin-right: 3px;
-    margin-top: 3px;
-    margin-left: 6px;
+    display: block;
+    margin: 0;
     height: 22px;
     width: 22px;
     border-radius: 0;
     border: none;
-    margin-bottom: -1px;
+}
+
+.AsBoxHarness > a:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
 }
 
 .AsBoxHarness .AsSBtn {
@@ -1195,7 +1204,7 @@ a.AsSBtn.AsDonate {
 }
 
 .AsBoxHarness a {
-    vertical-align: -webkit-baseline-middle;
+    vertical-align: middle;
 }
 
 /* Custom Blue Scrollbar Styles */
