@@ -29,7 +29,7 @@ export const SITE_SETTINGS_REGISTRY = [
         serviceKey: 'harness',
         title: 'DeepSeek Harness',
         icon: '/images/sites/harness.png',
-        description: 'دکمه روشن و خاموش طرفی که انتخاب نشده فقط وضعیت را نشان می‌دهد و موتور آن خاموش است.',
+        description: 'افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.',
         missingPluginNote: 'برای هارنس پلاگین داریم و در نسخه دسکتاپ می‌توانید از آن استفاده کنید.',
         fields: [
             {
@@ -39,7 +39,7 @@ export const SITE_SETTINGS_REGISTRY = [
                 defaultValue: 'chrome',
                 options: [
                     { value: 'chrome', label: browserExtensionName(), icon: '/images/logo/ai-rtl-logo.png' },
-                    { value: 'dsh', label: 'پلاگین هاردنس', icon: '/images/logo/dsh-extension.png' },
+                    { value: 'dsh', label: 'پلاگین هارنس', icon: '/images/logo/dsh-extension.png' },
                 ],
             },
         ],

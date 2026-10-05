@@ -143,7 +143,7 @@ const services: Service[] = [
     { key: 'sakana', name: 'Sakana Chat', icon: '/images/sites/sakana.png', url: 'https://chat.sakana.ai/', new: true, hosts: ['chat.sakana.ai'], keywords: ['sakana', 'ساکانا', 'namazu', 'fugu', 'ژاپن', 'japan'] },
     { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
     { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
-    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'پلاگین اختصاصی DeepSeek Harness برای <strong>نسخه دسکتاپ</strong> است. اگر برنامه دسکتاپ را دارید، همان پلاگین را نصب کنید.<br><br>اگر از <strong>نسخه وب</strong> استفاده می‌کنید، هم این افزونه و هم پلاگین کار می‌کنند. برای وب <strong>همین افزونه</strong> را پیشنهاد می‌کنیم، چون آپدیت‌ها خودکار می‌آیند. پلاگین را برای دسکتاپ نگه دارید.<br><br>راست‌چین این سایت فقط روی پورت <strong>۳۰۸۰</strong> فعال می‌شود. اگر هر دو روشن باشند، داخل هارنس می‌گوید افزونه کروم AI RTL شناسایی شده و یکی را انتخاب می‌کنید. هر دو همزمان اعمال نمی‌شوند. انتخاب موتور در <strong>تنظیمات مخصوص</strong> همین سایت است. دکمه روشن و خاموش طرفی که انتخاب نشده فقط وضعیت را نشان می‌دهد و موتور آن خاموش است.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
+    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'پلاگین اختصاصی DeepSeek Harness برای <strong>نسخه دسکتاپ</strong> است. اگر برنامه دسکتاپ را دارید، همان پلاگین را نصب کنید.<br><br>اگر از <strong>نسخه وب</strong> استفاده می‌کنید، هم این افزونه و هم پلاگین کار می‌کنند. برای وب <strong>همین افزونه</strong> را پیشنهاد می‌کنیم، چون آپدیت‌ها خودکار می‌آیند. پلاگین را برای دسکتاپ نگه دارید.<br><br>راست‌چین این سایت فقط روی پورت <strong>۳۰۸۰</strong> فعال می‌شود. اگر هر دو روشن باشند، داخل هارنس می‌گوید افزونه کروم AI RTL شناسایی شده و یکی را انتخاب می‌کنید. هر دو همزمان اعمال نمی‌شوند. انتخاب موتور در <strong>تنظیمات مخصوص</strong> همین سایت است. افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
 ];
 
 
@@ -910,16 +910,20 @@ export default function ServiceList({
                             primary={
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <a href={service.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none' }}>
-                                        <Typography sx={{
-                                            color: extensionEnabled
-                                                ? (isDarkMode ? '#ffffff' : '#000000')
-                                                : (isDarkMode ? 'rgba(255, 255, 255, 0.42)' : 'rgba(0, 0, 0, 0.38)'),
-                                            fontWeight: 500,
-                                            transition: 'color 0.2s ease',
-                                            '&:hover': {
-                                                textDecoration: extensionEnabled ? 'underline' : 'none',
-                                            }
-                                        }}>
+                                        <Typography
+                                            className="service-list-site-name"
+                                            style={{ textAlign: 'left' }}
+                                            sx={{
+                                                color: extensionEnabled
+                                                    ? (isDarkMode ? '#ffffff' : '#000000')
+                                                    : (isDarkMode ? 'rgba(255, 255, 255, 0.42)' : 'rgba(0, 0, 0, 0.38)'),
+                                                fontWeight: 500,
+                                                transition: 'color 0.2s ease',
+                                                '&:hover': {
+                                                    textDecoration: extensionEnabled ? 'underline' : 'none',
+                                                }
+                                            }}
+                                        >
                                             {service.name}
                                         </Typography>
                                     </a>

@@ -974,6 +974,10 @@ body[data-theme="light"] {
     transition: --service-search-h var(--service-sticky-duration) var(--service-sticky-ease);
 }
 
+.service-list-site-name {
+    text-align: left !important;
+}
+
 .service-list.service-list--search-stuck {
     --service-search-h: 36px;
     --service-pinned-h: 36px;

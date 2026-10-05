@@ -25,7 +25,7 @@ const PLUGIN_WAIT_MS = 600;
 const FONT_CLASS = 'FontSet';
 const COPYRIGHT_BOX = 'AsBoxHarness';
 const MARKDOWN_CONTAINER_SELECTOR = '[class*="markdown"]';
-const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], textarea, input, [data-composer-input], [role="treeitem"]';
+const WATCH_TARGET_SELECTOR = '[class*="markdown"], [class*="_userStack"], [class*="_crumbSeg"], textarea, input, [data-composer-input], [role="treeitem"]';
 const TREE_TITLE_WRAP = 'ai-rtl-tree-title';
 const TITLE_HOVER_CLASS = 'ai-rtl-hover-scroll';
 const TITLE_HOVER_END = 'ai-rtl-hover-scroll-end';
@@ -214,6 +214,12 @@ function isUserStack(el) {
     const value = typeof el.className === 'string' ? el.className : '';
     if (!value.includes('_userStack')) return false;
     return value.split(/\s+/).some((name) => name.endsWith('_userStack'));
+}
+
+function isCrumbSeg(el) {
+    const value = typeof el.className === 'string' ? el.className : '';
+    if (!value.includes('_crumbSeg')) return false;
+    return value.split(/\s+/).some((name) => name.endsWith('_crumbSeg'));
 }
 
 function isDock(el) {
@@ -603,7 +609,7 @@ function setHarness(rtlAlgorithm) {
             markdownRoots.push(el);
             continue;
         }
-        if (isUserStack(el) || isTextInput(el)) applyElementTarget(el, rtlAlgorithm);
+        if (isUserStack(el) || isCrumbSeg(el) || isTextInput(el)) applyElementTarget(el, rtlAlgorithm);
     }
     applySectionMarkdownDirection(markdownRoots, rtlAlgorithm);
     lockDirLtr('.katex-display');
