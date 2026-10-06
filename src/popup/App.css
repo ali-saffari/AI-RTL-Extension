@@ -926,6 +926,52 @@ body[data-theme="light"] {
     text-align: right !important;
 }
 
+.menu-notice,
+.menu-notice .MuiTypography-root,
+.menu-notice-actions {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.menu-notice-actions {
+    justify-content: flex-start !important;
+}
+
+.menu-notice-close {
+    margin-right: auto !important;
+}
+
+.menu-notice.has-dismiss-icon {
+    position: relative;
+}
+
+.menu-notice-dismiss-icon {
+    position: absolute !important;
+    top: 4px !important;
+    left: 4px !important;
+    z-index: 2;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #6b7280;
+    line-height: 0;
+    cursor: pointer;
+}
+
+body[data-theme="dark"] .menu-notice-dismiss-icon {
+    background: transparent !important;
+    color: #bdc1c6;
+}
+
 .install-hint-banner-toggle {
     display: flex;
     flex-direction: row;

@@ -24,6 +24,7 @@ import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
 import ManualRtlBanner from './ManualRtlBanner';
 import InstallHintBanner from './InstallHintBanner';
+import MenuNotices from './MenuNotices';
 import ChangesList from './ChangesList';
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -993,6 +994,7 @@ function App() {
                 <div className="popup-columns">
                 <div className="popup-main" ref={mainScrollRef}>
                 <div className="popup-main-inner">
+                <MenuNotices isDarkMode={isDarkMode} />
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#dae8f1' }}>

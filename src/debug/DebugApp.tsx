@@ -5,6 +5,8 @@ import './debug.css';
 
 const DEBUG_PAGE_MARKER = 'AI_RTL_DEBUG_PAGE';
 const API_TARGET_KEY = 'debugApiTarget';
+const HOUR_MS = 60 * 60 * 1000;
+const HOUR_JITTER_MS = 10 * 60 * 1000;
 const API_TARGETS = {
     production: 'https://api.ai-rtl.ir',
     local: 'http://127.0.0.1:4000',
@@ -50,6 +52,13 @@ async function readNoticeCache(): Promise<NoticeCache | null> {
 
 function normalizeApiTarget(value: unknown): ApiTarget {
     return value === 'local' ? 'local' : 'production';
+}
+
+function noticesFromBody(body: unknown): NonNullable<NoticeCache['notices']> {
+    if (!body || typeof body !== 'object') return [];
+    const notices = (body as { data?: { notices?: unknown } }).data?.notices;
+    if (!Array.isArray(notices)) return [];
+    return notices.filter((notice) => notice && typeof notice === 'object') as NonNullable<NoticeCache['notices']>;
 }
 
 export default function DebugApp() {
@@ -101,18 +110,21 @@ export default function DebugApp() {
         window.setTimeout(() => setCopied(false), 1600);
     };
 
-    const chooseApiTarget = async (next: ApiTarget) => {
-        setApiTarget(next);
-        await chrome.storage.local.set({ [API_TARGET_KEY]: next });
-        if (next === apiTarget) return;
-        await chrome.storage.local.remove([NOTICE_CACHE_KEY, NOTICE_SCHEDULE_KEY]);
+    const storeNotices = async (body: unknown) => {
+        const notices = noticesFromBody(body);
+        const fetchedAt = Date.now();
+        const dueAt = fetchedAt + HOUR_MS + Math.floor(Math.random() * (HOUR_JITTER_MS + 1));
+        await chrome.storage.local.set({
+            [NOTICE_CACHE_KEY]: { fetchedAt, notices },
+            [NOTICE_SCHEDULE_KEY]: { dueAt, retry: false },
+        });
         await chrome.alarms.clear(NOTICE_ALARM);
-        setCache(null);
-        setTestResult(null);
-        setTestError('');
+        chrome.alarms.create(NOTICE_ALARM, { when: dueAt });
+        setCache({ fetchedAt, notices });
+        return notices.length;
     };
 
-    const testFetch = async () => {
+    const fetchNotices = async (target: ApiTarget) => {
         if (!uid || testing) return;
         setTesting(true);
         setTestError('');
@@ -122,7 +134,7 @@ export default function DebugApp() {
             version,
             uid,
         };
-        const url = `${API_TARGETS[apiTarget]}/api/tools/notices`;
+        const url = `${API_TARGETS[target]}/api/tools/notices`;
         const started = Date.now();
         try {
             const response = await fetch(url, {
@@ -147,12 +159,29 @@ export default function DebugApp() {
             });
             if (!response.ok) {
                 setTestError('سرور پاسخ موفق نداد.');
+                return;
+            }
+            const count = await storeNotices(body);
+            if (count === 0) {
+                setTestError('پاسخ موفق بود، ولی اطلاعیه‌ای برای این نسخه و شناسه برنگشت.');
             }
         } catch (error) {
             setTestError(error instanceof Error ? error.message : 'دریافت اطلاعات ناموفق بود.');
         } finally {
             setTesting(false);
         }
+    };
+
+    const chooseApiTarget = async (next: ApiTarget) => {
+        setApiTarget(next);
+        await chrome.storage.local.set({ [API_TARGET_KEY]: next });
+        if (next === apiTarget) return;
+        await chrome.storage.local.remove([NOTICE_CACHE_KEY, NOTICE_SCHEDULE_KEY]);
+        await chrome.alarms.clear(NOTICE_ALARM);
+        setCache(null);
+        setTestResult(null);
+        setTestError('');
+        await fetchNotices(next);
     };
 
     const resetExtension = async () => {
@@ -207,8 +236,8 @@ export default function DebugApp() {
             <section className="debug-card">
                 <h2>تست دریافت اطلاعات</h2>
                 <p>
-                    یک درخواست واقعی می‌فرستد و پاسخ را همین‌جا نشان می‌دهد.
-                    خودِ این تست کش را نمی‌نویسد. با عوض کردن سرور، کش قبلی پاک می‌شود تا دریافت بعدی افزونه از سرور تازه باشد.
+                    دریافت، پاسخ را در کش افزونه می‌نویسد تا پاپ‌آپ روی سایت‌های پشتیبانی‌شده دیده شود.
+                    خودِ این صفحه پاپ‌آپ را نشان نمی‌دهد. بعد از دریافت، یک تب سایت مثل ChatGPT را تازه کنید.
                 </p>
                 <fieldset className="debug-target">
                     <legend>سرور دریافت</legend>
@@ -250,7 +279,7 @@ export default function DebugApp() {
                     </dd>
                 </dl>
                 <div className="debug-actions">
-                    <button type="button" className="debug-button" onClick={testFetch} disabled={!uid || testing}>
+                    <button type="button" className="debug-button" onClick={() => fetchNotices(apiTarget)} disabled={!uid || testing}>
                         {testing ? 'در حال دریافت…' : 'تست دریافت اطلاعات'}
                     </button>
                 </div>
