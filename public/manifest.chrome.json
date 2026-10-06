@@ -10,7 +10,8 @@
     "author": "alisaffaridev@gmail.com",
     "homepage_url": "https://ai-rtl.ir",
     "permissions": [
-        "storage"
+        "storage",
+        "alarms"
     ],
     "optional_permissions": [
         "tabs",

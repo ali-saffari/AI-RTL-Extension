@@ -12,6 +12,8 @@ import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_S
 import { getActivateGuidePath } from '../utils/storeLinks.js';
 import { DEFAULT_HALF_SPACE_SITES, HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
 import { defaultSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings.js';
+import { considerNoticeCheck, listenForNoticeAlarm, recordNoticeAction, resumeNoticeSchedule } from './notices.js';
+import { SERVICE_FLAGS, buildInstallSyncDefaults, getDefaultManualRtlSettings } from '../constants/installDefaults.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -21,16 +23,6 @@ const devError = (...args) => { if (IS_DEV) console.error.apply(console, args); 
 // ============================================
 // CONFIGURATION
 // ============================================
-
-const SERVICE_FLAGS = {
-    chatGpt: true, claude: true, githubCopilot: true,
-    duckduckgo: true, perplexity: true, aiStudio: true, deepseek: true,
-    youCom: true, qwenlm: true, poeCom: true, monica: true, gemini: true,
-    grok: true, mistral: true, manus: true, kimi: true, blackbox: true,
-    googleNotebook: false, jules: true, zai: true, arena: false, openrouter: true, minimax: true, 
-    oneMinai: true, writesonic: true, lovable: true, ernie: true, gamma: true
-};
-
 
 // ============================================
 // USER ID GENERATION & VALIDATION
@@ -81,6 +73,8 @@ async function initializeUserId() {
 
 // Initialize user ID and set uninstall URL when service worker starts
 initializeUserId();
+listenForNoticeAlarm();
+resumeNoticeSchedule();
 
 // Function to apply sites config from API
 // async function applySitesConfig() {
@@ -157,23 +151,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         //         mixedTitleDisplayMode: 'unified'
         //     });
         // }).catch(() => {
-        chrome.storage.sync.set({
-            ...SERVICE_FLAGS,
-            rtlAlgorithmMode: 'advanced_full',
-            selectedFont: 'iranyekan',
-            fontScale: 100,
-            manualRtlSettings: defaultManualRtlSettings,
-            mixedTitleDisplayMode: 'unified',
-            applyAlgorithmToCode: true,
-            flipRtlArrows: true,
-            fixMixedText: false,
-            experimentalAlgoDefaultOn: true,
-            [HALF_SPACE_STORAGE_KEY]: { ...DEFAULT_HALF_SPACE_SITES },
-            [SITE_SETTINGS_STORAGE_KEY]: defaultSiteSettings(),
-            [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
-            activationHintDismissed: false,
-            troubleshootingHintDismissed: true
-        });
+        chrome.storage.sync.set(buildInstallSyncDefaults());
         // });
     }
     
@@ -641,33 +619,6 @@ function buildExtensionSiteUrl(path, extraParams = {}) {
     return `https://ai-rtl.ir${normalizedPath}${query ? `?${query}` : ''}`;
 }
 
-function getDefaultManualRtlSettings() {
-    // Firefox: supported AI sites only, Manual RTL off by default (no allowlist UI)
-    if (isFirefoxRuntime()) {
-        return {
-            manualRtlEnabled: false,
-            manualRtlSiteMode: 'ai_sites',
-            menuDisplayMode: 'logo_first',
-            highlightMode: 'on_direction_change',
-            highlightColor: '#ff0000',
-            highlightOpacity: 0.3,
-            logoDisplay: 'always',
-            applyFont: true
-        };
-    }
-
-    return {
-        manualRtlEnabled: false,
-        manualRtlSiteMode: 'allowed_sites',
-        menuDisplayMode: 'logo_first',
-        highlightMode: 'on_direction_change',
-        highlightColor: '#ff0000',
-        highlightOpacity: 0.3,
-        logoDisplay: 'always',
-        applyFont: true
-    };
-}
-
 /**
  * Check if URL is valid http/https page (not extension or chrome://)
  */
@@ -705,6 +656,14 @@ function isMissingTabError(error) {
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type === 'notices:maybe') {
+        considerNoticeCheck();
+        return;
+    }
+    if (message?.type === 'notices:action') {
+        recordNoticeAction(message.id, message.action);
+        return;
+    }
     if (message.action === 'setHarnessExtensionCss') {
         const tabId = sender?.tab?.id;
         setHarnessExtensionCss(tabId, message.enabled !== false).then(() => {

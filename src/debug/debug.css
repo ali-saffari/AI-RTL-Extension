@@ -1,0 +1,230 @@
+:root {
+    color-scheme: dark;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(1200px 480px at 100% -10%, rgba(0, 233, 255, 0.16), transparent 55%),
+        #1a1a2e;
+    color: #e8eefc;
+    font-family: "iranyekan", Tahoma, sans-serif;
+}
+
+button,
+code,
+pre {
+    font-family: inherit;
+}
+
+.debug-shell {
+    width: min(880px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 48px;
+}
+
+.debug-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.debug-kicker {
+    margin: 0 0 6px;
+    color: #00e9ff;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.debug-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.debug-header p,
+.debug-card p {
+    margin: 8px 0 0;
+    color: #b7c3de;
+    line-height: 1.7;
+}
+
+.debug-version {
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 233, 255, 0.35);
+    border-radius: 999px;
+    padding: 4px 10px;
+    color: #00e9ff;
+    background: rgba(0, 233, 255, 0.08);
+    font-size: 12px;
+}
+
+.debug-card {
+    margin-top: 14px;
+    padding: 18px 18px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: rgba(47, 47, 65, 0.92);
+}
+
+.debug-card h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.debug-uid-row,
+.debug-actions,
+.debug-confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.debug-uid {
+    direction: ltr;
+    min-width: 180px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #141426;
+    color: #fff;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+}
+
+.debug-button,
+.debug-button-danger,
+.debug-button-quiet {
+    border: 0;
+    border-radius: 10px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.debug-button {
+    color: #062029;
+    background: #00e9ff;
+}
+
+.debug-button:disabled,
+.debug-button-danger:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.debug-button-quiet {
+    color: #d5def2;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.debug-button-danger {
+    color: #fff;
+    background: #d14343;
+}
+
+.debug-status {
+    margin-top: 12px;
+    color: #d5def2;
+}
+
+.debug-status.is-error {
+    color: #ffb4b4;
+}
+
+.debug-target {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.debug-target legend {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.debug-target label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.debug-target label:has(input:checked) {
+    border-color: rgba(0, 233, 255, 0.7);
+    background: rgba(0, 233, 255, 0.08);
+}
+
+.debug-target code {
+    direction: ltr;
+    margin-right: auto;
+    color: #9fb0d0;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+}
+
+.debug-meta {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px 12px;
+    margin-top: 14px;
+    font-size: 14px;
+}
+
+.debug-meta dt {
+    color: #93a0bd;
+}
+
+.debug-meta dd {
+    margin: 0;
+}
+
+.debug-output {
+    direction: ltr;
+    text-align: left;
+    overflow: auto;
+    max-height: 360px;
+    margin: 14px 0 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: #12121f;
+    color: #d7fff8;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.debug-confirm {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(209, 67, 67, 0.12);
+    border: 1px solid rgba(209, 67, 67, 0.35);
+}
+
+.debug-notice-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.debug-notice-list li {
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.debug-notice-list strong {
+    display: block;
+}

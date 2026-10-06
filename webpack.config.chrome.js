@@ -1,9 +1,12 @@
 const path = require('path');
 const fs = require('fs');
+const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { iranyekanFontPattern } = require('./scripts/private-assets');
 const { assertChromeManifestUnchanged } = require('./scripts/check-chrome-manifest');
+const { StripDebugArtifactsPlugin } = require('./scripts/strip-debug-artifacts');
+const { addDevApiHosts } = require('./scripts/dev-manifest-hosts');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
@@ -39,7 +42,8 @@ module.exports = {
         background: './src/background/background.js',
         content: './src/content/index.ts',
         'manual-rtl': './src/manual-rtl/content.js',
-        'myJquery-3.7.1': './src/myJquery-3.7.1.js'
+        'myJquery-3.7.1': './src/myJquery-3.7.1.js',
+        ...(isProduction ? {} : { debug: './src/debug/index.tsx' }),
     },
     mode: isProduction ? 'production' : 'development',
     devtool: isProduction ? 'source-map' : 'cheap-module-source-map',
@@ -88,7 +92,11 @@ module.exports = {
         ],
     },
     plugins: [
+        new webpack.DefinePlugin({
+            __AI_RTL_DEV__: JSON.stringify(!isProduction),
+        }),
         new CheckChromeManifestPlugin(),
+        ...(isProduction ? [new StripDebugArtifactsPlugin(path.join(__dirname, 'dist-chrome'))] : []),
         new CopyPlugin({
             patterns: [
                 {
@@ -104,8 +112,13 @@ module.exports = {
                 {
                     from: 'public/manifest.chrome.json',
                     to: '../manifest.json',
+                    ...(isProduction ? {} : { transform: addDevApiHosts }),
                 },
                 iranyekanFontPattern('../fonts/iranyekan'),
+                ...(isProduction ? [] : [{
+                    from: 'src/debug/debug.html',
+                    to: '../debug.html',
+                }]),
             ],
         }),
         new BundleBackgroundPlugin(),

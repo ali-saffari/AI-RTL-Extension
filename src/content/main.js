@@ -43,6 +43,8 @@ import { activateNotion } from './services/notion.js';
 import { activateGenspark } from './services/observer/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
+import { startNoticeUi } from './noticesUi.js';
+import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 import { SessionManager } from './utils/session.js';
 import { setMixedTitleDisplayMode, setApplyAlgorithmToCode, setFlipRtlArrows, setFixMixedText, setActiveRtlAlgorithm, resetRtlDomCaches, applyLiveCodeAlgorithmSetting, applyLiveFlipRtlArrowsSetting, applyLiveFixMixedTextSetting } from './utils/directionUtils/index.js';
 import { startRtlEngine, stopRtlEngine, isRtlEngineActive } from './utils/originalState.js';
@@ -591,6 +593,7 @@ async function initializeAllServices(token = applyToken) {
     if (activeService && activeService !== lastTrackedService) {
         await sessionManager.start(activeService, site);
         lastTrackedService = activeService;
+        sendRuntimeMessage({ type: 'notices:maybe' });
     } else if (!activeService && lastTrackedService) {
         await sessionManager.stop();
         lastTrackedService = null;
@@ -787,6 +790,7 @@ function initializeHalfSpaceHotkey() {
 
 async function bootContentScript() {
     await loadExtensionEnabled();
+    startNoticeUi(() => extensionEnabled && isCurrentSiteInServiceConfig());
     await startExtensionFeatures();
 }
 

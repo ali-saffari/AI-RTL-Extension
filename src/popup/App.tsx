@@ -44,6 +44,7 @@ import {
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled';
 import ShareModal from './ShareModal';
 import './App.css';
+import DevDebugSlot from './devDebugSlot';
 import manifest from '../../public/manifest.chrome.json';
 
 const firefoxDefaults = isFirefoxRuntime();
@@ -1435,6 +1436,7 @@ function App() {
                             </span>
                             <span className="popup-side-item-label">تنظیمات</span>
                         </button>
+                        <DevDebugSlot />
                         <a
                             href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
                             target="_blank"
