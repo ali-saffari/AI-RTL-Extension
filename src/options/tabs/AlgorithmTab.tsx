@@ -903,7 +903,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                     برعکس کردن فلش‌ها
                                 </Typography>
                                 <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                    {flipPreviewArrows('مسیر کار این است: نصب → تنظیم → اجرا. برای مثال مرحله ۱ → مرحله ۲ باید در متن راست‌چین خوانا بماند.', true)}
+                                    {flipPreviewArrows('مسیر کار این است: نصب → تنظیم → اجرا. برای مثال مرحله ۱ ⇒ مرحله ۲ باید در متن راست‌چین خوانا بماند.', true)}
                                 </Typography>
                                 <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={previewBodySx}>
                                     English text stays LTR: setup → configure → run.

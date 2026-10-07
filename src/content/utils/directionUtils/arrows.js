@@ -1,14 +1,16 @@
 /**
  * Flip ASCII / Unicode arrows in RTL text so diagrams stay readable.
  * Runs on every site that goes through applyRtlToContainer / applyRtlToElement
- * when the flipRtlArrows setting is on. Skips inputs, KaTeX, SVG, ProseMirror,
- * and LTR code hosts; RTL markdown code boxes still flip.
+ * when the flipRtlArrows setting is on. Skips inputs, SVG, ProseMirror,
+ * and LTR fenced code; inline code, KaTeX, and RTL markdown code still flip.
  */
 
 import { detectTextDirection, isCode } from '../analyzeDirection.js';
 import { isRtlEngineActive } from '../originalState.js';
 import {
-    CODE_BLOCK_HOST_SELECTOR,
+    CUSTOM_CODE_BLOCK_SELECTOR,
+    INLINE_CODE_CLASS_SELECTOR,
+    isInlineCodeClassElement,
     isInlineCodeElement,
     KATEX_SELECTOR,
     unwrapElement
@@ -20,17 +22,24 @@ const flippedArrowNodes = new Set();
 
 const ALWAYS_SKIP_ARROW_FLIP_SELECTOR = [
     'textarea', 'input', 'script', 'style', 'svg', 'math',
-    KATEX_SELECTOR, '.ProseMirror', '[data-ai-rtl-editor]'
+    '.ProseMirror', '[data-ai-rtl-editor]'
 ].join(', ');
 
-const CODE_SKIP_ARROW_FLIP_SELECTOR = CODE_BLOCK_HOST_SELECTOR;
+// Fenced code only. Inline code and KaTeX stay eligible so ⇒ flips inside RTL prose.
+const CODE_SKIP_ARROW_FLIP_SELECTOR = [
+    'pre',
+    '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
+    CUSTOM_CODE_BLOCK_SELECTOR
+].join(', ');
 
 const UNICODE_ARROW_FLIP_MAP = {
     '→': '←',
     '⇒': '⇐',
+    '⇛': '⇚',
     '⟶': '⟵',
     '⟹': '⟸',
     '➡': '⬅',
+    '⮕': '⬅',
     '▶': '◀',
     '▷': '◁',
     '►': '◄',
@@ -45,6 +54,7 @@ const UNICODE_ARROW_FLIP_MAP = {
     '⇀': '↼',
     '⇝': '⇜',
     '⇢': '⇠',
+    '⤇': '⤆',
     '☞': '☜',
     '☛': '☚',
     '➜': '←',
@@ -53,10 +63,12 @@ const UNICODE_ARROW_FLIP_MAP = {
     '➞': '←'
 };
 const UNICODE_ARROW_CHARS = Object.keys(UNICODE_ARROW_FLIP_MAP).filter((key) => key.length === 1);
-const UNICODE_ARROW_FLIP_RE = new RegExp(`[${UNICODE_ARROW_CHARS.join('')}]`, 'g');
-const FLIPPABLE_ARROW_RE = /==>|-->|=>|->|==&gt;|--&gt;|=&gt;|-&gt;|[→⇒⟶⟹➡▶▷►▸▻⇨⇾↦↠↝↣⇀⇝⇢☞☛➜➔➝➞]/;
+const UNICODE_ARROW_CLASS = UNICODE_ARROW_CHARS.join('').replace(/[\\\]\-\^]/g, '\\$&');
+const UNICODE_ARROW_FLIP_RE = new RegExp(`[${UNICODE_ARROW_CLASS}]`, 'g');
+const FLIPPABLE_ARROW_RE = new RegExp(`==>|-->|=>|->|==&gt;|--&gt;|=&gt;|-&gt;|[${UNICODE_ARROW_CLASS}]`);
 const INLINE_LTR_ISOLATE_TAGS = new Set([
-    'SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'MARK', 'SMALL', 'SUB', 'SUP', 'LABEL'
+    'SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'MARK', 'SMALL', 'SUB', 'SUP', 'LABEL',
+    'CODE', 'KBD', 'SAMP', 'BDI'
 ]);
 
 export function setFlipRtlArrows(enabled) {
@@ -90,6 +102,18 @@ function isInlineLtrIsolate(el) {
     const className = typeof el.className === 'string' ? el.className : '';
     if (className.indexOf('bidi-ltr') !== -1 || className.indexOf('markdown-bidi') !== -1) {
         return true;
+    }
+    if (isInlineCodeElement(el) || isInlineCodeClassElement(el)) {
+        return true;
+    }
+    if (typeof el.matches === 'function') {
+        try {
+            if (el.matches(KATEX_SELECTOR) || el.matches(INLINE_CODE_CLASS_SELECTOR)) {
+                return true;
+            }
+        } catch {
+            // Invalid selector on this node.
+        }
     }
     return INLINE_LTR_ISOLATE_TAGS.has(el.tagName);
 }
@@ -145,11 +169,21 @@ function isTextNodeInRtlContext(textNode) {
             return false;
         }
         if (dir === 'auto') {
+            let computedRtl = false;
             try {
-                return getComputedStyle(current).direction === 'rtl';
+                computedRtl = getComputedStyle(current).direction === 'rtl';
             } catch {
-                return false;
+                computedRtl = false;
             }
+            if (computedRtl) {
+                return true;
+            }
+            // A neutral/Latin span with dir=auto must not hide an RTL parent.
+            if (isInlineLtrIsolate(current)) {
+                current = current.parentElement;
+                continue;
+            }
+            return false;
         }
         current = current.parentElement;
     }
