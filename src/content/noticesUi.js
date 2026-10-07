@@ -43,6 +43,54 @@ function imageLength(value) {
     return `${amount}${unit}`;
 }
 
+function boxLength(value) {
+    const next = String(value || '').replace(/\s+/g, '').toLowerCase();
+    const match = next.match(/^(\d{1,4}(?:\.\d{1,2})?)(px|%|rem|em|vw|vh)$/);
+    if (!match) return '';
+    const amount = Number(match[1]);
+    const unit = match[2];
+    const max = unit === 'px' ? 800 : unit === 'rem' || unit === 'em' ? 40 : 100;
+    if (!Number.isFinite(amount) || amount < 0 || amount > max) return '';
+    return `${amount}${unit}`;
+}
+
+function applyFloatActions(actions, notice) {
+    const top = boxLength(notice.actions_top);
+    const right = boxLength(notice.actions_right);
+    const bottom = boxLength(notice.actions_bottom);
+    const left = boxLength(notice.actions_left);
+    actions.style.position = 'absolute';
+    actions.style.zIndex = '2';
+    actions.style.marginTop = '0';
+    actions.style.top = top || 'auto';
+    actions.style.bottom = bottom || (!top ? '8px' : 'auto');
+    if (!left && !right) {
+        actions.style.left = '8px';
+        actions.style.right = '8px';
+    } else {
+        actions.style.left = left || 'auto';
+        actions.style.right = right || 'auto';
+    }
+}
+
+function applyCardPadding(wrap, notice, kind, hasButtons) {
+    const top = boxLength(notice.card_padding_top);
+    const right = boxLength(notice.card_padding_right);
+    const bottom = boxLength(notice.card_padding_bottom);
+    const left = boxLength(notice.card_padding_left);
+    if (!top && !right && !bottom && !left) {
+        if (hasButtons) wrap.style.paddingBottom = kind === 'banner' ? '48px' : '64px';
+        return;
+    }
+    const fallback = kind === 'banner'
+        ? { top: '10px', right: '12px', bottom: '10px', left: '12px' }
+        : { top: '16px', right: '16px', bottom: '16px', left: '16px' };
+    wrap.style.paddingTop = top || fallback.top;
+    wrap.style.paddingRight = right || fallback.right;
+    wrap.style.paddingBottom = bottom || fallback.bottom;
+    wrap.style.paddingLeft = left || fallback.left;
+}
+
 function applyImageSize(image, notice, banner) {
     const width = imageLength(notice.image_width);
     const height = imageLength(notice.image_height);
@@ -53,7 +101,7 @@ function applyImageSize(image, notice, banner) {
     if (width) image.style.width = width;
     if (height) {
         image.style.height = height;
-        image.style.alignSelf = 'flex-start';
+        image.style.alignSelf = 'center';
     }
     if (banner && width) image.style.flex = `0 0 ${width}`;
 }
@@ -124,10 +172,18 @@ function el(tag, className, text) {
     return node;
 }
 
+function imagePlace(notice) {
+    return notice?.image_position === 'above_title' || notice?.image_position === 'below_title' ? notice.image_position : 'below_body';
+}
+
 function pagePlacement(type) {
     if (type === 'popup') return 'popup';
     if (type === 'banner' || type === 'toast') return 'banner';
     return '';
+}
+
+function showClose(notice) {
+    return Boolean(notice?.dismissible) && notice?.once_per_user !== false;
 }
 
 function renderNotice(notice, fetchedAt, parent) {
@@ -140,13 +196,14 @@ function renderNotice(notice, fetchedAt, parent) {
         const backdrop = el('button', 'backdrop');
         backdrop.type = 'button';
         backdrop.setAttribute('aria-label', 'بستن');
-        if (notice.dismissible) {
+        if (showClose(notice)) {
             backdrop.addEventListener('click', () => dismiss(notice, fetchedAt));
         }
         parent.append(backdrop);
     }
 
-    const title = el('h2', 'title', notice.title || '');
+    const titleText = typeof notice.title === 'string' ? notice.title.trim() : '';
+    const title = titleText ? el('h2', 'title', titleText) : null;
     const body = el('p', 'body', notice.body || '');
     const imageUrl = safeUrl(notice.image_url);
     const image = imageUrl ? document.createElement('img') : null;
@@ -166,7 +223,7 @@ function renderNotice(notice, fetchedAt, parent) {
         button.addEventListener('click', () => activate(notice, action, fetchedAt));
         actions.append(button);
     });
-    if (notice.dismissible && notice.dismiss_style === 'icon') {
+    if (showClose(notice) && notice.dismiss_style === 'icon') {
         const close = el('button', 'dismiss-icon');
         close.type = 'button';
         close.setAttribute('aria-label', 'بستن');
@@ -175,23 +232,50 @@ function renderNotice(notice, fetchedAt, parent) {
         if (iconColor) close.style.color = iconColor;
         close.addEventListener('click', () => dismiss(notice, fetchedAt));
         wrap.append(close);
-    } else if (notice.dismissible) {
+    } else if (showClose(notice)) {
         const close = el('button', 'close', 'بستن');
         close.type = 'button';
         paintButton(close, notice.dismiss_color);
         close.addEventListener('click', () => dismiss(notice, fetchedAt));
         actions.append(close);
     }
+    if (notice.actions_place === 'float') {
+        if (actions.childNodes.length) {
+            actions.classList.add('actions-float');
+            applyFloatActions(actions, notice);
+        }
+        wrap.classList.add('has-float-actions');
+        applyCardPadding(wrap, notice, type, actions.childNodes.length > 0);
+    }
     if (type === 'banner' && image) {
         const main = el('div', 'banner-main');
         const copy = el('div', 'copy');
-        copy.append(title, body);
+        const side = el('div', 'banner-side');
+        const sideWidth = imageLength(notice.image_width) || '88px';
+        side.style.flex = `0 0 ${sideWidth}`;
+        side.style.width = sideWidth;
+        image.style.flex = 'none';
+        image.style.width = '100%';
+        image.style.maxWidth = '100%';
+        image.style.alignSelf = 'auto';
+        image.style.height = imageLength(notice.image_height) || '100%';
+        image.style.maxHeight = '100%';
+        image.style.objectFit = 'contain';
+        image.style.objectPosition = 'center';
+        side.append(image);
+        if (title) copy.append(title);
+        copy.append(body);
         if (actions.childNodes.length) copy.append(actions);
-        main.append(image, copy);
+        main.append(side, copy);
         wrap.append(main);
     } else {
-        wrap.append(title, body);
-        if (image) wrap.append(image);
+        const place = imagePlace(notice);
+        if (image) image.classList.add(`image-${place.replaceAll('_', '-')}`);
+        if (place === 'above_title' && image) wrap.append(image);
+        if (title) wrap.append(title);
+        if (place === 'below_title' && image) wrap.append(image);
+        wrap.append(body);
+        if (place === 'below_body' && image) wrap.append(image);
         if (actions.childNodes.length) wrap.append(actions);
     }
     parent.append(wrap);
@@ -315,16 +399,24 @@ async function paint(isActivePage) {
             gap: 10px;
         }
         .stack .copy { flex: 1; min-width: 0; }
-        .stack .image {
-            width: 88px;
-            height: 100%;
-            min-height: 0;
+        .stack .banner-side {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             align-self: stretch;
-            max-height: none;
             flex: 0 0 88px;
+            width: 88px;
+            min-height: 0;
+        }
+        .stack .banner-side .image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
             margin: 0;
+            flex: none;
             object-fit: contain;
-            object-position: right top;
+            object-position: center;
             border-radius: 0;
         }
         .stack .actions { margin-top: 8px; justify-content: flex-end; }
@@ -333,13 +425,20 @@ async function paint(isActivePage) {
         .title { margin: 0 0 8px; font-size: 16px; line-height: 1.6; }
         .body { margin: 0; white-space: pre-wrap; font-size: 14px; line-height: 1.8; color: #374151; }
         .image { display: block; width: 100%; max-height: 160px; object-fit: cover; margin-top: 12px; border-radius: 12px; }
+        .image.image-above-title { margin-top: 0; margin-bottom: 12px; }
+        .image.image-below-title { margin-top: 8px; margin-bottom: 8px; }
         .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .actions.actions-float, .stack .actions.actions-float {
+            position: absolute;
+            z-index: 2;
+            margin-top: 0;
+        }
         .close { margin-right: auto; }
         .dismiss-icon,
         .stack .dismiss-icon {
             position: absolute;
-            top: 10px;
-            left: 9px;
+            top: 7px;
+            left: 7px;
             z-index: 2;
             width: auto;
             height: auto;

@@ -47,20 +47,37 @@ interface MenuNotice {
     image_url?: string;
     image_width?: string | null;
     image_height?: string | null;
+    image_position?: string;
     dismissible?: boolean;
+    once_per_user?: boolean;
     dismiss_style?: string;
     dismiss_color?: string | null;
+    actions_place?: string;
+    actions_top?: string | null;
+    actions_right?: string | null;
+    actions_bottom?: string | null;
+    actions_left?: string | null;
+    card_padding_top?: string | null;
+    card_padding_right?: string | null;
+    card_padding_bottom?: string | null;
+    card_padding_left?: string | null;
     actions?: NoticeAction[];
 }
 
 interface NoticeCache {
-    fetchedAt?: string;
+    fetchedAt?: string | number;
     notices?: MenuNotice[];
 }
 
 interface HiddenRow {
-    fetchedAt?: string;
+    fetchedAt?: string | number;
     ids?: string[];
+}
+
+function noticeStamp(value: unknown) {
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+    if (typeof value === 'string' && value.trim()) return value;
+    return '';
 }
 
 function safeUrl(value: unknown) {
@@ -81,7 +98,7 @@ function seenArea() {
     return chrome.storage.session ?? chrome.storage.local;
 }
 
-async function claimViews(fetchedAt: string, ids: string[]) {
+async function claimViews(fetchedAt: string | number, ids: string[]) {
     const area = seenArea();
     const stored = await area.get(SEEN_KEY);
     const row = stored[SEEN_KEY] as HiddenRow | undefined;
@@ -103,7 +120,7 @@ async function claimViews(fetchedAt: string, ids: string[]) {
     });
 }
 
-async function hideNotice(fetchedAt: string, id: string) {
+async function hideNotice(fetchedAt: string | number, id: string) {
     const stored = await chrome.storage.local.get(HIDDEN_KEY);
     const row = stored[HIDDEN_KEY] as HiddenRow | undefined;
     const ids = row?.fetchedAt === fetchedAt && Array.isArray(row.ids) ? row.ids : [];
@@ -120,6 +137,47 @@ function imageLength(value: unknown) {
     const max = unit === 'px' ? 800 : unit === 'rem' || unit === 'em' ? 40 : 100;
     if (!Number.isFinite(amount) || amount <= 0 || amount > max) return '';
     return `${amount}${unit}`;
+}
+
+function boxLength(value: unknown) {
+    const next = String(value || '').replace(/\s+/g, '').toLowerCase();
+    const match = next.match(/^(\d{1,4}(?:\.\d{1,2})?)(px|%|rem|em|vw|vh)$/);
+    if (!match) return '';
+    const amount = Number(match[1]);
+    const unit = match[2];
+    const max = unit === 'px' ? 800 : unit === 'rem' || unit === 'em' ? 40 : 100;
+    if (!Number.isFinite(amount) || amount < 0 || amount > max) return '';
+    return `${amount}${unit}`;
+}
+
+function floatActionStyle(notice: MenuNotice): React.CSSProperties {
+    const top = boxLength(notice.actions_top);
+    const right = boxLength(notice.actions_right);
+    const bottom = boxLength(notice.actions_bottom);
+    const left = boxLength(notice.actions_left);
+    return {
+        position: 'absolute',
+        zIndex: 2,
+        marginTop: 0,
+        top: top || 'auto',
+        bottom: bottom || (!top ? '8px' : 'auto'),
+        left: !left && !right ? '8px' : left || 'auto',
+        right: !left && !right ? '8px' : right || 'auto',
+    };
+}
+
+function floatPadStyle(notice: MenuNotice, reserveBottom: boolean): React.CSSProperties {
+    const top = boxLength(notice.card_padding_top);
+    const right = boxLength(notice.card_padding_right);
+    const bottom = boxLength(notice.card_padding_bottom);
+    const left = boxLength(notice.card_padding_left);
+    if (!top && !right && !bottom && !left) return reserveBottom ? { paddingBottom: 46 } : {};
+    return {
+        paddingTop: top || '10px',
+        paddingRight: right || '10px',
+        paddingBottom: bottom || '10px',
+        paddingLeft: left || '10px',
+    };
 }
 
 function buttonColor(value: unknown) {
@@ -156,15 +214,15 @@ interface MenuNoticesProps {
 
 const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
     const [items, setItems] = React.useState<MenuNotice[]>([]);
-    const [fetchedAt, setFetchedAt] = React.useState('');
+    const [fetchedAt, setFetchedAt] = React.useState<string | number>('');
 
     const reload = React.useCallback(async () => {
         const stored = await chrome.storage.local.get([CACHE_KEY, HIDDEN_KEY]);
         const cache = stored[CACHE_KEY] as NoticeCache | undefined;
-        const at = typeof cache?.fetchedAt === 'string' ? cache.fetchedAt : '';
+        const at = noticeStamp(cache?.fetchedAt);
         const hiddenRow = stored[HIDDEN_KEY] as HiddenRow | undefined;
         const hidden = new Set(
-            hiddenRow?.fetchedAt === at && Array.isArray(hiddenRow.ids) ? hiddenRow.ids : [],
+            at !== '' && hiddenRow?.fetchedAt === at && Array.isArray(hiddenRow.ids) ? hiddenRow.ids : [],
         );
         const rawNotices = cache?.notices;
         const notices = Array.isArray(rawNotices) ? rawNotices : [];
@@ -210,6 +268,31 @@ const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
                 const imageWidth = imageLength(notice.image_width);
                 const imageHeight = imageLength(notice.image_height);
                 const imageSized = Boolean(imageWidth || imageHeight);
+                const closeable = Boolean(notice.dismissible) && notice.once_per_user !== false;
+                const floatPlace = notice.actions_place === 'float';
+                const hasActionRow = Boolean(notice.actions?.length || (closeable && notice.dismiss_style !== 'icon'));
+                const floatActions = floatPlace && hasActionRow;
+                const imagePlace = notice.image_position === 'above_title' || notice.image_position === 'below_title' || notice.image_position === 'right' ? notice.image_position : 'below_body';
+                const imageOnRight = imagePlace === 'right' && Boolean(imageUrl);
+                const sideWidth = imageWidth || '72px';
+                const imageNode = imageUrl && imagePlace !== 'right' ? (
+                    <Box
+                        component="img"
+                        src={imageUrl}
+                        alt=""
+                        sx={{
+                            display: 'block',
+                            width: imageWidth || '100%',
+                            height: imageHeight || 'auto',
+                            maxWidth: '100%',
+                            maxHeight: imageSized ? 'none' : 72,
+                            objectFit: imageSized ? 'contain' : 'cover',
+                            borderRadius: 1,
+                            mt: imagePlace === 'above_title' ? 0 : 1,
+                            mb: imagePlace === 'below_body' ? 0 : 1,
+                        }}
+                    />
+                ) : null;
                 const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.92)' : '#111827';
                 const titleColor = themePaint?.title ?? textColor;
                 const mutedColor = isDarkMode ? 'rgba(255, 255, 255, 0.72)' : '#374151';
@@ -217,9 +300,9 @@ const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
                     <Box
                         key={notice.id}
                         component="article"
-                        className={`menu-notice${notice.dismissible && notice.dismiss_style === 'icon' ? ' has-dismiss-icon' : ''}`}
+                        className={`menu-notice${closeable && notice.dismiss_style === 'icon' ? ' has-dismiss-icon' : ''}${floatActions ? ' has-float-actions' : ''}`}
                         dir="rtl"
-                        style={{ direction: 'rtl', textAlign: 'right' }}
+                        style={{ direction: 'rtl', textAlign: 'right', padding: '10px', ...(floatPlace ? { position: 'relative', ...floatPadStyle(notice, hasActionRow) } : {}) }}
                         sx={{
                             p: 1.25,
                             borderRadius: 1.5,
@@ -230,35 +313,50 @@ const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
                             boxShadow: isDarkMode ? 'none' : '0 6px 16px rgba(15, 23, 42, 0.06)',
                         }}
                     >
-                        {notice.title ? (
+                        {imageOnRight ? (
+                            <div style={{ display: 'flex', direction: 'rtl', alignItems: 'center', gap: 8 }}>
+                                <img
+                                    src={imageUrl}
+                                    alt=""
+                                    style={{
+                                        display: 'block',
+                                        width: sideWidth,
+                                        height: imageHeight || 'auto',
+                                        maxWidth: sideWidth,
+                                        flex: '0 0 auto',
+                                        alignSelf: 'center',
+                                        objectFit: 'contain',
+                                        borderRadius: 4,
+                                    }}
+                                />
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                    {notice.title ? (
+                                        <Typography style={{ direction: 'rtl', textAlign: 'right' }} sx={{ fontFamily: 'iranyekan', fontSize: '0.84rem', fontWeight: 700, lineHeight: 1.6, color: titleColor }}>
+                                            {notice.title}
+                                        </Typography>
+                                    ) : null}
+                                    {notice.body ? (
+                                        <Typography style={{ direction: 'rtl', textAlign: 'right' }} sx={{ fontFamily: 'iranyekan', fontSize: '0.78rem', lineHeight: 1.7, color: mutedColor, whiteSpace: 'pre-wrap', mt: notice.title ? 0.4 : 0 }}>
+                                            {notice.body}
+                                        </Typography>
+                                    ) : null}
+                                </div>
+                            </div>
+                        ) : imagePlace === 'above_title' ? imageNode : null}
+                        {imageOnRight ? null : notice.title ? (
                             <Typography style={{ direction: 'rtl', textAlign: 'right' }} sx={{ fontFamily: 'iranyekan', fontSize: '0.84rem', fontWeight: 700, lineHeight: 1.6, color: titleColor }}>
                                 {notice.title}
                             </Typography>
                         ) : null}
-                        {notice.body ? (
+                        {imagePlace === 'below_title' ? imageNode : null}
+                        {imageOnRight || !notice.body ? null : (
                             <Typography style={{ direction: 'rtl', textAlign: 'right' }} sx={{ fontFamily: 'iranyekan', fontSize: '0.78rem', lineHeight: 1.7, color: mutedColor, whiteSpace: 'pre-wrap', mt: notice.title ? 0.4 : 0 }}>
                                 {notice.body}
                             </Typography>
-                        ) : null}
-                        {imageUrl ? (
-                            <Box
-                                component="img"
-                                src={imageUrl}
-                                alt=""
-                                sx={{
-                                    display: 'block',
-                                    width: imageWidth || '100%',
-                                    height: imageHeight || 'auto',
-                                    maxWidth: '100%',
-                                    maxHeight: imageSized ? 'none' : 72,
-                                    objectFit: imageSized ? 'contain' : 'cover',
-                                    borderRadius: 1,
-                                    mt: 1,
-                                }}
-                            />
-                        ) : null}
-                        {(notice.actions?.length || (notice.dismissible && notice.dismiss_style !== 'icon')) ? (
-                            <Box className="menu-notice-actions" style={{ direction: 'rtl', textAlign: 'right' }} sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1 }}>
+                        )}
+                        {imagePlace === 'below_body' ? imageNode : null}
+                        {(notice.actions?.length || (closeable && notice.dismiss_style !== 'icon')) ? (
+                            <Box className={`menu-notice-actions${floatActions ? ' is-float' : ''}`} style={{ direction: 'rtl', textAlign: 'right', ...(floatActions ? floatActionStyle(notice) : {}) }} sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 0.75, mt: floatActions ? 0 : 1 }}>
                                 {(notice.actions || []).map((action) => (
                                     <Box
                                         key={action.key || action.label}
@@ -281,7 +379,7 @@ const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
                                         {action.label || action.key}
                                     </Box>
                                 ))}
-                                {notice.dismissible && notice.dismiss_style !== 'icon' ? (
+                                {closeable && notice.dismiss_style !== 'icon' ? (
                                     <Box
                                         component="button"
                                         type="button"
@@ -305,7 +403,7 @@ const MenuNotices: React.FC<MenuNoticesProps> = ({ isDarkMode }) => {
                                 ) : null}
                             </Box>
                         ) : null}
-                        {notice.dismissible && notice.dismiss_style === 'icon' ? (
+                        {closeable && notice.dismiss_style === 'icon' ? (
                             <Box
                                 component="button"
                                 type="button"

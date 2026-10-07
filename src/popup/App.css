@@ -934,11 +934,21 @@ body[data-theme="light"] {
 }
 
 .menu-notice-actions {
-    justify-content: flex-start !important;
+    justify-content: flex-end !important;
+}
+
+.menu-notice.has-float-actions {
+    position: relative;
+}
+
+.menu-notice-actions.is-float {
+    position: absolute !important;
+    z-index: 2;
+    margin-top: 0 !important;
 }
 
 .menu-notice-close {
-    margin-right: auto !important;
+    margin-right: 0 !important;
 }
 
 .menu-notice.has-dismiss-icon {
@@ -947,8 +957,8 @@ body[data-theme="light"] {
 
 .menu-notice-dismiss-icon {
     position: absolute !important;
-    top: 4px !important;
-    left: 4px !important;
+    top: 7px !important;
+    left: 7px !important;
     z-index: 2;
     display: flex !important;
     align-items: center;
