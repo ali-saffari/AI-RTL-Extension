@@ -123,7 +123,9 @@ function getAISitesList() {
         'm365.cloud.microsoft',
         'copilot.cloud.microsoft',
         'app.notta.ai',
-        'app.roboflow.com'
+        'app.roboflow.com',
+        'codecraftapi.com',
+        'www.codecraftapi.com'
     ];
 
     return manualRtlState.aiSitesList;

@@ -248,6 +248,11 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://app.roboflow.com/*'],
         hostnames: ['app.roboflow.com']
     },
+    codecraft: {
+        name: 'CodeCraft API',
+        origins: ['*://codecraftapi.com/*', '*://www.codecraftapi.com/*'],
+        hostnames: ['codecraftapi.com', 'www.codecraftapi.com']
+    },
     harness: {
         name: 'DeepSeek Harness',
         origins: ['http://127.0.0.1/*', 'http://localhost/*'],

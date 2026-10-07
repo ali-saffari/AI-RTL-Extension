@@ -1081,7 +1081,8 @@ const AI_SITES = [
     'www.youtube.com', 'm.youtube.com',
     'm365.cloud.microsoft', 'copilot.cloud.microsoft',
     'app.notta.ai',
-    'app.roboflow.com'
+    'app.roboflow.com',
+    'codecraftapi.com', 'www.codecraftapi.com'
 ];
 
 function isAISite(hostname) {

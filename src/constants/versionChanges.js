@@ -75,6 +75,7 @@ export const versionChanges = [
     { id: '12', text: 'افزودن سایت Notta Brain', note: 'راست‌چین گفتگوی Notta Brain', icon: 'sites/notta.png', type: 'add', group: 'site' },
     { id: '13', text: 'افزودن سایت Roboflow', icon: 'sites/roboflow.png', type: 'add', group: 'site' },
     { id: '14', text: 'افزودن سایت DeepSeek Harness', note: 'راست‌چین هارنس محلی روی پورت ۳۰۸۰', icon: 'sites/harness.png', type: 'add', group: 'site' },
+    { id: '15', text: 'افزودن سایت CodeCraft API', icon: 'sites/codecraft.png', type: 'add', group: 'site' },
 ];
 
 /**

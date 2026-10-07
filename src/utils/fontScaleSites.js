@@ -105,6 +105,7 @@ export const FONT_SCALE_SITE_MODES = {
     'copilot.cloud.microsoft': 'font-size',
     'app.notta.ai': 'font-size',
     'app.roboflow.com': 'font-size',
+    'codecraftapi.com': 'font-size',
 };
 
 /*

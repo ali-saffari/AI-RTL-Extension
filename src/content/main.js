@@ -74,6 +74,7 @@ import { activateZerve } from './services/observer/zerve.js';
 import { activateSakana } from './services/observer/sakana.js';
 import { activateNotta } from './services/notta.js';
 import { activateRoboflow } from './services/roboflow.js';
+import { activateCodecraft } from './services/codecraft.js';
 import { activateHarness, stopHarness } from './services/harness.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
@@ -405,6 +406,10 @@ const serviceConfig = {
     roboflow: {
         urls: ["app.roboflow.com"],
         activate: activateRoboflow
+    },
+    codecraft: {
+        urls: ["codecraftapi.com", "www.codecraftapi.com"],
+        activate: activateCodecraft
     },
     harness: {
         urls: ["127.0.0.1", "localhost"],
