@@ -1,4 +1,4 @@
-:root {
+html.ai-rtl-has-font {
     --ai-rtl-font: iranyekan, sans-serif;
 }
 
@@ -40,43 +40,47 @@ html:not(.ai-rtl-code-algorithm) .FontSetGPT [data-language],
 html:not(.ai-rtl-code-algorithm) .FontSet pre [dir],
 html:not(.ai-rtl-code-algorithm) .FontSetGPT pre [dir],
 html:not(.ai-rtl-code-algorithm) .FontSet code [dir],
-html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir] {
+html:not(.ai-rtl-code-algorithm) .FontSetGPT code [dir],
+html:not(.ai-rtl-code-algorithm) .FontSet [class^="InlineCode-"],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT [class^="InlineCode-"],
+html:not(.ai-rtl-code-algorithm) .FontSet [class*=" InlineCode-"],
+html:not(.ai-rtl-code-algorithm) .FontSetGPT [class*=" InlineCode-"] {
     direction: ltr !important;
     text-align: left !important;
     unicode-bidi: isolate;
 }
 
-.FontSet {
+html.ai-rtl-has-font .FontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSet p{
+html.ai-rtl-has-font .FontSet p{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
-.FontSet b{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-
-
-.FontSet h1{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-.FontSet h2{
+html.ai-rtl-has-font .FontSet b{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSet h3{
+
+html.ai-rtl-has-font .FontSet h1{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
-.FontSet h4{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-.FontSet li{
+html.ai-rtl-has-font .FontSet h2{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSet,
-.FontSet :is(
+html.ai-rtl-has-font .FontSet h3{
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+html.ai-rtl-has-font .FontSet h4{
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+html.ai-rtl-has-font .FontSet li{
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+html.ai-rtl-has-font .FontSet,
+html.ai-rtl-has-font .FontSet :is(
     p, li, dt, dd,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
@@ -91,30 +95,30 @@ body.rtl-algorithm-active [data-code-wrap] {
     text-align: left !important;
 }
 
-.FontSet :is(pre, code, kbd, samp) {
+html.ai-rtl-has-font .FontSet :is(pre, code, kbd, samp) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }
 
-span.FontSet,
-.FontSet .body-sm,
-[data-sidebar="menu-item"].FontSet span {
+html.ai-rtl-has-font span.FontSet,
+html.ai-rtl-has-font .FontSet .body-sm,
+html.ai-rtl-has-font [data-sidebar="menu-item"].FontSet span {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-textarea.FontSetImportant{
+html.ai-rtl-has-font textarea.FontSetImportant{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetImportant2 {
+html.ai-rtl-has-font .FontSetImportant2 {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
 
-.FontSetImportant {
+html.ai-rtl-has-font .FontSetImportant {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
-.chat-input-container textarea.FontSetImportant {
+html.ai-rtl-has-font .chat-input-container textarea.FontSetImportant {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -122,7 +126,7 @@ textarea.FontSetImportant{
 /*    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;*/
 /*}*/
 
-.FontSetImportantGPT , .FontSetImportantGPT p , .FontSetImportantGPT li  {
+html.ai-rtl-has-font .FontSetImportantGPT , html.ai-rtl-has-font .FontSetImportantGPT p , html.ai-rtl-has-font .FontSetImportantGPT li  {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -131,15 +135,14 @@ textarea.FontSetImportant{
     direction: ltr !important;
 }
 
-.FontSetGPT {
+html.ai-rtl-has-font .FontSetGPT {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 /* ChatGPT assistant Markdown often applies its own font on semantic text blocks.
    Enforce the selected Persian font only on actual prose blocks instead of
-   the old expensive `.FontSetGPT *` universal descendant selector.
-   Keep in sync with applySelectedFont.js. */
-.FontSetGPT :where(
+   the old expensive `.FontSetGPT *` universal descendant selector. */
+html.ai-rtl-has-font .FontSetGPT :where(
     p, li, dt, dd,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
@@ -148,23 +151,25 @@ textarea.FontSetImportant{
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetGPT .katex {
+html.ai-rtl-has-font .FontSetGPT .katex {
     font-family: KaTeX_Main, "Times New Roman", serif !important;
 }
 
-.FontSetGPT pre,
-.FontSetGPT code,
-.FontSetGPT .cm-content,
-.FontSetGPT .cm-line,
-.FontSetGPT .cm-editor,
-.FontSetGPT .md-code-block,
-.FontSetGPT [data-streamdown="code-block"],
-.FontSetGPT [data-language] {
+html.ai-rtl-has-font .FontSetGPT pre,
+html.ai-rtl-has-font .FontSetGPT code,
+html.ai-rtl-has-font .FontSetGPT .cm-content,
+html.ai-rtl-has-font .FontSetGPT .cm-line,
+html.ai-rtl-has-font .FontSetGPT .cm-editor,
+html.ai-rtl-has-font .FontSetGPT .md-code-block,
+html.ai-rtl-has-font .FontSetGPT [data-streamdown="code-block"],
+html.ai-rtl-has-font .FontSetGPT [data-language],
+html.ai-rtl-has-font .FontSetGPT [class^="InlineCode-"],
+html.ai-rtl-has-font .FontSetGPT [class*=" InlineCode-"] {
     font-family: revert !important;
 }
 
-.FontSetGPT .FontSetCodeBlocksGPT,
-.FontSetCodeBlocksGPT {
+html.ai-rtl-has-font .FontSetGPT .FontSetCodeBlocksGPT,
+html.ai-rtl-has-font .FontSetCodeBlocksGPT {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -183,14 +188,18 @@ textarea.FontSetImportant{
 
 
 .items-stretch .items-start code, .items-stretch .items-start pre {
-    font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
     direction: ltr !important;
 }
 
-.items-stretch .items-start code.FontSetCodeBlocksGPT,
-.items-stretch .items-start pre.FontSetCodeBlocksGPT,
-.items-stretch .items-start .FontSetCodeBlocksGPT,
-.items-stretch .items-start .FontSetCodeBlocksGPT :where(
+html.ai-rtl-has-font .items-stretch .items-start code,
+html.ai-rtl-has-font .items-stretch .items-start pre {
+    font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace !important;
+}
+
+html.ai-rtl-has-font .items-stretch .items-start code.FontSetCodeBlocksGPT,
+html.ai-rtl-has-font .items-stretch .items-start pre.FontSetCodeBlocksGPT,
+html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT,
+html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
     p, span, div, mark, a,
     h1, h2, h3, h4, h5, h6,
     li, label, button, input, textarea, select, option,
@@ -235,8 +244,8 @@ textarea.FontSetImportant{
     text-align: left !important;
 }
 
-.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]),
-.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex):not([dir="rtl"]) {
+.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]),
+.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]) {
     text-align: left !important;
 }
 
@@ -376,7 +385,9 @@ html.ai-rtl-code-algorithm pre[dir="rtl"],
 html.ai-rtl-code-algorithm code[dir="rtl"],
 html.ai-rtl-code-algorithm .cm-content[dir="rtl"],
 html.ai-rtl-code-algorithm .cm-line[dir="rtl"],
-html.ai-rtl-code-algorithm .md-code-block[dir="rtl"] {
+html.ai-rtl-code-algorithm .md-code-block[dir="rtl"],
+html.ai-rtl-code-algorithm [class^="InlineCode-"][dir="rtl"],
+html.ai-rtl-code-algorithm [class*=" InlineCode-"][dir="rtl"] {
     direction: rtl !important;
     text-align: right !important;
     unicode-bidi: isolate;
@@ -399,24 +410,24 @@ html.ai-rtl-code-algorithm [data-ai-rtl-comment="body"] {
 }
 
 /* Persian/RTL code boxes: override site monospace on the block and its text elements */
-html.ai-rtl-code-algorithm code.FontSet,
-html.ai-rtl-code-algorithm code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm pre.FontSet,
-html.ai-rtl-code-algorithm pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm .cm-content.FontSet,
-html.ai-rtl-code-algorithm .cm-content.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm .cm-line.FontSet,
-html.ai-rtl-code-algorithm .cm-line.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm .md-code-block.FontSet,
-html.ai-rtl-code-algorithm .md-code-block.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet,
-html.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
-html.ai-rtl-code-algorithm [data-language].FontSet,
-html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td) {
+html.ai-rtl-has-font.ai-rtl-code-algorithm code.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm pre.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm .cm-content.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm .cm-content.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm .cm-line.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm .cm-line.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm .md-code-block.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm .md-code-block.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm [data-streamdown="code-block"].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td),
+html.ai-rtl-has-font.ai-rtl-code-algorithm [data-language].FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, label, button, em, strong, b, i, small, th, td) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.language-plaintext.FontSet {
+html.ai-rtl-has-font .language-plaintext.FontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -439,7 +450,7 @@ html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a,
 
 
 
-.FontSet span.katex-display{
+.FontSet .katex-display{
     direction: ltr;
 }
 
@@ -553,7 +564,7 @@ html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a,
 
 /*----------------claud----------------*/
 
-.FontSet .font-claude-message , .FontSet .font-user-message  , .FontSet .ProseMirror {
+html.ai-rtl-has-font .FontSet .font-claude-message , html.ai-rtl-has-font .FontSet .font-user-message  , html.ai-rtl-has-font .FontSet .ProseMirror {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 }
 
@@ -630,8 +641,11 @@ html.ai-rtl-code-algorithm [data-language].FontSet :where(p, span, div, mark, a,
  
     direction: rtl;
     text-align: left;
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 
+}
+
+html.ai-rtl-has-font .AsRtlClaudeList .whitespace-nowrap {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 }
 
 
@@ -671,7 +685,7 @@ copilot
 */
 
 
-.CopilotFontSet {
+html.ai-rtl-has-font .CopilotFontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif);
 }
 
@@ -745,11 +759,11 @@ copilot
 /*----*/
 
 
-.FontSetPerplexity .font-sans {
+html.ai-rtl-has-font .FontSetPerplexity .font-sans {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetPerplexity h2 {
+html.ai-rtl-has-font .FontSetPerplexity h2 {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -757,17 +771,17 @@ html:not(.ai-rtl-code-algorithm) .FontSetPerplexity code {
     direction: ltr !important;
 }
 
-html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
-html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
+html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
+html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-.FontSetImportant .font-display {
+html.ai-rtl-has-font .FontSetImportant .font-display {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 
-.AsRtl .font-display {
+html.ai-rtl-has-font .AsRtl .font-display {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -978,7 +992,7 @@ html.ai-rtl-has-font .ds-markdown h4 {
 
 
 
-pending-request {
+html.ai-rtl-has-font pending-request {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 /*grok*/
@@ -1283,7 +1297,7 @@ a.AsSBtn.AsDonate {
     font-size: 16px !important;
 }
 
-.AsOkNotebooklm[dir="rtl"] .ng-star-inserted:not(
+html.ai-rtl-has-font .AsOkNotebooklm[dir="rtl"] .ng-star-inserted:not(
     [class*="icon"],
     [class*="Icon"],
     [class*="symbol"],
@@ -1364,16 +1378,22 @@ textarea[spellcheck="true"]::spelling-error,
 /*--------Vivado-------------*/
 
 .FontSetVivadoInput {
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
     font-size: 10px;
 
 }
 
+html.ai-rtl-has-font .FontSetVivadoInput {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
 
 .FontSetVivado {
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
     font-size: 10px !important;
     line-height: 30px !important;
+}
+
+html.ai-rtl-has-font .FontSetVivado {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
 

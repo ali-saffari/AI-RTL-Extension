@@ -15,7 +15,8 @@ function applyManusFont() {
             html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre * {
+            html.ai-rtl-has-font :is(code, pre, kbd, samp),
+            html.ai-rtl-has-font :is(code, pre) * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
         </style>`).appendTo('head');

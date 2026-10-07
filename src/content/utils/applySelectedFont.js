@@ -25,55 +25,12 @@ let applyingFontId = null;
 let pageEffectsEnabled = true;
 let harnessFontsSuppressed = false;
 
-const NONE_FONT_OVERRIDE_CSS = `
-html.ai-rtl-font-none .FontSet,
-html.ai-rtl-font-none .FontSet p,
-html.ai-rtl-font-none .FontSet b,
-html.ai-rtl-font-none .FontSet h1,
-html.ai-rtl-font-none .FontSet h2,
-html.ai-rtl-font-none .FontSet h3,
-html.ai-rtl-font-none .FontSet li,
-html.ai-rtl-font-none .FontSet :where(
-    p, span, div, mark, a,
-    h1, h2, h3, h4, h5, h6,
-    li, label, button, input, textarea, select, option,
-    em, strong, b, i, small, time, cite, q, blockquote,
-    figcaption, summary, dt, dd, th, td, caption, legend,
-    [role="heading"], [role="button"], [role="menuitem"], [role="option"], [role="tab"]
-),
-html.ai-rtl-font-none textarea.FontSetImportant,
-html.ai-rtl-font-none .FontSetImportant,
-html.ai-rtl-font-none .FontSetImportant2,
-html.ai-rtl-font-none .FontSetImportantGPT,
-html.ai-rtl-font-none .FontSetImportantGPT p,
-html.ai-rtl-font-none .FontSetImportantGPT li,
-/* Mirrors the .FontSetGPT prose targets in public/style.css. */
-html.ai-rtl-font-none .FontSetGPT,
-html.ai-rtl-font-none .FontSetGPT :where(
-    p, li, dt, dd,
-    h1, h2, h3, h4, h5, h6,
-    blockquote, figcaption,
-    td, th
-),
-html.ai-rtl-font-none .FontSetCodeBlocksGPT,
-html.ai-rtl-font-none .chat-input-container textarea.FontSetImportant,
-html.ai-rtl-font-none .language-plaintext.FontSet,
-html.ai-rtl-font-none .FontSet .font-claude-message,
-html.ai-rtl-font-none .FontSet .font-user-message,
-html.ai-rtl-font-none .FontSet .ProseMirror,
-html.ai-rtl-font-none .AsRtlClaudeList .whitespace-nowrap,
-html.ai-rtl-font-none .CopilotFontSet,
-html.ai-rtl-font-none .FontSetPerplexity .font-sans,
-html.ai-rtl-font-none .FontSetPerplexity h2,
-html.ai-rtl-font-none .FontSetImportant .font-display,
-html.ai-rtl-font-none .AsRtl .font-display,
-html.ai-rtl-font-none pending-request,
-html.ai-rtl-font-none .AsOkNotebooklm[dir="rtl"] .ng-star-inserted,
-html.ai-rtl-font-none .FontSetVivadoInput,
-html.ai-rtl-font-none .FontSetVivado {
-    font-family: unset !important;
+function clearInjectedFontStyle() {
+    const style = document.getElementById(STYLE_ID);
+    if (style) {
+        style.textContent = '';
+    }
 }
-`;
 
 function getRuntime() {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
@@ -106,7 +63,7 @@ function setRootFontState(fontFamilyValue, isNone) {
         root.style.removeProperty('--ai-rtl-font');
         root.classList.add(NONE_FONT_CLASS);
         root.classList.remove(HAS_FONT_CLASS);
-        ensureStyleElement(STYLE_ID).textContent = NONE_FONT_OVERRIDE_CSS;
+        clearInjectedFontStyle();
         return;
     }
 

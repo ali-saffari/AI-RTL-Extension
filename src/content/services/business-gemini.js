@@ -66,19 +66,7 @@ async function findAndProcessDisclaimerInShadowRoots(rtlAlgorithm = 'advanced_fu
                     .AsRtl {
                         direction: rtl !important;
                     }
-                    .FontSet {
-                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-                    }
-                    .disclaimer {
-                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-                    }
-                    .conversation-title {
-                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-                    }
-                    .greeting {
-                        font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-                    }
-                    .greeting-subtitle {
+                    :host-context(html.ai-rtl-has-font) :is(.FontSet, .disclaimer, .conversation-title, .greeting, .greeting-subtitle) {
                         font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
                     }
                     .AsSBtn {

@@ -127,18 +127,18 @@ function applyYoutubeStudioChrome() {
             direction: ltr !important;
             text-align: left !important;
         }
-        .persistent-panel-wrapper.FontSet,
-        .persistent-panel-wrapper.FontSet *:not(code):not(pre):not(kbd):not(samp):not(yt-icon):not(yt-icon-shape):not(tp-yt-iron-icon):not(iron-icon):not(svg):not(path):not(use) {
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet,
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet *:not(code):not(pre):not(kbd):not(samp):not(yt-icon):not(yt-icon-shape):not(tp-yt-iron-icon):not(iron-icon):not(svg):not(path):not(use) {
             font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
-        .persistent-panel-wrapper.FontSet yt-icon,
-        .persistent-panel-wrapper.FontSet yt-icon-shape,
-        .persistent-panel-wrapper.FontSet tp-yt-iron-icon,
-        .persistent-panel-wrapper.FontSet iron-icon {
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet yt-icon,
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet yt-icon-shape,
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet tp-yt-iron-icon,
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet iron-icon {
             font-family: inherit !important;
         }
-        yt-list-item-view-model [role="text"].FontSet,
-        yt-list-item-view-model[dir="rtl"] [role="text"] {
+        html.ai-rtl-has-font yt-list-item-view-model [role="text"].FontSet,
+        html.ai-rtl-has-font yt-list-item-view-model[dir="rtl"] [role="text"] {
             font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
         /* #video-title[dir="rtl"],

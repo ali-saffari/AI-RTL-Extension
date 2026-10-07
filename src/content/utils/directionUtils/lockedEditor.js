@@ -419,13 +419,14 @@ function lockedEditorDirRule(selector, direction, setTextAlign, extraCss = '') {
     if (setTextAlign) {
         rule += `text-align:${align}!important;`;
     }
-    if (selector.includes('>pre:') && direction !== 'rtl') {
-        rule += 'font-family:revert!important;';
-    }
     if (extraCss) {
         rule += extraCss;
     }
-    return `${rule}}`;
+    let fontRule = '';
+    if (selector.includes('>pre:') && direction !== 'rtl') {
+        fontRule = `html.ai-rtl-has-font ${selector}{font-family:revert!important}`;
+    }
+    return `${rule}}${fontRule}`;
 }
 
 function majorityDirection(directions) {

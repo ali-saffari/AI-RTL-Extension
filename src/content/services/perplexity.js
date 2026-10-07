@@ -110,10 +110,10 @@ function observePerplexityCodeFonts() {
 export function setPerplexity(rtlAlgorithm = 'advanced_full') {
     if (!AQ('#perplexity-font-style').length) {
         AQ(`<style id="perplexity-font-style">
-            html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
-            html.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i),
-            html.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet,
-            html.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
+            html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet,
+            html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity code.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i),
+            html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet,
+            html.ai-rtl-has-font.ai-rtl-code-algorithm .FontSetPerplexity pre.FontSet :where(p, span, div, mark, a, h1, h2, h3, h4, h5, h6, li, em, strong, b, i) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
         </style>`).appendTo('head');

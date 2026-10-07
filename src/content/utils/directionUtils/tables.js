@@ -2,6 +2,8 @@
  * Unified direction for HTML tables and ARIA role=table.
  * Called from applyRtlToContainer on every site. Extra tweaks:
  * - ChatGPT: force direction:rtl !important on RTL tables
+ * - ChatGPT: a td that contains .katex stays direction:ltr !important.
+ *   No katex leaves the table on the normal direction path.
  * - Grok: mark mask-image parents and swap right-1 to left-1
  */
 
@@ -21,6 +23,22 @@ const ARIA_TABLE_STRUCTURE_SELECTOR = '[role="table"], [role="row"], [role="cell
 const ARIA_TABLE_CELL_SELECTOR = '[role="cell"], [role="columnheader"], [role="rowheader"]';
 const TABLE_FONT_SKIP_SELECTOR = `${CODE_BLOCK_SELECTOR}, ${KATEX_SELECTOR}, svg, math`;
 const HAD_TEXT_LEFT_ATTR = 'data-ai-rtl-had-text-left';
+
+function lockChatGptKatexCells($table, cellSelector) {
+    if (!$table || !$table.length || typeof $table.find !== 'function') {
+        return;
+    }
+    const seen = new Set();
+    $table.find(cellSelector).find('.katex').each(function () {
+        const cell = AQ(this).closest(cellSelector)[0];
+        if (!cell || seen.has(cell)) {
+            return;
+        }
+        seen.add(cell);
+        cell.setAttribute('dir', 'ltr');
+        cell.style.setProperty('direction', 'ltr', 'important');
+    });
+}
 
 function dropTextLeft($nodes) {
     if (!$nodes || !$nodes.length) {
@@ -67,9 +85,6 @@ export function processTablesInContainer(container, options = {}) {
     container.find('table').each(function() {
         const $table = AQ(this);
 
-
-
-
         setDebugAttr($table, 'data-debug-mode-site', siteConfig);
         setDebugAttr($table, 'data-debug-mode-2', 'table-element');
 
@@ -79,6 +94,9 @@ export function processTablesInContainer(container, options = {}) {
         });
 
         if (unprocessedItems.length === 0) {
+            if (siteConfig === 'chatgpt') {
+                lockChatGptKatexCells($table, 'td');
+            }
             applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
             return;
         }
@@ -138,6 +156,9 @@ export function processTablesInContainer(container, options = {}) {
             if (tableDirection === 'rtl') {
                 dropTextLeft($table.find('.text-left').add($table.filter('.text-left')));
             }
+            if (siteConfig === 'chatgpt') {
+                lockChatGptKatexCells($table, 'td');
+            }
 
             applyFontClassToTableContents($table, fontClass, TABLE_STRUCTURE_SELECTOR, TABLE_CELL_SELECTOR);
 
@@ -154,6 +175,9 @@ export function processTablesInContainer(container, options = {}) {
         });
 
         if (unprocessedAriaItems.length === 0) {
+            if (siteConfig === 'chatgpt') {
+                lockChatGptKatexCells($table, ARIA_TABLE_CELL_SELECTOR);
+            }
             applyFontClassToTableContents($table, fontClass, ARIA_TABLE_STRUCTURE_SELECTOR, ARIA_TABLE_CELL_SELECTOR);
             return;
         }
@@ -189,6 +213,9 @@ export function processTablesInContainer(container, options = {}) {
             );
             if (tableDirection === 'rtl') {
                 dropTextLeft($table.find('.text-left').add($table.filter('.text-left')));
+            }
+            if (siteConfig === 'chatgpt') {
+                lockChatGptKatexCells($table, ARIA_TABLE_CELL_SELECTOR);
             }
 
             applyFontClassToTableContents($table, fontClass, ARIA_TABLE_STRUCTURE_SELECTOR, ARIA_TABLE_CELL_SELECTOR);

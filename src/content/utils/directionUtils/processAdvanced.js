@@ -19,6 +19,7 @@ import {
     CUSTOM_CODE_BLOCK_SELECTOR,
     isCodeMirrorCodeBlock,
     isCustomCodeBlock,
+    isInlineCodeClassElement,
     normalizeTagNameList,
     setDebugAttr
 } from './shared.js';
@@ -447,7 +448,8 @@ export function processTextElementsAdvanced(container, options = {}) {
         }
 
         // Custom code boxes that don't use pre/code (data-language, data-streamdown="code-block")
-        if (isCustomCodeBlock($element)) {
+        // ChatGPT inline code is a hashed InlineCode-* class, not a <code> tag.
+        if (isCustomCodeBlock($element) || isInlineCodeClassElement($element)) {
             processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
             return;
         }

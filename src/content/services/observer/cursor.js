@@ -28,16 +28,12 @@ function applyCursorChrome() {
             html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(.monaco-editor):not(.monaco-editor *):not([class*="codicon"]):not([class*="icon"]):not([class*="Icon"]) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre *,
-            .monaco-editor, .monaco-editor * {
+            html.ai-rtl-has-font :is(code, pre, kbd, samp, .monaco-editor),
+            html.ai-rtl-has-font :is(code, pre, .monaco-editor) * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
-            .codicon,
-            [class*="codicon"],
-            .FontSet .codicon,
-            .FontSet [class*="codicon"],
-            .codicon.FontSet,
-            [class*="codicon"].FontSet {
+            html.ai-rtl-has-font :is(.codicon, [class*="codicon"]),
+            html.ai-rtl-has-font .FontSet :is(.codicon, [class*="codicon"]) {
                 font-family: codicon, Codicon !important;
             }
         </style>`).appendTo('head');

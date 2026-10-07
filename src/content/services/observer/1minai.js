@@ -37,7 +37,8 @@ function apply1minaiChrome() {
             html.ai-rtl-has-font .ant-input {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre * {
+            html.ai-rtl-has-font :is(code, pre, kbd, samp),
+            html.ai-rtl-has-font :is(code, pre) * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
         </style>`).appendTo('head');

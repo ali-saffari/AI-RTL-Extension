@@ -11,6 +11,7 @@ import {
     CODE_BLOCK_SELECTOR,
     CUSTOM_CODE_BLOCK_SELECTOR,
     isCodeMirrorCodeBlock,
+    isInlineCodeClassElement,
     logDebugProcess,
     setDebugAttr,
     unwrapElement
@@ -191,10 +192,24 @@ function getCodeTextLength($element) {
     return (($element.text && $element.text()) || '').length;
 }
 
+function inlineCodeNeedsRtl($element) {
+    const el = unwrapElement($element);
+    if (!el || !isInlineCodeClassElement($element)) {
+        return false;
+    }
+    if (!shouldApplyRtlToCodeBlock(($element.text && $element.text()) || '')) {
+        return false;
+    }
+    return el.getAttribute('dir') !== 'rtl';
+}
+
 /** Independent skip for code blocks — not tied to container shouldProcess. */
 function shouldProcessCodeBlock($element) {
     const el = unwrapElement($element);
     if (!el) {
+        return true;
+    }
+    if (inlineCodeNeedsRtl($element)) {
         return true;
     }
     if (!$element.hasClass(CODE_PROCESSED_CLASS)) {
@@ -232,7 +247,18 @@ export function processCodeLikeElement($element, element, options = {}) {
 
     const text = $element.text();
     const $targets = getCodeBlockDirectionTargets($element);
-    const kind = codeBlockKind(unwrapElement($element));
+    const el = unwrapElement($element);
+    const kind = codeBlockKind(el);
+    // Unified mode sets forceCodeLtr for fenced code. Persian inline code still
+    // follows the code-box switch, including inside a blockquote.
+    if (isInlineCodeClassElement($element) && shouldApplyRtlToCodeBlock(text)) {
+        setDebugAttr($element, 'data-debug-mode', 'inline-code-prose-rtl');
+        $targets.each(function() {
+            applyProseCodeRtl(AQ(this));
+        });
+        markCodeBlockProcessed($element, options);
+        return;
+    }
     if (!forceCodeLtr && kind === 'prose') {
         setDebugAttr($element, 'data-debug-mode', 'code-prose-rtl');
         $targets.each(function() {

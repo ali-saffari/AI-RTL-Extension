@@ -108,9 +108,9 @@ function ensureErnieStyles() {
             transform: translateX(var(--cos-text-body-lg)) !important;
         }
 
-        body.cos-chat.rtl-algorithm-active #ci-area #chat-textarea,
-        body.cos-chat.rtl-algorithm-active #ci-area .ci-textarea,
-        body.cos-chat.rtl-algorithm-active #ci-area .ci-editor {
+        html.ai-rtl-has-font body.cos-chat.rtl-algorithm-active #ci-area #chat-textarea,
+        html.ai-rtl-has-font body.cos-chat.rtl-algorithm-active #ci-area .ci-textarea,
+        html.ai-rtl-has-font body.cos-chat.rtl-algorithm-active #ci-area .ci-editor {
             font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
 

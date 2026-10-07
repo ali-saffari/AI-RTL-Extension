@@ -9,7 +9,7 @@ const configDefault = {
     smallElement: ".wQN2Jd",
     textarea: ".Txyg0d textarea",
     copyright: ".esoFne ",
-    style: ".Y3BBE, .VndcI , .T286Pc { font-family: 'iranyekan' !important; } .CEpIFc { display: none !important; }"
+    style: "html.ai-rtl-has-font .Y3BBE, html.ai-rtl-has-font .VndcI, html.ai-rtl-has-font .T286Pc { font-family: 'iranyekan' !important; } .CEpIFc { display: none !important; }"
 };
 
 // Get config from storage or use default

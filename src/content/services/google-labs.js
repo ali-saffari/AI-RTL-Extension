@@ -9,29 +9,31 @@ export function setGoogleLabs(rtlAlgorithm = 'advanced_full') {
             html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not(md-icon):not([class*="material-icons"]):not([class*="material-symbols"]):not([class*="google-symbols"]) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre * {
+            html.ai-rtl-has-font :is(code, pre, kbd, samp),
+            html.ai-rtl-has-font :is(code, pre) * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
-            i, svg, md-icon,
-            .material-icons,
-            .material-icons-outlined,
-            .material-icons-round,
-            .material-icons-sharp,
-            .material-icons-two-tone,
-            .material-symbols-outlined,
-            .material-symbols-rounded,
-            .material-symbols-sharp,
-            .google-symbols,
-            [class*="material-icons"],
-            [class*="material-symbols"],
-            [class*="google-symbols"],
-            .FontSet i,
-            .FontSet svg,
-            .FontSet md-icon,
-            .FontSet .google-symbols,
-            .FontSet [class*="material-icons"],
-            .FontSet [class*="material-symbols"],
-            .FontSet [class*="google-symbols"] {
+            html.ai-rtl-has-font :is(
+                i, svg, md-icon,
+                .material-icons,
+                .material-icons-outlined,
+                .material-icons-round,
+                .material-icons-sharp,
+                .material-icons-two-tone,
+                .material-symbols-outlined,
+                .material-symbols-rounded,
+                .material-symbols-sharp,
+                .google-symbols,
+                [class*="material-icons"],
+                [class*="material-symbols"],
+                [class*="google-symbols"]
+            ),
+            html.ai-rtl-has-font .FontSet :is(
+                i, svg, md-icon, .google-symbols,
+                [class*="material-icons"],
+                [class*="material-symbols"],
+                [class*="google-symbols"]
+            ) {
                 font-family: 'Google Symbols', 'google-symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons', 'Material Icons Outlined' !important;
             }
         </style>`).appendTo('head');

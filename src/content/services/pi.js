@@ -8,7 +8,8 @@ export function setPi(rtlAlgorithm = 'advanced_full') {
             html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
-            code, pre, kbd, samp, code *, pre * {
+            html.ai-rtl-has-font :is(code, pre, kbd, samp),
+            html.ai-rtl-has-font :is(code, pre) * {
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
             }
         </style>`).appendTo('head');

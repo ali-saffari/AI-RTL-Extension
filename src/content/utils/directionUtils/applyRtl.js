@@ -23,7 +23,7 @@ import {
 } from './lockedEditor.js';
 import { applyRemoveDirAuto, processTextElementsAdvanced } from './processAdvanced.js';
 import { isInvalidatedError, resolveRtlAlgorithm } from './settings.js';
-import { CUSTOM_CODE_BLOCK_SELECTOR, KATEX_SELECTOR, clearDebugSkipReason, logDebugProcess, logDebugSkipOnce, unwrapElement } from './shared.js';
+import { CUSTOM_CODE_BLOCK_SELECTOR, INLINE_CODE_CLASS_SELECTOR, KATEX_SELECTOR, clearDebugSkipReason, logDebugProcess, logDebugSkipOnce, unwrapElement } from './shared.js';
 import { processTablesInContainer } from './tables.js';
 import {
     applyDirectionMarker,
@@ -36,6 +36,7 @@ const INNER_DIR_SKIP_SELECTOR = [
     'pre', 'code', 'textarea', 'input', 'script', 'style', 'svg', 'math',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
     CUSTOM_CODE_BLOCK_SELECTOR,
+    INLINE_CODE_CLASS_SELECTOR,
     KATEX_SELECTOR
 ].join(', ');
 

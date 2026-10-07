@@ -32,14 +32,19 @@ export const CUSTOM_CODE_BLOCK_SELECTOR = [
     '.scriptor-component-code-block'
 ].join(', ');
 
+// ChatGPT CSS-module inline code, e.g. class="InlineCode-abc123".
+// InlineCodePane- is a different widget and must not match.
+export const INLINE_CODE_CLASS_SELECTOR = '[data-markdown-copy="inline-code"], [class^="InlineCode-"], [class*=" InlineCode-"]';
+
 export const CODE_BLOCK_HOST_SELECTOR = [
     'pre',
     '.cm-content', '.cm-editor', '.cm-line', '.md-code-block',
-    CUSTOM_CODE_BLOCK_SELECTOR
+    CUSTOM_CODE_BLOCK_SELECTOR,
+    INLINE_CODE_CLASS_SELECTOR
 ].join(', ');
 
 export const STANDARD_CODE_BLOCK_SELECTOR = 'code, pre, .cm-content, .cm-editor, .md-code-block';
-export const CODE_BLOCK_SELECTOR = `${STANDARD_CODE_BLOCK_SELECTOR}, ${CUSTOM_CODE_BLOCK_SELECTOR}`;
+export const CODE_BLOCK_SELECTOR = `${STANDARD_CODE_BLOCK_SELECTOR}, ${CUSTOM_CODE_BLOCK_SELECTOR}, ${INLINE_CODE_CLASS_SELECTOR}`;
 const INLINE_CODE_TAGS = new Set(['code', 'kbd', 'samp']);
 
 export function isInsideCodeBlock(el) {
@@ -71,6 +76,18 @@ export function isCustomCodeBlock($element) {
     }
     try {
         return el.matches(CUSTOM_CODE_BLOCK_SELECTOR);
+    } catch {
+        return false;
+    }
+}
+
+export function isInlineCodeClassElement($element) {
+    const el = unwrapElement($element);
+    if (!el || el.nodeType !== 1 || typeof el.matches !== 'function') {
+        return false;
+    }
+    try {
+        return el.matches(INLINE_CODE_CLASS_SELECTOR);
     } catch {
         return false;
     }
