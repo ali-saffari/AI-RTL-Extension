@@ -215,8 +215,12 @@ function App() {
     const [algorithmHintDismissed, setAlgorithmHintDismissed] = React.useState<boolean>(true);
     const [notebookNeedsReenable, setNotebookNeedsReenable] = React.useState<boolean>(false);
     const [settingsOpen, setSettingsOpen] = React.useState(true);
-    // Temporarily keep the settings panel always open.
-    const settingsAlwaysOpen = true;
+    const [narrowPopup, setNarrowPopup] = React.useState(false);
+    const narrowPopupRef = React.useRef(false);
+    narrowPopupRef.current = narrowPopup;
+    // On a wide window the settings panel stays open. On a narrow window it
+    // collapses to the side toggle so the popup does not scroll horizontally.
+    const settingsAlwaysOpen = !narrowPopup;
     const [extensionEnabled, setExtensionEnabled] = React.useState(true);
     const [siteSettingsFocus, setSiteSettingsFocus] = React.useState<{ key: string; nonce: number } | null>(null);
     const [openServiceKey, setOpenServiceKey] = React.useState<string | null>(null);
@@ -270,11 +274,7 @@ function App() {
                 if (result.isDarkMode !== undefined) {
                     setIsDarkMode(result.isDarkMode);
                 }
-                if (result.popupSettingsOpen !== undefined && !settingsAlwaysOpen) {
-                    setSettingsOpen(result.popupSettingsOpen === true);
-                } else {
-                    setSettingsOpen(true);
-                }
+                // Settings open state is chosen after the host window width is known.
                 if (result[EXTENSION_ENABLED_STORAGE_KEY] !== undefined) {
                     setExtensionEnabled(isExtensionEnabledValue(result[EXTENSION_ENABLED_STORAGE_KEY]));
                 }
@@ -309,7 +309,24 @@ function App() {
                 } else {
                     setAlgorithmHintDismissed(result.algorithmHintDismissed === true);
                 }
-                setIsLoading(false);
+                const revealPopup = () => {
+                    try {
+                        chrome.windows.getCurrent((win) => {
+                            const width = (!chrome.runtime.lastError && win?.width)
+                                ? win.width
+                                : (window.screen?.availWidth || 0);
+                            const fullWidth = POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH + SIDE_SETTINGS_WIDTH;
+                            const narrow = width > 0 && width < fullWidth;
+                            setNarrowPopup(narrow);
+                            setSettingsOpen(!narrow);
+                            setIsLoading(false);
+                        });
+                    } catch (error) {
+                        setSettingsOpen(true);
+                        setIsLoading(false);
+                    }
+                };
+                revealPopup();
             });
         } catch (error) {
             // Extension context invalidated or other error - use default values
@@ -359,7 +376,11 @@ function App() {
                     }
                 }
                 if (changes.popupSettingsOpen) {
-                    setSettingsOpen(changes.popupSettingsOpen.newValue !== false);
+                    if (narrowPopupRef.current) {
+                        setSettingsOpen(changes.popupSettingsOpen.newValue !== false);
+                    } else {
+                        setSettingsOpen(true);
+                    }
                 }
                 if (changes[EXTENSION_ENABLED_STORAGE_KEY]) {
                     setExtensionEnabled(isExtensionEnabledValue(changes[EXTENSION_ENABLED_STORAGE_KEY].newValue));
@@ -629,9 +650,12 @@ function App() {
         const root = document.documentElement;
         const body = document.body;
         root.classList.toggle('popup-settings-open', settingsOpen);
+        root.classList.toggle('popup-settings-overlay', narrowPopup);
 
         const settingsTo = settingsOpen ? SIDE_SETTINGS_WIDTH : 0;
-        const popupTo = POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH + settingsTo;
+        const popupTo = narrowPopup
+            ? POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH
+            : POPUP_MAIN_WIDTH + SIDE_COLLAPSED_WIDTH + settingsTo;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const applyWidth = (popupWidth: number, sideWidth: number) => {
@@ -686,7 +710,7 @@ function App() {
         return () => {
             cancelAnimationFrame(frame);
         };
-    }, [settingsOpen, isLoading, unlockHoverExpand]);
+    }, [settingsOpen, isLoading, narrowPopup, unlockHoverExpand]);
 
     // Handle manualRtlInfoDismissed change
     const handleManualRtlInfoDismissedChange = React.useCallback((dismissed: boolean) => {
@@ -1319,18 +1343,13 @@ function App() {
                 >
                     <div className="popup-settings-toggle-wrap">
                         <div className="popup-side-item-group">
+                        {!settingsAlwaysOpen ? (
                         <button
                             type="button"
-                            className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}${settingsAlwaysOpen ? ' is-locked-open' : ''}`}
-                            onClick={() => {
-                                if (settingsAlwaysOpen) {
-                                    return;
-                                }
-                                handleSettingsOpenChange(!settingsOpen);
-                            }}
+                            className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}`}
+                            onClick={() => handleSettingsOpenChange(!settingsOpen)}
                             aria-label="تنظیمات"
                             aria-expanded={settingsOpen}
-                            aria-disabled={settingsAlwaysOpen}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>
@@ -1339,6 +1358,7 @@ function App() {
                             </span>
                             <span className="popup-side-item-label">تنظیمات</span>
                         </button>
+                        ) : null}
                         <a
                             href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
                             target="_blank"

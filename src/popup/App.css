@@ -117,6 +117,23 @@ html.popup-side-expanded .popup-columns {
     overflow: hidden;
 }
 
+html.popup-settings-overlay .popup-settings-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 44px;
+    z-index: 8;
+    background: #1a1a2e;
+}
+
+html.popup-settings-overlay body[data-theme="light"] .popup-settings-panel {
+    background: #e0f2fe;
+}
+
+html.popup-settings-overlay .quick-settings {
+    background: #1a1a2e;
+}
+
 .popup-disabled-overlay {
     position: absolute;
     inset: 0;
@@ -528,7 +545,7 @@ html.popup-settings-open .quick-settings {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 12px 14px;
+    padding: 8px 12px;
     border-bottom: 1px solid rgba(0, 233, 255, 0.14);
 }
 

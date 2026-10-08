@@ -16,7 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiChevronDown, mdiLinkedin } from '@mdi/js';
+import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiChevronDown, mdiLinkedin, mdiClose } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -310,6 +310,42 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     return (
         <Box className="quick-settings" dir="rtl">
+            {onClose ? (
+                <Box className="quick-settings-header">
+                    <Typography
+                        className="quick-settings-label"
+                        sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
+                    >
+                        تنظیمات
+                    </Typography>
+                    <Button
+                        variant="text"
+                        size="small"
+                        onClick={onClose}
+                        startIcon={
+                            <SvgIcon sx={{ fontSize: '1rem !important' }}>
+                                <path d={mdiClose} />
+                            </SvgIcon>
+                        }
+                        sx={{
+                            minWidth: 0,
+                            px: 0.75,
+                            py: 0.25,
+                            color: isDarkMode ? '#ffffff' : '#1e293b',
+                            textTransform: 'none',
+                            fontFamily: 'iranyekan',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            '&:hover': {
+                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                transform: 'none',
+                            },
+                        }}
+                    >
+                        بستن
+                    </Button>
+                </Box>
+            ) : null}
             <Box className="quick-settings-body">
                 {!extensionEnabled ? (
                     <Box
