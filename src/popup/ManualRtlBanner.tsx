@@ -192,30 +192,19 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         >
                             راست چین دستی
                         </Typography>
-                        <Typography
-                            component="span"
-                            sx={{
-                                fontSize: '0.55rem',
-                                fontWeight: 400,
-                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                fontFamily: 'iranyekan',
-                                opacity: 0.8
-                            }}
-                        >
-                              (سایت‌های پشتیبانی‌شده)
-                        </Typography>
                     </Box>
                     <Box component="span" sx={{ 
-                        px: 1, 
-                        py: 0.3, 
+                        px: 0.5, 
+                        py: 0,
+                        lineHeight: 1.45,
                         bgcolor: isDarkMode 
                             ? 'rgba(255, 152, 0, 0.2)' 
                             : 'rgba(255, 152, 0, 0.15)',
                         border: `1px solid ${isDarkMode ? 'rgba(255, 152, 0, 0.5)' : 'rgba(255, 152, 0, 0.4)'}`,
                         color: isDarkMode ? '#ff9800' : '#f57c00', 
-                        borderRadius: 1, 
-                        fontSize: '0.6rem',
-                        fontWeight: 600
+                        borderRadius: '3px', 
+                        fontSize: '0.5rem',
+                        fontWeight: 500
                     }}>
                         آزمایشی
                     </Box>

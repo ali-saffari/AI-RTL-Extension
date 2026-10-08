@@ -16,7 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiClose } from '@mdi/js';
+import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiChevronDown, mdiLinkedin } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -124,8 +124,6 @@ const THEME_MODES = [
     { id: 'light', title: 'روشن' },
 ] as const;
 
-const SPONSOR_NOTE_DISMISSED_KEY = 'sponsorNoteDismissed';
-
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
     onRtlAlgorithmChange,
@@ -161,9 +159,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
-    const [sponsorNoteDismissed, setSponsorNoteDismissed] = React.useState(false);
-    const [sponsorNoteReady, setSponsorNoteReady] = React.useState(false);
-    const [sponsorNoteConfirmOpen, setSponsorNoteConfirmOpen] = React.useState(false);
+    const [sponsorNoteExpanded, setSponsorNoteExpanded] = React.useState(false);
     const [harnessEngine, setHarnessEngine] = React.useState('chrome');
     const harnessPluginPresent = useHarnessPluginPresent(activeServiceKey === 'harness');
 
@@ -178,48 +174,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         };
         checkTabsPermission();
     }, []);
-
-    React.useEffect(() => {
-        try {
-            chrome.storage.sync.get([SPONSOR_NOTE_DISMISSED_KEY], (result) => {
-                setSponsorNoteDismissed(result[SPONSOR_NOTE_DISMISSED_KEY] === true);
-                setSponsorNoteReady(true);
-            });
-        } catch {
-            setSponsorNoteReady(true);
-        }
-
-        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
-            if (areaName !== 'sync' || !changes[SPONSOR_NOTE_DISMISSED_KEY]) {
-                return;
-            }
-            setSponsorNoteDismissed(changes[SPONSOR_NOTE_DISMISSED_KEY].newValue === true);
-        };
-
-        try {
-            chrome.storage.onChanged.addListener(handleStorageChange);
-        } catch {
-            // Storage events are unavailable outside the extension runtime.
-        }
-
-        return () => {
-            try {
-                chrome.storage.onChanged.removeListener(handleStorageChange);
-            } catch {
-                // Ignore cleanup when storage is unavailable.
-            }
-        };
-    }, []);
-
-    const hideSponsorNote = () => {
-        setSponsorNoteDismissed(true);
-        setSponsorNoteConfirmOpen(false);
-        try {
-            chrome.storage.sync.set({ [SPONSOR_NOTE_DISMISSED_KEY]: true });
-        } catch {
-            // Keep the note hidden for this session if storage fails.
-        }
-    };
 
     React.useEffect(() => {
         const applyEngine = (stored: unknown) => {
@@ -471,23 +425,37 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             جای لوگوی قشنگتون
                         </a>
                     </div>
-                    {sponsorNoteReady && !sponsorNoteDismissed ? (
-                        <div className="popup-sponsors-note">
-                            <button
-                                type="button"
-                                className="popup-sponsors-note-close"
-                                aria-label="پنهان کردن این پیام"
-                                onClick={() => setSponsorNoteConfirmOpen(true)}
-                            >
-                                <SvgIcon sx={{ fontSize: '1rem' }}>
-                                    <path d={mdiClose} />
-                                </SvgIcon>
-                            </button>
-                            <Typography className="popup-sponsors-note-text" component="p">
-                                حمایت‌های شما دلگرمی بزرگی است. ما عاشق این پروژه‌ایم و می‌خواهیم وقت خیلی بیشتری پایش بگذاریم، به همین دلیل تصمیم گرفتیم برای اکستنشن اسپانسر بگیریم.
-                            </Typography>
-                        </div>
-                    ) : null}
+                    <div className={`popup-sponsors-note${sponsorNoteExpanded ? ' is-expanded' : ''}`}>
+                        <button
+                            type="button"
+                            className="popup-sponsors-note-line"
+                            aria-expanded={sponsorNoteExpanded}
+                            aria-label={sponsorNoteExpanded ? 'بستن توضیح' : 'نمایش کامل توضیح'}
+                            onClick={() => setSponsorNoteExpanded((open) => !open)}
+                        >
+                            <span className="popup-sponsors-note-text">
+                                حمایت‌های شما کاربران عزیز دلگرمی بزرگی است. من عاشق این پروژه‌ام؛ با رشد پروژه تصمیم گرفتم که خیلی جدی‌تر پایش وقت بگذارم و به فکر توسعه بیشتر و اضافه کردن ابزارهای خفن‌تری هستم. از آنجا که دونیت‌ها به‌تنهایی پاسخگوی هزینه‌ها نیست، تصمیم گرفتم برای اکستنشن اسپانسر بگیرم.
+                            </span>
+                            <SvgIcon className="popup-sponsors-note-toggle" sx={{ fontSize: '1.05rem' }}>
+                                <path d={mdiChevronDown} />
+                            </SvgIcon>
+                        </button>
+                        {sponsorNoteExpanded ? (
+                            <span className="popup-sponsors-note-social">
+                                    <span>ارادتمند شما، علی صفاری</span>
+                                    <a
+                                        href="https://www.linkedin.com/in/ali-saffari-83a369174/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="لینکدین علی صفاری"
+                                    >
+                                        <SvgIcon sx={{ fontSize: '1rem' }}>
+                                            <path d={mdiLinkedin} />
+                                        </SvgIcon>
+                                    </a>
+                            </span>
+                        ) : null}
+                    </div>
                 </Box>
                 <SiteSettingsSection
                     isDarkMode={isDarkMode}
@@ -1440,60 +1408,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
                         بستن
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
-                open={sponsorNoteConfirmOpen}
-                onClose={() => setSponsorNoteConfirmOpen(false)}
-                maxWidth="xs"
-                fullWidth
-                sx={{
-                    zIndex: 1500,
-                    '& .MuiDialog-paper': {
-                        padding: '8px',
-                        direction: 'rtl',
-                    },
-                }}
-            >
-                <DialogTitle
-                    style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        padding: '16px 16px 8px 16px',
-                        fontFamily: 'iranyekan',
-                    }}
-                >
-                    پنهان کردن پیام
-                </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
-                    <Typography
-                        sx={{
-                            fontSize: '0.85rem',
-                            fontFamily: 'iranyekan',
-                            lineHeight: 1.8,
-                        }}
-                    >
-                        این توضیح دیگر نمایش داده نشود؟
-                    </Typography>
-                </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
-                    <Button
-                        onClick={() => setSponsorNoteConfirmOpen(false)}
-                        variant="text"
-                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
-                    >
-                        انصراف
-                    </Button>
-                    <Button
-                        onClick={hideSponsorNote}
-                        variant="contained"
-                        color="primary"
-                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
-                    >
-                        پنهان کردن
                     </Button>
                 </DialogActions>
             </Dialog>
