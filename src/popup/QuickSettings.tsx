@@ -451,12 +451,16 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </a>
                     <div className="popup-sponsors-slots">
                         <a
-                            className="popup-sponsors-box popup-sponsors-box--half"
-                            href="https://t.me/ai_rtl_support"
+                            className="popup-sponsors-box popup-sponsors-box--half popup-sponsors-box--filled"
+                            href="https://paasta.cloud"
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label="پاستا کلود"
                         >
-                            جای لوگوی قشنگتون
+                            <span className="popup-sponsors-paasta" dir="ltr">
+                                <img src="/images/logo/paasta-type.svg" alt="" />
+                                <img src="/images/logo/paasta-logo.png" alt="پاستا کلود" />
+                            </span>
                         </a>
                         <a
                             className="popup-sponsors-box popup-sponsors-box--half"

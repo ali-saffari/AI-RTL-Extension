@@ -6,9 +6,6 @@ import {
     Box,
     Typography,
     Chip,
-    Tabs,
-    Tab,
-    AppBar,
     IconButton,
     Tooltip,
     SvgIcon,
@@ -45,6 +42,25 @@ import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../const
 import ShareModal from './ShareModal';
 import './App.css';
 import manifest from '../../public/manifest.chrome.json';
+
+const headerLinkSx = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
+    fontFamily: 'iranyekan',
+    fontWeight: 600,
+    fontSize: '0.68rem',
+    lineHeight: 1.2,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+    '&:hover': {
+        color: '#ffffff',
+        textDecoration: 'underline',
+    },
+};
 
 const firefoxDefaults = isFirefoxRuntime();
 const extensionStoreUrl = getExtensionStoreUrl();
@@ -109,20 +125,6 @@ const darkTheme = createTheme({
                 },
             },
         },
-        MuiTabs: {
-            styleOverrides: {
-                root: {
-                    direction: 'rtl',
-                },
-            },
-        },
-        MuiTab: {
-            styleOverrides: {
-                root: {
-                    fontFamily: '"iranyekan"',
-                },
-            },
-        }
 
     },
 });
@@ -182,25 +184,10 @@ const lightTheme = createTheme({
                 },
             },
         },
-        MuiTabs: {
-            styleOverrides: {
-                root: {
-                    direction: 'rtl',
-                },
-            },
-        },
-        MuiTab: {
-            styleOverrides: {
-                root: {
-                    fontFamily: '"iranyekan"',
-                },
-            },
-        }
     },
 });
 
 function App() {
-    const [tabValue, setTabValue] = React.useState(0);
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
@@ -599,82 +586,21 @@ function App() {
         }
     }, []);
 
-    const isTabScrolling = React.useRef(false);
-
     const getSectionOffset = (element: HTMLElement, container: HTMLElement) => {
         return element.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
     };
 
-    React.useEffect(() => {
-        if (isLoading) {
-            return;
-        }
-
-        const container = mainScrollRef.current;
-        if (!container) {
-            return;
-        }
-
-        let scrollTimeout: number;
-
-        const handleScroll = () => {
-            if (isTabScrolling.current) {
-                return;
-            }
-
-            clearTimeout(scrollTimeout);
-            scrollTimeout = window.setTimeout(() => {
-                if (isTabScrolling.current) {
-                    return;
-                }
-
-                const scrollTop = container.scrollTop;
-                const notesSection = document.getElementById('notes-section');
-                const reportSection = document.getElementById('report-section');
-
-                if (notesSection && reportSection) {
-                    const notesTop = getSectionOffset(notesSection, container);
-                    const reportTop = getSectionOffset(reportSection, container);
-
-                    if (scrollTop < reportTop - 60) {
-                        if (tabValue !== 0) setTabValue(0);
-                    } else if (scrollTop < notesTop - 60) {
-                        if (tabValue !== 1) setTabValue(1);
-                    } else if (tabValue !== 2) {
-                        setTabValue(2);
-                    }
-                }
-            }, 100);
-        };
-
-        container.addEventListener('scroll', handleScroll, { passive: true });
-
-        return () => {
-            container.removeEventListener('scroll', handleScroll);
-            clearTimeout(scrollTimeout);
-        };
-    }, [tabValue, isLoading]);
-
-    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-        setTabValue(newValue);
-        isTabScrolling.current = true;
-
-        const sectionIds = ['sites-section', 'report-section', 'notes-section'];
-        const sectionId = sectionIds[newValue];
+    const scrollToSection = (sectionId: string) => {
         const element = document.getElementById(sectionId);
         const container = mainScrollRef.current;
 
         if (element && container) {
-            const offsetPosition = Math.max(0, getSectionOffset(element, container) - 56 + 4);
+            const offsetPosition = Math.max(0, getSectionOffset(element, container) - 8);
             container.scrollTo({
                 top: offsetPosition,
                 behavior: 'smooth'
             });
         }
-
-        window.setTimeout(() => {
-            isTabScrolling.current = false;
-        }, 450);
     };
 
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
@@ -842,8 +768,8 @@ function App() {
                     className="popup-header"
                     elevation={0} 
                     sx={{ 
-                        px: 1.75,
-                        py: 1.1,
+                        px: 1,
+                        py: 1,
                         borderRadius: 0,
                         background: isDarkMode 
                             ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)'
@@ -854,12 +780,12 @@ function App() {
                     }} 
                     dir="ltr"
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                         <Box
                             sx={{
-                                width: 44,
-                                height: 44,
-                                ml: 0.5,
+                                width: 40,
+                                height: 40,
+                                ml: 0,
                                 borderRadius: 1.5,
                                 overflow: 'hidden',
                                 position: 'relative',
@@ -901,34 +827,57 @@ function App() {
                             />
                         </Box>
                         
-                        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography 
-                                variant="h6" 
-                                component="h1" 
-                                sx={{ 
-                                    fontWeight: 600, 
-                                    fontSize: '0.9rem',
+                        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography
+                                variant="h6"
+                                component="h1"
+                                sx={{
+                                    fontWeight: 600,
+                                    fontSize: '0.8rem',
                                     lineHeight: 1.2,
                                     color: '#ffffff',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
+                                    textOverflow: 'ellipsis',
+                                    minWidth: 0,
+                                    flexShrink: 1
                                 }}
                             >
                                 AI RTL (Persian/Farsi)
                             </Typography>
-                            <Chip 
-                                label={`نسخه ${manifest.version}`} 
-                                size="small" 
-                                sx={{ 
+                            <Chip
+                                label={`نسخه ${manifest.version}`}
+                                size="small"
+                                sx={{
+                                    flexShrink: 0,
                                     fontSize: '0.65rem',
                                     height: 20,
                                     backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
                                     color: isDarkMode ? '#00e9ff' : '#ffffff',
                                     border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
                                     fontWeight: 500
-                                }} 
+                                }}
                             />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexShrink: 0 }}>
+                                <Typography
+                                    component="a"
+                                    href="https://ai-rtl.ir/?source=extension-popup-header-about#story"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={headerLinkSx}
+                                >
+                                    درباره افزونه
+                                </Typography>
+                                <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.55)', flexShrink: 0 }} />
+                                <Typography
+                                    component="button"
+                                    type="button"
+                                    onClick={() => scrollToSection('report-section')}
+                                    sx={headerLinkSx}
+                                >
+                                    گزارش مشکل
+                                </Typography>
+                            </Box>
                         </Box>
                         
                         <Tooltip
@@ -939,6 +888,7 @@ function App() {
                             <Switch
                                 checked={extensionEnabled}
                                 onChange={(event) => handleExtensionEnabledChange(event.target.checked)}
+                                size="small"
                                 inputProps={{ 'aria-label': extensionEnabled ? 'افزونه فعال است' : 'افزونه خاموش است' }}
                                 sx={{
                                     flexShrink: 0,
@@ -970,6 +920,7 @@ function App() {
                         >
                             <IconButton 
                                 onClick={handleThemeToggle}
+                                size="small"
                                 sx={{ 
                                     color: isDarkMode ? '#FFD700' : '#FF8F00',
                                     '&:hover': {
@@ -1104,53 +1055,6 @@ function App() {
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
-                    <AppBar 
-                        position="sticky"
-                        sx={{
-                            top: 0,
-                            backgroundColor: isDarkMode ? '#1a1a2e' : '#0067A5',
-                            color: '#ffffff',
-                            zIndex: 10,
-                        }}
-                    >
-                        <Tabs
-                            value={tabValue}
-                            onChange={handleTabChange}
-                            textColor={isDarkMode ? 'primary' : 'inherit'}
-                            variant="fullWidth"
-                            style={{ 
-                                direction: 'rtl',
-                                boxShadow: 'none'
-                            }}
-                            sx={{
-                                '& .MuiTab-root': {
-                                    whiteSpace: 'nowrap',
-                                    minWidth: 0,
-                                    minHeight: 48,
-                                    px: 0.5,
-                                    fontSize: '0.78rem',
-                                    ...(!isDarkMode ? {
-                                        color: 'rgba(255, 255, 255, 0.75)',
-                                        opacity: 1,
-                                        '&.Mui-selected': {
-                                            color: '#ffffff',
-                                            opacity: 1,
-                                        },
-                                    } : {}),
-                                },
-                                ...(!isDarkMode ? {
-                                    '& .MuiTabs-indicator': {
-                                        backgroundColor: '#ffffff',
-                                    },
-                                } : {}),
-                            }}
-                        >
-                            <Tab label="سایت‌ها" />
-                            <Tab label="گزارش مشکل" />
-                            <Tab label="درباره افزونه" />
-                        </Tabs>
-                    </AppBar>
-                    
                     <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
                         {manualRtlSettings.manualRtlEnabled && (
                             <ManualRtlBanner

@@ -1247,6 +1247,40 @@ body[data-theme="light"] .popup-sponsors-box:hover {
     font-size: 0.62rem;
 }
 
+.popup-sponsors-box--filled {
+    border-style: solid;
+    padding: 6px 8px;
+}
+
+.popup-sponsors-paasta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    max-width: 100%;
+    direction: ltr;
+}
+
+.popup-sponsors-paasta img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.popup-sponsors-paasta img:first-child {
+    height: 16px;
+    filter: invert(1);
+}
+
+body[data-theme="light"] .popup-sponsors-paasta img:first-child {
+    filter: none;
+}
+
+.popup-sponsors-paasta img:last-child {
+    height: 28px;
+}
+
 .popup-sponsors-slots {
     display: flex;
     flex-direction: row;

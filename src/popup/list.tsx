@@ -723,7 +723,7 @@ export default function ServiceList({
             {
                 root: scrollRoot,
                 threshold: 0,
-                rootMargin: '-48px 0px 0px 0px',
+                rootMargin: '0px 0px 0px 0px',
             }
         );
 
@@ -857,9 +857,9 @@ export default function ServiceList({
     const showDisabledBanner = !extensionEnabled;
     const hasPinnedSlot = showDisabledBanner || groupedList.pinnedItems.length > 0;
     const categoryStickyTop = hasPinnedSlot
-        ? 'calc(48px + var(--service-search-h, 48px) + var(--service-pinned-h, 56px))'
-        : 'calc(48px + var(--service-search-h, 48px))';
-    const pinnedStickyTop = 'calc(48px + var(--service-search-h, 48px))';
+        ? 'calc(var(--service-search-h, 48px) + var(--service-pinned-h, 56px))'
+        : 'var(--service-search-h, 48px)';
+    const pinnedStickyTop = 'var(--service-search-h, 48px)';
 
     const renderServiceRow = (service: Service, pinned: boolean, showDivider: boolean) => {
         const isActive = service.key === activeServiceKey;
@@ -1134,7 +1134,7 @@ export default function ServiceList({
                         className="service-list-search-slot"
                         sx={{ 
                             position: 'sticky',
-                            top: 48,
+                            top: 0,
                             zIndex: 9,
                             overflow: 'hidden',
                             boxSizing: 'border-box',
