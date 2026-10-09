@@ -25,6 +25,7 @@ interface PinOpenSiteModeSelectProps {
     onChange: (mode: PinOpenSiteMode) => void;
     isDarkMode: boolean;
     disabled?: boolean;
+    controlWidth?: string;
 }
 
 const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
@@ -32,6 +33,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
     onChange,
     isDarkMode,
     disabled = false,
+    controlWidth,
 }) => {
     const options = getPinOpenSiteModeOptions();
     const [menuOpen, setMenuOpen] = React.useState(false);
@@ -71,7 +73,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
 
     return (
         <>
-            <FormControl size="small" disabled={disabled} sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
+            <FormControl size="small" disabled={disabled} sx={{ minWidth: controlWidth ?? '7.5rem', width: controlWidth ?? 'max-content', maxWidth: controlWidth, flexShrink: 0 }}>
                 <Select
                     dir="rtl"
                     open={disabled ? false : menuOpen}
@@ -101,7 +103,8 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                         },
                     }}
                     sx={{
-                        minWidth: '7.5rem',
+                        width: '100%',
+                        minWidth: controlWidth ?? '7.5rem',
                         fontFamily: 'iranyekan',
                         fontSize: '0.82rem',
                         backgroundColor: fieldBg,
@@ -119,6 +122,8 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                         },
                         '& .MuiSelect-select': {
                             whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                         },
                         '& .MuiSelect-icon': {
                             color: muted,

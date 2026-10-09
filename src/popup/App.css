@@ -567,10 +567,10 @@ body[data-theme="light"] .quick-settings-header {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 12px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
 }
@@ -647,8 +647,8 @@ body[data-theme="light"] .quick-settings-lock-card {
 
 .quick-settings-card {
     border: 1px solid;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
 }
@@ -669,8 +669,8 @@ body[data-theme="light"] .site-settings-card-focus {
 }
 
 .quick-settings-label {
-    font-size: 0.78rem !important;
-    font-weight: 700 !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
     letter-spacing: 0;
 }
 
@@ -685,13 +685,18 @@ body[data-theme="light"] .quick-settings-label {
 .quick-settings-select .MuiSelect-select {
     direction: rtl !important;
     text-align: right !important;
-    padding-right: 14px !important;
-    padding-left: 32px !important;
+    font-size: 0.68rem !important;
+    min-height: 0 !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    padding-right: 8px !important;
+    padding-left: 24px !important;
 }
 
 .quick-settings-select .MuiSelect-icon {
-    left: 7px !important;
+    left: 4px !important;
     right: auto !important;
+    font-size: 1.05rem !important;
 }
 
 .quick-settings-select-menu {

@@ -109,13 +109,15 @@ const ALGORITHMS = [
 const TITLE_MODES = [
     {
         id: 'unified',
-        title: 'قرار دادن عنوان‌ها در یک سمت',
-        hint: 'همه عنوان‌ها بر اساس جهت اکثریت تنظیم می‌شوند',
+        title: 'قرار دادن در یک سمت',
+        descriptionTitle: 'قرار دادن عنوان‌ها در یک سمت',
+        hint: 'در چت‌های چندزبانه، همه عنوان‌ها در یک سمت قرار می‌گیرند. افزونه زبان غالب گفتگو را پیدا می‌کند و عنوان‌ها را همان سمت می‌چیند، حتی اگر خود عنوان به زبان دیگری باشد. اگر بیشتر پیام‌ها فارسی باشند، عنوان‌ها راست‌چین می‌شوند و اگر بیشترشان انگلیسی باشند، چپ‌چین.',
     },
     {
         id: 'individual',
         title: 'تنظیم هر عنوان جداگانه',
-        hint: 'هر عنوان بر اساس زبان خودش پردازش می‌شود',
+        descriptionTitle: 'تنظیم هر عنوان جداگانه',
+        hint: 'هر عنوان جدا از بقیه بررسی می‌شود و جهت آن فقط از زبان خودش تعیین می‌شود. عنوان فارسی راست‌چین و عنوان انگلیسی چپ‌چین می‌شود. در یک گفتگوی ترکیبی ممکن است بعضی عنوان‌ها راست و بعضی چپ باشند.',
     },
 ] as const;
 
@@ -155,6 +157,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 }) => {
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
+    const [titleInfoOpen, setTitleInfoOpen] = React.useState(false);
     const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
@@ -230,7 +233,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     }, []);
 
     const selectedAlgo = ALGORITHMS.find((item) => item.id === rtlAlgorithm) ?? ALGORITHMS[1];
-    const selectedTitleMode = TITLE_MODES.find((item) => item.id === mixedTitleDisplayMode) ?? TITLE_MODES[0];
     const selectedFontOption = fonts.find((font) => font.id === selectedFont);
     const selectedFontFamily = selectedFont === NONE_FONT_ID
         ? 'iranyekan'
@@ -246,6 +248,33 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.12)';
     const selectedBg = isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.08)';
     const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
+    const inlineSelectSx = {
+        width: '100%',
+        fontFamily: 'iranyekan',
+        fontSize: '0.68rem',
+        backgroundColor: fieldBg,
+        color: isDarkMode ? '#ffffff' : '#1e293b',
+        borderRadius: '8px',
+        '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: cardBorder,
+        },
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: accent,
+            borderWidth: '1px',
+        },
+        '& .MuiSelect-select': {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            py: 0.35,
+        },
+        '& .MuiSelect-icon': {
+            color: muted,
+        },
+    };
 
     const switchSx = {
         '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
@@ -516,7 +545,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             className="quick-settings-label"
                             sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
                         >
-                            تنظیمات عمومی
+                            تنظیمات سریع (عمومی)
                         </Typography>
                     </Box>
                     <Button
@@ -536,7 +565,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             color: accent,
                             textTransform: 'none',
                             fontFamily: 'iranyekan',
-                            fontSize: '0.72rem',
+                            fontSize: '0.64rem',
                             fontWeight: 600,
                             '&:hover': {
                                 backgroundColor: 'transparent',
@@ -554,170 +583,153 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            mb: 1,
+                            gap: 1,
+                            minWidth: 0,
                         }}
                     >
-                        <Typography className="quick-settings-label">الگوریتم تشخیص</Typography>
-                        <Button
-                            variant="text"
-                            size="small"
-                            disabled={controlsDisabled}
-                            onClick={() => openOptions('algorithm')}
-                            endIcon={
-                                <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
-                                    <path d={mdiOpenInNew} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 0, flexShrink: 0 }}>
+                            <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap' }}>
+                                الگوریتم تشخیص
+                            </Typography>
+                            <IconButton
+                                size="small"
+                                disabled={controlsDisabled}
+                                aria-label={`توضیحات ${selectedAlgo.title}`}
+                                onClick={() => setInfoAlgoId(selectedAlgo.id)}
+                                sx={{
+                                    p: 0.2,
+                                    flexShrink: 0,
+                                    color: accent,
+                                    '&:hover': {
+                                        backgroundColor: selectedBg,
+                                    },
+                                }}
+                            >
+                                <SvgIcon sx={{ fontSize: '0.95rem' }}>
+                                    <path d={mdiInformationOutline} />
                                 </SvgIcon>
-                            }
-                            sx={{
-                                minWidth: 0,
-                                px: 0.5,
-                                py: 0,
-                                color: accent,
-                                textTransform: 'none',
-                                fontFamily: 'iranyekan',
-                                fontSize: '0.72rem',
-                                fontWeight: 600,
-                                '&:hover': {
-                                    backgroundColor: 'transparent',
-                                    textDecoration: 'underline',
-                                    transform: 'none',
-                                },
-                            }}
-                        >
-                            صفحه تست الگوریتم
-                        </Button>
+                            </IconButton>
+                        </Box>
+                        <FormControl size="small" disabled={controlsDisabled} sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
+                            <Select
+                                dir="rtl"
+                                className="quick-settings-select"
+                                value={rtlAlgorithm}
+                                disabled={controlsDisabled}
+                                renderValue={(value) => ALGORITHMS.find((item) => item.id === value)?.title ?? ''}
+                                onChange={(event) => onRtlAlgorithmChange(event.target.value)}
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: 'quick-settings-select-menu quick-settings-algo-menu',
+                                        sx: {
+                                            mt: 0.5,
+                                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                            backgroundImage: 'none',
+                                            width: 330,
+                                            maxWidth: 330,
+                                            boxSizing: 'border-box',
+                                        },
+                                    },
+                                }}
+                                sx={inlineSelectSx}
+                                inputProps={{ 'aria-label': 'الگوریتم تشخیص' }}
+                            >
+                                {ALGORITHMS.map((algo) => (
+                                    <MenuItem
+                                        key={algo.id}
+                                        value={algo.id}
+                                        dir="rtl"
+                                        className="quick-settings-algo-item"
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                            fontSize: '0.82rem',
+                                            alignItems: 'flex-start',
+                                            py: 1.1,
+                                            whiteSpace: 'normal',
+                                            textAlign: 'right',
+                                            direction: 'rtl',
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                                <span>{algo.title}</span>
+                                                {algo.badge ? (
+                                                    <Box
+                                                        component="span"
+                                                        sx={{
+                                                            flexShrink: 0,
+                                                            px: 0.7,
+                                                            py: 0.1,
+                                                            borderRadius: 1,
+                                                            fontSize: '0.62rem',
+                                                            fontWeight: 600,
+                                                            color: accent,
+                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                                        }}
+                                                    >
+                                                        {algo.badge}
+                                                    </Box>
+                                                ) : null}
+                                            </Box>
+                                            <Typography
+                                                component="span"
+                                                sx={{
+                                                    fontSize: '0.68rem',
+                                                    color: muted,
+                                                    lineHeight: 1.5,
+                                                    whiteSpace: 'normal',
+                                                    overflowWrap: 'break-word',
+                                                    wordBreak: 'break-word',
+                                                    fontFamily: 'iranyekan',
+                                                }}
+                                            >
+                                                {algo.hint}
+                                            </Typography>
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </Box>
 
-                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
-                        <Select
-                            dir="rtl"
-                            className="quick-settings-select"
-                            value={rtlAlgorithm}
-                            disabled={controlsDisabled}
-                            renderValue={(value) => ALGORITHMS.find((item) => item.id === value)?.title ?? ''}
-                            onChange={(event) => onRtlAlgorithmChange(event.target.value)}
-                            MenuProps={{
-                                PaperProps: {
-                                    className: 'quick-settings-select-menu quick-settings-algo-menu',
-                                    sx: {
-                                        mt: 0.5,
-                                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
-                                        backgroundImage: 'none',
-                                        width: 330,
-                                        maxWidth: 330,
-                                        boxSizing: 'border-box',
-                                    },
-                                },
-                            }}
+                    {rtlAlgorithm === 'advanced_section' && (
+                        <Box
                             sx={{
-                                fontFamily: 'iranyekan',
-                                fontSize: '0.82rem',
-                                backgroundColor: fieldBg,
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                                borderRadius: '10px',
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: cardBorder,
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: accent,
-                                    borderWidth: '1px',
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: muted,
-                                },
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                                minWidth: 0,
+                                mt: 1,
+                                pt: 1,
+                                borderTop: `1px solid ${cardBorder}`,
                             }}
                         >
-                            {ALGORITHMS.map((algo) => (
-                                <MenuItem
-                                    key={algo.id}
-                                    value={algo.id}
-                                    dir="rtl"
-                                    className="quick-settings-algo-item"
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 0, flexShrink: 0 }}>
+                                <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap' }}>
+                                    نحوه نمایش عنوان‌ها
+                                </Typography>
+                                <IconButton
+                                    size="small"
+                                    disabled={controlsDisabled}
+                                    aria-label="توضیحات نحوه نمایش عنوان‌ها"
+                                    onClick={() => setTitleInfoOpen(true)}
                                     sx={{
-                                        fontFamily: 'iranyekan',
-                                        fontSize: '0.82rem',
-                                        alignItems: 'flex-start',
-                                        py: 1.1,
-                                        whiteSpace: 'normal',
-                                        textAlign: 'right',
-                                        direction: 'rtl',
+                                        p: 0.2,
+                                        flexShrink: 0,
+                                        color: accent,
+                                        '&:hover': {
+                                            backgroundColor: selectedBg,
+                                        },
                                     }}
                                 >
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                                            <span>{algo.title}</span>
-                                            {algo.badge ? (
-                                                <Box
-                                                    component="span"
-                                                    sx={{
-                                                        flexShrink: 0,
-                                                        px: 0.7,
-                                                        py: 0.1,
-                                                        borderRadius: 1,
-                                                        fontSize: '0.62rem',
-                                                        fontWeight: 600,
-                                                        color: accent,
-                                                        border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                        background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
-                                                    }}
-                                                >
-                                                    {algo.badge}
-                                                </Box>
-                                            ) : null}
-                                        </Box>
-                                        <Typography
-                                            component="span"
-                                            sx={{
-                                                fontSize: '0.68rem',
-                                                color: muted,
-                                                lineHeight: 1.5,
-                                                whiteSpace: 'normal',
-                                                overflowWrap: 'break-word',
-                                                wordBreak: 'break-word',
-                                                fontFamily: 'iranyekan',
-                                            }}
-                                        >
-                                            {algo.hint}
-                                        </Typography>
-                                    </Box>
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-
-                    <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55, mt: 1 }}>
-                        {selectedAlgo.hint}
-                        <IconButton
-                            size="small"
-                            disabled={controlsDisabled}
-                            aria-label={`توضیحات ${selectedAlgo.title}`}
-                            onClick={() => setInfoAlgoId(selectedAlgo.id)}
-                            sx={{
-                                p: 0.2,
-                                ml: 0.15,
-                                mb: '1px',
-                                verticalAlign: 'middle',
-                                color: accent,
-                                '&:hover': {
-                                    backgroundColor: selectedBg,
-                                },
-                            }}
-                        >
-                            <SvgIcon sx={{ fontSize: '1rem' }}>
-                                <path d={mdiInformationOutline} />
-                            </SvgIcon>
-                        </IconButton>
-                    </Typography>
-
-                    {rtlAlgorithm === 'advanced_section' && (
-                        <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
-                            <Typography className="quick-settings-label" sx={{ mb: 1 }}>
-                                نحوه نمایش عنوان‌ها
-                            </Typography>
-                            <FormControl fullWidth size="small" disabled={controlsDisabled}>
+                                    <SvgIcon sx={{ fontSize: '0.95rem' }}>
+                                        <path d={mdiInformationOutline} />
+                                    </SvgIcon>
+                                </IconButton>
+                            </Box>
+                            <FormControl size="small" disabled={controlsDisabled} sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
                                 <Select
                                     dir="rtl"
                                     className="quick-settings-select"
@@ -735,26 +747,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                             },
                                         },
                                     }}
-                                    sx={{
-                                        fontFamily: 'iranyekan',
-                                        fontSize: '0.82rem',
-                                        backgroundColor: fieldBg,
-                                        color: isDarkMode ? '#ffffff' : '#1e293b',
-                                        borderRadius: '10px',
-                                        '& .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: cardBorder,
-                                        },
-                                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
-                                        },
-                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: accent,
-                                            borderWidth: '1px',
-                                        },
-                                        '& .MuiSelect-icon': {
-                                            color: muted,
-                                        },
-                                    }}
+                                    sx={inlineSelectSx}
+                                    inputProps={{ 'aria-label': 'نحوه نمایش عنوان‌ها' }}
                                 >
                                     {TITLE_MODES.map((mode) => (
                                         <MenuItem
@@ -763,8 +757,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                             dir="rtl"
                                             sx={{
                                                 fontFamily: 'iranyekan',
-                                                fontSize: '0.82rem',
-                                                py: 1,
+                                                fontSize: '0.78rem',
+                                                py: 0.75,
+                                                whiteSpace: 'nowrap',
                                                 textAlign: 'right',
                                                 direction: 'rtl',
                                             }}
@@ -774,13 +769,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     ))}
                                 </Select>
                             </FormControl>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 1, lineHeight: 1.55 }}>
-                                {selectedTitleMode.hint}
-                            </Typography>
                         </Box>
                     )}
 
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                    <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${cardBorder}` }}>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -806,7 +798,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Box>
                     </Box>
 
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                    <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${cardBorder}` }}>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -854,7 +846,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Box>
 
                     {/* اصلاح متن‌های ترکیبی — موقتاً پنهان
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${cardBorder}` }}>
+                    <Box sx={{ mt: 1, pt: 1, borderTop: `1px solid ${cardBorder}` }}>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -900,13 +892,13 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
 
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
-                        <Typography className="quick-settings-label">
-                            فونت
-                        </Typography>
-                        <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
-                    </Box>
-                    <FormControl fullWidth size="small" disabled={controlsDisabled}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                            <Typography className="quick-settings-label">
+                                فونت
+                            </Typography>
+                        </Box>
+                    <FormControl size="small" disabled={controlsDisabled} sx={{ width: 136, flex: '0 0 136px', minWidth: 0 }}>
                         <Select
                             dir="rtl"
                             className="quick-settings-select"
@@ -931,25 +923,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 },
                             }}
                             sx={{
+                                ...inlineSelectSx,
                                 fontFamily: selectedFontFamily,
-                                fontSize: '0.82rem',
-                                backgroundColor: fieldBg,
-                                color: isDarkMode ? '#ffffff' : '#1e293b',
-                                borderRadius: '10px',
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: cardBorder,
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: accent,
-                                    borderWidth: '1px',
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: muted,
-                                },
                             }}
+                            inputProps={{ 'aria-label': 'فونت' }}
                         >
                             <MenuItem
                                 value={NONE_FONT_ID}
@@ -1008,16 +985,24 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             ))}
                         </Select>
                     </FormControl>
-                    <Box sx={{ mt: 1.75 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                <Typography className="quick-settings-label">اندازه فونت</Typography>
-                                <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
-                            </Box>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted }}>
+                    </Box>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            minWidth: 0,
+                            mt: 1,
+                            pt: 1,
+                            borderTop: `1px solid ${cardBorder}`,
+                        }}
+                    >
+                        <Typography className="quick-settings-label">اندازه فونت</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                            <Typography sx={{ fontSize: '0.62rem', color: muted, flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 {formatFontScaleLabel(fontScale)}
                             </Typography>
-                        </Box>
                         <Slider
                             size="small"
                             value={fontScale}
@@ -1029,22 +1014,33 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             onChange={(_, value) => onFontScaleChange(value as number)}
                             onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
                             sx={{
-                                mt: 0.5,
+                                width: 168,
+                                flex: '0 0 168px',
+                                m: 0,
+                                py: 0.5,
+                                px: 0,
+                                boxSizing: 'border-box',
                                 color: controlsDisabled ? disabledControlColor : accent,
                                 '& .MuiSlider-rail': {
-                                    opacity: 0.35
+                                    opacity: 0.35,
                                 },
                                 '& .MuiSlider-mark': {
                                     backgroundColor: controlsDisabled ? disabledControlColor : accent,
-                                    height: 8,
-                                    width: 2
+                                    height: 6,
+                                    width: 2,
+                                },
+                                '& .MuiSlider-thumb': {
+                                    width: 12,
+                                    height: 12,
                                 },
                                 '&.Mui-disabled': {
                                     color: disabledControlColor,
                                     opacity: 0.55,
                                 },
                             }}
+                            aria-label="اندازه فونت"
                         />
+                        </Box>
                     </Box>
                 </Box>
 
@@ -1055,12 +1051,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             gap: 1,
-                            px: 1.5,
-                            py: 1.25,
+                            px: 1,
+                            py: 0.85,
                         }}
                     >
                         <Typography className="quick-settings-label">تم منو اکستشن</Typography>
-                        <FormControl size="small" disabled={controlsDisabled} sx={{ minWidth: '7.5rem', width: 'max-content', flexShrink: 0 }}>
+                        <FormControl size="small" disabled={controlsDisabled} sx={{ width: '6.5rem', minWidth: '6.5rem', maxWidth: '6.5rem', flexShrink: 0 }}>
                             <Select
                                 dir="rtl"
                                 className="quick-settings-select"
@@ -1079,9 +1075,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     },
                                 }}
                                 sx={{
-                                    minWidth: '7.5rem',
+                                    width: '100%',
+                                    minWidth: '6.5rem',
                                     fontFamily: 'iranyekan',
-                                    fontSize: '0.82rem',
+                                    fontSize: '0.68rem',
                                     backgroundColor: fieldBg,
                                     color: isDarkMode ? '#ffffff' : '#1e293b',
                                     borderRadius: '10px',
@@ -1129,8 +1126,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             gap: 1,
-                            px: 1.5,
-                            py: 1.25,
+                            px: 1,
+                            py: 0.85,
                             borderTop: `1px solid ${cardBorder}`,
                         }}
                     >
@@ -1144,6 +1141,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             }}
                             isDarkMode={isDarkMode}
                             disabled={controlsDisabled}
+                            controlWidth="6.5rem"
                         />
                     </Box>
                 </Box>
@@ -1162,7 +1160,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <Typography className="quick-settings-label">چینش دستی</Typography>
                                 <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted, lineHeight: 1.55 }}>
+                            <Typography sx={{ fontSize: '0.62rem', color: muted, lineHeight: 1.45 }}>
                                 راست‌چین یا چپ‌چین کردن متن در هر سایت
                             </Typography>
                         </Box>
@@ -1222,7 +1220,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Typography className="quick-settings-label">مخفی کردن متن حمایت</Typography>
-                            <Typography sx={{ fontSize: '0.72rem', color: muted, mt: 0.35, lineHeight: 1.55 }}>
+                            <Typography sx={{ fontSize: '0.62rem', color: muted, mt: 0.2, lineHeight: 1.45 }}>
                                 نشان‌دهنده فعال بودن افزونه
                             </Typography>
                         </Box>
@@ -1321,6 +1319,79 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     </Button>
                     <Button
                         onClick={() => setInfoAlgoId(null)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        بستن
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={titleInfoOpen}
+                onClose={() => setTitleInfoOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: 'rtl',
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: 'rtl',
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    نحوه نمایش عنوان‌ها
+                </DialogTitle>
+                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.8rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                            mb: 1.5,
+                            color: muted,
+                        }}
+                    >
+                        این تنظیم فقط با الگوریتم «تحلیل پیشرفته بخش‌ها» کار می‌کند و جهت عنوان چت‌های چندزبانه را مشخص می‌کند.
+                    </Typography>
+                    {TITLE_MODES.map((mode) => (
+                        <Box key={mode.id} sx={{ '& + &': { mt: 1.5 } }}>
+                            <Typography
+                                sx={{
+                                    fontSize: '0.85rem',
+                                    fontFamily: 'iranyekan',
+                                    fontWeight: 700,
+                                    lineHeight: 1.8,
+                                }}
+                            >
+                                {mode.descriptionTitle}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: '0.8rem',
+                                    fontFamily: 'iranyekan',
+                                    lineHeight: 1.8,
+                                    color: muted,
+                                }}
+                            >
+                                {mode.hint}
+                            </Typography>
+                        </Box>
+                    ))}
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                    <Button
+                        onClick={() => setTitleInfoOpen(false)}
                         variant="contained"
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}

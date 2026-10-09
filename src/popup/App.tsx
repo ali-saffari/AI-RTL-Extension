@@ -851,37 +851,57 @@ function App() {
                             />
                         </Box>
                         
-                        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Typography
-                                variant="h6"
-                                component="h1"
-                                sx={{
-                                    fontWeight: 600,
-                                    fontSize: '0.8rem',
-                                    lineHeight: 1.2,
-                                    color: '#ffffff',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    minWidth: 0,
-                                    flexShrink: 1
-                                }}
-                            >
-                                AI RTL (Persian/Farsi)
-                            </Typography>
-                            <Chip
-                                label={`نسخه ${manifest.version}`}
-                                size="small"
-                                sx={{
-                                    flexShrink: 0,
-                                    fontSize: '0.65rem',
-                                    height: 20,
-                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
-                                    color: isDarkMode ? '#00e9ff' : '#ffffff',
-                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
-                                    fontWeight: 500
-                                }}
-                            />
+                        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: narrowPopup ? 1 : 1.5 }}>
+                            <Box sx={{ minWidth: 0, flexShrink: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.25 }}>
+                                <Typography
+                                    variant="h6"
+                                    component="h1"
+                                    sx={{
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem',
+                                        lineHeight: 1.2,
+                                        color: '#ffffff',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        minWidth: 0
+                                    }}
+                                >
+                                    {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
+                                </Typography>
+                                {narrowPopup && (
+                                    <Typography
+                                        component="p"
+                                        dir="rtl"
+                                        sx={{
+                                            m: 0,
+                                            width: 'fit-content',
+                                            fontWeight: 500,
+                                            fontSize: '0.62rem',
+                                            lineHeight: 1.2,
+                                            color: isDarkMode ? '#00e9ff' : 'rgba(255, 255, 255, 0.85)',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        نسخه {manifest.version}
+                                    </Typography>
+                                )}
+                            </Box>
+                            {!narrowPopup && (
+                                <Chip
+                                    label={`نسخه ${manifest.version}`}
+                                    size="small"
+                                    sx={{
+                                        flexShrink: 0,
+                                        fontSize: '0.65rem',
+                                        height: 20,
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
+                                        color: isDarkMode ? '#00e9ff' : '#ffffff',
+                                        border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
+                                        fontWeight: 500
+                                    }}
+                                />
+                            )}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexShrink: 0 }}>
                                 <Typography
                                     component="a"
@@ -1079,7 +1099,7 @@ function App() {
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
-                    <div id="sites-section" style={{ paddingTop: '20px', background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
+                    <div id="sites-section" style={{ background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
                         {manualRtlSettings.manualRtlEnabled && (
                             <ManualRtlBanner
                                 isDarkMode={isDarkMode}
