@@ -909,28 +909,6 @@ function App() {
                         </Box>
                         
                         <Tooltip
-                            title={extensionEnabled ? 'خاموش کردن افزونه' : 'روشن کردن افزونه'}
-                            placement="bottom-end"
-                            disableInteractive
-                        >
-                            <Switch
-                                checked={extensionEnabled}
-                                onChange={(event) => handleExtensionEnabledChange(event.target.checked)}
-                                size="small"
-                                inputProps={{ 'aria-label': extensionEnabled ? 'افزونه فعال است' : 'افزونه خاموش است' }}
-                                sx={{
-                                    flexShrink: 0,
-                                    transform: 'rotate(180deg)',
-                                    '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                    },
-                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                    },
-                                }}
-                            />
-                        </Tooltip>
-                        <Tooltip
                             title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
                             placement="bottom-end"
                             disableInteractive
@@ -964,6 +942,29 @@ function App() {
                                     <path d={isDarkMode ? mdiWeatherSunny : mdiWeatherNight} />
                                 </SvgIcon>
                             </IconButton>
+                        </Tooltip>
+                        <Tooltip
+                            title={extensionEnabled ? 'خاموش کردن افزونه' : 'روشن کردن افزونه'}
+                            placement="bottom-end"
+                            disableInteractive
+                        >
+                            <Switch
+                                checked={extensionEnabled}
+                                onChange={(event) => handleExtensionEnabledChange(event.target.checked)}
+                                size="small"
+                                inputProps={{ 'aria-label': extensionEnabled ? 'افزونه فعال است' : 'افزونه خاموش است' }}
+                                sx={{
+                                    flexShrink: 0,
+                                    transform: 'rotate(180deg) scale(1.2)',
+                                    marginLeft: narrowPopup ? 0 : 1.5,
+                                    '& .MuiSwitch-switchBase.Mui-checked': {
+                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    },
+                                }}
+                            />
                         </Tooltip>
                     </Box>
                 </Paper>
