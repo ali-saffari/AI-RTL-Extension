@@ -793,7 +793,11 @@ function App() {
                     elevation={0} 
                     sx={{ 
                         px: 1,
-                        py: 1,
+                        py: narrowPopup ? 0 : 1,
+                        height: narrowPopup ? SIDE_COLLAPSED_WIDTH : 'auto',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        alignItems: 'center',
                         borderRadius: 0,
                         background: isDarkMode 
                             ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)'
@@ -804,11 +808,11 @@ function App() {
                     }} 
                     dir="ltr"
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: narrowPopup ? 1 : 1.25, width: '100%', minWidth: 0 }}>
                         <Box
                             sx={{
-                                width: 40,
-                                height: 40,
+                                width: narrowPopup ? 26 : 40,
+                                height: narrowPopup ? 26 : 40,
                                 ml: 0,
                                 borderRadius: 1.5,
                                 overflow: 'hidden',
@@ -852,63 +856,43 @@ function App() {
                         </Box>
                         
                         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: narrowPopup ? 1 : 1.5 }}>
-                            <Box sx={{ minWidth: 0, flexShrink: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 0.25 }}>
-                                <Typography
-                                    variant="h6"
-                                    component="h1"
-                                    sx={{
-                                        fontWeight: 600,
-                                        fontSize: '0.8rem',
-                                        lineHeight: 1.2,
-                                        color: '#ffffff',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        minWidth: 0
-                                    }}
-                                >
-                                    {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
-                                </Typography>
-                                {narrowPopup && (
-                                    <Typography
-                                        component="p"
-                                        dir="rtl"
-                                        sx={{
-                                            m: 0,
-                                            width: 'fit-content',
-                                            fontWeight: 500,
-                                            fontSize: '0.62rem',
-                                            lineHeight: 1.2,
-                                            color: isDarkMode ? '#00e9ff' : 'rgba(255, 255, 255, 0.85)',
-                                            whiteSpace: 'nowrap'
-                                        }}
-                                    >
-                                        نسخه {manifest.version}
-                                    </Typography>
-                                )}
-                            </Box>
-                            {!narrowPopup && (
-                                <Chip
-                                    label={`نسخه ${manifest.version}`}
-                                    size="small"
-                                    sx={{
-                                        flexShrink: 0,
-                                        fontSize: '0.65rem',
-                                        height: 20,
-                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
-                                        color: isDarkMode ? '#00e9ff' : '#ffffff',
-                                        border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
-                                        fontWeight: 500
-                                    }}
-                                />
-                            )}
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexShrink: 0 }}>
+                            <Typography
+                                variant="h6"
+                                component="h1"
+                                sx={{
+                                    fontWeight: 600,
+                                    fontSize: '0.8rem',
+                                    lineHeight: 1.2,
+                                    color: '#ffffff',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    minWidth: 0,
+                                    flexShrink: 1
+                                }}
+                            >
+                                {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
+                            </Typography>
+                            <Chip
+                                label={`نسخه ${manifest.version}`}
+                                size="small"
+                                sx={{
+                                    flexShrink: 0,
+                                    fontSize: '0.65rem',
+                                    height: 20,
+                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
+                                    color: isDarkMode ? '#00e9ff' : '#ffffff',
+                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
+                                    fontWeight: 500
+                                }}
+                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: narrowPopup ? 0.75 : 1.25, flexShrink: 0 }}>
                                 <Typography
                                     component="a"
                                     href="https://ai-rtl.ir/?source=extension-popup-header-about#story"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    sx={headerLinkSx}
+                                    sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
                                 >
                                     درباره افزونه
                                 </Typography>
@@ -917,7 +901,7 @@ function App() {
                                     component="button"
                                     type="button"
                                     onClick={() => scrollToSection('report-section')}
-                                    sx={headerLinkSx}
+                                    sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
                                 >
                                     گزارش مشکل
                                 </Typography>
