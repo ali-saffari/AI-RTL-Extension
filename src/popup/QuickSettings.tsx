@@ -347,9 +347,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     };
 
     return (
-        <Box className="quick-settings" dir={dir}>
+        <Box className="quick-settings" dir="rtl">
             {onClose ? (
-                <Box className="quick-settings-header">
+                <Box className="quick-settings-header" dir={dir} style={{ direction: dir, textAlign: contentAlign }}>
                     <Typography
                         className="quick-settings-label"
                         sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}

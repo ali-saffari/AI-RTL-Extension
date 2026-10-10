@@ -1469,6 +1469,8 @@ body[data-theme="light"] .popup-sponsors-note-toggle:hover {
     white-space: normal;
     overflow: visible;
     text-overflow: unset;
+    text-align: justify !important;
+    text-justify: inter-word;
 }
 
 body[data-theme="light"] .popup-sponsors-note-text {
@@ -1488,10 +1490,8 @@ body[data-theme="light"] .popup-sponsors-note-text {
     text-align: right !important;
 }
 
-/* English content is LTR, but popup chrome (header, left menus) stays put. */
+/* English content is LTR, but popup chrome (header, left menus, scrollbars) stays put. */
 html[data-content-dir="ltr"] .popup-main-inner,
-html[data-content-dir="ltr"] .quick-settings,
-html[data-content-dir="ltr"] .popup-side-menu,
 html[data-content-dir="ltr"] .popup-disabled-overlay-card,
 html[data-content-dir="ltr"] .install-hint-banner,
 html[data-content-dir="ltr"] .install-hint-banner-toggle,
@@ -1502,6 +1502,23 @@ html[data-content-dir="ltr"] .popup-share-dialog-paper,
 html[data-content-dir="ltr"] .popup-share-content,
 html[data-content-dir="ltr"] .popup-share-desc,
 html[data-content-dir="ltr"] .popup-share-preview {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Keep settings/side scrollbars on the same side as Persian; only content goes LTR. */
+html[data-content-dir="ltr"] .quick-settings,
+html[data-content-dir="ltr"] .quick-settings-body-scroll,
+html[data-content-dir="ltr"] .popup-side-menu {
+    direction: rtl !important;
+}
+
+html[data-content-dir="ltr"] .quick-settings-header,
+html[data-content-dir="ltr"] .quick-settings-card,
+html[data-content-dir="ltr"] .quick-settings-lock,
+html[data-content-dir="ltr"] .quick-settings-lock-card,
+html[data-content-dir="ltr"] .quick-settings-label,
+html[data-content-dir="ltr"] .site-settings-section {
     direction: ltr !important;
     text-align: left !important;
 }
@@ -1519,10 +1536,6 @@ html[data-content-dir="ltr"] .quick-settings-select-menu .MuiMenuItem-root {
     text-align: left !important;
 }
 
-html[data-content-dir="ltr"] .popup-side-menu {
-    text-align: left;
-}
-
 /* Keep sponsor box layout (slots/CTA order) fixed; only flip text alignment. */
 html[data-content-dir="ltr"] .popup-sponsors-caption,
 html[data-content-dir="ltr"] .popup-sponsors-note,
@@ -1534,6 +1547,10 @@ html[data-content-dir="ltr"] .popup-sponsors-note-social {
 
 html[data-content-dir="ltr"] .popup-sponsors-note-text {
     text-align: left !important;
+}
+
+html[data-content-dir="ltr"] .popup-sponsors-note.is-expanded .popup-sponsors-note-text {
+    text-align: justify !important;
 }
 
 /* Keep both menus physically on the left, even when content is LTR. */

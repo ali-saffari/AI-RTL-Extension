@@ -90,7 +90,7 @@ export const enMessages: Messages = {
         sponsorAccepts: 'This extension accepts sponsors',
         sponsorLogoAlt: 'Paasta Cloud',
         sponsorLogoPlaceholder: 'Your logo here',
-        sponsorNote: 'Your support means a lot. I love this project, and as it has grown I decided to spend more serious time on it and build stronger tools. Donations alone do not cover the costs, so I decided to take sponsors for the extension.',
+        sponsorNote: 'Your support means a lot. We love this project, and as it has grown we decided to spend more serious time on it and build stronger tools. Donations alone do not cover the costs, so we decided to take sponsors for the extension.',
         sponsorNoteExpand: 'Show the full note',
         sponsorNoteCollapse: 'Hide the note',
         sponsorSignoff: 'Yours, Ali Saffari',
