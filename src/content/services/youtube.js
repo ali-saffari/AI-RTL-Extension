@@ -197,7 +197,7 @@ function applyYoutubeChrome() {
 }
 
 function pinInlineDirection(element) {
-    const dir = element.getAttribute('data-direction') || element.getAttribute('dir');
+    const dir = element.getAttribute('data-ai-rtl-direction') || element.getAttribute('dir');
     if (!element.style || (dir !== 'rtl' && dir !== 'ltr')) {
         return;
     }
@@ -218,7 +218,7 @@ function applyChatInputDirection(element, rtlAlgorithm) {
     }
 
     // Empty field has no text for the algorithm, so the caret stays LTR until the first key.
-    element.setAttribute('data-direction', 'rtl');
+    element.setAttribute('data-ai-rtl-direction', 'rtl');
     element.setAttribute('dir', 'rtl');
     pinInlineDirection(element);
     element.classList.remove('FontSet');
@@ -366,7 +366,7 @@ function applyYoutubePanel(panel, rtlAlgorithm) {
 }
 
 const PANEL_MARK_ATTRS = [
-    'data-direction',
+    'data-ai-rtl-direction',
     'data-text-length',
     'data-algorithm-rtl',
     'data-ai-rtl-orig-dir',
@@ -410,7 +410,7 @@ function walkDeep(root, visitor, seen = new Set()) {
 }
 
 function clearMarkedElement(element) {
-    const marked = element.hasAttribute('data-direction')
+    const marked = element.hasAttribute('data-ai-rtl-direction')
         || element.hasAttribute('data-algorithm-rtl')
         || element.hasAttribute('data-ai-rtl-orig-dir')
         || element.classList.contains('FontSet')
@@ -428,7 +428,7 @@ function clearMarkedElement(element) {
         } else {
             element.removeAttribute('dir');
         }
-    } else if (element.hasAttribute('data-direction') || element.hasAttribute('data-algorithm-rtl')) {
+    } else if (element.hasAttribute('data-ai-rtl-direction') || element.hasAttribute('data-algorithm-rtl')) {
         element.removeAttribute('dir');
     }
 

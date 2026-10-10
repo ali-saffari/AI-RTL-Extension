@@ -229,7 +229,11 @@ export function setTextDirectionAndFont(element, options = {}) {
         });
     }
 
-        AQ(element).attr('data-direction', finalDirection)
+        AQ(element).attr('data-ai-rtl-direction', finalDirection)
+        const legacyDirection = AQ(element).attr('data-direction');
+        if (legacyDirection === 'rtl' || legacyDirection === 'ltr') {
+            AQ(element).removeAttr('data-direction');
+        }
 
     applyDirectionMarker(AQ(element), finalDirection, options);
     if (fontClass) {
@@ -347,7 +351,7 @@ export function processParagraphWithBreaks(element, fontClass = 'FontSet' , setT
                 $element.addClass(fontClass);
                 $element.data('rtl-processed', true);
             } else {
-                $element.attr('data-direction', directions[0]);
+                $element.attr('data-ai-rtl-direction', directions[0]);
                 applyDirectionMarker($element, directions[0], directionClassOptions);
                 $element.addClass(fontClass);
                 applyTextAlignByDirection($element, directions[0], setTextAlign);

@@ -90,7 +90,7 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
 ].join(',');
 
 const FALLBACK_ATTRS = [
-    'data-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
+    'data-ai-rtl-direction', 'data-text-length', 'data-algorithm-rtl', 'data-rtl-processed',
     'data-ai-rtl-code-len',
     ORIG_DIR_ATTR, ORIG_ALIGN_ATTR, ORIG_BIDI_ATTR, ORIG_FONT_ATTR, CODE_FONT_ATTR, 'data-ai-rtl-perplexity-font-obs',
     'data-ai-rtl-editor', 'data-ai-rtl-sig', 'data-as-mode',
@@ -581,7 +581,9 @@ export function restoreElementFromSelf(el) {
         const hasOrigFont = el.hasAttribute(ORIG_FONT_ATTR) || el.hasAttribute(CODE_FONT_ATTR);
         const hasOrigCssDirection = el.hasAttribute(ORIG_CSS_DIRECTION_ATTR);
         const hadTextLeft = el.hasAttribute(HAD_TEXT_LEFT_ATTR);
-        const touched = hasOrigDir || hasOrigAlign || hasOrigBidi || hasOrigFont || hasOrigCssDirection || hadTextLeft || el.classList.contains('AsSetLtr') || el.hasAttribute('data-direction');
+        const legacyDirection = el.getAttribute('data-direction');
+        const hasLegacyPluginDir = legacyDirection === 'rtl' || legacyDirection === 'ltr';
+        const touched = hasOrigDir || hasOrigAlign || hasOrigBidi || hasOrigFont || hasOrigCssDirection || hadTextLeft || el.classList.contains('AsSetLtr') || el.hasAttribute('data-ai-rtl-direction') || hasLegacyPluginDir;
         if (!touched) {
             return false;
         }
@@ -592,7 +594,10 @@ export function restoreElementFromSelf(el) {
         restoreCssDirectionFromSelf(el);
         restoreRemovedTextLeft(el);
         restoreFontFromSelf(el);
-        nativeRemoveAttribute.call(el, 'data-direction');
+        nativeRemoveAttribute.call(el, 'data-ai-rtl-direction');
+        if (hasLegacyPluginDir) {
+            nativeRemoveAttribute.call(el, 'data-direction');
+        }
         stripExtensionClassesFrom(el);
         clearJqueryData(el);
         cleanupEmptyClassAndStyle(el);
@@ -604,7 +609,7 @@ export function restoreElementFromSelf(el) {
 
 function restoreMarkedElements() {
     try {
-        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_BIDI_ATTR}], [${ORIG_FONT_ATTR}], [${ORIG_CSS_DIRECTION_ATTR}], [${HAD_TEXT_LEFT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-direction]`).forEach((el) => {
+        document.querySelectorAll(`[${ORIG_DIR_ATTR}], [${ORIG_ALIGN_ATTR}], [${ORIG_BIDI_ATTR}], [${ORIG_FONT_ATTR}], [${ORIG_CSS_DIRECTION_ATTR}], [${HAD_TEXT_LEFT_ATTR}], [${CODE_FONT_ATTR}], .AsSetLtr, [data-ai-rtl-direction], [data-direction="rtl"], [data-direction="ltr"]`).forEach((el) => {
             restoreElementFromSelf(el);
         });
     } catch {
@@ -688,6 +693,15 @@ function stripExtensionArtifacts() {
             // Ignore invalid attribute selectors
         }
     });
+
+    // Old plugin marker. ChatGPT layout values (col/row) stay.
+    try {
+        document.querySelectorAll('[data-direction="rtl"], [data-direction="ltr"]').forEach((el) => {
+            nativeRemoveAttribute.call(el, 'data-direction');
+        });
+    } catch {
+        // Ignore
+    }
 
     removeInjectedUi();
 

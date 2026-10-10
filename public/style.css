@@ -143,7 +143,7 @@ html.ai-rtl-has-font .FontSetGPT {
    Enforce the selected Persian font only on actual prose blocks instead of
    the old expensive `.FontSetGPT *` universal descendant selector. */
 html.ai-rtl-has-font .FontSetGPT :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
     td, th
@@ -235,7 +235,7 @@ html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
 }
 
 .AsAlignRtl :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption
 ) {
@@ -243,7 +243,7 @@ html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
 }
 
 .AsAlignLtr :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption
 ) {
@@ -575,7 +575,7 @@ html.ai-rtl-has-font .FontSet .font-claude-message , html.ai-rtl-has-font .FontS
 }
 
 :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-ai-rtl-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 :is(.standard-markdown, .progressive-markdown) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-left: calc(var(--spacing) * 8) !important;
@@ -583,7 +583,7 @@ html.ai-rtl-has-font .FontSet .font-claude-message , html.ai-rtl-has-font .FontS
 }
 
 :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-ai-rtl-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 :is(.standard-markdown, .progressive-markdown) :is(p, blockquote, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-right: var(--msg-text-inset, .5rem) !important;
