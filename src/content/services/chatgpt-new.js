@@ -32,6 +32,8 @@ const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-mes
 const FOLLOWUP_BUTTON_SELECTOR = 'button[class*="suggested-followup"]';
 const SUGGESTION_MATCH_SELECTOR = `ul.divide-token-border-light, .whitespace-pre-wrap, ${FOLLOWUP_BUTTON_SELECTOR}`;
 const SUGGESTION_CONTAINS_SELECTOR = `ul.divide-token-border-light .whitespace-pre-wrap, ${FOLLOWUP_BUTTON_SELECTOR}`;
+const WRITING_BLOCK_TITLE_SELECTOR = 'header[class*="header-"] .overflow-hidden.whitespace-nowrap';
+const WRITING_BLOCK_CARD_MARKER_SELECTOR = '.writing-block-editor, textarea[name="subject"], textarea[aria-label="Subject"]';
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
@@ -43,6 +45,11 @@ const FOLLOWUP_RTL_OPTIONS = {
     processedClass: 'AsOkSuggest',
     setTextAlign: 'important',
     ignoreSelector: 'svg'
+};
+const WRITING_BLOCK_TITLE_OPTIONS = {
+    fontClass: 'FontSetGPT',
+    processedClass: 'AsOk',
+    setTextAlign: true
 };
 
 function findCopyrightTargetFromComposerBody() {
@@ -376,6 +383,46 @@ function processFollowupButtons(node, rtlAlgorithm) {
     });
 }
 
+function isWritingBlockCardTitle(element) {
+    if (!element || typeof element.closest !== 'function') {
+        return false;
+    }
+    const header = element.closest('header[class*="header-"]');
+    if (!header || !header.parentElement) {
+        return false;
+    }
+    try {
+        return Boolean(header.parentElement.querySelector(WRITING_BLOCK_CARD_MARKER_SELECTOR));
+    } catch {
+        return false;
+    }
+}
+
+function processWritingBlockTitles(node, rtlAlgorithm) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+    }
+
+    const $node = AQ(node);
+    const titles = $node.find(WRITING_BLOCK_TITLE_SELECTOR).add($node.filter(WRITING_BLOCK_TITLE_SELECTOR));
+    titles.each(function () {
+        if (!isWritingBlockCardTitle(this)) {
+            return;
+        }
+        const text = (this.textContent || '').trim();
+        if (!text) {
+            return;
+        }
+        const sig = `${text.length}:${text.slice(0, 24)}:${text.slice(-24)}`;
+        if (this.getAttribute('data-ai-rtl-title-sig') === sig && AQ(this).hasClass('AsOk')) {
+            return;
+        }
+        AQ(this).removeClass('AsOk');
+        applyRtlToElement(this, rtlAlgorithm, WRITING_BLOCK_TITLE_OPTIONS);
+        this.setAttribute('data-ai-rtl-title-sig', sig);
+    });
+}
+
 function processSuggestionNode(node, rtlAlgorithm) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
         return;
@@ -430,6 +477,7 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
     const pendingMarkdown = new Set();
     const pendingUserNodes = new Set();
     const pendingSuggestionNodes = new Set();
+    const pendingWritingTitleNodes = new Set();
     const visibleMarkdown = new Set();
     const dirtyMarkdown = new Set();
     const observedMarkdown = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
@@ -526,6 +574,13 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             }
         });
         pendingSuggestionNodes.clear();
+
+        pendingWritingTitleNodes.forEach((node) => {
+            if (node.isConnected) {
+                processWritingBlockTitles(node, rtlAlgorithm);
+            }
+        });
+        pendingWritingTitleNodes.clear();
     };
 
     const scheduleFlush = () => {
@@ -587,6 +642,10 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
                 }
                 if (nodeMatchesOrContains(node, SUGGESTION_MATCH_SELECTOR, SUGGESTION_CONTAINS_SELECTOR)) {
                     pendingSuggestionNodes.add(node);
+                }
+                if (nodeMatchesOrContains(node, WRITING_BLOCK_TITLE_SELECTOR, WRITING_BLOCK_TITLE_SELECTOR) ||
+                    nodeMatchesOrContains(node, WRITING_BLOCK_CARD_MARKER_SELECTOR, WRITING_BLOCK_CARD_MARKER_SELECTOR)) {
+                    pendingWritingTitleNodes.add(node);
                 }
                 scheduleFlush();
             }
@@ -736,6 +795,7 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
     });
 
     processFollowupButtons(document.body, rtlAlgorithm);
+    processWritingBlockTitles(document.body, rtlAlgorithm);
 }
 
 function enforceAlgorithmRtlTargets(defaultAlgorithm = 'advanced_full') {
@@ -782,6 +842,7 @@ export function refreshChatGptLiveTargets(rtlAlgorithm = 'advanced_full') {
 
     initializeChatGptHistory(rtlAlgorithm);
     enforceAlgorithmRtlTargets(rtlAlgorithm);
+    processWritingBlockTitles(document.body, rtlAlgorithm);
     ensureChatGptCopyright();
     if (recheckMissedMarkdown) {
         recheckMissedMarkdown();
