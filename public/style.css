@@ -151,6 +151,12 @@ html.ai-rtl-has-font .FontSetGPT :where(
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
+/* ChatGPT suggested-followup chips inside MarkdownRoot */
+html.ai-rtl-has-font .FontSetGPT [class*="suggested-followup"],
+html.ai-rtl-has-font .FontSetGPT [class*="suggested-followup"] span {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
 html.ai-rtl-has-font .FontSetGPT .katex {
     font-family: KaTeX_Main, "Times New Roman", serif !important;
 }

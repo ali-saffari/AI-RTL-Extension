@@ -29,14 +29,21 @@ const MISSED_MARKDOWN_PROCESS_BUDGET = 3;
 const MARKDOWN_IGNORE_SELECTOR = '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]';
 const TABLE_CONTROLS_SELECTOR = '[data-writing-block-table-controls-container]';
 const USER_MESSAGE_SELECTOR = '[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]';
-const SUGGESTION_MATCH_SELECTOR = 'ul.divide-token-border-light, .whitespace-pre-wrap';
-const SUGGESTION_CONTAINS_SELECTOR = 'ul.divide-token-border-light .whitespace-pre-wrap';
+const FOLLOWUP_BUTTON_SELECTOR = 'button[class*="suggested-followup"]';
+const SUGGESTION_MATCH_SELECTOR = `ul.divide-token-border-light, .whitespace-pre-wrap, ${FOLLOWUP_BUTTON_SELECTOR}`;
+const SUGGESTION_CONTAINS_SELECTOR = `ul.divide-token-border-light .whitespace-pre-wrap, ${FOLLOWUP_BUTTON_SELECTOR}`;
 const MOBILE_COMPOSER_SELECTOR = '#mobile-composer-prompt, [data-mobile-composer-prompt]';
 const COMPOSER_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 const CHATGPT_LOCKED_EDITOR_SELECTOR = '.ProseMirror[contenteditable], .ProseMirror[contenteditable]';
 const THREAD_FOOTER_SELECTOR = '[data-thread-scroll-footer="true"] [data-pip-obstacle="thread-footer"]';
 const COMPOSER_LAYOUT_BODY_SELECTOR = '[class^="ComposerLayoutBody"], [class*=" ComposerLayoutBody"]';
 const LEGACY_THREAD_BOTTOM_SELECTOR = '#thread-bottom .w-full .pointer-events-auto';
+const FOLLOWUP_RTL_OPTIONS = {
+    fontClass: 'FontSetGPT',
+    processedClass: 'AsOkSuggest',
+    setTextAlign: 'important',
+    ignoreSelector: 'svg'
+};
 
 function findCopyrightTargetFromComposerBody() {
     const body = document.querySelector(COMPOSER_LAYOUT_BODY_SELECTOR);
@@ -354,6 +361,21 @@ function processUserMessageNode(node, rtlAlgorithm) {
     });
 }
 
+function processFollowupButtons(node, rtlAlgorithm) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+    }
+
+    const $node = AQ(node);
+    const buttons = $node.find(FOLLOWUP_BUTTON_SELECTOR).add($node.filter(FOLLOWUP_BUTTON_SELECTOR));
+    buttons.each(function () {
+        if (AQ(this).hasClass(FOLLOWUP_RTL_OPTIONS.processedClass)) {
+            return;
+        }
+        applyRtlToElement(this, rtlAlgorithm, FOLLOWUP_RTL_OPTIONS);
+    });
+}
+
 function processSuggestionNode(node, rtlAlgorithm) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
         return;
@@ -383,6 +405,8 @@ function processSuggestionNode(node, rtlAlgorithm) {
             });
         }
     });
+
+    processFollowupButtons(node, rtlAlgorithm);
 }
 
 export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
@@ -440,6 +464,8 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
         AQ(element).addClass('AsSetAlgorithm');
         applyRtlToContainer(element, rtlAlgorithm, chatGptRtlOptions(MARKDOWN_PROCESS_OPTIONS, rtlAlgorithm));
         clearDirOnIgnoredMarkdown(element);
+        // Suggested-followup chips live under MarkdownRoot but buttons are skipped in the walk.
+        processFollowupButtons(element, rtlAlgorithm);
     };
 
     markdownVisibilityObserver = new IntersectionObserver((entries) => {
@@ -566,7 +592,11 @@ export function initializeMarkdownObserver(rtlAlgorithm = 'advanced_section') {
             }
 
             if (mutation.target && mutation.target.nodeType === Node.ELEMENT_NODE &&
-                mutation.target.matches && mutation.target.matches('ul.divide-token-border-light')) {
+                mutation.target.matches && (
+                    mutation.target.matches('ul.divide-token-border-light') ||
+                    mutation.target.matches(FOLLOWUP_BUTTON_SELECTOR) ||
+                    Boolean(mutation.target.querySelector && mutation.target.querySelector(FOLLOWUP_BUTTON_SELECTOR))
+                )) {
                 pendingSuggestionNodes.add(mutation.target);
                 scheduleFlush();
             }
@@ -704,6 +734,8 @@ export function initializeChatGptElements(rtlAlgorithm = 'advanced_full') {
             processedClass: 'AsOk'
         });
     });
+
+    processFollowupButtons(document.body, rtlAlgorithm);
 }
 
 function enforceAlgorithmRtlTargets(defaultAlgorithm = 'advanced_full') {
