@@ -131,6 +131,7 @@ html.ai-rtl-has-font .FontSetImportantGPT , html.ai-rtl-has-font .FontSetImporta
 }
 
 
+
 .katex {
     direction: ltr !important;
 }
@@ -250,8 +251,8 @@ html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
     text-align: left !important;
 }
 
-.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]),
-.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]) {
+.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]),
+.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]) {
     text-align: left !important;
 }
 

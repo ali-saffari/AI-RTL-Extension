@@ -626,6 +626,9 @@ export function processTextElementsAdvanced(container, options = {}) {
         if (isKatexTreeElement(this) || isSvgTreeElement(this)) {
             setDebugAttr($element, 'data-debug-mode', 'structured-media-skipped');
             $element.attr("dir", "ltr");
+            if (isKatexTreeElement(this)) {
+                $element.css('text-align', '');
+            }
             $element.find('*').addClass(processedClass);
             $element.addClass(processedClass);
             return;
