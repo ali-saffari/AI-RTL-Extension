@@ -32,6 +32,8 @@ import { isFirefoxRuntime } from '../utils/isFirefox';
 import { getDefaultPinOpenSiteMode, isPinOpenSiteEnabled, PinOpenSiteMode } from '../utils/pinOpenSite';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import SitePermissionsHint from './SitePermissionsHint';
+import { useI18n } from '../i18n';
+import type { MessageKey } from '../i18n';
 import MissingPermissionBanner from './MissingPermissionBanner';
 
 interface Service {
@@ -77,20 +79,20 @@ const services: Service[] = [
 
     { key: 'chatGpt', name: 'ChatGPT', icon: '/images/sites/openAi-icon.png', url: 'https://chatgpt.com/', hosts: ['chatgpt.com', 'chat.openai.com'], keywords: ['chatgpt', 'gpt', 'openai', 'چت جی پی تی', 'چت جی‌پی‌تی', 'چت‌جی‌پی‌تی', 'اوپن ای آی', 'اوپنای'] },
     { key: 'deepseek', name: 'DeepSeek', icon: '/images/sites/deepseek.jpg', url: 'https://chat.deepseek.com', hosts: ['chat.deepseek.com'], keywords: ['deepseek', 'دیپ سیک', 'دیپ‌سیک', 'دیپسیک'] },
-    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.com/', hosts: ['copilot.com', 'www.copilot.com', 'copilot.microsoft.com'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی Copilot، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'مایکروسافت', 'microsoft'] },
-    { key: 'm365', name: '365 Copilot', icon: '/images/sites/m365.png', url: 'https://m365.cloud.microsoft/', new: true, hosts: ['m365.cloud.microsoft', 'copilot.cloud.microsoft'], helpText: 'در مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت از جمله <strong>Microsoft 365 Copilot</strong> کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی این سایت، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.', keywords: ['m365', 'microsoft 365', 'مایکروسافت 365', 'کوپایلوت', 'copilot', 'آفیس', 'office', 'outlook', 'teams'] },
+    { key: 'copilot', name: 'Copilot', icon: '/images/sites/copilot-icon.png', url: 'https://copilot.com/', hosts: ['copilot.com', 'www.copilot.com', 'copilot.microsoft.com'], keywords: ['copilot', 'کوپایلوت', 'کوپایلت', 'مایکروسافت', 'microsoft'] },
+    { key: 'm365', name: '365 Copilot', icon: '/images/sites/m365.png', url: 'https://m365.cloud.microsoft/', new: true, hosts: ['m365.cloud.microsoft', 'copilot.cloud.microsoft'], keywords: ['m365', 'microsoft 365', 'مایکروسافت 365', 'کوپایلوت', 'copilot', 'آفیس', 'office', 'outlook', 'teams'] },
     { key: 'claude', name: 'Claude', icon: '/images/sites/claude-icon.png', url: 'https://claude.ai', hosts: ['claude.ai'], keywords: ['claude', 'کلود', 'anthropic', 'انتروپیک'] },
     { key: 'gemini', name: 'Gemini', icon: '/images/sites/Gemini.png', url: 'https://gemini.google.com/', hosts: ['gemini.google.com'], keywords: ['gemini', 'جمینی', 'bard', 'بارد', 'گوگل', 'google'] },
     // { key: 'google', name: 'Google AI Mode', icon: '/images/sites/google.png', url: 'https://google.com/', new: true },
-    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/sites/Gemini.png', url: 'https://business.gemini.google/', hosts: ['business.gemini.google'], helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است کمی لگ احساس کنید. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['gemini', 'جمینی', 'بیزینس', 'workspace', 'گوگل', 'google'] },
+    { key: 'businessGemini', name: 'Business Gemini', icon: '/images/sites/Gemini.png', url: 'https://business.gemini.google/', hosts: ['business.gemini.google'], keywords: ['gemini', 'جمینی', 'بیزینس', 'workspace', 'گوگل', 'google'] },
     { key: 'perplexity', name: 'Perplexity', icon: '/images/sites/perplexity.png', url: 'https://perplexity.ai', hosts: ['perplexity.ai'], keywords: ['perplexity', 'پرپلکسیتی', 'پرپلکسی', 'سرچ', 'جستجو'] },
-    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/sites/aistudio.png', url: 'https://aistudio.google.com/', hosts: ['aistudio.google.com'], helpText: 'این سایت به دلیل نوع طراحی و ساخت آن ممکن است روند بهینه‌سازی متن‌ها برای فارسی با لگ مواجه شود. همچنین در موقع اسکرول کردن هم این تجربه را احساس خواهید کرد. این مشکلات به دلیل ساختار پیچیده سایت و نحوه رندر شدن صفحه توسط خود سایت است.', keywords: ['aistudio', 'ai studio', 'ای استودیو', 'ای‌استودیو', 'گوگل', 'google'] },
+    { key: 'aiStudio', name: 'Ai Studio', icon: '/images/sites/aistudio.png', url: 'https://aistudio.google.com/', hosts: ['aistudio.google.com'], keywords: ['aistudio', 'ai studio', 'ای استودیو', 'ای‌استودیو', 'گوگل', 'google'] },
     { key: 'googleNotebook', name: 'Google Notebook', icon: '/images/sites/notebooklm.png', url: 'https://notebook.google.com/?hl=fa', hosts: ['notebook.google.com', 'notebooklm.google.com', 'usercontent.goog'], keywords: ['notebooklm', 'notebook', 'نوت بوک', 'نوتبوک', 'نوت‌بوک', 'گوگل'] },
     { key: 'googleLabs', name: 'Google Labs (Flow)', icon: '/images/sites/labs-google.png', url: 'https://labs.google/', new: true, hosts: ['labs.google'], keywords: ['labs', 'flow', 'فلو', 'لبز', 'گوگل لبز', 'whisk', 'ویدیو'] },
-    { key: 'googleDrive', name: 'Google Drive', icon: '/images/sites/google-docs.png', url: 'https://drive.google.com/', new: true, hosts: ['docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com'], helpText: 'با فعال‌سازی این گزینه، راست‌چین برای <strong>جمینی در گوگل درایو</strong> فعال می‌شود. این سرویس شامل Drive، Docs، Sheets، Slides و Forms است.', keywords: ['docs', 'drive', 'sheets', 'slides', 'forms', 'گوگل درایو', 'گوگل داکس', 'گوگل داکز', 'جمینی', 'gemini', 'workspace', 'فایل'] },
+    { key: 'googleDrive', name: 'Google Drive', icon: '/images/sites/google-docs.png', url: 'https://drive.google.com/', new: true, hosts: ['docs.google.com', 'drive.google.com', 'sheets.google.com', 'slides.google.com', 'forms.google.com'], keywords: ['docs', 'drive', 'sheets', 'slides', 'forms', 'گوگل درایو', 'گوگل داکس', 'گوگل داکز', 'جمینی', 'gemini', 'workspace', 'فایل'] },
     { key: 'googleAnalytics', name: 'Google Analytics', icon: '/images/sites/google-analytics.png', url: 'https://analytics.google.com/', new: true, hosts: ['analytics.google.com'], keywords: ['analytics', 'آنالیتیکس', 'آنالیتیک', 'ga4', 'گوگل آنالیتیکس', 'گوگل', 'google'] },
     { key: 'youtubeStudio', name: 'YouTube Studio', icon: '/images/sites/youtube-studio.png', url: 'https://studio.youtube.com/', new: true, hosts: ['studio.youtube.com'], keywords: ['youtube', 'یوتیوب', 'studio', 'استودیو', 'یوتوب'] },
-    { key: 'youtube', name: 'YouTube', icon: '/images/sites/youtube.png', url: 'https://www.youtube.com/', new: true, hosts: ['www.youtube.com', 'youtube.com', 'm.youtube.com'], helpText: 'راست‌چین فقط روی پنل <strong>پرسش از این ویدیو</strong> (Ask about this video) فعال می‌شود، نه روی بقیه صفحه یوتیوب.', keywords: ['youtube', 'یوتیوب', 'یوتوب', 'ask', 'پرسش', 'ویدیو', 'ویدئو'] },
+    { key: 'youtube', name: 'YouTube', icon: '/images/sites/youtube.png', url: 'https://www.youtube.com/', new: true, hosts: ['www.youtube.com', 'youtube.com', 'm.youtube.com'], keywords: ['youtube', 'یوتیوب', 'یوتوب', 'ask', 'پرسش', 'ویدیو', 'ویدئو'] },
     { key: 'meta', name: 'Meta AI', icon: '/images/sites/meta.png', url: 'https://www.meta.ai/', new: true, hosts: ['meta.ai'], keywords: ['meta', 'متا', 'llama', 'لاما', 'facebook', 'فیسبوک', 'instagram'] },
     { key: 'grok', name: 'Grok', icon: '/images/sites/gork.png', url: 'https://grok.com/', hosts: ['grok.com'], keywords: ['grok', 'گروک', 'xai', 'ایکس ای آی', 'توییتر', 'twitter', 'ایلان'] },
     { key: 'qwenlm', name: 'QWEN CHAT', icon: '/images/sites/qwen.png', url: 'https://chat.qwen.ai', hosts: ['chat.qwen.ai', 'chat.qwenlm.ai'], keywords: ['qwen', 'کوئن', 'alibaba', 'علی بابا', 'علی‌بابا', 'tongyi'] },
@@ -101,7 +103,7 @@ const services: Service[] = [
     { key: 'githubCopilot', name: 'GitHub Copilot', icon: '/images/sites/GithubCopilot.png', url: 'https://github.com/copilot', hosts: ['github.com'], keywords: ['github', 'گیت هاب', 'گیت‌هاب', 'کوپایلوت', 'copilot'] },
     { key: 'minimax', name: 'Minimax', icon: '/images/sites/minimax.png', url: 'https://agent.minimax.io/', hosts: ['agent.minimax.io'], keywords: ['minimax', 'مینی مکس', 'مینی‌مکس'] },
     // { key: 'duckduckgo', name: 'DuckDuckGo AI', icon: '/images/sites/duckduckgo.png', url: 'https://duckduckgo.com/aichat', hosts: ['duckduckgo.com'], keywords: ['duckduckgo', 'داک داک گو', 'داک‌داک‌گو', 'داکداکگو'] },
-    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['you', 'یو'] },
+    { key: 'youCom', name: 'you.com', icon: '/images/sites/you com.jpg', url: 'https://you.com', hosts: ['you.com'], keywords: ['you', 'یو'] },
     { key: 'poeCom', name: 'poe.com', icon: '/images/sites/poe.png', url: 'https://poe.com/', hosts: ['poe.com'], keywords: ['poe', 'پو', 'quora'] },
     { key: 'monica', name: 'Monica', icon: '/images/sites/monica.png', url: 'https://monica.im/', hosts: ['monica.im'], keywords: ['monica', 'مونیکا'] },
     { key: 'mistral', name: 'Mistral', icon: '/images/sites/chat-mistral.png', url: 'https://chat.mistral.ai', hosts: ['chat.mistral.ai'], keywords: ['mistral', 'میسترال', 'le chat'] },
@@ -110,11 +112,11 @@ const services: Service[] = [
     { key: 'oneMinai', name: '1min.AI', icon: '/images/sites/1minai.png', url: 'https://app.1min.ai/', hosts: ['1min.ai', 'app.1min.ai'], keywords: ['1min', 'وان مین', 'وان‌مین'] },
     { key: 'digen', name: 'Digen', icon: '/images/sites/digen.png', url: 'https://agent.digen.ai/', hosts: ['digen.ai', 'agent.digen.ai'], keywords: ['digen', 'دیجن'] },
     { key: 'jules', name: 'Google Jules', icon: '/images/sites/jules.png', url: 'https://jules.google.com/', hosts: ['jules.google.com'], keywords: ['jules', 'جولز', 'گوگل', 'کد'] },
-    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], helpText: 'این سرویس رایگان نیست و به‌خاطر دسترسی محدود ما، ممکن است افزونه روی همه بخش‌های آن به‌خوبی کار نکند. اگر مشکلی دیدید، به <strong>پشتیبانی</strong> پیام بدهید تا آن را اصلاح کنیم.', keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
+    { key: 'writesonic', name: 'Writesonic (Chatsonic)', icon: '/images/sites/writesonic.png', url: 'https://app.writesonic.com/chat/', hosts: ['app.writesonic.com'], keywords: ['writesonic', 'chatsonic', 'رایتسونیک', 'چت سونیک', 'چت‌سونیک'] },
     { key: 'lovable', name: 'Lovable', icon: '/images/sites/lovable.png', url: 'https://lovable.dev/', hosts: ['lovable.dev'], keywords: ['lovable', 'لاوبل', 'لاوابل', 'کد'] },
     { key: 'ernie', name: 'Ernie (Baidu)', icon: '/images/sites/ernie.png', url: 'https://wenxin.baidu.com/', hosts: ['ernie.baidu.com', 'wenxin.baidu.com', 'chat.baidu.com'], keywords: ['ernie', 'ارنی', 'baidu', 'بایدو', 'wenxin', 'ونشین'] },
     { key: 'gamma', name: 'Gamma', icon: '/images/sites/gama.png', url: 'https://gamma.app/', hosts: ['gamma.app'], keywords: ['gamma', 'گاما', 'ارائه', 'presentation', 'اسلاید'] },
-    { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', hosts: ['synaps.app', 'my.synaps.app'], helpText: 'این سایت به دلیل انیمیشن‌های سنگین ممکن است برای شما با لگ باز شود. این کندی ارتباطی با این افزونه ندارد و به دلیل ساختار پیچیده و انیمیشن‌های سنگین خود سایت است.', keywords: ['synaps', 'سیناپس'] },
+    { key: 'synaps', name: 'Synaps', icon: '/images/sites/synaps.png', url: 'https://www.synaps.app/', hosts: ['synaps.app', 'my.synaps.app'], keywords: ['synaps', 'سیناپس'] },
     { key: 'notion', name: 'Notion', icon: '/images/sites/notion.png', url: 'https://www.notion.so/', hosts: ['notion.so', 'notion.com', 'app.notion.com'], keywords: ['notion', 'نوشن'] },
     { key: 'genspark', name: 'Genspark', icon: '/images/sites/genspark.png', url: 'https://genspark.ai/', hosts: ['genspark.ai'], keywords: ['genspark', 'جن اسپارک', 'جن‌اسپارک'] },
     { key: 'arena', name: 'Arena', icon: '/images/sites/arena.png', url: 'https://arena.ai/', hosts: ['arena.ai', 'lmarena.ai'], keywords: ['arena', 'آرنا', 'lmsys', 'lmarena'] },
@@ -131,7 +133,7 @@ const services: Service[] = [
     { key: 'chatboxai', name: 'Chatbox AI', icon: '/images/sites/chatboxai.png', url: 'https://web.chatboxai.app/', hosts: ['web.chatboxai.app'], keywords: ['chatbox', 'چت باکس', 'چت‌باکس'] },
     { key: 'lumo', name: 'Lumo', icon: '/images/sites/lumo-proton.png', url: 'https://lumo.proton.me/', hosts: ['lumo.proton.me'], keywords: ['lumo', 'لومو', 'proton', 'پروتون'] },
     { key: 'veo3', name: 'Veo 3', icon: '/images/sites/veo3.png', url: 'https://www-veo3.com/', hosts: ['www-veo3.com'], keywords: ['veo', 'وئو', 'ویدیو', 'video', 'گوگل'] },
-    { key: 'fal', name: 'fal.ai', icon: '/images/sites/fal.png', url: 'https://fal.ai/', new: true, hosts: ['fal.ai'], helpText: 'ما به نسخه پولی این ابزار دسترسی نداشتیم، بنابراین امکان فعال‌سازی راست‌چین برای همه بخش‌های آن وجود نداشت. اگر به نسخه پولی دسترسی دارید، می‌توانید به <strong>پشتیبانی</strong> پیام بدهید تا بخش‌هایی که هنوز فعال نشده‌اند را هم فعال کنیم.', keywords: ['fal', 'فال', 'تصویر', 'image', 'video', 'ویدیو'] },
+    { key: 'fal', name: 'fal.ai', icon: '/images/sites/fal.png', url: 'https://fal.ai/', new: true, hosts: ['fal.ai'], keywords: ['fal', 'فال', 'تصویر', 'image', 'video', 'ویدیو'] },
     { key: 'bfl', name: 'Black Forest', icon: '/images/sites/bfl.png', url: 'https://bfl.ai/', new: true, hosts: ['bfl.ai'], keywords: ['bfl', 'flux', 'بلک فارست', 'بلک‌فارست', 'فلوکس', 'تصویر', 'image'] },
     { key: 'characterAi', name: 'Character.AI', icon: '/images/sites/character-ai.png', url: 'https://character.ai/', new: true, hosts: ['character.ai', 'c.ai'], keywords: ['character', 'کاراکتر', 'شخصیت', 'c.ai'] },
     { key: 'pi', name: 'Pi', icon: '/images/sites/pi.png', url: 'https://pi.ai/', new: true, hosts: ['pi.ai'], keywords: ['pi', 'پای', 'inflection'] },
@@ -144,22 +146,43 @@ const services: Service[] = [
     { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
     { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
     { key: 'codecraft', name: 'CodeCraft API', icon: '/images/sites/codecraft.png', url: 'https://codecraftapi.com/', new: true, hosts: ['codecraftapi.com'], keywords: ['codecraft', 'code craft', 'کدکرفت', 'کد کرفت', 'کدکرافت', 'api', 'اوپن ای آی', 'openai'] },
-    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', helpText: 'پلاگین اختصاصی DeepSeek Harness برای <strong>نسخه دسکتاپ</strong> است. اگر برنامه دسکتاپ را دارید، همان پلاگین را نصب کنید.<br><br>اگر از <strong>نسخه وب</strong> استفاده می‌کنید، هم این افزونه و هم پلاگین کار می‌کنند. برای وب <strong>همین افزونه</strong> را پیشنهاد می‌کنیم، چون آپدیت‌ها خودکار می‌آیند. پلاگین را برای دسکتاپ نگه دارید.<br><br>راست‌چین این سایت فقط روی پورت <strong>۳۰۸۰</strong> فعال می‌شود. اگر هر دو روشن باشند، داخل هارنس می‌گوید افزونه کروم AI RTL شناسایی شده و یکی را انتخاب می‌کنید. هر دو همزمان اعمال نمی‌شوند. انتخاب موتور در <strong>تنظیمات مخصوص</strong> همین سایت است. افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
+    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
 ];
 
 
 export { services };
 
-const SERVICE_CATEGORIES = [
-    { id: 'chat', title: 'گفتگوهای عمومی', icon: mdiChatOutline },
-    { id: 'search', title: 'جستجو و پژوهش', icon: mdiBookSearchOutline },
-    { id: 'coding', title: 'کدنویسی و توسعه', icon: mdiCodeTags },
-    { id: 'media', title: 'تصویر، ویدیو و ارائه', icon: mdiImageMultipleOutline },
-    { id: 'workspace', title: 'ابزارهای سازمانی', icon: mdiBriefcaseOutline },
-    { id: 'other', title: 'چندمدله، ایجنت و سایر', icon: mdiDotsGrid },
+const SERVICE_HELP_KEYS: Partial<Record<string, MessageKey>> = {
+    copilot: 'list.help.copilot',
+    m365: 'list.help.m365',
+    businessGemini: 'list.help.businessGemini',
+    aiStudio: 'list.help.aiStudio',
+    googleDrive: 'list.help.googleDrive',
+    youtube: 'list.help.youtube',
+    youCom: 'list.help.youCom',
+    writesonic: 'list.help.writesonic',
+    synaps: 'list.help.synaps',
+    fal: 'list.help.fal',
+    harness: 'list.help.harness',
+};
+
+
+const SERVICE_CATEGORY_DEFS = [
+    { id: 'chat', icon: mdiChatOutline },
+    { id: 'search', icon: mdiBookSearchOutline },
+    { id: 'coding', icon: mdiCodeTags },
+    { id: 'media', icon: mdiImageMultipleOutline },
+    { id: 'workspace', icon: mdiBriefcaseOutline },
+    { id: 'other', icon: mdiDotsGrid },
 ] as const;
 
-const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], string[]> = {
+const getServiceCategories = (t: (key: MessageKey) => string) =>
+    SERVICE_CATEGORY_DEFS.map((item) => ({
+        ...item,
+        title: t(`list.categories.${item.id}` as MessageKey),
+    }));
+
+const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORY_DEFS)[number]['id'], string[]> = {
     chat: [
         'chatGpt', 'claude', 'gemini', 'youtube', 'businessGemini', 'copilot', 'deepseek', 'grok',
         'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
@@ -184,11 +207,11 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORIES)[number]['id'], s
     ],
 };
 
-const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORIES)[number]['id']> = Object.fromEntries(
+const SERVICE_CATEGORY_BY_KEY: Record<string, (typeof SERVICE_CATEGORY_DEFS)[number]['id']> = Object.fromEntries(
     Object.entries(CATEGORY_SERVICE_KEYS).flatMap(([categoryId, keys]) =>
         keys.map((key) => [key, categoryId])
     )
-) as Record<string, (typeof SERVICE_CATEGORIES)[number]['id']>;
+) as Record<string, (typeof SERVICE_CATEGORY_DEFS)[number]['id']>;
 
 interface ServiceListProps {
     pinOpenSiteMode?: PinOpenSiteMode;
@@ -205,6 +228,8 @@ export default function ServiceList({
     extensionEnabled = true,
     onEnableExtension,
 }: ServiceListProps) {
+    const { t } = useI18n();
+    const SERVICE_CATEGORIES = getServiceCategories(t);
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const [checked, setChecked] = useState<CheckedState>({
@@ -299,18 +324,16 @@ export default function ServiceList({
         };
     }, []);
     
-    // Get browser language and determine "Allow" button text
     const getAllowButtonText = () => {
         const browserLang = navigator.language || navigator.languages?.[0] || 'en';
         const langCode = browserLang.split('-')[0].toLowerCase();
-        
         if (langCode === 'fa') {
-            return 'اجازه دادن';
-        } else if (langCode === 'ar') {
-            return 'السماح';
-        } else {
-            return 'Allow';
+            return t('shared.allowFa');
         }
+        if (langCode === 'ar') {
+            return t('shared.allowAr');
+        }
+        return t('shared.allowEn');
     };
     
     const allowButtonText = getAllowButtonText();
@@ -969,7 +992,7 @@ export default function ServiceList({
                                             fontSize: '0.6rem',
                                             fontWeight: 600
                                         }}>
-                                            باز
+                                            {t('list.openBadge')}
                                         </Box>
                                     )}
                                     {service.new && (
@@ -993,7 +1016,7 @@ export default function ServiceList({
                                             filter: extensionEnabled ? 'none' : 'grayscale(1)',
                                             transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                         }}>
-                                            جدید
+                                            {t('list.newBadge')}
                                         </Box>
                                     )}
                                 </Box>
@@ -1001,10 +1024,10 @@ export default function ServiceList({
                         />
 
                         {serviceHasSiteSettings(service.key) && (
-                            <Tooltip title="تنظیمات اختصاصی">
+                            <Tooltip title={t('list.siteSettings')}>
                                 <IconButton
                                     size="small"
-                                    aria-label={`تنظیمات اختصاصی ${service.name}`}
+                                    aria-label={t('list.siteSettingsAria', { name: service.name })}
                                     onClick={(event) => {
                                         event.preventDefault();
                                         event.stopPropagation();
@@ -1027,7 +1050,7 @@ export default function ServiceList({
                             </Tooltip>
                         )}
 
-                        {service.helpText && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
+                        {SERVICE_HELP_KEYS[service.key] && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
                             <IconButton
                                 size="small"
                                 sx={{
@@ -1109,7 +1132,7 @@ export default function ServiceList({
                                     lineHeight: 1.6,
                                 }}
                             >
-                                برای مرورگر <strong>Microsoft Edge</strong> هیچ افزونه‌ای روی سایت‌های مایکروسافت (از جمله {service.name}) کار نمی‌کند. این یک محدودیت امنیتی است که توسط مایکروسافت اعمال شده است. برای استفاده از این افزونه روی {service.name}، لطفاً از مرورگر <strong>Chrome</strong> استفاده کنید.
+                                {t('list.edgeBlocked', { name: service.name })}
                             </Typography>
                         </Paper>
                     </Box>
@@ -1163,19 +1186,19 @@ export default function ServiceList({
                                         closeSearch();
                                     }
                                 }}
-                                placeholder="جستجوی سایت..."
+                                placeholder={t('list.searchPlaceholder')}
                                 dir="rtl"
                                 className="service-list-search-input"
                             />
                         ) : (
-                            `تعداد کل: ${toPersianDigits(services.length)} | تعداد فعال: ${toPersianDigits(displayedActiveCount)}`
+                            t('list.counts', { total: toPersianDigits(services.length), active: toPersianDigits(displayedActiveCount) })
                         )}
                         <Box
                             component="button"
                             type="button"
                             className="service-list-search-toggle"
                             onClick={isSearchOpen ? closeSearch : () => setIsSearchOpen(true)}
-                            aria-label={isSearchOpen ? 'بستن جستجو' : 'جستجو'}
+                            aria-label={isSearchOpen ? t('list.searchClose') : t('list.searchOpen')}
                             sx={{
                                 position: 'absolute',
                                 right: 8,
@@ -1204,7 +1227,7 @@ export default function ServiceList({
                 {filteredServices.length === 0 && (
                     <Box sx={{ py: 4, px: 2, textAlign: 'center' }} style={{ direction: 'rtl' }}>
                         <Typography sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                            سایتی با این جستجو پیدا نشد
+                            {t('list.noResults')}
                         </Typography>
                     </Box>
                 )}
@@ -1285,7 +1308,7 @@ export default function ServiceList({
                                     },
                                 }}
                             >
-                                فعال کردن
+                                {t('list.enable')}
                             </Button>
                             <Typography
                                 sx={{
@@ -1297,7 +1320,7 @@ export default function ServiceList({
                                     whiteSpace: 'nowrap',
                                 }}
                             >
-                                افزونه غیرفعال است
+                                {t('list.extensionOff')}
                             </Typography>
                         </Box>
                     </ListItem>
@@ -1411,14 +1434,14 @@ export default function ServiceList({
                 }}
             >
                 <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
-                    درباره {selectedService?.name}
+                    {t('list.aboutService', { name: selectedService?.name ?? '' })}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography 
                         variant="body1" 
                         paragraph 
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}
-                        dangerouslySetInnerHTML={{ __html: selectedService?.helpText || '' }}
+                        dangerouslySetInnerHTML={{ __html: (selectedService && SERVICE_HELP_KEYS[selectedService.key] ? t(SERVICE_HELP_KEYS[selectedService.key]!) : selectedService?.helpText) || '' }}
                     />
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
@@ -1427,7 +1450,7 @@ export default function ServiceList({
                         variant="contained"
                         color="primary"
                     >
-                        متوجه شدم
+                        {t('list.understood')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1445,7 +1468,7 @@ export default function ServiceList({
                 }}
             >
                 <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
-                    نیاز به مجوز
+                    {t('list.needPermission')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography 
@@ -1453,21 +1476,21 @@ export default function ServiceList({
                         paragraph 
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        برای فعال کردن <strong>{permissionServiceName}</strong>، نیاز به مجوز دسترسی به این سایت دارید.
+                        {t('list.permissionIntro', { name: permissionServiceName })}
                     </Typography>
                     <Typography 
                         variant="body1" 
                         paragraph 
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        روی دکمه دریافت مجوز کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
+                        {t('list.permissionSteps', { allow: allowButtonText })}
                     </Typography>
                     <Typography 
                     variant="body1" 
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
+                    {t('list.permissionPurpose')}
                 </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -1477,7 +1500,7 @@ export default function ServiceList({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                     <Button 
                         onClick={async () => {
@@ -1502,22 +1525,22 @@ export default function ServiceList({
                                         setChecked(prev => ({ ...prev, [key]: true }));
                                         setPermissionModalOpen(false);
                                     } else if (response?.granted === false) {
-                                        alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
+                                        alert(t('list.permissionDenied'));
                                     } else if (response) {
-                                        alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                                        alert(response?.error || t('list.permissionError'));
                                     }
                                 } catch (error) {
                                     // Silently handle connection errors
                                 }
                             } catch (error) {
-                                alert('خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                                alert(t('list.permissionError'));
                             }
                         }}
                         variant="contained"
                         color="primary"
                         sx={{ fontFamily: 'iranyekan' }}
                     >
-                        دریافت مجوز
+                        {t('shared.grantPermission')}
                     </Button>
                 
                 </DialogActions>

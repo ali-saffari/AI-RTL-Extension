@@ -11,6 +11,8 @@ import {
     DialogActions
 } from '@mui/material';
 import { mdiInformationOutline, mdiChevronDown, mdiOpenInNew } from '@mdi/js';
+import { useI18n } from '../i18n';
+import type { MessageKey } from '../i18n';
 
 interface InstallHintBannerProps {
     isDarkMode: boolean;
@@ -19,11 +21,11 @@ interface InstallHintBannerProps {
     variant: 'install' | 'troubleshooting' | 'notebook' | 'algorithm';
 }
 
-const troubleshootingSteps = [
-    'بررسی آپدیت افزونه: مطمئن بشید که آخرین نسخه افزونه رو نصب دارین.',
-    'بررسی فعال بودن روی سایت: چک کنید که قابلیت افزونه برای اون سایت خاص فعال (Enable) شده باشه.',
-    'خاموش و روشن کردن: یک‌بار افزونه رو غیرفعال و مجدداً فعال کنید.',
-    'رفرش کامل صفحه: صفحه سایت هدف رو با کلیدهای ترکیبی Ctrl + F5 (در مک: Cmd + Shift + R) رفرش کنید تا کش مرورگر پاک بشه.'
+const getTroubleshootingSteps = (t: (key: MessageKey) => string) => [
+    t('installHint.step1'),
+    t('installHint.step2'),
+    t('installHint.step3'),
+    t('installHint.step4'),
 ];
 
 const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
@@ -32,6 +34,8 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     onOpenSettings,
     variant
 }) => {
+    const { t } = useI18n();
+    const troubleshootingSteps = getTroubleshootingSteps(t);
     const [expanded, setExpanded] = React.useState(false);
     const [hideConfirmOpen, setHideConfirmOpen] = React.useState(false);
     const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.82)' : 'rgba(0, 0, 0, 0.75)';
@@ -47,14 +51,14 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                 mb: 0.8
             }}
         >
-            افزونه روی برخی سایت‌ها به‌صورت پیش‌فرض فعال نیست و باید از لیست سایت‌ها فعالش کنید.
+            {t('installHint.defaultOff')}
         </Typography>
     );
     const collapsibleTitle = variant === 'install'
-        ? 'اکستنشن رو تازه نصب کردید ولی فعال نمیشه؟'
+        ? t('installHint.installTitle')
         : variant === 'algorithm'
-            ? 'شخصی‌سازی الگوریتم راست‌چین'
-            : 'افزونه روی برخی سایت‌ها فعال نمی‌شه؟';
+            ? t('installHint.algorithmTitle')
+            : t('installHint.troubleshootingTitle');
 
     return (
         <Box
@@ -96,7 +100,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                 mb: 0.5
                             }}
                         >
-                            فعال‌سازی مجدد Google Notebook
+                            {t('installHint.notebookTitle')}
                         </Typography>
                         <Typography
                             sx={{
@@ -107,7 +111,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                 color: isDarkMode ? '#ffcc80' : '#e65100'
                             }}
                         >
-                            دامنه سایت Google Notebook تغییر کرده و مجوز قبلی روی آدرس جدید کار نمی‌کند. برای استفاده از افزونه روی این سایت، از لیست سایت‌ها یک‌بار دیگر فعالش کنید تا مجوز دامنه جدید گرفته شود.
+                            {t('installHint.notebookBody')}
                         </Typography>
                     </Box>
                 </Box>
@@ -168,7 +172,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             mb: 0.8
                                         }}
                                     >
-                                        اگر تازه افزونه رو نصب کردید و کار نمیکنه، اول از لیست سایت‌های پایین مطمئن بشید سایت مورد نظرتون وجود داره و فعال (Enable) هست.
+                                        {t('installHint.installBody1')}
                                     </Typography>
                                     <Typography
                                         sx={{
@@ -180,7 +184,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             mb: 0.8
                                         }}
                                     >
-                                        بعد از اینکه مطمئن شدید سایت توی لیست هست و فعال شده، صفحه همون سایت رو با Ctrl + F5 (در مک: Cmd + Shift + R) رفرش کنید تا افزونه روش اعمال بشه.
+                                        {t('installHint.installBody2')}
                                     </Typography>
                                 </>
                             ) : variant === 'algorithm' ? (
@@ -196,7 +200,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             mb: 0.8
                                         }}
                                     >
-                                        از طریق{' '}
+                                        {t('installHint.algorithmBefore')}{' '}
                                         <Box
                                             component="button"
                                             type="button"
@@ -222,9 +226,9 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                                 }
                                             }}
                                         >
-                                            تنظیمات
+                                            {t('installHint.algorithmSettings')}
                                         </Box>
-                                        {' '}می‌تونید بهترین الگوریتم رو برای خودتون انتخاب کنید. تنظیمات از منوی سمت چپ در دسترسه.
+                                        {' '}{t('installHint.algorithmAfter')}
                                     </Typography>
                  
                                 </>
@@ -241,7 +245,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             mb: 0.8
                                         }}
                                     >
-                                        اگر افزونه روی سایت مورد نظرتون فعال نمی‌شه یا کار نمی‌کنه، مراحل زیر رو به ترتیب تست کنید. در ۹۰٪ مواقع مشکل با این موارد حل میشه و اگر نشد به پشتیبانی پیام بدید:
+                                        {t('installHint.troubleshootingIntro')}
                                     </Typography>
                                     <Box
                                         component="ol"
@@ -276,7 +280,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             mb: 0.5
                                         }}
                                     >
-                                        ⚠️ نکته مهم: اگر تمام مراحل بالا رو انجام دادید و باز هم مشکل حل نشد، احتمالاً سایت هدف به‌روزرسانی داده و افزونه با نسخه جدید سایت هماهنگ نیست.
+                                        {t('installHint.importantNote')}
                                     </Typography>
                                     <Typography
                                         sx={{
@@ -287,7 +291,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             color: textColor
                                         }}
                                     >
-                                        در این شرایط، آدرس سایت و مشکل رو برای پشتیبانی ارسال کنید تا در سریع‌ترین زمان ممکن بررسی و آپدیت افزونه ارائه بشه.
+                                        {t('installHint.supportNote')}
                                     </Typography>
                                 </>
                             )}
@@ -314,7 +318,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             }
                                         }}
                                     >
-                                        متوجه شدم
+                                        {t('installHint.understood')}
                                     </Button>
                                 </Box>
                             )}
@@ -334,7 +338,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                 }}
             >
                 <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px', fontFamily: 'iranyekan' }}>
-                    پنهان کردن پیام
+                    {t('installHint.hideTitle')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
                     <Typography
@@ -344,7 +348,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                             lineHeight: 1.8
                         }}
                     >
-                        این پیام برای همیشه پنهان شود؟
+                        {t('installHint.hideQuestion')}
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -354,7 +358,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        خیر
+                        {t('installHint.no')}
                     </Button>
                     <Button
                         onClick={() => {
@@ -365,7 +369,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بله
+                        {t('installHint.yes')}
                     </Button>
                 </DialogActions>
             </Dialog>

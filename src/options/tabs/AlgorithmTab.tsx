@@ -30,6 +30,7 @@ import {
     getSelectableFonts,
     loadFontsConfig,
 } from '../../utils/fonts';
+import { useI18n } from '../../i18n';
 
 interface AlgorithmTabProps {
     rtlAlgorithm: string;
@@ -73,6 +74,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     onFontScaleCommit
 }) => {
     const theme = useTheme();
+    const { t } = useI18n();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
@@ -103,33 +105,33 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
 
     const algorithmDescriptions = {
         'advanced_section': {
-            title: 'تحلیل پیشرفته بخش‌ها',
-            description: 'هر بخش، جمله، پاراگراف و... به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن تعیین می‌شود. این روش برای متون چندزبانه یا ترکیبی بسیار مناسب است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.',
+            title: t('algorithm.algorithms.advancedSection.title'),
+            description: t('algorithm.algorithms.advancedSection.description'),
             features: [
-                'تحلیل جداگانه هر بخش',
-                'مناسب برای متون چندزبانه',
-                'دقت بالا در تشخیص'
+                t('algorithm.algorithms.advancedSection.feature1'),
+                t('algorithm.algorithms.advancedSection.feature2'),
+                t('algorithm.algorithms.advancedSection.feature3'),
             ]
         },
         'advanced_full': {
-            title: 'تحلیل پیشرفته یکپارچه',
-            description: 'کل متن پاسخ به‌عنوان یک ساختار واحد توسط الگوریتم پیشرفته پردازش شده و جهت مناسب انتخاب می‌شود. این روش ترکیب متعادلی از دقت و کارایی ارائه می‌دهد.',
+            title: t('algorithm.algorithms.advancedFull.title'),
+            description: t('algorithm.algorithms.advancedFull.description'),
             features: [
-                'پردازش یکپارچه متن',
-                'ترکیب دقت و کارایی',
-                'مناسب برای متون طولانی',
-                'الگوریتم جدید',
-                'پیش‌فرض سیستم'
+                t('algorithm.algorithms.advancedFull.feature1'),
+                t('algorithm.algorithms.advancedFull.feature2'),
+                t('algorithm.algorithms.advancedFull.feature3'),
+                t('algorithm.algorithms.advancedFull.feature4'),
+                t('algorithm.algorithms.advancedFull.feature5'),
             ]
         },
         'first_word': {
-            title: 'تشخیص مبتنی بر واژه آغازین',
-            description: 'جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. این روش برای سیستم‌هایی با توان پردازشی محدود مناسب است و در صورت هنگ و قفل شدن سایت توصیه می‌شود.',
+            title: t('algorithm.algorithms.firstWord.title'),
+            description: t('algorithm.algorithms.firstWord.description'),
             features: [
-                'سرعت بالا',
-                'مصرف کم منابع',
-                'مناسب سیستم‌های ضعیف',
-                'راه‌حل مشکل هنگ'
+                t('algorithm.algorithms.firstWord.feature1'),
+                t('algorithm.algorithms.firstWord.feature2'),
+                t('algorithm.algorithms.firstWord.feature3'),
+                t('algorithm.algorithms.firstWord.feature4'),
             ]
         }
     };
@@ -231,7 +233,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             />
                         </Grid>
 
-                        {/* الگوریتم تشخیص RTL */}
+                        {/* {t('algorithm.title')} */}
                         <Grid item xs={12} sx={{ order: 1 }}>
                             <Card elevation={2}>
                                 <CardContent style={{ direction: 'ltr' }}>
@@ -241,13 +243,13 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             color: 'primary.main',
                                             mb: 0.5
                                         }}>
-                                            الگوریتم تشخیص RTL
+                                            {t('algorithm.title')}
                                         </Typography>
                                         <Typography variant="body2" sx={{ 
                                             color: 'text.secondary',
                                             fontSize: '0.8rem'
                                         }}>
-                                            نحوه پردازش عنوان‌ها در چت هایی که چند زبانه هستند
+                                            {t('algorithm.subtitle')}
                                         </Typography>
                                     </Box>
                                     
@@ -349,7 +351,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                                                 fontSize: '0.6rem',
                                                                                 fontWeight: 600
                                                                             }}>
-                                                                                پیش‌فرض
+                                                                                {t('algorithm.defaultBadge')}
                                                                             </Box>
                                                                         </Box>
                                                                     )}
@@ -372,7 +374,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             </Card>
                         </Grid>
 
-                        {/* برعکس کردن فلش‌ها در متن راست‌چین */}
+                        {/* {t('algorithm.flipLabel')} */}
                         <Grid item xs={12} sx={{ order: 4 }}>
                             <Card elevation={2}>
                                 <CardContent dir="rtl">
@@ -382,7 +384,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontWeight: 600, 
                                                 color: 'primary.main'
                                             }}>
-                                                برعکس کردن فلش‌ها
+                                                {t('algorithm.flipTitle')}
                                             </Typography>
                                             <ExperimentalBadge isDarkMode={isDarkMode} />
                                         </Box>
@@ -390,7 +392,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             color: 'text.secondary',
                                             fontSize: '0.8rem'
                                         }}>
-                                            وقتی متن راست‌چین تشخیص داده شود، فلش‌های چپ‌به‌راست برعکس می‌شوند
+                                            {t('algorithm.flipHint')}
                                         </Typography>
                                     </Box>
                                     <Box sx={{ 
@@ -408,7 +410,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontSize: '0.95rem',
                                                 color: theme.palette.text.primary
                                             }}>
-                                                برعکس کردن فلش‌ها در متن راست‌چین
+                                                {t('algorithm.flipLabel')}
                                             </Typography>
                                             <Typography variant="body2" sx={{ 
                                                 color: 'text.secondary',
@@ -416,7 +418,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 mt: 0.5,
                                                 lineHeight: 1.6
                                             }}>
-                                                مثال: مرحله ۱ → مرحله ۲ تبدیل می‌شود به مرحله ۱ ← مرحله ۲
+                                                {t('algorithm.flipExample')}
                                             </Typography>
                                         </Box>
                                         <Switch
@@ -430,14 +432,14 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                                 },
                                             }}
-                                            inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
+                                            inputProps={{ 'aria-label': t('algorithm.flipAria') }}
                                         />
                                     </Box>
                                 </CardContent>
                             </Card>
                         </Grid>
 
-                        {/* اعمال روی باکس کدها (Markdown) */}
+                        {/* {t('algorithm.codeDialogTitle')} */}
                         <Grid item xs={12} sx={{ order: 5 }}>
                             <Card elevation={2}>
                                 <CardContent dir="rtl">
@@ -447,15 +449,15 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontWeight: 600, 
                                                 color: 'primary.main'
                                             }}>
-                                                اعمال روی باکس کدها{' '}
+                                                {t('algorithm.codeTitle')}{' '}
                                                 <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
-                                                    (Markdown)
+                                                    {t('algorithm.codeMarkdown')}
                                                 </Box>
                                             </Typography>
                                             <IconButton
                                                 onClick={() => setCodeModalOpen(true)}
                                                 size="small"
-                                                aria-label="توضیحات اعمال روی باکس کدها"
+                                                aria-label={t('algorithm.codeInfoAria')}
                                                 sx={{
                                                     color: theme.palette.text.primary,
                                                     '&:hover': {
@@ -490,9 +492,9 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontSize: '0.95rem',
                                                 color: theme.palette.text.primary
                                             }}>
-                                                اعمال روی باکس کدها{' '}
+                                                {t('algorithm.codeTitle')}{' '}
                                                 <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
-                                                    (Markdown)
+                                                    {t('algorithm.codeMarkdown')}
                                                 </Box>
                                             </Typography>
                                             <Typography variant="body2" sx={{ 
@@ -501,7 +503,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 mt: 0.5,
                                                 lineHeight: 1.6
                                             }}>
-                                                فقط باکس‌های دارای متن فارسی؛ بدون تغییر روی کدها
+                                                {t('algorithm.codeHint')}
                                             </Typography>
                                         </Box>
                                         <Switch
@@ -515,7 +517,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                                 },
                                             }}
-                                            inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
+                                            inputProps={{ 'aria-label': t('algorithm.codeAria') }}
                                         />
                                     </Box>
                                 </CardContent>
@@ -531,12 +533,12 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontWeight: 600, 
                                                 color: 'primary.main'
                                             }}>
-                                                اصلاح متن‌های ترکیبی
+                                                {t('algorithm.mixedTitle')}
                                             </Typography>
                                             <IconButton
                                                 onClick={() => setMixedModalOpen(true)}
                                                 size="small"
-                                                aria-label="توضیحات اصلاح متن‌های ترکیبی"
+                                                aria-label={t('algorithm.mixedInfoAria')}
                                                 sx={{
                                                     color: theme.palette.text.primary,
                                                     '&:hover': {
@@ -571,7 +573,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 fontSize: '0.95rem',
                                                 color: theme.palette.text.primary
                                             }}>
-                                                اصلاح متن‌های ترکیبی
+                                                {t('algorithm.mixedTitle')}
                                             </Typography>
                                             <Typography variant="body2" sx={{ 
                                                 color: 'text.secondary',
@@ -579,7 +581,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                 mt: 0.5,
                                                 lineHeight: 1.6
                                             }}>
-                                                عبارت‌های انگلیسی وسط جملهٔ فارسی جایشان عوض نمی‌شود
+                                                {t('algorithm.mixedHint')}
                                             </Typography>
                                         </Box>
                                         <Switch
@@ -593,14 +595,14 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                                 },
                                             }}
-                                            inputProps={{ 'aria-label': 'اصلاح متن‌های ترکیبی' }}
+                                            inputProps={{ 'aria-label': t('algorithm.mixedAria') }}
                                         />
                                     </Box>
                                 </CardContent>
                             </Card>
                         </Grid>
 
-                        {/* نحوه نمایش عنوان‌های ترکیبی */}
+                        {/* Title display mode */}
                         <Grid item xs={12} sx={{ order: 2 }}>
                             <Card elevation={2}>
                                 <CardContent dir="rtl" sx={{ position: 'relative' }}>
@@ -610,13 +612,13 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             color: 'primary.main',
                                             mb: 0.5
                                         }}>
-                                            نحوه نمایش عنوان‌ها
+                                            {t('algorithm.titlesTitle')}
                                         </Typography>
                                         <Typography variant="body2" sx={{ 
                                             color: 'text.secondary',
                                             fontSize: '0.8rem'
                                         }}>
-                                            نحوه پردازش عنوان‌ها در چت هایی که چند زبانه هستند
+                                            {t('algorithm.titlesSubtitle')}
                                         </Typography>
                                     </Box>
                                     
@@ -639,12 +641,12 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                     >
                                         {['unified', 'individual'].map((mode) => {
                                             const isSelected = mixedTitleDisplayMode === mode;
-                                            const title = mode === 'individual' 
-                                                ? 'تنظیم هر عنوان جداگانه' 
-                                                : 'قرار دادن عنوان‌ها در یک سمت';
+                                            const title = mode === 'individual'
+                                                ? t('algorithm.titlesIndividual')
+                                                : t('algorithm.titlesUnified');
                                             const description = mode === 'individual'
-                                                ? 'هر عنوان بر اساس زبان خودش پردازش می‌شود'
-                                                : 'همه عنوان‌ها بر اساس جهت اکثریت تنظیم می‌شوند';
+                                                ? t('algorithm.titlesIndividualHint')
+                                                : t('algorithm.titlesUnifiedHint');
                                             
                                             return (
                                                 <Paper 
@@ -736,14 +738,14 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                     px: 2
                                                 }}
                                             >
-                                                این تنظیمات فقط برای الگوریتم{' '}
+                                                {t('algorithm.titlesLockedBefore')}{' '}
                                                 <Box component="span" sx={{ 
                                                     color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                                     fontWeight: 600
                                                 }}>
-                                                   تحلیل پیشرفته بخش‌ها
+                                                   {t('algorithm.titlesLockedName')}
                                                 </Box>
-                                                {' '}فعال است
+                                                {' '}{t('algorithm.titlesLockedAfter')}
                                             </Typography>
                                         </Box>
                                     )}
@@ -764,15 +766,15 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                پیش نمایش
+                                {t('algorithm.previewTitle')}
                             </Typography>
                             <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',
                                 fontSize: '0.85rem'
                             }}>
-                                {selectedValue === 'advanced_section' && 'مثال: متن چندزبانه'}
-                                {selectedValue === 'advanced_full' && 'مثال: متن یکپارچه'}
-                                {selectedValue === 'first_word' && 'مثال: تشخیص سریع'}
+                                {selectedValue === 'advanced_section' && t('algorithm.previewSection')}
+                                {selectedValue === 'advanced_full' && t('algorithm.previewFull')}
+                                {selectedValue === 'first_word' && t('algorithm.previewFirst')}
                             </Typography>
                         </Box>
                         
@@ -799,64 +801,64 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 <>
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                            پاراگراف فارسی
+                                            {t('algorithm.preview.faTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                            این یک پاراگراف فارسی است که شامل چند جمله می‌شود. هر بخش به صورت جداگانه بررسی می‌شود. این یعنی اگر شما یک پاراگراف طولانی انگلیسی داشته باشید و بعد یک پاراگراف فارسی، الگوریتم به درستی جهت هر کدام را به صورت مستقل تشخیص می‌دهد. سیستم هر بلوک متن را به عنوان یک واحد جداگانه پردازش می‌کند و با استفاده از algorithm و processing techniques، دقت بالایی در تشخیص جهت ارائه می‌دهد.
+                                            {t('algorithm.preview.faBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
-                                            English Paragraph
+                                            {t('algorithm.preview.enTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={previewBodySx}>
-                                            Hello world! This is an English sentence that demonstrates how the advanced section algorithm works. When you have multiple paragraphs with different languages, each section is analyzed independently to determine the correct text direction. The system uses sophisticated techniques to identify the dominant language and structure of each بخش separately.
+                                            {t('algorithm.preview.enBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                            پاراگراف ترکیبی (انگلیسی-فارسی)
+                                            {t('algorithm.preview.mixedTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                            Advanced سیستم پیشرفته از الگوریتم‌های machine learning استفاده می‌کند تا جهت متن را به درستی تشخیص دهد. وقتی شما چندین پاراگراف با زبان‌های مختلف دارید، هر بخش به صورت مستقل بررسی می‌شود تا جهت مناسب متن تعیین شود. با استفاده از تکنیک‌های natural language processing و text analysis، سیستم می‌تواند بهترین جهت را برای هر بخش انتخاب کند.
+                                            {t('algorithm.preview.mixedBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
-                                            Long English Paragraph
+                                            {t('algorithm.preview.longEnTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={previewBodySx}>
-                                            Another English paragraph with multiple sentences. Each section is analyzed separately by the algorithm. This means that if you have a long English paragraph followed by a Persian paragraph, the algorithm will correctly identify the direction for each one independently. The system processes each block of text as a separate unit, ensuring accurate direction detection. This approach works well for mixed content that includes both English and فارسی words.
+                                            {t('algorithm.preview.longEnBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(false)} style={dirStyle(getTitleDir(false))} sx={titleSx}>
-                                            Mixed Content (English-Farsi)
+                                            {t('algorithm.preview.mixedEnTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={previewBodySx}>
-                                            Mixed content: English and فارسی together in the same paragraph. This is a more complex scenario where the algorithm needs to analyze the content carefully to determine the overall direction of the paragraph based on the dominant language or the structure of the text.
+                                            {t('algorithm.preview.mixedEnBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                            محتوای ترکیبی (فارسی-انگلیسی)
+                                            {t('algorithm.preview.mixedFaTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                            محتوای ترکیبی: انگلیسی و فارسی در یک پاراگراف. این یک سناریوی پیچیده‌تر است که الگوریتم باید محتوا را به دقت بررسی کند تا جهت کلی پاراگراف را بر اساس زبان غالب یا ساختار متن تعیین کند. این روش برای متون چندزبانه بسیار مناسب است.
+                                            {t('algorithm.preview.mixedFaBody')}
                                         </Typography>
                                     </Box>
                                     
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                            نتیجه
+                                            {t('algorithm.preview.resultTitle')}
                                         </Typography>
                                         <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                            نتیجه: الگوریتم هر بخش را به صورت مستقل پردازش می‌کند و جهت مناسب را برای هر بخش تعیین می‌نماید. این روش برای متون چندزبانه، مقالات علمی، و محتوای ترکیبی بسیار کارآمد است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.
+                                            {t('algorithm.preview.resultBody')}
                                         </Typography>
                                     </Box>
                                 </>
@@ -864,32 +866,32 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             {selectedValue === 'advanced_full' && (
                                 <>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        Hello و خوش آمدید به این سیستم پیشرفته. این الگوریتم یکپارچه تمام متن را به عنوان یک واحد واحد پردازش می‌کند و با استفاده از تکنیک‌های machine learning و natural language processing، جهت مناسب را برای کل متن تعیین می‌نماید. این روش برای متون طولانی که شامل محتوای ترکیبی هستند بسیار مناسب است.
+                                        {t('algorithm.preview.full1')}
                                     </Typography>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        الگوریتم با بررسی کل ساختار متن، از جمله کلمه‌های کلیدی مانند algorithm، processing، و detection، بهترین جهت را انتخاب می‌کند. این approach باعث می‌شود که دقت بالایی در تشخیص جهت متن داشته باشیم و برای محتوای پیچیده‌تر مانند مقالات علمی، documentation، و technical content بسیار کارآمد باشد.
+                                        {t('algorithm.preview.full2')}
                                     </Typography>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        سیستم با تحلیل عمیق محتوا و در نظر گیری context و semantic structure، می‌تواند حتی در متون بسیار پیچیده که شامل کلمات انگلیسی و فارسی به صورت مخلوط هستند، بهترین تصمیم را بگیرد. این روش برای محتوای طولانی که نیاز به پردازش یکپارچه دارد، بسیار مناسب است و performance بهتری نسبت به روش‌های دیگر ارائه می‌دهد.
+                                        {t('algorithm.preview.full3')}
                                     </Typography>
                                 </>
                             )}
                             {selectedValue === 'first_word' && (
                                 <>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        اتکا به کلمهٔ اول برای تشخیص راست‌چین بودن قابل‌اعتماد نیست، چون ممکن است آن کلمه نشانهٔ روشن زبانی نداشته باشد و سیستم را دچار اشتباه کند؛ بااین‌حال بسیاری از سایت‌ها به همین رفتار تکیه می‌کنند.
+                                        {t('algorithm.preview.first1')}
                                     </Typography>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        در متن‌های چندزبانه این روش مشکل‌ساز می‌شود، زیرا ممکن است صفحه با یک کلمهٔ انگلیسی شروع شود اما ادامهٔ متن فارسی باشد. با وجود این ضعف، اغلب سایت‌های راست‌چین همین شیوه را به‌کار می‌برند، چون مرورگر به‌صورت پیش‌فرض جهت متن را بر اساس اولین کاراکتر تعیین می‌کند.
+                                        {t('algorithm.preview.first2')}
                                     </Typography>
                                     <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                        همچنین اگر متن با اعداد یا علائم آغاز شود، تشخیص جهت دشوار می‌شود؛ اما باز هم بیشتر سایت‌هایی که از راست‌چین استفاده می‌کنند همین مکانیزم پیش‌فرض مرورگر را به‌عنوان روش اصلی تشخیص جهت متن می‌پذیرند.
+                                        {t('algorithm.preview.first3')}
                                     </Typography>
                                     <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={{
                                         ...previewBodySx,
                                         color: previewEnabled ? 'rgba(220, 38, 38, 0.75)' : 'inherit'
                                     }}>
-                                        Example این متن با انگلیسی شروع شده و مرورگر به‌صورت پیش‌فرض آن را به‌عنوان متن چپ‌چین تشخیص می‌دهد، حتی اگر ادامهٔ متن فارسی باشد. این همان رفتاری است که در بسیاری از سایت‌های راست‌چین مشاهده می‌شود و دلیل استفاده از این روش ساده است.
+                                        {t('algorithm.preview.first4')}
                                     </Typography>
                                 </>
                             )}
@@ -900,17 +902,17 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 borderTop: `1px dashed ${previewPanelBorder}`
                             }}>
                                 <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                    برعکس کردن فلش‌ها
+                                    {t('algorithm.preview.arrowsTitle')}
                                 </Typography>
                                 <Typography paragraph dir={getPreviewDir(true)} style={dirStyle(getPreviewDir(true))} sx={previewBodySx}>
-                                    {flipPreviewArrows('مسیر کار این است: نصب → تنظیم → اجرا. برای مثال مرحله ۱ ⇒ مرحله ۲ باید در متن راست‌چین خوانا بماند.', true)}
+                                    {flipPreviewArrows(t('algorithm.preview.arrowsBody'), true)}
                                 </Typography>
                                 <Typography paragraph dir={getPreviewDir(false)} style={dirStyle(getPreviewDir(false))} sx={previewBodySx}>
-                                    English text stays LTR: setup → configure → run.
+                                    {t('algorithm.preview.arrowsEn')}
                                 </Typography>
 
                                 <Typography variant="h3" dir={getTitleDir(true)} style={dirStyle(getTitleDir(true))} sx={titleSx}>
-                                    باکس Markdown
+                                    {t('algorithm.preview.markdownTitle')}
                                 </Typography>
                                 <Box sx={{
                                     mb: 1.5,
@@ -928,7 +930,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             fontFamily: previewFont
                                         }}
                                     >
-                                        {flipPreviewArrows('نکته مهم:\nابتدا ورودی را بررسی کنید → سپس خروجی را ذخیره کنید.\nاین متن فارسی داخل باکس Markdown است.', markdownPreviewDir === 'rtl')}
+                                        {flipPreviewArrows(t('algorithm.preview.markdownBody'), markdownPreviewDir === 'rtl')}
                                     </Box>
                                 </Box>
                                 <Box sx={{
@@ -966,7 +968,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 fontSize: '0.85rem',
 
                             }}>
-                                {previewEnabled ? 'الگوریتم فعال' : 'الگوریتم غیرفعال'}
+                                {previewEnabled ? t('algorithm.previewOn') : t('algorithm.previewOff')}
                             </Typography>
                             <Switch
                                 checked={previewEnabled}
@@ -1008,7 +1010,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                     py: 1.5,
                     mb: 2
                 }}>
-                    اصلاح متن‌های ترکیبی
+                    {t('algorithm.mixedTitle')}
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Typography variant="body1" sx={{
@@ -1017,7 +1019,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         lineHeight: 1.8,
                         fontSize: '0.95rem'
                     }}>
-                        گاهی وسط جملهٔ فارسی، چند کلمهٔ انگلیسی پشت‌سرهم می‌آید و جایشان عوض می‌شود. اگر این گزینه را روشن کنید، همان انگلیسی درست و به ترتیب خوانده می‌شود. پیش‌فرض خاموش است.
+                        {t('algorithm.mixedBody')}
                     </Typography>
                     <Box sx={{ mb: 2 }}>
                         <Typography variant="h6" sx={{
@@ -1026,7 +1028,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             fontSize: '1rem',
                             fontWeight: 600
                         }}>
-                            مثال:
+                            {t('algorithm.mixedExampleTitle')}
                         </Typography>
                         <Box component="ul" sx={{
                             pl: 2,
@@ -1038,8 +1040,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 lineHeight: 1.8
                             }
                         }}>
-                            <li>به‌جای «Plus ChatGPT» همان «ChatGPT Plus» دیده می‌شود</li>
-                            <li>در جمله‌ای مثل «برای اتصال از USB، HDMI استفاده کنید» جای USB و HDMI عوض نمی‌شود</li>
+                            <li>{t('algorithm.mixedExample1')}</li>
+                            <li>{t('algorithm.mixedExample2')}</li>
                         </Box>
                     </Box>
                 </DialogContent>
@@ -1057,7 +1059,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             fontFamily: 'iranyekan'
                         }}
                     >
-                        متوجه شدم
+                        {t('algorithm.understood')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1085,7 +1087,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                     py: 1.5,
                     mb: 2
                 }}>
-                    اعمال روی باکس کدها (Markdown)
+                    {t('algorithm.codeDialogTitle')}
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Typography variant="body1" sx={{
@@ -1094,7 +1096,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         lineHeight: 1.6,
                         fontSize: '0.95rem'
                     }}>
-                        وقتی این گزینه روشن باشد، الگوریتم فقط روی باکس‌هایی اعمال می‌شود که محتوای فارسی دارند. متن فارسی در این باکس‌ها راست‌چین می‌شود تا خواندنش راحت‌تر باشد. روی خودِ کدهای برنامه‌نویسی تغییری اعمال نمی‌شود و جهت آن‌ها چپ‌چین باقی می‌ماند.
+                        {t('algorithm.codeDialogBody')}
                     </Typography>
                     <Box sx={{ mb: 2 }}>
                         <Typography variant="h6" sx={{
@@ -1103,7 +1105,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             fontSize: '1rem',
                             fontWeight: 600
                         }}>
-                            ویژگی‌ها:
+                            {t('algorithm.featuresTitle')}
                         </Typography>
                         <Box component="ul" sx={{
                             pl: 2,
@@ -1114,9 +1116,9 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 fontSize: '0.9rem'
                             }
                         }}>
-                            <li>فقط باکس‌های دارای محتوای فارسی</li>
-                            <li>بدون تغییر روی کدهای برنامه‌نویسی</li>
-                            <li>مناسب برای بلوک‌های متنی Markdown</li>
+                            <li>{t('algorithm.codeFeature1')}</li>
+                            <li>{t('algorithm.codeFeature2')}</li>
+                            <li>{t('algorithm.codeFeature3')}</li>
                         </Box>
                     </Box>
                 </DialogContent>
@@ -1140,7 +1142,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             }
                         }}
                     >
-                        بستن
+                        {t('algorithm.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1189,7 +1191,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                     fontSize: '1rem',
                                     fontWeight: 600
                                 }}>
-                                    ویژگی‌ها:
+                                    {t('algorithm.featuresTitle')}
                                 </Typography>
                                 <Box component="ul" sx={{ 
                                     pl: 2, 
@@ -1228,7 +1230,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             }
                         }}
                     >
-                        بستن
+                        {t('algorithm.close')}
                     </Button>
                 </DialogActions>
             </Dialog>

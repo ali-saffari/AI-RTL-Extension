@@ -7,6 +7,7 @@ import {
     normalizeSiteSettings,
 } from '../constants/siteSettings';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
+import { useI18n } from '../i18n';
 
 interface SiteChoice {
     value: string;
@@ -50,6 +51,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     focusSiteKey = null,
     focusNonce = 0,
 }) => {
+    const { t } = useI18n();
     const [settings, setSettings] = React.useState<SiteSettingsMap>(
         () => normalizeSiteSettings(undefined) as SiteSettingsMap
     );
@@ -119,6 +121,24 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const pluginMissing = entry.serviceKey === 'harness' && harnessPluginPresent === false;
     const waitingForPlugin = entry.serviceKey === 'harness' && harnessPluginPresent === null;
     const visibleChoiceFields = pluginMissing || waitingForPlugin ? [] : choiceFields;
+    const resolveFieldLabel = (field: SiteField) => {
+        if (entry.serviceKey === 'youtube' && field.key === 'fontScope') {
+            return t('quickSettings.youtubeFontScope');
+        }
+        if (entry.serviceKey === 'harness' && field.key === 'engine') {
+            return t('quickSettings.harnessEngineLabel');
+        }
+        return field.label;
+    };
+    const resolveOptionLabel = (option: SiteChoice) => {
+        if (entry.serviceKey !== 'harness') {
+            return option.label;
+        }
+        if (option.value === 'dsh') {
+            return t('quickSettings.harnessPlugin');
+        }
+        return option.label;
+    };
 
     if (!switchFields.length && !choiceFields.length) {
         return null;
@@ -155,7 +175,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                         <path d={mdiWrench} />
                     </SvgIcon>
                     <Typography className="quick-settings-label" sx={{ color: titleColor }}>
-                        تنظیمات مخصوص
+                        {t('quickSettings.siteSpecific')}
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
@@ -202,7 +222,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                         color: mutedColor,
                     }}
                 >
-                    {entry.missingPluginNote}
+                    {entry.serviceKey === 'harness' ? t('quickSettings.harnessMissingPlugin') : entry.missingPluginNote}
                 </Typography>
             ) : null}
             {visibleChoiceFields.map((field, index) => {
@@ -219,7 +239,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             borderTop: index > 0 ? `1px solid ${cardBorder}` : 'none',
                         }}
                     >
-                        <Typography className="quick-settings-label">{field.label}</Typography>
+                        <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -265,7 +285,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                                                 sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
                                             />
                                         ) : null}
-                                        {option.label}
+                                        {resolveOptionLabel(option)}
                                     </Box>
                                 );
                             })}
@@ -289,7 +309,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             borderTop: index > 0 || visibleChoiceFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
                         }}
                     >
-                        <Typography className="quick-settings-label">{field.label}</Typography>
+                        <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
                         <Switch
                             size="small"
                             checked={checked}
@@ -304,7 +324,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                                     backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 },
                             }}
-                            inputProps={{ 'aria-label': `${field.label} ${entry.title}` }}
+                            inputProps={{ 'aria-label': `${resolveFieldLabel(field)} ${entry.title}` }}
                         />
                     </Box>
                 );

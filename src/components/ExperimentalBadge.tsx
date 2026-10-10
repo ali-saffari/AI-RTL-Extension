@@ -1,8 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-
-const EXPERIMENTAL_TOOLTIP =
-    'این قابلیت آزمایشی هست و ممکنه توی برخی سایت‌ها به‌درستی کار نکنه. اگر مشاهده کردین به پشتیبانی خبر بدید.';
+import { useI18n } from '../i18n';
 
 const TOOLTIP_WIDTH = 228;
 const GAP = 8;
@@ -68,6 +66,7 @@ function clamp(value: number, min: number, max: number) {
 }
 
 const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode, disabled = false }) => {
+    const { t } = useI18n();
     const [open, setOpen] = React.useState(false);
     const [pos, setPos] = React.useState<TooltipPos | null>(null);
     const chipRef = React.useRef<HTMLSpanElement>(null);
@@ -212,7 +211,7 @@ const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode, disab
                             }}
                         />
                     ) : null}
-                    {EXPERIMENTAL_TOOLTIP}
+                    {t('experimental.tooltip')}
                 </span>
             ),
             document.body
@@ -254,7 +253,7 @@ const ExperimentalBadge: React.FC<ExperimentalBadgeProps> = ({ isDarkMode, disab
                     transition: 'color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
                 }}
             >
-                آزمایشی
+                {t('experimental.label')}
             </span>
             {tooltip}
         </>

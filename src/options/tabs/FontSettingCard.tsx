@@ -18,7 +18,6 @@ import {
     MAX_FONT_SCALE,
     MIN_FONT_SCALE,
     NONE_FONT_ID,
-    NONE_FONT_TITLE,
     RtlFont,
     formatFontScaleLabel,
     getFontFamilyCssValue,
@@ -27,6 +26,7 @@ import {
     loadFontsConfig,
 } from '../../utils/fonts';
 import ExperimentalBadge from '../../components/ExperimentalBadge';
+import { useI18n } from '../../i18n';
 
 interface FontSettingCardProps {
     selectedFont: string;
@@ -46,8 +46,10 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
     isDarkMode
 }) => {
     const theme = useTheme();
+    const { t } = useI18n();
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const previewStyleId = 'ai-rtl-options-font-preview';
+    const noneFontTitle = t('fonts.none');
 
     React.useEffect(() => {
         let cancelled = false;
@@ -89,7 +91,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                             fontWeight: 600,
                             color: 'primary.main'
                         }}>
-                            فونت
+                            {t('fonts.title')}
                         </Typography>
                         <ExperimentalBadge isDarkMode={isDarkMode} />
                     </Box>
@@ -102,7 +104,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                         onChange={handleChange}
                         renderValue={(value) => {
                             if (value === NONE_FONT_ID) {
-                                return NONE_FONT_TITLE;
+                                return noneFontTitle;
                             }
                             const font = fonts.find((item) => item.id === value);
                             return font?.title || value;
@@ -145,7 +147,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                                 direction: 'rtl',
                             }}
                         >
-                            {NONE_FONT_TITLE}
+                            {noneFontTitle}
                         </MenuItem>
                         {selectedFont !== NONE_FONT_ID && !fonts.some((font) => font.id === selectedFont) && (
                             <MenuItem value={selectedFont} sx={{ display: 'none' }}>
@@ -185,7 +187,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                                             background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
                                         }}
                                     >
-                                        پیش‌فرض
+                                        {t('fonts.default')}
                                     </Box>
                                 )}
                             </MenuItem>
@@ -197,7 +199,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                             <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
-                                اندازه فونت
+                                {t('fonts.size')}
                             </Typography>
                             <ExperimentalBadge isDarkMode={isDarkMode} />
                         </Box>
@@ -213,6 +215,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                         marks={[{ value: DEFAULT_FONT_SCALE }]}
                         onChange={(_, value) => onFontScaleChange(value as number)}
                         onChangeCommitted={(_, value) => onFontScaleCommit(value as number)}
+                        aria-label={t('fonts.sizeAria')}
                         sx={{
                             '& .MuiSlider-thumb': {
                                 color: theme.palette.primary.main

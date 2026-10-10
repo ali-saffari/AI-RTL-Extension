@@ -19,11 +19,11 @@ import {
     mdiInstagram,
 } from '@mdi/js';
 import {
-    EXTENSION_SHARE_TEXT,
     EXTENSION_SHARE_URL,
     getSocialShareTargets,
     shareExtension,
 } from '../utils/storeLinks';
+import { useI18n } from '../i18n';
 
 const TELEGRAM_ICON_PATH =
     'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z';
@@ -57,9 +57,22 @@ interface ShareModalProps {
 }
 
 const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) => {
+    const { t } = useI18n();
     const [copied, setCopied] = React.useState(false);
     const [nativeShared, setNativeShared] = React.useState(false);
-    const targets = React.useMemo(() => getSocialShareTargets() as ShareTarget[], []);
+    const shareText = t('share.text');
+    const targets = React.useMemo(
+        () => getSocialShareTargets({
+            telegram: t('share.telegram'),
+            whatsapp: t('share.whatsapp'),
+            twitter: t('share.twitter'),
+            instagram: t('share.instagram'),
+            facebook: t('share.facebook'),
+            linkedin: t('share.linkedin'),
+            email: t('share.email'),
+        }, shareText) as ShareTarget[],
+        [t, shareText],
+    );
     const canNativeShare =
         typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
@@ -71,7 +84,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
     }, [open]);
 
     const handleCopy = async () => {
-        const result = await shareExtension({ preferNative: false });
+        const result = await shareExtension({ preferNative: false, shareText });
         if (result === 'copied') {
             setCopied(true);
             window.setTimeout(() => setCopied(false), 1800);
@@ -79,7 +92,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
     };
 
     const handleNativeShare = async () => {
-        const result = await shareExtension({ preferNative: true });
+        const result = await shareExtension({ preferNative: true, shareText });
         if (result === 'shared') {
             setNativeShared(true);
             window.setTimeout(() => setNativeShared(false), 1800);
@@ -88,7 +101,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
 
     const openTarget = async (target: ShareTarget) => {
         if (target.action === 'copy-and-open') {
-            await shareExtension({ preferNative: false });
+            await shareExtension({ preferNative: false, shareText });
         }
         window.open(target.href, '_blank', 'noopener,noreferrer');
     };
@@ -117,7 +130,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                     fontFamily: 'iranyekan',
                 }}
             >
-                تعارف افزونه به دیگران
+                {t('share.title')}
             </DialogTitle>
             <DialogContent className="popup-share-content" sx={{ padding: '8px 16px 4px' }}>
                 <Typography
@@ -130,7 +143,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                         fontSize: '0.8rem',
                     }}
                 >
-                    از طریق یکی از شبکه‌ها به اشتراک بگذارید یا متن آماده را کپی کنید.
+                    {t('share.description')}
                 </Typography>
 
                 <div className="popup-share-grid">
@@ -158,7 +171,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                         type="button"
                         className="popup-share-item popup-share-item-copy"
                         onClick={() => void handleCopy()}
-                        aria-label="کپی لینک"
+                        aria-label={t('share.copyLink')}
                     >
                         <span
                             className="popup-share-item-icon"
@@ -169,7 +182,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                             </SvgIcon>
                         </span>
                         <span className="popup-share-item-label">
-                            {copied ? 'کپی شد' : 'کپی لینک'}
+                            {copied ? t('share.copied') : t('share.copyLink')}
                         </span>
                     </button>
 
@@ -178,7 +191,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                             type="button"
                             className="popup-share-item popup-share-item-native"
                             onClick={() => void handleNativeShare()}
-                            aria-label="اشتراک‌گذاری سیستم"
+                            aria-label={t('share.nativeShare')}
                         >
                             <span
                                 className="popup-share-item-icon"
@@ -189,7 +202,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                                 </SvgIcon>
                             </span>
                             <span className="popup-share-item-label">
-                                {nativeShared ? 'ارسال شد' : 'سایر'}
+                                {nativeShared ? t('share.sent') : t('share.more')}
                             </span>
                         </button>
                     )}
@@ -208,7 +221,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                         fontSize: '0.68rem',
                     }}
                 >
-                    {`${EXTENSION_SHARE_TEXT}\n${EXTENSION_SHARE_URL}`}
+                    {`${shareText}\n${EXTENSION_SHARE_URL}`}
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ padding: '8px 16px 16px 16px' }}>
@@ -219,7 +232,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                         fontFamily: 'iranyekan',
                     }}
                 >
-                    بستن
+                    {t('share.close')}
                 </Button>
             </DialogActions>
         </Dialog>

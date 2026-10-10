@@ -42,6 +42,7 @@ import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../const
 import ShareModal from './ShareModal';
 import './App.css';
 import manifest from '../../public/manifest.chrome.json';
+import { LanguageMenuButton, useI18n } from '../i18n';
 
 const headerLinkSx = {
     background: 'none',
@@ -65,8 +66,6 @@ const headerLinkSx = {
 const firefoxDefaults = isFirefoxRuntime();
 const extensionStoreUrl = getExtensionStoreUrl();
 const extensionReviewsUrl = getExtensionReviewsUrl();
-const storePageLinkText = getStorePageLinkText();
-const rateLinkText = getRateLinkText();
 const TELEGRAM_ICON_PATH = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z';
 
 // Create rtl cache
@@ -188,6 +187,15 @@ const lightTheme = createTheme({
 });
 
 function App() {
+    const { t } = useI18n();
+    const storePageLinkText = getStorePageLinkText({
+        chrome: t('share.storePageChrome'),
+        firefox: t('share.storePageFirefox'),
+    });
+    const rateLinkText = getRateLinkText({
+        chrome: t('share.rateChrome'),
+        firefox: t('share.rateFirefox'),
+    });
     const [rtlAlgorithm, setRtlAlgorithm] = React.useState('advanced_full');
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
@@ -625,6 +633,7 @@ function App() {
     };
 
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
+    const emotionCache = cacheRtl;
 
     // Update body data-theme attribute for CSS
     React.useEffect(() => {
@@ -756,7 +765,7 @@ function App() {
     // Show loading screen while data is being loaded
     if (isLoading) {
         return (
-            <CacheProvider value={cacheRtl}>
+            <CacheProvider value={emotionCache}>
                 <ThemeProvider theme={currentTheme}>
                     <CssBaseline />
                     <Box
@@ -775,7 +784,7 @@ function App() {
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
                             }}
                         >
-                            در حال بارگذاری...
+                            {t('header.loading')}
                         </Typography>
                     </Box>
                 </ThemeProvider>
@@ -784,7 +793,7 @@ function App() {
     }
 
     return (
-        <CacheProvider value={cacheRtl}>
+        <CacheProvider value={emotionCache}>
             <ThemeProvider theme={currentTheme}>
                 <CssBaseline />
                 <div className="App" dir="rtl" >
@@ -874,7 +883,7 @@ function App() {
                                 {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
                             </Typography>
                             <Chip
-                                label={`نسخه ${manifest.version}`}
+                                label={t('header.version', { version: manifest.version })}
                                 size="small"
                                 sx={{
                                     flexShrink: 0,
@@ -894,7 +903,7 @@ function App() {
                                     rel="noopener noreferrer"
                                     sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
                                 >
-                                    درباره افزونه
+                                    {t('header.about')}
                                 </Typography>
                                 <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.55)', flexShrink: 0 }} />
                                 <Typography
@@ -903,13 +912,14 @@ function App() {
                                     onClick={() => scrollToSection('report-section')}
                                     sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
                                 >
-                                    گزارش مشکل
+                                    {t('header.report')}
                                 </Typography>
                             </Box>
                         </Box>
                         
+                        <LanguageMenuButton compact={narrowPopup} />
                         <Tooltip
-                            title={isDarkMode ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
+                            title={isDarkMode ? t('header.themeToLight') : t('header.themeToDark')}
                             placement="bottom-end"
                             disableInteractive
                             PopperProps={{
@@ -944,7 +954,7 @@ function App() {
                             </IconButton>
                         </Tooltip>
                         <Tooltip
-                            title={extensionEnabled ? 'خاموش کردن افزونه' : 'روشن کردن افزونه'}
+                            title={extensionEnabled ? t('header.turnOff') : t('header.turnOn')}
                             placement="bottom-end"
                             disableInteractive
                         >
@@ -952,7 +962,7 @@ function App() {
                                 checked={extensionEnabled}
                                 onChange={(event) => handleExtensionEnabledChange(event.target.checked)}
                                 size="small"
-                                inputProps={{ 'aria-label': extensionEnabled ? 'افزونه فعال است' : 'افزونه خاموش است' }}
+                                inputProps={{ 'aria-label': extensionEnabled ? t('header.enabled') : t('header.disabled') }}
                                 sx={{
                                     flexShrink: 0,
                                     transform: 'rotate(180deg) scale(1.2)',
@@ -985,7 +995,7 @@ function App() {
                             fontWeight: 400
                         }}
                     >
-                        برای پیوند شیرین‌تر هوش مصنوعی و زبان مادری‌مان. اگر نشست به دلتان،{' '}
+                        {t('intro.beforeReview')}{' '}
                         <a
                             href={extensionReviewsUrl}
                             target="_blank"
@@ -996,9 +1006,9 @@ function App() {
                                 fontWeight: 600,
                             }}
                         >
-                            نظرتان
+                            {t('intro.review')}
                         </a>
-                        {' '}را بنویسید، به دیگران{' '}
+                        {' '}{t('intro.beforeOffer')}{' '}
                         <a
                             href="#share"
                             onClick={handleIntroShare}
@@ -1008,9 +1018,9 @@ function App() {
                                 fontWeight: 600,
                             }}
                         >
-                            تعارفش
+                            {t('intro.offer')}
                         </a>
-                        {' '}کنید، یا یک{' '}
+                        {' '}{t('intro.beforeCoffee')}{' '}
                         <a
                             href="https://donate.sudoshz.ir/u/ai-rtl"
                             target="_blank"
@@ -1021,9 +1031,9 @@ function App() {
                                 fontWeight: 600,
                             }}
                         >
-                            فنجان قهوه
+                            {t('intro.coffee')}
                         </a>
-                        {' '}مهمانمان کنید! ☕❤️
+                        {' '}{t('intro.afterCoffee')}
                     </Typography>
                     )}
                 </Box>
@@ -1106,8 +1116,7 @@ function App() {
                                 color: isDarkMode ? '#ffffff' : '#1e293b'
                             }}
                         >
-                              سایت هایی که
-                               راست چین هوشمند پشتیبانی میشود
+                              {t('sites.title')}
                             </Typography>
                             <div className="listSite">
                                 <ServiceList
@@ -1137,7 +1146,7 @@ function App() {
                                     fontWeight: 600,
                                     color: isDarkMode ? '#ffffff' : '#1e293b'
                                 }}>
-                                    گزارش مشکل و پشتیبانی
+                                    {t('report.title')}
                                 </Typography>
                             </Box>
                             
@@ -1159,7 +1168,7 @@ function App() {
                                         }}>
                                             <path d={mdiBullhorn} />
                                         </SvgIcon>
-                                        نکته مهم درباره عملکرد افزونه
+                                        {t('report.noteTitle')}
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
                                         color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
@@ -1167,14 +1176,15 @@ function App() {
                                         textAlign: 'justify', 
                                         fontWeight: 500 
                                     }}>
-                                        دنیای هوش مصنوعی به‌سرعت در حال پیشرفت است و وب‌سایت‌های مرتبط نیز به‌طور مداوم به‌روزرسانی می‌شوند؛ از تغییر در ساختار HTML و کدهای CSS و JavaScript گرفته تا بهبودهای امنیتی، عملکردی و اضافه‌شدن قابلیت‌های جدید. به همین دلیل ممکن است عملکرد افزونه در برخی موارد دچار اختلال موقت شود.
+                                        {t('report.body')}
                                         <br /><br />
-                                        <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>راه‌حل چیست؟</strong>
+                                        <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>{t('report.solutionTitle')}</strong>
                                         <br />
-                                        اگر افزونه روی سایتی کار نمی‌کند، این کاملاً طبیعی است! 
-                                        اگر با مشکلی مواجه شدید، لطفاً از طریق <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>تلگرام</a> گزارش دهید تا سریع‌تر حل شود.
+                                        {t('report.solutionBefore')}{' '}
+                                        <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>{t('report.telegram')}</a>
+                                        {' '}{t('report.solutionAfter')}
                                         <br /><br />
-                                        همچنین پیشنهادات و ایده‌های شما برای بهبود افزونه بسیار ارزشمند است و از ارسال آن‌ها استقبال می‌کنیم.
+                                        {t('report.suggestions')}
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
@@ -1187,14 +1197,14 @@ function App() {
                                                     alignItems: 'center',
                                                     gap: 0.5
                                                 }}>
-                                                    تلگرام
+                                                    {t('report.telegram')}
                                                 </Typography>
                                             </a>
                                             <Typography variant="body2" sx={{ 
                                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 41, 59, 0.7)', 
                                                 fontSize: '0.8rem' 
                                             }}>
-                                                - برای تماس سریع
+                                                {t('report.telegramHint')}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -1223,7 +1233,7 @@ function App() {
                                     fontWeight: 600,
                                     color: isDarkMode ? '#ffffff' : '#1e293b'
                                 }}>
-                                    درباره افزونه
+                                    {t('about.title')}
                                 </Typography>
                             </Box>
                             
@@ -1234,15 +1244,14 @@ function App() {
                                         lineHeight: 1.8, 
                                         textAlign: 'justify' 
                                     }}>
-                                        این افزونه‌ی AI RTL (Persian/Farsi) بیش از ۲ سال است که در کنار شماست و امروز با افتخار میزبان بیش از ۲۰ هزار کاربر فعال است.
-در ابتدا صرفاً برای ChatGPT اصلی طراحی شد، اما به لطف استقبال گسترده و درخواست‌های مکرر کاربران، به‌مرور برای سایر وب‌سایت‌های هوش مصنوعی نیز توسعه پیدا کرده است.
+                                        {t('about.p1')}
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
                                         color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)', 
                                         lineHeight: 1.8, 
                                         textAlign: 'justify' 
                                     }}>
-                                        هدف اصلی این پروژه از ابتدا ساده بوده: فراهم کردن تجربه‌ای روان و کاربردی برای فارسی‌زبانان در دنیای هوش مصنوعی.
+                                        {t('about.p2')}
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                                         <a href={extensionStoreUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
@@ -1271,7 +1280,7 @@ function App() {
                                         lineHeight: 1.8, 
                                         textAlign: 'justify' 
                                     }}>
-                                        این افزونه با عشق و انرژی شخصی ساخته شده و همچنان رایگان در اختیار شما قرار دارد. حمایت شما، چه با ثبت نظر و امتیاز و چه با معرفی افزونه به دوستان و دیگران، انگیزه‌ی ادامه‌ی مسیر و توسعه‌ی قابلیت‌های جدید را برای من فراهم می‌کند. اگر مایل بودید می‌توانید با یک دونیت کوچک نیز از پروژه حمایت کنید.
+                                        {t('about.p3')}
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                                         <a href="https://donate.sudoshz.ir/u/ai-rtl" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
@@ -1291,7 +1300,7 @@ function App() {
                                                 }}>
                                                     <path d={mdiHeart} />
                                                 </SvgIcon>
-                                                حمایت مالی (دونیت)
+                                                {t('about.donate')}
                                             </Typography>
                                         </a>
                                     </Box>
@@ -1338,7 +1347,7 @@ function App() {
                 <aside
                     className={`popup-side-menu${settingsHintActive ? ' popup-side-menu-hint' : ''}`}
                     dir="rtl"
-                    aria-label="تنظیمات افزونه"
+                    aria-label={t('side.menu')}
                     onMouseEnter={() => {
                         if (!hoverExpandLocked) {
                             setSideMenuHovered(true);
@@ -1353,7 +1362,7 @@ function App() {
                             type="button"
                             className={`popup-side-item popup-side-item-settings${settingsHintActive ? ' popup-side-item-hint' : ''}`}
                             onClick={() => handleSettingsOpenChange(!settingsOpen)}
-                            aria-label="تنظیمات"
+                            aria-label={t('side.settings')}
                             aria-expanded={settingsOpen}
                         >
                             <span className="popup-side-item-icon">
@@ -1361,7 +1370,7 @@ function App() {
                                     <path d={mdiCogOutline} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">تنظیمات</span>
+                            <span className="popup-side-item-label">{t('side.settings')}</span>
                         </button>
                         ) : null}
                         <a
@@ -1369,14 +1378,14 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-faq"
-                            aria-label="مشکلات متداول"
+                            aria-label={t('side.faq')}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>
                                     <path d={mdiHelpCircleOutline} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">مشکلات متداول</span>
+                            <span className="popup-side-item-label">{t('side.faq')}</span>
                         </a>
 
 
@@ -1385,40 +1394,40 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-channel"
-                            aria-label="کانال AI RTL"
+                            aria-label={t('side.telegram')}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon viewBox="0 0 24 24">
                                     <path d={TELEGRAM_ICON_PATH} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">کانال تلگرام AI RTL</span>
+                            <span className="popup-side-item-label">{t('side.telegram')}</span>
                         </a>
                         <a
                             href="https://ai-rtl.ir/?source=extension-popup-side-site"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-site"
-                            aria-label="سایت AI RTL"
+                            aria-label={t('side.site')}
                         >
                             <span className="popup-side-item-icon">
                                 <img src="/images/logo/ai-rtl-logo.png" alt="" />
                             </span>
-                            <span className="popup-side-item-label">سایت AI RTL</span>
+                            <span className="popup-side-item-label">{t('side.site')}</span>
                         </a>
                         <a
                             href="https://ai-rtl.ir/support/?source=extension-popup-side-support"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-support"
-                            aria-label="پشتیبانی"
+                            aria-label={t('side.support')}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>
                                     <path d={mdiHeadset} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">پشتیبانی</span>
+                            <span className="popup-side-item-label">{t('side.support')}</span>
                         </a>
                
                         </div>
@@ -1428,14 +1437,14 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-privacy"
-                            aria-label="حریم خصوصی"
+                            aria-label={t('side.privacy')}
                         >
                             <span className="popup-side-item-icon">
                                 <SvgIcon>
                                     <path d={mdiShieldOutline} />
                                 </SvgIcon>
                             </span>
-                            <span className="popup-side-item-label">حریم خصوصی</span>
+                            <span className="popup-side-item-label">{t('side.privacy')}</span>
                         </a>
                         <a
                             href={extensionStoreUrl}
@@ -1456,12 +1465,12 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-donate"
-                            aria-label="حمایت مالی"
+                            aria-label={t('about.donate')}
                         >
                             <span className="popup-side-item-icon">
-                                <img src="/images/sponsor/yavar.png" alt="یاور" />
+                                <img src="/images/sponsor/yavar.png" alt="Yavar" />
                             </span>
-                            <span className="popup-side-item-label">دونیت</span>
+                            <span className="popup-side-item-label">{t('side.donate')}</span>
                         </a>
                         </div>
                     </div>

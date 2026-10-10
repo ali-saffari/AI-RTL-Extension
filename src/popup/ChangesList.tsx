@@ -3,8 +3,10 @@ import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useThem
 import { mdiFormatListBulleted, mdiArrowUp, mdiCheck } from '@mdi/js';
 import { previousChanges, splitVersionChanges, getSiteShortName, versionChanges, filterVersionChangesForBrowser } from '../constants/versionChanges';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import { useI18n } from '../i18n';
 
 const ChangesList: React.FC = () => {
+    const { t } = useI18n();
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(
@@ -105,7 +107,7 @@ const ChangesList: React.FC = () => {
                     }}>
                         <path d={mdiFormatListBulleted} />
                     </SvgIcon>
-                    لیست تغییرات افزونه
+                    {t('changes.title')}
                 </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0 }}>
@@ -120,7 +122,7 @@ const ChangesList: React.FC = () => {
                                         mb: 0.5,
                                         fontSize: '0.8rem'
                                     }}>
-                                        تغییرات منوی افزونه
+                                        {t('changes.menuChanges')}
                                     </Typography>
                                     {menuChanges.map((change, changeIndex) => (
                                         <Typography key={`menu-${changeIndex}-${change.id}`} variant="body2" sx={{ 
@@ -164,7 +166,7 @@ const ChangesList: React.FC = () => {
                                         mb: 0.5,
                                         fontSize: '0.8rem'
                                     }}>
-                                        تغییرات این نسخه
+                                        {t('changes.versionChanges')}
                                     </Typography>
                                     {features.map((change, changeIndex) => (
                                         <Typography key={`version-${changeIndex}-${change.id}`} variant="body2" sx={{ 
@@ -223,9 +225,9 @@ const ChangesList: React.FC = () => {
                                             justifyContent: 'space-between',
                                             gap: 1
                                         }}>
-                                            سایت‌های آپدیت‌شده
+                                            {t('changes.updatedSites')}
                                             <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#ff8c00' : '#ef6c00' }}>
-                                                {updatedSites.length} سایت
+                                                {t('changes.siteCount', { count: updatedSites.length })}
                                             </Box>
                                         </Typography>
                                         {renderSiteGrid(updatedSites)}
@@ -243,9 +245,9 @@ const ChangesList: React.FC = () => {
                                             justifyContent: 'space-between',
                                             gap: 1
                                         }}>
-                                            سایت‌های جدید
+                                            {t('changes.addedSites')}
                                             <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
-                                                {addedSites.length} سایت
+                                                {t('changes.siteCount', { count: addedSites.length })}
                                             </Box>
                                         </Typography>
                                         {renderSiteGrid(addedSites)}
@@ -282,7 +284,7 @@ const ChangesList: React.FC = () => {
                                 color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                 fontWeight: 600
                             }}>
-                                تغییرات قبلی
+                                {t('changes.previous')}
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails sx={{ px: 0, pt: 0 }}>

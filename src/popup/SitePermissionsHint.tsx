@@ -10,6 +10,7 @@ import {
     Typography,
 } from '@mui/material';
 import { mdiChevronLeft, mdiInformationOutline } from '@mdi/js';
+import { useI18n } from '../i18n';
 
 interface SitePermissionsHintProps {
     visible: boolean;
@@ -22,6 +23,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
     visible,
     isDarkMode,
 }) => {
+    const { t } = useI18n();
     const [modalOpen, setModalOpen] = React.useState(false);
     const [dismissed, setDismissed] = React.useState(false);
     const [storageReady, setStorageReady] = React.useState(false);
@@ -84,7 +86,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     className="site-permissions-hint-button"
                
                     onClick={() => setModalOpen(true)}
-                    aria-label="چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟"
+                    aria-label={t('sitePermissions.button')}
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -123,7 +125,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                             color: isDarkMode ? '#ffffff' : '#1e293b',
                         }}
                     >
-                        چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟
+                        {t('sitePermissions.title')}
                     </Typography>
                     <SvgIcon sx={{ fontSize: '1.05rem', color: accent, flexShrink: 0 }}>
                         <path d={mdiChevronLeft} />
@@ -157,7 +159,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         color: accent,
                     }}
                 >
-                    چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟
+                    {t('sitePermissions.title')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography
@@ -170,7 +172,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
-                        این افزونه در ابتدا فقط برای چت‌جی‌پی‌تی (ChatGPT) طراحی شده بود، اما به‌مرور زمان و بنا بر درخواست شما، وب‌سایت‌های دیگر یکی‌یکی به آن اضافه شدند. اوایل با اضافه شدن هر سایت جدید، مجوز پایه افزونه تغییر می‌کرد و مرورگر هم با هر تغییر دسترسی، افزونه را برای همه کاربران خودبه‌خود غیرفعال می‌کرد. برای جلوگیری از این مشکل و قطع نشدن دسترسی شما، تصمیم گرفتیم سایت‌های جدید را به‌صورت اختیاری بگذاریم تا هر زمان که نیاز داشتید فعال کنید.
+                        {t('sitePermissions.body')}
                     </Typography>
                     <Typography
                         sx={{
@@ -182,7 +184,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                             color: isDarkMode ? '#7df4ff' : '#005589',
                         }}
                     >
-                        چرا از همان اول دسترسی همه سایت‌ها (کل اینترنت) را به‌صورت یک‌جا نگرفتیم؟
+                        {t('sitePermissions.question')}
                     </Typography>
                     <Typography
                         sx={{
@@ -193,7 +195,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
-                        من به عنوان سازنده وقتی خودم را جای کاربر می‌گذارم، از دسترسی‌های گسترده، پیش‌فرض و غیرضروری حس ناامنی می‌گیرم. باور دارم حق کاربر است که بداند دقیقاً چه دسترسی‌هایی و به چه دلیلی به یک افزونه داده می‌شود. به همین دلیل شفافیت و حفظ اعتماد شما را در اولویت گذاشتم تا کنترل کامل افزونه دست خودتان باشد.
+                        {t('sitePermissions.answer')}
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -203,7 +205,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        دیگر نشانم نده
+                        {t('sitePermissions.dontShow')}
                     </Button>
                     <Button
                         onClick={() => setModalOpen(false)}
@@ -211,7 +213,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('sitePermissions.close')}
                     </Button>
                 </DialogActions>
             </Dialog>

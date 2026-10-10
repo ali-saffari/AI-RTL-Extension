@@ -38,34 +38,54 @@ export function getExtensionReviewsUrl() {
     return isFirefoxRuntime() ? FIREFOX_STORE_REVIEWS_URL : CHROME_STORE_REVIEWS_URL;
 }
 
-export function getStorePageLinkText() {
+/**
+ * @param {{ chrome?: string, firefox?: string }} [labels]
+ */
+export function getStorePageLinkText(labels = {}) {
     return isFirefoxRuntime()
-        ? 'صفحه افزونه در Firefox Add-ons'
-        : 'صفحه افزونه در Chrome Store';
+        ? (labels.firefox || 'صفحه افزونه در Firefox Add-ons')
+        : (labels.chrome || 'صفحه افزونه در Chrome Store');
 }
 
-export function getRateLinkText() {
+/**
+ * @param {{ chrome?: string, firefox?: string }} [labels]
+ */
+export function getRateLinkText(labels = {}) {
     return isFirefoxRuntime()
-        ? 'امتیاز دهی در فایرفاکس'
-        : 'امتیاز دهی در کروم';
+        ? (labels.firefox || 'امتیاز دهی در فایرفاکس')
+        : (labels.chrome || 'امتیاز دهی در کروم');
 }
 
-export function getOfficialStoreLabel() {
+/**
+ * @param {{ chrome?: string, firefox?: string }} [labels]
+ */
+export function getOfficialStoreLabel(labels = {}) {
     return isFirefoxRuntime()
-        ? 'صفحه رسمی افزونه در فایرفاکس ادآنز:'
-        : 'صفحه رسمی افزونه در کروم استور:';
+        ? (labels.firefox || 'صفحه رسمی افزونه در فایرفاکس ادآنز:')
+        : (labels.chrome || 'صفحه رسمی افزونه در کروم استور:');
 }
 
-export function getViewInStoreText() {
+/**
+ * @param {{ chrome?: string, firefox?: string }} [labels]
+ */
+export function getViewInStoreText(labels = {}) {
     return isFirefoxRuntime()
-        ? 'مشاهده در Firefox Add-ons'
-        : 'مشاهده در Chrome Web Store';
+        ? (labels.firefox || 'مشاهده در Firefox Add-ons')
+        : (labels.chrome || 'مشاهده در Chrome Web Store');
 }
 
 export const EXTENSION_SHARE_URL = 'https://ai-rtl.ir/?ref=eshare';
 
 export const EXTENSION_SHARE_TEXT =
     'اگه با متن‌های نامرتب فارسی توی چت‌جی‌پی‌تی و بقیه هوش مصنوعی‌ها مشکل دارید، این افزونه با راست‌چین هوشمند و فونت تمیز، همه‌چیز رو در بیش از ۵۰ سایت درست می‌کنه:';
+
+export function getExtensionShareText(shareText) {
+    return typeof shareText === 'string' && shareText ? shareText : EXTENSION_SHARE_TEXT;
+}
+
+export function getExtensionShareLine(shareText) {
+    return `${getExtensionShareText(shareText)}\n${EXTENSION_SHARE_URL}`;
+}
 
 export const EXTENSION_SHARE_LINE = `${EXTENSION_SHARE_TEXT}\n${EXTENSION_SHARE_URL}`;
 
@@ -74,77 +94,86 @@ export const EXTENSION_SHARE_LINE = `${EXTENSION_SHARE_TEXT}\n${EXTENSION_SHARE_
  */
 
 /**
+ * @param {Partial<Record<'telegram'|'whatsapp'|'twitter'|'instagram'|'facebook'|'linkedin'|'email', string>>} [labels]
+ * @param {string} [shareText]
  * @returns {SocialShareTarget[]}
  */
-export function getSocialShareTargets() {
+export function getSocialShareTargets(labels = {}, shareText) {
+    const textValue = getExtensionShareText(shareText);
+    const shareLine = getExtensionShareLine(shareText);
     const url = encodeURIComponent(EXTENSION_SHARE_URL);
-    const text = encodeURIComponent(EXTENSION_SHARE_TEXT);
-    const fullText = encodeURIComponent(EXTENSION_SHARE_LINE);
+    const text = encodeURIComponent(textValue);
+    const fullText = encodeURIComponent(shareLine);
 
     return [
         {
             id: 'telegram',
-            label: 'تلگرام',
+            label: labels.telegram || 'تلگرام',
             href: `https://t.me/share/url?url=${url}&text=${text}`,
             color: '#229ED9',
         },
         {
             id: 'whatsapp',
-            label: 'واتساپ',
+            label: labels.whatsapp || 'واتساپ',
             href: `https://wa.me/?text=${fullText}`,
             color: '#25D366',
         },
         {
             id: 'twitter',
-            label: 'ایکس',
+            label: labels.twitter || 'ایکس',
             href: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
             color: '#111111',
         },
         {
             id: 'instagram',
-            label: 'اینستاگرام',
+            label: labels.instagram || 'اینستاگرام',
             href: 'https://www.instagram.com/',
             color: '#E4405F',
             action: 'copy-and-open',
         },
         {
             id: 'facebook',
-            label: 'فیسبوک',
+            label: labels.facebook || 'فیسبوک',
             href: `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`,
             color: '#1877F2',
         },
         {
             id: 'linkedin',
-            label: 'لینکدین',
+            label: labels.linkedin || 'لینکدین',
             href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
             color: '#0A66C2',
         },
         {
             id: 'email',
-            label: 'ایمیل',
+            label: labels.email || 'ایمیل',
             href: `mailto:?subject=${encodeURIComponent('AI RTL')}&body=${fullText}`,
             color: '#EA4335',
         },
     ];
 }
 
-export function getExtensionShareHref() {
-    return getSocialShareTargets().find((target) => target.id === 'telegram')?.href
-        || `https://t.me/share/url?url=${encodeURIComponent(EXTENSION_SHARE_URL)}&text=${encodeURIComponent(EXTENSION_SHARE_TEXT)}`;
+/**
+ * @param {string} [shareText]
+ */
+export function getExtensionShareHref(shareText) {
+    const textValue = getExtensionShareText(shareText);
+    return getSocialShareTargets({}, textValue).find((target) => target.id === 'telegram')?.href
+        || `https://t.me/share/url?url=${encodeURIComponent(EXTENSION_SHARE_URL)}&text=${encodeURIComponent(textValue)}`;
 }
 
 /**
- * @param {{ preferNative?: boolean }} [options]
+ * @param {{ preferNative?: boolean, shareText?: string }} [options]
  */
 export async function shareExtension(options = {}) {
     const preferNative = options.preferNative !== false;
-    const shareLine = EXTENSION_SHARE_LINE;
+    const textValue = getExtensionShareText(options.shareText);
+    const shareLine = getExtensionShareLine(options.shareText);
 
     if (preferNative && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
         try {
             await navigator.share({
                 title: 'AI RTL',
-                text: EXTENSION_SHARE_TEXT,
+                text: textValue,
                 url: EXTENSION_SHARE_URL,
             });
             return 'shared';

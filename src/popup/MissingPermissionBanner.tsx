@@ -6,6 +6,7 @@ import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 import { hasServicePermissions } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { services } from './list';
+import { useI18n } from '../i18n';
 
 const VISIBLE_ICON_LIMIT = 12;
 const EDGE_BLOCKED_SERVICE_KEYS = new Set(['copilot', 'm365']);
@@ -41,23 +42,23 @@ const ADDRESS_CHANGED_KEYS = new Set([
 
 const toPersianDigits = (value: number) => value.toLocaleString('fa-IR');
 
-function getPermissionReason(service: (typeof services)[number]) {
+function getPermissionReason(service: (typeof services)[number]): 'address' | 'new' {
     if (ADDRESS_CHANGED_KEYS.has(service.key)) {
-        return 'تغییر آدرس';
+        return 'address';
     }
-    return 'جدید';
+    return 'new';
 }
 
-function getAllowButtonText() {
+function getAllowButtonText(t: (key: 'shared.allowFa' | 'shared.allowAr' | 'shared.allowEn') => string) {
     const browserLang = navigator.language || navigator.languages?.[0] || 'en';
     const langCode = browserLang.split('-')[0].toLowerCase();
     if (langCode === 'fa') {
-        return 'اجازه دادن';
+        return t('shared.allowFa');
     }
     if (langCode === 'ar') {
-        return 'السماح';
+        return t('shared.allowAr');
     }
-    return 'Allow';
+    return t('shared.allowEn');
 }
 
 function getIconPriorityRank(key: string) {
@@ -77,12 +78,13 @@ interface MissingPermissionBannerProps {
 }
 
 const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDarkMode }) => {
+    const { t } = useI18n();
     const [missingServices, setMissingServices] = useState<typeof services>([]);
     const [enablingAll, setEnablingAll] = useState(false);
     const [whyOpen, setWhyOpen] = useState(false);
     const [enableOpen, setEnableOpen] = useState(false);
     const isEdge = navigator.userAgent.indexOf('Edg') > -1;
-    const allowButtonText = getAllowButtonText();
+    const allowButtonText = getAllowButtonText(t);
 
     const refreshMissing = useCallback(async () => {
         if (isFirefoxRuntime()) {
@@ -145,12 +147,12 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 setMissingServices([]);
                 setEnableOpen(false);
             } else if (response?.granted === false) {
-                alert('مجوز داده نشد. لطفاً در تنظیمات افزونه مجوزها را فعال کنید.');
+                alert(t('missingPermission.permissionDenied'));
             } else if (response) {
-                alert(response?.error || 'خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+                alert(response?.error || t('missingPermission.permissionError'));
             }
         } catch {
-            alert('خطا در دریافت مجوز. لطفاً دوباره تلاش کنید.');
+            alert(t('missingPermission.permissionError'));
         } finally {
             setEnablingAll(false);
         }
@@ -200,7 +202,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         color: isDarkMode ? '#ffffff' : '#0f172a',
                     }}
                 >
-                    سایت‌های جدید/آپدیت‌شده که منتظرن فعالشون کنی
+                    {t('missingPermission.title')}
                 </Typography>
             </Box>
 
@@ -318,7 +320,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         textDecoration: 'none',
                     }}
                 >
-                    چرا فعال نیستن؟
+                    {t('missingPermission.why')}
                 </Box>
                 <Button
                     variant="contained"
@@ -345,7 +347,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         },
                     }}
                 >
-                    فعال کردن همه
+                    {t('missingPermission.enableAll')}
                 </Button>
             </Box>
 
@@ -376,7 +378,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         color: isDarkMode ? '#00e9ff' : '#0067A5',
                     }}
                 >
-                    فعال‌سازی سایت‌ها
+                    {t('missingPermission.enableTitle')}
                 </DialogTitle>
                 <DialogContent
                     style={{ direction: 'rtl', padding: '8px 16px' }}
@@ -403,7 +405,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                             }}
                         >
-                            روی دکمه دریافت مجوز کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{allowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
+                            {t('missingPermission.enableSteps', { allow: allowButtonText })}
                         </Typography>
                         <Typography
                             style={{ textAlign: 'justify' }}
@@ -415,7 +417,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                             }}
                         >
-                            این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
+                            {t('missingPermission.enablePurpose')}
                         </Typography>
                     </Box>
                     <Box
@@ -431,7 +433,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     >
                         {sortedForIcons.map((service) => {
                             const reason = getPermissionReason(service);
-                            const isAddressChange = reason === 'تغییر آدرس';
+                            const isAddressChange = reason === 'address';
                             return (
                                 <Box
                                     key={service.key}
@@ -494,7 +496,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                                                 : (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')}`,
                                         }}
                                     >
-                                        {reason}
+                                        {reason === 'address' ? t('missingPermission.reasonAddress') : t('missingPermission.reasonNew')}
                                     </Box>
                                 </Box>
                             );
@@ -508,7 +510,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         disabled={enablingAll}
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('missingPermission.close')}
                     </Button>
                     <Button
                         onClick={enableAll}
@@ -524,7 +526,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                             },
                         }}
                     >
-                        {enablingAll ? 'در حال دریافت...' : 'دریافت مجوز'}
+                        {enablingAll ? t('missingPermission.requesting') : t('missingPermission.grantPermission')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -555,7 +557,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         color: isDarkMode ? '#00e9ff' : '#0067A5',
                     }}
                 >
-                    چرا بعضی از سایت‌ها فعال و بعضی غیرفعال هستند؟
+                    {t('missingPermission.whyTitle')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography
@@ -568,7 +570,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
-                        این افزونه در ابتدا فقط برای چت‌جی‌پی‌تی (ChatGPT) طراحی شده بود، اما به‌مرور زمان و بنا بر درخواست شما، وب‌سایت‌های دیگر یکی‌یکی به آن اضافه شدند. اوایل با اضافه شدن هر سایت جدید، مجوز پایه افزونه تغییر می‌کرد و مرورگر هم با هر تغییر دسترسی، افزونه را برای همه کاربران خودبه‌خود غیرفعال می‌کرد. برای جلوگیری از این مشکل و قطع نشدن دسترسی شما، تصمیم گرفتیم سایت‌های جدید را به‌صورت اختیاری بگذاریم تا هر زمان که نیاز داشتید فعال کنید.
+                        {t('missingPermission.whyBody')}
                     </Typography>
                     <Typography
                         sx={{
@@ -580,7 +582,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                             color: isDarkMode ? '#7df4ff' : '#005589',
                         }}
                     >
-                        چرا از همان اول دسترسی همه سایت‌ها (کل اینترنت) را به‌صورت یک‌جا نگرفتیم؟
+                        {t('missingPermission.whyQuestion')}
                     </Typography>
                     <Typography
                         sx={{
@@ -591,7 +593,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.96)' : '#0f172a',
                         }}
                     >
-                        من به عنوان سازنده وقتی خودم را جای کاربر می‌گذارم، از دسترسی‌های گسترده، پیش‌فرض و غیرضروری حس ناامنی می‌گیرم. باور دارم حق کاربر است که بداند دقیقاً چه دسترسی‌هایی و به چه دلیلی به یک افزونه داده می‌شود. به همین دلیل شفافیت و حفظ اعتماد شما را در اولویت گذاشتم تا کنترل کامل افزونه دست خودتان باشد.
+                        {t('missingPermission.whyAnswer')}
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
@@ -600,7 +602,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         variant="contained"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        متوجه شدم
+                        {t('missingPermission.understood')}
                     </Button>
                 </DialogActions>
             </Dialog>

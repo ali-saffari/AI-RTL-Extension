@@ -46,6 +46,8 @@ import {
 import SiteSettingsSection from './SiteSettingsSection';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
+import { useI18n } from '../i18n';
+import type { MessageKey } from '../i18n';
 
 interface QuickSettingsProps {
     rtlAlgorithm: string;
@@ -79,52 +81,54 @@ interface QuickSettingsProps {
     onEnableExtension?: () => void;
 }
 
-const ALGORITHMS = [
+type TranslateFn = (key: MessageKey, vars?: Record<string, string | number>) => string;
+
+const getAlgorithms = (t: TranslateFn) => [
     {
         id: 'advanced_section',
-        title: 'تحلیل پیشرفته بخش‌ها',
-        hint: 'هر بخش، جمله و پاراگراف جداگانه بررسی می‌شود. برای متن‌های ترکیبی فارسی و انگلیسی دقت بالاتری دارد.',
-        badge: 'جدید',
-        description: 'هر بخش، جمله و پاراگراف جداگانه توسط الگوریتم هوشمند بررسی شده و جهت همان قسمت تعیین می‌شود. این روش برای متون چندزبانه یا ترکیبی بسیار مناسب است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.',
-        extra: 'در این حالت تنظیمات عنوان هم فعال می‌شود: می‌توانید مشخص کنید عنوان چت‌های چندزبانه جداگانه بررسی شود یا همه در یک سمت قرار بگیرند.',
+        title: t('quickSettings.algorithms.advancedSection.title'),
+        hint: t('quickSettings.algorithms.advancedSection.hint'),
+        badge: t('quickSettings.algorithms.advancedSection.badge'),
+        description: t('quickSettings.algorithms.advancedSection.description'),
+        extra: t('quickSettings.algorithms.advancedSection.extra'),
     },
     {
         id: 'advanced_full',
-        title: 'تحلیل پیشرفته یکپارچه',
-        hint: 'کل متن یکجا پردازش می‌شود. ترکیب متعادلی از دقت و سرعت دارد و برای بیشتر گفتگوها مناسب است.',
-        badge: 'پیش‌فرض',
-        description: 'کل متن پاسخ به‌عنوان یک ساختار واحد پردازش می‌شود و جهت مناسب برای کل پیام انتخاب می‌شود. این روش ترکیب متعادلی از دقت و کارایی ارائه می‌دهد و گزینه پیش‌فرض افزونه است.',
+        title: t('quickSettings.algorithms.advancedFull.title'),
+        hint: t('quickSettings.algorithms.advancedFull.hint'),
+        badge: t('quickSettings.algorithms.advancedFull.badge'),
+        description: t('quickSettings.algorithms.advancedFull.description'),
         extra: '',
     },
     {
         id: 'first_word',
-        title: 'تشخیص مبتنی بر واژه آغازین',
-        hint: 'فقط اولین کلمه متن بررسی می‌شود. سریع است و برای سیستم‌های ضعیف یا وقتی سایت هنگ می‌کند مناسب‌تر است.',
+        title: t('quickSettings.algorithms.firstWord.title'),
+        hint: t('quickSettings.algorithms.firstWord.hint'),
         badge: '',
-        description: 'جهت متن تنها با بررسی اولین کلمه مشخص می‌شود. این روش برای سیستم‌هایی با توان پردازشی محدود مناسب است و در صورت هنگ و قفل شدن سایت توصیه می‌شود.',
+        description: t('quickSettings.algorithms.firstWord.description'),
         extra: '',
     },
-] as const;
+];
 
-const TITLE_MODES = [
+const getTitleModes = (t: TranslateFn) => [
     {
         id: 'unified',
-        title: 'قرار دادن در یک سمت',
-        descriptionTitle: 'قرار دادن عنوان‌ها در یک سمت',
-        hint: 'در چت‌های چندزبانه، همه عنوان‌ها در یک سمت قرار می‌گیرند. افزونه زبان غالب گفتگو را پیدا می‌کند و عنوان‌ها را همان سمت می‌چیند، حتی اگر خود عنوان به زبان دیگری باشد. اگر بیشتر پیام‌ها فارسی باشند، عنوان‌ها راست‌چین می‌شوند و اگر بیشترشان انگلیسی باشند، چپ‌چین.',
+        title: t('quickSettings.titleModes.unified.title'),
+        descriptionTitle: t('quickSettings.titleModes.unified.descriptionTitle'),
+        hint: t('quickSettings.titleModes.unified.hint'),
     },
     {
         id: 'individual',
-        title: 'تنظیم هر عنوان جداگانه',
-        descriptionTitle: 'تنظیم هر عنوان جداگانه',
-        hint: 'هر عنوان جدا از بقیه بررسی می‌شود و جهت آن فقط از زبان خودش تعیین می‌شود. عنوان فارسی راست‌چین و عنوان انگلیسی چپ‌چین می‌شود. در یک گفتگوی ترکیبی ممکن است بعضی عنوان‌ها راست و بعضی چپ باشند.',
+        title: t('quickSettings.titleModes.individual.title'),
+        descriptionTitle: t('quickSettings.titleModes.individual.descriptionTitle'),
+        hint: t('quickSettings.titleModes.individual.hint'),
     },
-] as const;
+];
 
-const THEME_MODES = [
-    { id: 'dark', title: 'تاریک' },
-    { id: 'light', title: 'روشن' },
-] as const;
+const getThemeModes = (t: TranslateFn) => [
+    { id: 'dark', title: t('quickSettings.themeDark') },
+    { id: 'light', title: t('quickSettings.themeLight') },
+];
 
 const QuickSettings: React.FC<QuickSettingsProps> = ({
     rtlAlgorithm,
@@ -155,6 +159,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     extensionEnabled = true,
     onEnableExtension,
 }) => {
+    const { t } = useI18n();
+    const ALGORITHMS = getAlgorithms(t);
+    const TITLE_MODES = getTitleModes(t);
+    const THEME_MODES = getThemeModes(t);
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
     const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
     const [titleInfoOpen, setTitleInfoOpen] = React.useState(false);
@@ -345,7 +353,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         className="quick-settings-label"
                         sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
                     >
-                        تنظیمات
+                        {t('quickSettings.title')}
                     </Typography>
                     <Button
                         variant="text"
@@ -371,7 +379,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             },
                         }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </Box>
             ) : null}
@@ -410,7 +418,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     whiteSpace: 'nowrap',
                                 }}
                             >
-                                افزونه غیرفعال است
+                                {t('quickSettings.extensionOff')}
                             </Typography>
                             <Button
                                 variant="text"
@@ -438,7 +446,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     },
                                 }}
                             >
-                                فعال کردن
+                                {t('quickSettings.enable')}
                             </Button>
                         </Box>
                     </Box>
@@ -446,10 +454,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 <Box
                     className={`quick-settings-body-scroll${extensionOff ? ' is-disabled' : ''}`}
                 >
-                <Box className="popup-sponsors popup-sponsors--scroll" aria-label="حامیان ویژه و اسپانسرها">
+                <Box className="popup-sponsors popup-sponsors--scroll" aria-label={t('quickSettings.sponsorsAria')}>
                     <div className="popup-sponsors-top">
                         <Typography className="popup-sponsors-caption" component="span">
-                            اسپانسرهای ارزشمند ما
+                            {t('quickSettings.sponsorsCaption')}
                         </Typography>
                         <a
                             className="popup-sponsors-cta"
@@ -457,7 +465,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            همکاری و حمایت
+                            {t('quickSettings.sponsorsCta')}
                         </a>
                     </div>
                     <a
@@ -466,7 +474,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        این اکستنشن اسپانسر می‌پذیرد
+                        {t('quickSettings.sponsorAccepts')}
                     </a>
                     <div className="popup-sponsors-slots">
                         <a
@@ -474,11 +482,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             href="https://paasta.cloud"
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="پاستا کلود"
+                            aria-label={t('quickSettings.sponsorLogoAlt')}
                         >
                             <span className="popup-sponsors-paasta" dir="ltr">
                                 <img src="/images/logo/paasta-type.svg" alt="" />
-                                <img src="/images/logo/paasta-logo.png" alt="پاستا کلود" />
+                                <img src="/images/logo/paasta-logo.png" alt={t('quickSettings.sponsorLogoAlt')} />
                             </span>
                         </a>
                         <a
@@ -487,7 +495,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            جای لوگوی قشنگتون
+                            {t('quickSettings.sponsorLogoPlaceholder')}
                         </a>
                     </div>
                     <div className={`popup-sponsors-note${sponsorNoteExpanded ? ' is-expanded' : ''}`}>
@@ -495,11 +503,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             type="button"
                             className="popup-sponsors-note-line"
                             aria-expanded={sponsorNoteExpanded}
-                            aria-label={sponsorNoteExpanded ? 'بستن توضیح' : 'نمایش کامل توضیح'}
+                            aria-label={sponsorNoteExpanded ? t('quickSettings.sponsorNoteCollapse') : t('quickSettings.sponsorNoteExpand')}
                             onClick={() => setSponsorNoteExpanded((open) => !open)}
                         >
                             <span className="popup-sponsors-note-text">
-                                حمایت‌های شما کاربران عزیز دلگرمی بزرگی است. من عاشق این پروژه‌ام؛ با رشد پروژه تصمیم گرفتم که خیلی جدی‌تر پایش وقت بگذارم و به فکر توسعه بیشتر و اضافه کردن ابزارهای خفن‌تری هستم. از آنجا که دونیت‌ها به‌تنهایی پاسخگوی هزینه‌ها نیست، تصمیم گرفتم برای اکستنشن اسپانسر بگیرم.
+                                {t('quickSettings.sponsorNote')}
                             </span>
                             <SvgIcon className="popup-sponsors-note-toggle" sx={{ fontSize: '1.05rem' }}>
                                 <path d={mdiChevronDown} />
@@ -507,12 +515,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </button>
                         {sponsorNoteExpanded ? (
                             <span className="popup-sponsors-note-social">
-                                    <span>ارادتمند شما، علی صفاری</span>
+                                    <span>{t('quickSettings.sponsorSignoff')}</span>
                                     <a
                                         href="https://www.linkedin.com/in/ali-saffari-83a369174/"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        aria-label="لینکدین علی صفاری"
+                                        aria-label={t('quickSettings.sponsorLinkedin')}
                                     >
                                         <SvgIcon sx={{ fontSize: '1rem' }}>
                                             <path d={mdiLinkedin} />
@@ -532,7 +540,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 {harnessQuickLocked ? (
                     <Box className="quick-settings-lock-layer" role="status">
                         <Typography className="quick-settings-lock-card" component="p">
-                            از افزونه داخل هارنس استفاده کنید
+                            {t('quickSettings.useHarnessPlugin')}
                         </Typography>
                     </Box>
                 ) : null}
@@ -545,7 +553,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             className="quick-settings-label"
                             sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
                         >
-                            تنظیمات سریع (عمومی)
+                            {t('quickSettings.quickTitle')}
                         </Typography>
                     </Box>
                     <Button
@@ -574,7 +582,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             },
                         }}
                     >
-                        تنظیمات پیشرفته
+                        {t('quickSettings.advancedSettings')}
                     </Button>
                 </Box>
                 <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
@@ -589,12 +597,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 0, flexShrink: 0 }}>
                             <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap' }}>
-                                الگوریتم تشخیص
+                                {t('quickSettings.algorithmLabel')}
                             </Typography>
                             <IconButton
                                 size="small"
                                 disabled={controlsDisabled}
-                                aria-label={`توضیحات ${selectedAlgo.title}`}
+                                aria-label={t('quickSettings.algoInfoAria', { title: selectedAlgo.title })}
                                 onClick={() => setInfoAlgoId(selectedAlgo.id)}
                                 sx={{
                                     p: 0.2,
@@ -632,7 +640,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     },
                                 }}
                                 sx={inlineSelectSx}
-                                inputProps={{ 'aria-label': 'الگوریتم تشخیص' }}
+                                inputProps={{ 'aria-label': t('quickSettings.algorithmAria') }}
                             >
                                 {ALGORITHMS.map((algo) => (
                                     <MenuItem
@@ -708,12 +716,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 0, flexShrink: 0 }}>
                                 <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap' }}>
-                                    نحوه نمایش عنوان‌ها
+                                    {t('quickSettings.titleModeLabel')}
                                 </Typography>
                                 <IconButton
                                     size="small"
                                     disabled={controlsDisabled}
-                                    aria-label="توضیحات نحوه نمایش عنوان‌ها"
+                                    aria-label={t('quickSettings.titleInfoAria')}
                                     onClick={() => setTitleInfoOpen(true)}
                                     sx={{
                                         p: 0.2,
@@ -748,7 +756,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         },
                                     }}
                                     sx={inlineSelectSx}
-                                    inputProps={{ 'aria-label': 'نحوه نمایش عنوان‌ها' }}
+                                    inputProps={{ 'aria-label': t('quickSettings.titleModeAria') }}
                                 >
                                     {TITLE_MODES.map((mode) => (
                                         <MenuItem
@@ -783,7 +791,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         >
                             <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 <Typography className="quick-settings-label">
-                                    برعکس کردن فلش‌ها در متن راست‌چین
+                                    {t('quickSettings.flipArrows')}
                                 </Typography>
                                 <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
@@ -793,7 +801,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 disabled={controlsDisabled}
                                 onChange={(event) => onFlipRtlArrowsChange(event.target.checked)}
                                 sx={switchSx}
-                                inputProps={{ 'aria-label': 'برعکس کردن فلش‌ها در متن راست‌چین' }}
+                                inputProps={{ 'aria-label': t('quickSettings.flipArrowsAria') }}
                             />
                         </Box>
                     </Box>
@@ -809,7 +817,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         >
                             <Box sx={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                                 <Typography className="quick-settings-label">
-                                    اعمال روی باکس کدها{' '}
+                                    {t('quickSettings.applyToCode')}{' '}
                                     <Box component="span" sx={{ fontSize: '0.88em', fontWeight: 500, opacity: 0.72 }}>
                                         (Markdown)
                                     </Box>
@@ -817,7 +825,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <IconButton
                                     size="small"
                                     disabled={controlsDisabled}
-                                    aria-label="توضیحات اعمال روی باکس کدها"
+                                    aria-label={t('quickSettings.applyToCodeInfoAria')}
                                     onClick={() => setCodeInfoOpen(true)}
                                     sx={{
                                         p: 0.2,
@@ -840,7 +848,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 disabled={controlsDisabled}
                                 onChange={(event) => onApplyAlgorithmToCodeChange(event.target.checked)}
                                 sx={switchSx}
-                                inputProps={{ 'aria-label': 'اعمال روی باکس کدها (Markdown)' }}
+                                inputProps={{ 'aria-label': t('quickSettings.applyToCodeAria') }}
                             />
                         </Box>
                     </Box>
@@ -895,7 +903,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, minWidth: 0 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
                             <Typography className="quick-settings-label">
-                                فونت
+                                {t('quickSettings.font')}
                             </Typography>
                         </Box>
                     <FormControl size="small" disabled={controlsDisabled} sx={{ width: 136, flex: '0 0 136px', minWidth: 0 }}>
@@ -926,7 +934,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 ...inlineSelectSx,
                                 fontFamily: selectedFontFamily,
                             }}
-                            inputProps={{ 'aria-label': 'فونت' }}
+                            inputProps={{ 'aria-label': t('quickSettings.fontAria') }}
                         >
                             <MenuItem
                                 value={NONE_FONT_ID}
@@ -978,7 +986,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                                 background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
                                             }}
                                         >
-                                            پیش‌فرض
+                                            {t('shared.default')}
                                         </Box>
                                     ) : null}
                                 </MenuItem>
@@ -998,7 +1006,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             borderTop: `1px solid ${cardBorder}`,
                         }}
                     >
-                        <Typography className="quick-settings-label">اندازه فونت</Typography>
+                        <Typography className="quick-settings-label">{t('quickSettings.fontSize')}</Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
                             <Typography sx={{ fontSize: '0.62rem', color: muted, flexShrink: 0, whiteSpace: 'nowrap' }}>
                                 {formatFontScaleLabel(fontScale)}
@@ -1038,7 +1046,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     opacity: 0.55,
                                 },
                             }}
-                            aria-label="اندازه فونت"
+                            aria-label={t('quickSettings.fontSizeAria')}
                         />
                         </Box>
                     </Box>
@@ -1055,7 +1063,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             py: 0.85,
                         }}
                     >
-                        <Typography className="quick-settings-label">تم منو اکستشن</Typography>
+                        <Typography className="quick-settings-label">{t('quickSettings.theme')}</Typography>
                         <FormControl size="small" disabled={controlsDisabled} sx={{ width: '6.5rem', minWidth: '6.5rem', maxWidth: '6.5rem', flexShrink: 0 }}>
                             <Select
                                 dir="rtl"
@@ -1099,7 +1107,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         color: muted,
                                     },
                                 }}
-                                inputProps={{ 'aria-label': 'تم منو اکستشن' }}
+                                inputProps={{ 'aria-label': t('quickSettings.themeAria') }}
                             >
                                 {THEME_MODES.map((mode) => (
                                     <MenuItem
@@ -1132,7 +1140,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography className="quick-settings-label">نمایش سایت باز در بالای لیست</Typography>
+                            <Typography className="quick-settings-label">{t('quickSettings.pinOpenSite')}</Typography>
                         </Box>
                         <PinOpenSiteModeSelect
                             value={pinOpenSiteMode}
@@ -1157,11 +1165,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
-                                <Typography className="quick-settings-label">چینش دستی</Typography>
+                                <Typography className="quick-settings-label">{t('quickSettings.manualTitle')}</Typography>
                                 <ExperimentalBadge isDarkMode={isDarkMode} disabled={controlsDisabled} />
                             </Box>
                             <Typography sx={{ fontSize: '0.62rem', color: muted, lineHeight: 1.45 }}>
-                                راست‌چین یا چپ‌چین کردن متن در هر سایت
+                                {t('quickSettings.manualHint')}
                             </Typography>
                         </Box>
 
@@ -1177,7 +1185,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     });
                                 }}
                                 sx={switchSx}
-                                inputProps={{ 'aria-label': 'راست‌چین دستی' }}
+                                inputProps={{ 'aria-label': t('quickSettings.manualAria') }}
                             />
                         ) : (
                             <Button
@@ -1203,7 +1211,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     },
                                 }}
                             >
-                                فعال‌سازی
+                                {t('quickSettings.activate')}
                             </Button>
                         )}
                     </Box>
@@ -1219,9 +1227,9 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     >
                         <Box sx={{ minWidth: 0, flex: 1 }}>
-                            <Typography className="quick-settings-label">مخفی کردن متن حمایت</Typography>
+                            <Typography className="quick-settings-label">{t('quickSettings.hideSupport')}</Typography>
                             <Typography sx={{ fontSize: '0.62rem', color: muted, mt: 0.2, lineHeight: 1.45 }}>
-                                نشان‌دهنده فعال بودن افزونه
+                                {t('quickSettings.hideSupportHint')}
                             </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
@@ -1235,7 +1243,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     whiteSpace: 'nowrap',
                                 }}
                             >
-                                {supportHide ? 'مخفی شده' : 'در حال نمایش'}
+                                {supportHide ? t('quickSettings.hidden') : t('quickSettings.visible')}
                             </Typography>
                             <Switch
                                 size="small"
@@ -1244,7 +1252,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 onChange={(event) => onSupportChange(event.target.checked)}
                                 data-settings-switch="true"
                                 sx={switchSx}
-                                inputProps={{ 'aria-label': 'مخفی کردن متن حمایت' }}
+                                inputProps={{ 'aria-label': t('quickSettings.hideSupportAria') }}
                             />
                         </Box>
                     </Box>
@@ -1315,7 +1323,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        صفحه تست الگوریتم
+                        {t('quickSettings.testAlgorithmPage')}
                     </Button>
                     <Button
                         onClick={() => setInfoAlgoId(null)}
@@ -1323,7 +1331,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1350,7 +1358,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         fontFamily: 'iranyekan',
                     }}
                 >
-                    نحوه نمایش عنوان‌ها
+                    {t('quickSettings.titleModeLabel')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
                     <Typography
@@ -1362,7 +1370,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             color: muted,
                         }}
                     >
-                        این تنظیم فقط با الگوریتم «تحلیل پیشرفته بخش‌ها» کار می‌کند و جهت عنوان چت‌های چندزبانه را مشخص می‌کند.
+                        {t('quickSettings.titleInfoIntro')}
                     </Typography>
                     {TITLE_MODES.map((mode) => (
                         <Box key={mode.id} sx={{ '& + &': { mt: 1.5 } }}>
@@ -1396,7 +1404,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1455,7 +1463,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1483,7 +1491,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         fontFamily: 'iranyekan',
                     }}
                 >
-                    اعمال روی باکس کدها (Markdown)
+                    {t('quickSettings.applyToCodeTitle')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
                     <Typography
@@ -1493,7 +1501,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             lineHeight: 1.8,
                         }}
                     >
-                        وقتی این گزینه روشن باشد، الگوریتم فقط روی باکس‌هایی اعمال می‌شود که محتوای فارسی دارند. متن فارسی در این باکس‌ها راست‌چین می‌شود تا خواندنش راحت‌تر باشد.
+                        {t('quickSettings.applyToCodeBody')}
                     </Typography>
                     <Typography
                         sx={{
@@ -1504,7 +1512,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             color: muted,
                         }}
                     >
-                        روی خودِ کدهای برنامه‌نویسی تغییری اعمال نمی‌شود و جهت آن‌ها چپ‌چین باقی می‌ماند.
+                        {t('quickSettings.applyToCodeNote')}
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -1514,7 +1522,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1530,7 +1538,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 }}
             >
                 <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
-                    نیاز به دسترسی تب
+                    {t('quickSettings.tabPermissionTitle')}
                 </DialogTitle>
                 <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                     <Typography
@@ -1538,14 +1546,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         paragraph
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        برای اینکه سایتِ در حال مشاهده (در صورت پشتیبانی شدن توسط افزونه) همیشه بالای لیست بیاید، حتی اگر هنوز آن را فعال نکرده باشید، افزونه با کمک «مجوز تب‌ها» باز بودن آن را تشخیص می‌دهد تا بتوانید سریع‌تر فعالش کنید.
+                        {t('quickSettings.tabPermissionBody')}
                     </Typography>
                     <Typography
                         variant="body1"
                         paragraph
                         sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                     >
-                        این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
+                        {t('quickSettings.tabPermissionPrivacy')}
                     </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -1555,7 +1563,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan' }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                     <Button
                         onClick={() => {
@@ -1565,7 +1573,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan' }}
                     >
-                        دریافت مجوز
+                        {t('shared.grantPermission')}
                     </Button>
                 </DialogActions>
             </Dialog>

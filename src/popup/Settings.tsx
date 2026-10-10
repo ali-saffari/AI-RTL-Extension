@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
+import { useI18n } from '../i18n';
 
 interface SettingsProps {
     rtlAlgorithm: string;
@@ -57,6 +58,7 @@ const Settings: React.FC<SettingsProps> = ({
     onManualRtlSettingsChange,
     hideTitle = false,
 }) => {
+    const { t } = useI18n();
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
@@ -82,33 +84,33 @@ const Settings: React.FC<SettingsProps> = ({
 
     const algorithmDescriptions = {
         'advanced_section': {
-            title: 'تحلیل پیشرفته بخش‌ها',
-            description: 'هر بخش، جمله، پاراگراف و... به‌طور جداگانه توسط الگوریتم هوشمند بررسی شده و جهت متن تعیین می‌شود. این روش برای متون چندزبانه یا ترکیبی بسیار مناسب است و دقت بالایی در تشخیص جهت متن ارائه می‌دهد.',
+            title: t('settings.algorithms.advancedSection.title'),
+            description: t('settings.algorithms.advancedSection.description'),
             features: [
-                'تحلیل جداگانه هر بخش',
-                'مناسب برای متون چندزبانه',
-                'دقت بالا در تشخیص'
+                t('settings.algorithms.advancedSection.feature1'),
+                t('settings.algorithms.advancedSection.feature2'),
+                t('settings.algorithms.advancedSection.feature3'),
             ]
         },
         'advanced_full': {
-            title: 'تحلیل پیشرفته یکپارچه',
-            description: 'کل متن پاسخ به‌عنوان یک ساختار واحد توسط الگوریتم پیشرفته پردازش شده و جهت مناسب انتخاب می‌شود. این روش ترکیب متعادلی از دقت و کارایی ارائه می‌دهد.',
+            title: t('settings.algorithms.advancedFull.title'),
+            description: t('settings.algorithms.advancedFull.description'),
             features: [
-                'پردازش یکپارچه متن',
-                'ترکیب دقت و کارایی',
-                'مناسب برای متون طولانی',
-                'الگوریتم جدید',
-                'پیش‌فرض سیستم'
+                t('settings.algorithms.advancedFull.feature1'),
+                t('settings.algorithms.advancedFull.feature2'),
+                t('settings.algorithms.advancedFull.feature3'),
+                t('settings.algorithms.advancedFull.feature4'),
+                t('settings.algorithms.advancedFull.feature5'),
             ]
         },
         'first_word': {
-            title: 'تشخیص مبتنی بر واژه آغازین',
-            description: 'جهت متن تنها با بررسی اولین کلمه مشخص می‌گردد. این روش برای سیستم‌هایی با توان پردازشی محدود مناسب است و در صورت هنگ و قفل شدن سایت توصیه می‌شود.',
+            title: t('settings.algorithms.firstWord.title'),
+            description: t('settings.algorithms.firstWord.description'),
             features: [
-                'سرعت بالا',
-                'مصرف کم منابع',
-                'مناسب سیستم‌های ضعیف',
-                'راه‌حل مشکل هنگ'
+                t('settings.algorithms.firstWord.feature1'),
+                t('settings.algorithms.firstWord.feature2'),
+                t('settings.algorithms.firstWord.feature3'),
+                t('settings.algorithms.firstWord.feature4'),
             ]
         }
     };
@@ -142,7 +144,7 @@ const Settings: React.FC<SettingsProps> = ({
                     fontWeight: 600, 
                     color: theme.palette.text.primary,
                 }}>
-                    تنظیمات افزونه
+                    {t('settings.title')}
                 </Typography>
          
             </Box>
@@ -167,13 +169,13 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'primary.main',
                             mb: 0.5
                         }}>
-                            الگوریتم تشخیص RTL
+                            {t('settings.algorithmTitle')}
                         </Typography>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
                             fontSize: '0.8rem'
                         }}>
-                            نحوه تشخیص راست به چپ
+                            {t('settings.algorithmSubtitle')}
                         </Typography>
                     </Box>
                     
@@ -223,7 +225,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontSize: '0.95rem',
                                                     color: theme.palette.text.primary
                                                 }}>
-                                                    تحلیل پیشرفته بخش‌ها
+                                                    {t('settings.algorithms.advancedSection.title')}
                                                 </Typography>
                                                 <IconButton 
                                                     onClick={() => handleInfoClick('advanced_section')}
@@ -268,7 +270,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontWeight: 600
                                                 }}>
                                                     
-                                                    جدید
+                                                    {t('settings.newBadge')}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -314,7 +316,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontSize: '0.95rem',
                                                     color: theme.palette.text.primary
                                                 }}>
-                                                    تحلیل پیشرفته یکپارچه
+                                                    {t('settings.algorithms.advancedFull.title')}
                                                 </Typography>
                                                 <IconButton 
                                                     onClick={() => handleInfoClick('advanced_full')}
@@ -358,7 +360,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontSize: '0.7rem',
                                                     fontWeight: 600
                                                 }}>
-                                                    جدید
+                                                    {t('settings.newBadge')}
                                                 </Box>
                                                 {selectedValue !== 'advanced_full' && (
                                                     <Box component="span" sx={{ 
@@ -372,7 +374,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                         fontSize: '0.6rem',
                                                         fontWeight: 600
                                                     }}>
-                                                        پیش‌فرض
+                                                        {t('settings.defaultBadge')}
                                                     </Box>
                                                 )}
                                             </Box>
@@ -417,7 +419,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                 fontSize: '0.95rem',
                                                 color: theme.palette.text.primary
                                             }}>
-                                                تشخیص مبتنی بر واژه آغازین
+                                                {t('settings.algorithms.firstWord.title')}
                                             </Typography>
                                             <IconButton 
                                                 onClick={() => handleInfoClick('first_word')}
@@ -478,7 +480,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 }
                             }}
                         >
-                            تنظیمات پیشرفته
+                            {t('settings.advancedSettings')}
                         </Button>
                     </Box>
                 </Paper>
@@ -496,7 +498,7 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'primary.main',
                             mb: 0.5
                         }}>
-                            تنظیمات چینش دستی
+                            {t('settings.manualTitle')}
                         </Typography>
                         <Box sx={{ 
                             display: 'flex', 
@@ -518,7 +520,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.7rem',
                                 fontWeight: 600
                             }}>
-                                آزمایشی
+                                {t('settings.experimental')}
                             </Box>
                             <Box component="span" sx={{ 
                                 px: 1, 
@@ -532,7 +534,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.7rem',
                                 fontWeight: 600
                             }}>
-                                جدید
+                                {t('settings.new')}
                             </Box>
                         </Box>
                         <Typography variant="body2" sx={{ 
@@ -540,7 +542,7 @@ const Settings: React.FC<SettingsProps> = ({
                             fontSize: '0.75rem',
                             lineHeight: 1.6
                         }}>
-                            این قابلیت به شما امکان می‌دهد تا به صورت دستی متن‌های مورد نظر خود را در هر سایتی راست چین یا چپ چین کنید.
+                            {t('settings.manualDescription')}
                         </Typography>
                     </Box>
 
@@ -563,7 +565,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                راست‌چین دستی
+                                {t('settings.manualLabel')}
                             </Typography>
                             {hasTabsPermission === true ? (
                                 <Switch
@@ -603,7 +605,7 @@ const Settings: React.FC<SettingsProps> = ({
                                         }
                                     }}
                                 >
-                                    برو به تنظیمات
+                                    {t('settings.goToSettings')}
                                 </Button>
                             )}
                         </Box>
@@ -615,7 +617,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 width: '100%',
                                 display: 'block'
                             }}>
-                                برای اولین بار باید از طریق تنظیمات فعال شود
+                                {t('settings.firstTimeNote')}
                             </Typography>
                         )}
                     </Box>
@@ -629,7 +631,7 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'text.secondary',
                             fontSize: '0.85rem'
                         }}>
-                            برای تنظیمات پیشرفته به{' '}
+                            {t('settings.advancedBefore')}{' '}
                             <Button
                                 variant="text"
                                 size="small"
@@ -648,9 +650,9 @@ const Settings: React.FC<SettingsProps> = ({
                                     }
                                 }}
                             >
-                                صفحه تنظیمات
+                                {t('settings.optionsPage')}
                             </Button>
-                            {' '}مراجعه کنید
+                            {' '}{t('settings.advancedAfter')}
                         </Typography>
                     </Box>
                 </Paper>
@@ -668,13 +670,13 @@ const Settings: React.FC<SettingsProps> = ({
                             color: 'primary.main',
                             mb: 0.5
                         }}>
-                            تنظیمات نمایش متن حمایت
+                            {t('settings.supportTitle')}
                         </Typography>
                         <Typography variant="body2" sx={{ 
                             color: 'text.secondary',
                             fontSize: '0.8rem'
                         }}>
-                            .این متن نشان‌دهنده فعال بودن افزونه روی سایت است. اگر نمایش آن باعث اذیت شدن شما می‌شود، می‌توانید آن را غیرفعال کنید
+                            {t('settings.supportDescription')}
                         </Typography>
                     </Box>
                     
@@ -693,7 +695,7 @@ const Settings: React.FC<SettingsProps> = ({
                                 fontSize: '0.95rem',
                                 color: 'text.primary'
                             }}>
-                                مخفی کردن متن حمایت
+                                {t('settings.hideSupport')}
                             </Typography>
                      
                         </Box>
@@ -761,7 +763,7 @@ const Settings: React.FC<SettingsProps> = ({
                                     fontSize: '1rem',
                                     fontWeight: 600
                                 }}>
-                                    ویژگی‌ها:
+                                    {t('settings.featuresTitle')}
                                 </Typography>
                                 <Box component="ul" sx={{ 
                                     pl: 2, 
@@ -800,7 +802,7 @@ const Settings: React.FC<SettingsProps> = ({
                             }
                         }}
                     >
-                        بستن
+                        {t('shared.close')}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -16,9 +16,11 @@ import {
 } from '@mui/material';
 import { mdiInformationOutline } from '@mdi/js';
 import {
-    getPinOpenSiteModeOptions,
     PinOpenSiteMode,
 } from '../utils/pinOpenSite';
+import { isFirefoxRuntime } from '../utils/isFirefox';
+import { useI18n } from '../i18n';
+import type { MessageKey } from '../i18n';
 
 interface PinOpenSiteModeSelectProps {
     value: PinOpenSiteMode;
@@ -28,6 +30,39 @@ interface PinOpenSiteModeSelectProps {
     controlWidth?: string;
 }
 
+type ModeOption = {
+    id: PinOpenSiteMode;
+    title: string;
+    description: string;
+    extra?: string;
+};
+
+function getModeOptions(t: (key: MessageKey, vars?: Record<string, string | number>) => string): ModeOption[] {
+    const all: ModeOption[] = [
+        {
+            id: 'full',
+            title: t('pinOpenSite.full.title'),
+            description: t('pinOpenSite.full.description'),
+            extra: t('pinOpenSite.full.extra'),
+        },
+        {
+            id: 'limited',
+            title: t('pinOpenSite.limited.title'),
+            description: t('pinOpenSite.limited.description'),
+            extra: t('pinOpenSite.limited.extra'),
+        },
+        {
+            id: 'off',
+            title: t('pinOpenSite.off.title'),
+            description: '',
+        },
+    ];
+    if (isFirefoxRuntime()) {
+        return all.filter((option) => option.id !== 'limited');
+    }
+    return all;
+}
+
 const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
     value,
     onChange,
@@ -35,7 +70,8 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
     disabled = false,
     controlWidth,
 }) => {
-    const options = getPinOpenSiteModeOptions();
+    const { t } = useI18n();
+    const options = React.useMemo(() => getModeOptions(t), [t]);
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [infoModeId, setInfoModeId] = React.useState<PinOpenSiteMode | null>(null);
     const accent = isDarkMode ? '#00e9ff' : '#1e40af';
@@ -129,7 +165,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                             color: muted,
                         },
                     }}
-                    inputProps={{ 'aria-label': 'نمایش سایت باز در بالای لیست' }}
+                    inputProps={{ 'aria-label': t('pinOpenSite.label') }}
                 >
                     {options.map((mode) => (
                         <MenuItem
@@ -157,7 +193,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                                 {mode.description ? (
                                     <IconButton
                                         size="small"
-                                        aria-label={`توضیح ${mode.title}`}
+                                        aria-label={t('pinOpenSite.infoAria', { title: mode.title })}
                                         onClick={(event) => openInfo(mode.id, event)}
                                         onMouseDown={(event) => {
                                             event.preventDefault();
@@ -237,7 +273,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
                     >
-                        بستن
+                        {t('pinOpenSite.close')}
                     </Button>
                 </DialogActions>
             </Dialog>

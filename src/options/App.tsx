@@ -22,6 +22,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { mdiWeatherSunny, mdiWeatherNight } from '@mdi/js';
 import SettingsContent from './SettingsContent';
 import manifest from '../../public/manifest.chrome.json';
+import { LanguageMenuButton, useI18n } from '../i18n';
 
 // Create rtl cache
 const cacheRtl = createCache({
@@ -149,6 +150,7 @@ const lightTheme = createTheme({
 });
 
 function OptionsApp() {
+    const { t } = useI18n();
     const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load theme preference from storage
@@ -176,6 +178,7 @@ function OptionsApp() {
     };
 
     const currentTheme = isDarkMode ? darkTheme : lightTheme;
+    const emotionCache = cacheRtl;
 
     // Update body data-theme attribute for CSS
     React.useEffect(() => {
@@ -183,10 +186,11 @@ function OptionsApp() {
     }, [isDarkMode]);
 
     return (
-        <CacheProvider value={cacheRtl}>
+        <CacheProvider value={emotionCache}>
             <ThemeProvider theme={currentTheme}>
                 <CssBaseline />
                 <Box 
+                    dir="rtl"
                     sx={{ 
                         minHeight: '100vh',
                         backgroundColor: currentTheme.palette.background.default,
@@ -225,10 +229,10 @@ function OptionsApp() {
                                             mb: 0.5
                                         }}
                                     >
-                                        تنظیمات افزونه
+                                        {t('options.title')}
                                     </Typography>
                                     <Chip 
-                                        label={`نسخه ${manifest.version}`} 
+                                        label={t('options.version', { version: manifest.version })} 
                                         size="small" 
                                         sx={{ 
                                             fontSize: '0.7rem',
@@ -242,21 +246,26 @@ function OptionsApp() {
                                 </Box>
                             </Box>
                             
-                            <IconButton 
-                                onClick={handleThemeToggle}
-                                sx={{ 
-                                    color: isDarkMode ? '#FFD700' : '#FF8F00',
-                                    '&:hover': {
-                                        backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 143, 0, 0.1)',
-                                        transform: 'scale(1.1)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <SvgIcon sx={{ fontSize: '1.5rem' }}>
-                                    <path d={isDarkMode ? mdiWeatherSunny : mdiWeatherNight} />
-                                </SvgIcon>
-                            </IconButton>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <LanguageMenuButton />
+                                <IconButton 
+                                    onClick={handleThemeToggle}
+                                    title={isDarkMode ? t('options.themeToLight') : t('options.themeToDark')}
+                                    aria-label={isDarkMode ? t('options.themeToLight') : t('options.themeToDark')}
+                                    sx={{ 
+                                        color: isDarkMode ? '#FFD700' : '#FF8F00',
+                                        '&:hover': {
+                                            backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 143, 0, 0.1)',
+                                            transform: 'scale(1.1)'
+                                        },
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <SvgIcon sx={{ fontSize: '1.5rem' }}>
+                                        <path d={isDarkMode ? mdiWeatherSunny : mdiWeatherNight} />
+                                    </SvgIcon>
+                                </IconButton>
+                            </Box>
                         </Toolbar>
                     </AppBar>
 

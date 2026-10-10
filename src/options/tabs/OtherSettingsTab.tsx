@@ -40,6 +40,7 @@ import {
 } from '../../utils/pinOpenSite';
 import PinOpenSiteModeSelect from '../../components/PinOpenSiteModeSelect';
 import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../../constants/siteSettings';
+import { useI18n } from '../../i18n';
 
 interface OtherSettingsTabProps {
     supportHide: boolean;
@@ -61,6 +62,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     onAnalyticsChange
 }) => {
     const theme = useTheme();
+    const { t } = useI18n();
     const manifest = chrome.runtime.getManifest();
     const author = typeof manifest.author === 'string' ? manifest.author : (manifest.author?.email || '');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -159,12 +161,12 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            setSnackbarMessage('تنظیمات با موفقیت ذخیره شد');
+            setSnackbarMessage(t('otherSettings.saved'));
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
         } catch (error) {
             console.error('[OtherSettingsTab] Error exporting settings:', error);
-            setSnackbarMessage('خطا در ذخیره تنظیمات');
+            setSnackbarMessage(t('otherSettings.saveError'));
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
         }
@@ -181,13 +183,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
 
             // Validate import data
             if (!importData.settings) {
-                throw new Error('فرمت فایل نامعتبر است');
+                throw new Error(t('otherSettings.invalidFile'));
             }
 
             // Confirm import
-            const confirmed = window.confirm(
-                'آیا مطمئن هستید که می‌خواهید تنظیمات را وارد کنید؟ این کار تنظیمات فعلی را جایگزین می‌کند.'
-            );
+            const confirmed = window.confirm(t('otherSettings.confirmImport'));
 
             if (!confirmed) {
                 // Reset file input
@@ -273,12 +273,12 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             // Reload page to apply settings
             window.location.reload();
 
-            setSnackbarMessage('تنظیمات با موفقیت وارد شد');
+            setSnackbarMessage(t('otherSettings.imported'));
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
         } catch (error) {
             console.error('[OtherSettingsTab] Error importing settings:', error);
-            setSnackbarMessage('خطا در وارد کردن تنظیمات: ' + (error instanceof Error ? error.message : 'فرمت فایل نامعتبر است'));
+            setSnackbarMessage(t('otherSettings.importError', { error: error instanceof Error ? error.message : t('otherSettings.invalidFile') }));
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
         } finally {
@@ -292,7 +292,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     return (
         <>
         <Grid container spacing={3}>
-            {/* تنظیمات عمومی */}
+            {/* General settings */}
             <Grid item xs={12} sm={6}>
                 <Card elevation={2} sx={{ height: '100%' }}>
                     <CardContent>
@@ -302,15 +302,15 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                تنظیمات عمومی
+                                {t('otherSettings.generalTitle')}
                             </Typography>
                         </Box>
 
                         <List>
                             <ListItem>
                                 <ListItemText 
-                                    primary="مخفی کردن متن حمایت"
-                                    secondary="این متن نشان‌دهنده فعال بودن افزونه روی سایت است"
+                                    primary={t('otherSettings.hideSupport')}
+                                    secondary={t('otherSettings.hideSupportHint')}
                                 />
                                 <ListItemSecondaryAction>
                                     <Switch
@@ -338,7 +338,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 }}
                             >
                                 <ListItemText 
-                                    primary="نمایش سایت باز در بالای لیست"
+                                    primary={t('otherSettings.pinOpenSite')}
                                     sx={{ flex: 1, minWidth: 0, my: 0 }}
                                 />
                                 <PinOpenSiteModeSelect
@@ -352,8 +352,8 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             <Divider />
                             <ListItem>
                                 <ListItemText 
-                                    primary="خروجی گرفتن از تنظیمات"
-                                    secondary="ذخیره تمام تنظیمات در یک فایل JSON"
+                                    primary={t('otherSettings.export')}
+                                    secondary={t('otherSettings.exportHint')}
                                 />
                                 <ListItemSecondaryAction>
                                     <Button
@@ -375,14 +375,14 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             },
                                         }}
                                     >
-                                        خروجی
+                                        {t('otherSettings.exportButton')}
                                     </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
                             <ListItem>
                                 <ListItemText 
-                                    primary="وارد کردن تنظیمات"
-                                    secondary="بازیابی تنظیمات از فایل JSON"
+                                    primary={t('otherSettings.import')}
+                                    secondary={t('otherSettings.importHint')}
                                 />
                                 <ListItemSecondaryAction>
                                     <input
@@ -411,15 +411,15 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             },
                                         }}
                                     >
-                                        وارد کردن
+                                        {t('otherSettings.importButton')}
                                     </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
                             <Divider />
                             <ListItem>
                                 <ListItemText 
-                                    primary="پنجره به‌روزرسانی‌ها"
-                                    secondary="مشاهده جزئیات آخرین نسخه افزونه"
+                                    primary={t('otherSettings.updates')}
+                                    secondary={t('otherSettings.updatesHint')}
                                 />
                                 <ListItemSecondaryAction>
                                     <Button
@@ -441,7 +441,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             },
                                         }}
                                     >
-                                        نمایش
+                                        {t('otherSettings.showUpdates')}
                                     </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
@@ -450,7 +450,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 </Card>
             </Grid>
 
-            {/* اطلاعات افزونه */}
+            {/* Extension info */}
             <Grid item xs={12} sm={6}>
                 <Card elevation={2}>
                     <CardContent>
@@ -460,7 +460,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                اطلاعات افزونه
+                                {t('otherSettings.infoTitle')}
                             </Typography>
                         </Box>
 
@@ -469,7 +469,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        نسخه:
+                                        {t('otherSettings.version')}
                                     </Typography>
                                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                         {manifest.version}
@@ -481,7 +481,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        شناسه افزونه:
+                                        {t('otherSettings.extensionId')}
                                     </Typography>
                                     <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace', fontSize: '0.75rem' }}>
                                         {chrome.runtime.id}
@@ -494,7 +494,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 <Grid item xs={12}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                            وب‌سایت رسمی افزونه:
+                                            {t('otherSettings.website')}
                                         </Typography>
                                         <Typography 
                                             variant="body2" 
@@ -522,7 +522,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        {getOfficialStoreLabel()}
+                                        {isFirefoxRuntime() ? t('share.officialFirefox') : t('share.officialChrome')}
                                     </Typography>
                                     <Typography 
                                         variant="body2" 
@@ -540,7 +540,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                             }
                                         }}
                                     >
-                                        {getViewInStoreText()}
+                                        {isFirefoxRuntime() ? t('share.viewFirefox') : t('share.viewChrome')}
                                     </Typography>
                                 </Box>
                             </Grid>
@@ -549,7 +549,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        ارتباط با سازنده:
+                                        {t('otherSettings.contact')}
                                     </Typography>
                                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                                         {author && (
@@ -567,7 +567,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                                     }
                                                 }}
                                             >
-                                                ایمیل
+                                                {t('otherSettings.email')}
                                             </Typography>
                                         )}
                                         <Typography 
@@ -586,7 +586,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                                 }
                                             }}
                                         >
-                                            تلگرام
+                                            {t('otherSettings.telegram')}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -617,19 +617,19 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             fullWidth
         >
             <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontFamily: 'iranyekan' }}>
-                نیاز به دسترسی تب
+                {t('otherSettings.tabPermissionTitle')}
             </DialogTitle>
             <DialogContent style={{ direction: 'rtl', textAlign: 'justify' }}>
                 <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8 }}>
-                    برای اینکه سایتِ در حال مشاهده (در صورت پشتیبانی شدن توسط افزونه) همیشه بالای لیست بیاید، حتی اگر هنوز آن را فعال نکرده باشید، افزونه با کمک «مجوز تب‌ها» باز بودن آن را تشخیص می‌دهد تا بتوانید سریع‌تر فعالش کنید.
+                    {t('otherSettings.tabPermissionBody')}
                 </Typography>
                 <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8, mt: 1.5 }}>
-                    این دسترسی صرفاً برای خواندن «نام دامنه» تب فعلی است و افزونه هیچ‌گونه دسترسی به آدرس کامل، محتوای صفحه یا اطلاعات شخصی شما ندارد.
+                    {t('otherSettings.tabPermissionPrivacy')}
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ gap: 1, px: 3, pb: 2 }}>
                 <Button onClick={() => setPinSitePermissionOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
-                    بستن
+                    {t('otherSettings.close')}
                 </Button>
                 <Button
                     variant="contained"
@@ -638,7 +638,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                     }}
                     sx={{ fontFamily: 'iranyekan' }}
                 >
-                    دریافت مجوز
+                    {t('otherSettings.grantPermission')}
                 </Button>
             </DialogActions>
         </Dialog>

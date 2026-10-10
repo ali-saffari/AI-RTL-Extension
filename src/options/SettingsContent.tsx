@@ -13,6 +13,7 @@ import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, normalizePinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY, PinOpenSiteMode } from '../utils/pinOpenSite';
+import { useI18n } from '../i18n';
 
 interface SettingsContentProps {
     isDarkMode: boolean;
@@ -22,6 +23,7 @@ const firefoxDefaults = isFirefoxRuntime();
 
 const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const theme = useTheme();
+    const { t } = useI18n();
     
     // Map hash to tab index
     const hashToTabIndex: { [key: string]: number } = {
@@ -392,11 +394,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                         }
                     }}
                 >
-                    <Tab label="الگوریتم" />
-                    <Tab label="راستچین دستی" />
-                    <Tab label="تنظیمات عمومی" />
-                    
-                   
+                    <Tab label={t('options.tabAlgorithm')} />
+                    <Tab label={t('options.tabManualRtl')} />
+                    <Tab label={t('options.tabGeneral')} />
                 </Tabs>
             </Box>
 

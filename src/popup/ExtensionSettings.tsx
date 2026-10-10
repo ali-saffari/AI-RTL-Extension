@@ -17,6 +17,7 @@ import {
     Tooltip
 } from '@mui/material';
 import { mdiInformationOutline, mdiRefresh, mdiDelete, mdiDownload, mdiUpload } from '@mdi/js';
+import { useI18n } from '../i18n';
 
 interface ExtensionSettingsProps {
     isDarkMode: boolean;
@@ -25,6 +26,7 @@ interface ExtensionSettingsProps {
 const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
     isDarkMode
 }) => {
+    const { t } = useI18n();
     const theme = useTheme();
     const [autoUpdate, setAutoUpdate] = React.useState(true);
     const [notifications, setNotifications] = React.useState(true);
@@ -77,10 +79,10 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
     };
 
     const handleClearCache = () => {
-        if (window.confirm('آیا از پاک کردن کش مطمئن هستید؟')) {
+        if (window.confirm(t('extensionSettings.confirmClearCache'))) {
             try {
                 chrome.storage.local.clear(() => {
-                    alert('کش با موفقیت پاک شد.');
+                    alert(t('extensionSettings.cacheCleared'));
                 });
             } catch (error) {
                 // Silently handle clear errors
@@ -89,11 +91,11 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
     };
 
     const handleClearData = () => {
-        if (window.confirm('آیا از پاک کردن تمام داده‌های ذخیره شده مطمئن هستید؟ این عمل غیرقابل بازگشت است.')) {
+        if (window.confirm(t('extensionSettings.confirmClearData'))) {
             try {
                 chrome.storage.sync.clear(() => {
                     chrome.storage.local.clear(() => {
-                        alert('تمام داده‌ها با موفقیت پاک شدند.');
+                        alert(t('extensionSettings.dataCleared'));
                         window.location.reload();
                     });
                 });
@@ -132,11 +134,11 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                     try {
                         const settings = JSON.parse(event.target?.result as string);
                         chrome.storage.sync.set(settings, () => {
-                            alert('تنظیمات با موفقیت وارد شد. لطفاً صفحه را رفرش کنید.');
+                            alert(t('extensionSettings.importSuccess'));
                             window.location.reload();
                         });
                     } catch (error) {
-                        alert('خطا در وارد کردن تنظیمات. لطفاً فایل معتبری انتخاب کنید.');
+                        alert(t('extensionSettings.importError'));
                     }
                 };
                 reader.readAsText(file);
@@ -163,11 +165,11 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                     fontWeight: 600, 
                     color: theme.palette.text.primary,
                 }}>
-                    تنظیمات افزونه
+                    {t('extensionSettings.title')}
                 </Typography>
             </Box>
 
-            {/* تنظیمات عمومی */}
+            {/* General settings */}
             <Paper elevation={0} sx={{ 
                 m: 2, 
                 p: 2, 
@@ -180,15 +182,15 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                         color: 'primary.main',
                         mb: 0.5
                     }}>
-                        تنظیمات عمومی
+                        {t('extensionSettings.generalTitle')}
                     </Typography>
                 </Box>
 
                 <List>
                     <ListItem>
                         <ListItemText 
-                            primary="به‌روزرسانی خودکار"
-                            secondary="افزونه به‌طور خودکار به‌روزرسانی می‌شود"
+                            primary={t('extensionSettings.autoUpdate')}
+                            secondary={t('extensionSettings.autoUpdateHint')}
                         />
                         <ListItemSecondaryAction>
                             <Switch
@@ -210,8 +212,8 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
 
                     <ListItem>
                         <ListItemText 
-                            primary="اعلان‌ها"
-                            secondary="نمایش اعلان‌های مربوط به افزونه"
+                            primary={t('extensionSettings.notifications')}
+                            secondary={t('extensionSettings.notificationsHint')}
                         />
                         <ListItemSecondaryAction>
                             <Switch
@@ -233,11 +235,11 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
 
                     <ListItem>
                         <ListItemText 
-                            primary="تحلیل و آمار"
-                            secondary="ارسال داده‌های ناشناس برای بهبود افزونه"
+                            primary={t('extensionSettings.analytics')}
+                            secondary={t('extensionSettings.analyticsHint')}
                         />
                         <ListItemSecondaryAction>
-                            <Tooltip title="این داده‌ها به صورت ناشناس و برای بهبود عملکرد افزونه استفاده می‌شوند">
+                            <Tooltip title={t('extensionSettings.analyticsTooltip')}>
                                 <IconButton edge="end" size="small" sx={{ mr: 1 }}>
                                     <SvgIcon sx={{ fontSize: '1rem' }}>
                                         <path d={mdiInformationOutline} />
@@ -261,7 +263,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                 </List>
             </Paper>
 
-            {/* مدیریت داده‌ها */}
+            {/* Data management */}
             <Paper elevation={0} sx={{ 
                 m: 2, 
                 p: 2, 
@@ -274,7 +276,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                         color: 'primary.main',
                         mb: 0.5
                     }}>
-                        مدیریت داده‌ها
+                        {t('extensionSettings.dataTitle')}
                     </Typography>
                 </Box>
 
@@ -299,7 +301,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             }
                         }}
                     >
-                        خروجی گرفتن از تنظیمات
+                        {t('extensionSettings.export')}
                     </Button>
 
                     <Button
@@ -322,7 +324,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             }
                         }}
                     >
-                        وارد کردن تنظیمات
+                        {t('extensionSettings.import')}
                     </Button>
 
                     <Divider />
@@ -347,7 +349,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             }
                         }}
                     >
-                        پاک کردن کش
+                        {t('extensionSettings.clearCache')}
                     </Button>
 
                     <Button
@@ -370,12 +372,12 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             }
                         }}
                     >
-                        پاک کردن تمام داده‌ها
+                        {t('extensionSettings.clearAll')}
                     </Button>
                 </Box>
             </Paper>
 
-            {/* اطلاعات افزونه */}
+            {/* Extension info */}
             <Paper elevation={0} sx={{ 
                 m: 2, 
                 p: 2, 
@@ -388,14 +390,14 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                         color: 'primary.main',
                         mb: 0.5
                     }}>
-                        اطلاعات افزونه
+                        {t('extensionSettings.infoTitle')}
                     </Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            نسخه:
+                            {t('extensionSettings.version')}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {chrome.runtime.getManifest().version}
@@ -404,7 +406,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                     <Divider />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            شناسه افزونه:
+                            {t('extensionSettings.extensionId')}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace', fontSize: '0.75rem' }}>
                             {chrome.runtime.id}

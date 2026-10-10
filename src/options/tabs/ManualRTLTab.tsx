@@ -30,6 +30,7 @@ import { mdiChevronDown, mdiDelete, mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../../types/manualRtl';
 import { isFirefoxRuntime } from '../../utils/isFirefox';
 import { ManualRTLGuide } from './ManualRTLGuide';
+import { useI18n } from '../../i18n';
 
 interface ManualRTLTabProps {
     manualRtlSettings: ManualRtlSettings;
@@ -45,6 +46,7 @@ interface MenuPreviewProps {
 }
 
 const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first', isExpanded: externalIsExpanded, onExpandedChange }) => {
+    const { t } = useI18n();
     const [internalIsExpanded, setInternalIsExpanded] = React.useState(false);
     const menuRef = React.useRef<HTMLDivElement>(null);
     
@@ -165,7 +167,7 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
-                        راست چین
+                        {t('manualRtlTab.rtl')}
                     </button>
                     <div
                         style={{
@@ -192,7 +194,7 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
-                        چپ چین
+                        {t('manualRtlTab.ltr')}
                     </button>
                     <div
                         style={{
@@ -214,6 +216,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     isDarkMode
 }) => {
     const theme = useTheme();
+    const { t } = useI18n();
     const [menuExpanded, setMenuExpanded] = React.useState(manualRtlSettings.menuDisplayMode === 'menu_direct');
     const [permissionDialogOpen, setPermissionDialogOpen] = React.useState(false);
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
@@ -225,7 +228,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         setMenuExpanded(manualRtlSettings.menuDisplayMode === 'menu_direct');
     }, [manualRtlSettings.menuDisplayMode]);
 
-    // بررسی وضعیت permission
+    // Check permission status
     React.useEffect(() => {
         const checkPermission = async () => {
             const hasPermission = await checkTabsPermission();
@@ -305,7 +308,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         }
     };
     
-    // مدیریت تغییر وضعیت فعال/غیرفعال
+    // Handle enable/disable
     const handleManualRtlEnabledChange = async (enabled: boolean) => {
         if (enabled) {
             // قبل از فعال کردن، پرمیشن tabs را بررسی کن
@@ -330,7 +333,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
         if (granted) {
             setHasTabsPermission(true);
             setPermissionDialogOpen(false);
-            // حالا می‌توانیم راست چین دستی را فعال کنیم
+            // Enable manual RTL now
             onManualRtlSettingsChange({
                 ...manualRtlSettings,
                 manualRtlEnabled: true,
@@ -386,18 +389,18 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                تنظیمات چینش دستی
+                                {t('manualRtlTab.title')}
                             </Typography>
                             <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',
                                 fontSize: '0.75rem',
                                 lineHeight: 1.6
                             }}>
-                                این قابلیت به شما امکان می‌دهد تا به صورت دستی متن‌های مورد نظر خود را در هر سایتی راست چین یا چپ چین کنید.
+                                {t('manualRtlTab.description')}
                             </Typography>
                         </Box>
 
-                        {/* وضعیت فعال/غیرفعال */}
+                        {/* Enable/disable status */}
                         <Box sx={{ mb: 3 }}>
                             <Box sx={{ 
                                 display: 'flex', 
@@ -415,13 +418,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         color: 'text.primary',
                                         mb: 0.5
                                     }}>
-                                        وضعیت
+                                        {t('manualRtlTab.status')}
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
                                         color: manualRtlSettings.manualRtlEnabled ? 'text.secondary' : (theme.palette.mode === 'dark' ? '#f44336' : '#d32f2f'),
                                         fontSize: '0.8rem'
                                     }}>
-                                        {manualRtlSettings.manualRtlEnabled ? 'فعال' : 'غیرفعال'}
+                                        {manualRtlSettings.manualRtlEnabled ? t('manualRtlTab.active') : t('manualRtlTab.inactive')}
                                     </Typography>
                                 </Box>
                                 <Switch
@@ -468,7 +471,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     lineHeight: 1.6
                                 }}
                             >
-                                فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+                                {t('manualRtlTab.info')}
                             </Typography>
                         </Box>
 
@@ -492,7 +495,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         }
                                     }}
                                 >
-                                    {showAdvancedSettings ? 'مخفی کردن تنظیمات پیشرفته' : 'تنظیمات پیشرفته'}
+                                    {showAdvancedSettings ? t('manualRtlTab.hideAdvanced') : t('manualRtlTab.showAdvanced')}
                                 </Button>
                             </Box>
                         )}
@@ -503,7 +506,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 {/* ب - روی چه سایت‌هایی فعال باشه - موقتاً پنهان شده - به هیچ عنوان پاک نشود */}
                                 {/* <Box sx={{ mb: 3, display: 'none' }}>
                                     <FormControl fullWidth sx={{ mb: 2 }}>
-                                        <InputLabel id="site-mode-label"> سایت‌های فعال </InputLabel>
+                                        <InputLabel id="site-mode-label"> {t('manualRtlTab.sitesLabel')} </InputLabel>
                                         <Select
                                             labelId="site-mode-label"
                                             value={manualRtlSettings.manualRtlSiteMode ?? 'allowed_sites'}
@@ -511,13 +514,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 ...manualRtlSettings,
                                                 manualRtlSiteMode: e.target.value as 'all' | 'ai_sites' | 'allowed_sites' | 'ai_and_allowed'
                                             })}
-                                            label="سایت‌های فعال"
+                                            label={t('manualRtlTab.sitesLabel')}
                                             disabled
                                         >
-                                            <MenuItem value="all">همه</MenuItem>
-                                            <MenuItem value="ai_sites">فقط لیست سایت‌های هوش مصنوعی افزونه</MenuItem>
-                                            <MenuItem value="allowed_sites">فقط سایت‌های که تعریف شده در لیست مجاز </MenuItem>
-                                            <MenuItem value="ai_and_allowed">سایت‌های مجاز و هوش مصنوعی‌های افزونه</MenuItem>
+                                            <MenuItem value="all">{t('manualRtlTab.sitesAll')}</MenuItem>
+                                            <MenuItem value="ai_sites">{t('manualRtlTab.sitesAi')}</MenuItem>
+                                            <MenuItem value="allowed_sites">{t('manualRtlTab.sitesAllowed')}</MenuItem>
+                                            <MenuItem value="ai_and_allowed">{t('manualRtlTab.sitesAiAndAllowed')}</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Box>
@@ -526,10 +529,10 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 
                                 <Divider sx={{ my: 2 }} />
 
-                                {/* نحوه نمایش منوی تغییر جهت */}
+                                {/* {t('manualRtlTab.menuLabel')} */}
                                 <Box sx={{ mb: 3 }}>
                                     <FormControl fullWidth sx={{ mb: 2 }}>
-                                        <InputLabel id="menu-display-mode-label">نحوه نمایش منوی تغییر جهت</InputLabel>
+                                        <InputLabel id="menu-display-mode-label">{t('manualRtlTab.menuLabel')}</InputLabel>
                                         <Select
                                             labelId="menu-display-mode-label"
                                             value={manualRtlSettings.menuDisplayMode ?? 'logo_first'}
@@ -537,18 +540,18 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 ...manualRtlSettings,
                                                 menuDisplayMode: e.target.value as 'logo_first' | 'menu_direct'
                                             })}
-                                            label="نحوه نمایش منوی تغییر جهت"
+                                            label={t('manualRtlTab.menuLabel')}
                                         >
-                                            <MenuItem value="logo_first">ابتدا لوگو نمایش داده شود (دو مرحله‌ای)</MenuItem>
-                                            <MenuItem value="menu_direct">مستقیم منو نمایش داده شود (تک مرحله‌ای)</MenuItem>
+                                            <MenuItem value="logo_first">{t('manualRtlTab.menuLogoFirst')}</MenuItem>
+                                            <MenuItem value="menu_direct">{t('manualRtlTab.menuDirect')}</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Box>
 
-                                {/* نحوه نمایش محل تغییر */}
+                                {/* {t('manualRtlTab.highlightLabel')} */}
                                 <Box sx={{ mb: 3 }}>
                                     <FormControl fullWidth sx={{ mb: 2 }}>
-                                        <InputLabel id="highlight-mode-label">نحوه نمایش محل تغییر</InputLabel>
+                                        <InputLabel id="highlight-mode-label">{t('manualRtlTab.highlightLabel')}</InputLabel>
                                         <Select
                                             labelId="highlight-mode-label"
                                             value={manualRtlSettings.highlightMode}
@@ -556,11 +559,11 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 ...manualRtlSettings,
                                                 highlightMode: e.target.value as 'disabled' | 'on_selection' | 'on_direction_change'
                                             })}
-                                            label="نحوه نمایش محل تغییر"
+                                            label={t('manualRtlTab.highlightLabel')}
                                         >
-                                            <MenuItem value="disabled">غیرفعال</MenuItem>
-                                            <MenuItem value="on_selection">زمان انتخاب متن</MenuItem>
-                                            <MenuItem value="on_direction_change">زمان باز شدن منو تنظیم جهت</MenuItem>
+                                            <MenuItem value="disabled">{t('manualRtlTab.highlightOff')}</MenuItem>
+                                            <MenuItem value="on_selection">{t('manualRtlTab.highlightOnSelection')}</MenuItem>
+                                            <MenuItem value="on_direction_change">{t('manualRtlTab.highlightOnMenu')}</MenuItem>
                                         </Select>
                                     </FormControl>
                                     
@@ -578,7 +581,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                             fontSize: '0.8rem',
                                             fontWeight: 500
                                         }}>
-                                            پیش‌نمایش:
+                                            {t('manualRtlTab.previewLabel')}
                                         </Typography>
                                    
                                             <Box
@@ -613,7 +616,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 >
                                                     {manualRtlSettings.highlightMode === 'disabled' ? (
                                                         <>
-                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            {t('manualRtlTab.previewSample')}{' '}
                                                             <Box
                                                                 component="span"
                                                                 sx={{
@@ -627,18 +630,18 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                                     position: 'relative'
                                                                 }}
                                                             >
-                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                {t('manualRtlTab.previewSelected')}
                                                                 <MenuPreview 
                                                                     menuDisplayMode={manualRtlSettings.menuDisplayMode} 
                                                                     isExpanded={menuExpanded}
                                                                     onExpandedChange={setMenuExpanded}
                                                                 />
                                                             </Box>
-                                                            {' '}و بقیه متن به صورت عادی است. در حالت غیرفعال هیچ highlight نمایش داده نمی‌شود.
+                                                            {' '}{t('manualRtlTab.previewRestOff')}
                                                         </>
                                                     ) : manualRtlSettings.highlightMode === 'on_selection' ? (
                                                         <>
-                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            {t('manualRtlTab.previewSample')}{' '}
                                                             <Box
                                                                 component="span"
                                                                 sx={{
@@ -652,18 +655,18 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                                     position: 'relative'
                                                                 }}
                                                             >
-                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                {t('manualRtlTab.previewSelected')}
                                                                 <MenuPreview 
                                                                     menuDisplayMode={manualRtlSettings.menuDisplayMode} 
                                                                     isExpanded={menuExpanded}
                                                                     onExpandedChange={setMenuExpanded}
                                                                 />
                                                             </Box>
-                                                            {' '}و بقیه متن به صورت عادی است. در این حالت highlight در زمان انتخاب متن نمایش داده می‌شود و تفاوتی نمی‌کند.
+                                                            {' '}{t('manualRtlTab.previewRestSelection')}
                                                         </>
                                                     ) : (
                                                         <>
-                                                            این یک متن نمونه است که برای نمایش پیش‌نمایش استفاده می‌شود.{' '}
+                                                            {t('manualRtlTab.previewSample')}{' '}
                                                             <Box
                                                                 component="span"
                                                                 sx={{
@@ -677,16 +680,16 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                                     position: 'relative'
                                                                 }}
                                                             >
-                                                                این قسمت از متن به صورت انتخاب شده نمایش داده می‌شود
+                                                                {t('manualRtlTab.previewSelected')}
                                                                 <MenuPreview 
                                                                     menuDisplayMode={manualRtlSettings.menuDisplayMode} 
                                                                     isExpanded={menuExpanded}
                                                                     onExpandedChange={setMenuExpanded}
                                                                 />
                                                             </Box>
-                                                            {' '}و بقیه متن به صورت عادی است. در این حالت highlight فقط زمانی نمایش داده می‌شود که منو باز باشد.{' '}
+                                                            {' '}{t('manualRtlTab.previewRestMenu')}{' '}
                                                             <br />
-                                                            اگر حالت نمایش منو "مستقیم منو" باشد، highlight همیشه نمایش داده می‌شود. اگر حالت نمایش منو "ابتدا لوگو" باشد، highlight فقط بعد از کلیک روی لوگو و باز شدن منو نمایش داده می‌شود.
+                                                            {t('manualRtlTab.previewMenuDirect')}
                                                         </>
                                                     )}
                                                 </Typography>
@@ -694,7 +697,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     </Box>
                                 </Box>
 
-                                {/* رنگ محل انتخاب شده - فقط وقتی disabled نیست */}
+                                {/* Highlight color - when not disabled */}
                                 {manualRtlSettings.highlightMode !== 'disabled' && (
                                 <Box sx={{ mb: 3 }}>
                                     <Typography variant="body2" sx={{ 
@@ -702,7 +705,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         mb: 1.5,
                                         color: 'text.primary'
                                     }}>
-                                        رنگ محل انتخاب شده
+                                        {t('manualRtlTab.colorLabel')}
                                     </Typography>
                                     
                                     {/* انتخاب رنگ */}
@@ -731,7 +734,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     {/* شدت رنگ */}
                                     <Box sx={{ px: 2 }}>
                                         <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                                            شدت رنگ: {Math.round(manualRtlSettings.highlightOpacity * 100)}%
+                                            {t('manualRtlTab.opacity', { percent: Math.round(manualRtlSettings.highlightOpacity * 100) })}
                                         </Typography>
                                         <Slider
                                             value={manualRtlSettings.highlightOpacity}
@@ -759,7 +762,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
 
                                 <Divider sx={{ my: 2 }} />
 
-                                {/* اعمال فونت */}
+                                {/* {t('manualRtlTab.applyFont')} */}
                                 <Box sx={{ mb: 3 }}>
                                     <Box sx={{ 
                                         display: 'flex', 
@@ -777,13 +780,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 color: 'text.primary',
                                                 mb: 0.5
                                             }}>
-                                                اعمال فونت
+                                                {t('manualRtlTab.applyFont')}
                                             </Typography>
                                             <Typography variant="body2" sx={{ 
                                                 color: 'text.secondary',
                                                 fontSize: '0.8rem'
                                             }}>
-                                                اعمال فونت انتخاب‌شده روی متن‌های تغییر جهت داده شده
+                                                {t('manualRtlTab.applyFontHint')}
                                             </Typography>
                                         </Box>
                                         <Switch
@@ -807,7 +810,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 {/* نمایش لوگو */}
                                 <Box sx={{ mb: 2 }}>
                                     <FormControl fullWidth>
-                                        <InputLabel id="logo-display-label">نمایش لوگو روی قسمت های فعال شده</InputLabel>
+                                        <InputLabel id="logo-display-label">{t('manualRtlTab.logoLabel')}</InputLabel>
                                         <Select
                                             labelId="logo-display-label"
                                             value={manualRtlSettings.logoDisplay}
@@ -815,18 +818,18 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 ...manualRtlSettings,
                                                 logoDisplay: e.target.value as 'always' | 'on_hover' | 'disabled'
                                             })}
-                                            label="نمایش لوگو روی قسمت های فعال شده"
+                                            label={t('manualRtlTab.logoLabel')}
                                         >
-                                            <MenuItem value="always">همیشه نمایش بده</MenuItem>
-                                            <MenuItem value="on_hover">زمان hover شدن موس</MenuItem>
-                                            <MenuItem value="disabled">غیرفعال</MenuItem>
+                                            <MenuItem value="always">{t('manualRtlTab.logoAlways')}</MenuItem>
+                                            <MenuItem value="on_hover">{t('manualRtlTab.logoHover')}</MenuItem>
+                                            <MenuItem value="disabled">{t('manualRtlTab.logoOff')}</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </Box>
 
                                 <Divider sx={{ my: 2 }} />
 
-                                {/* دکمه بازنشانی به تنظیمات پیش‌فرض */}
+                                {/* Reset to defaults */}
                                 <Box sx={{ mb: 2 }}>
                                     <Button
                                         variant="outlined"
@@ -845,7 +848,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                             }
                                         }}
                                     >
-                                        بازنشانی به تنظیمات پیش‌فرض
+                                        {t('manualRtlTab.reset')}
                                     </Button>
                                 </Box>
                             </>
@@ -853,7 +856,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                     </CardContent>
                 </Card>
 
-                {/* لیست سایت‌های فعال - زیر تنظیمات چینش دستی */}
+                {/* Active sites list */}
                 {manualRtlSettings.manualRtlEnabled && !isFirefoxRuntime() && (
                     <Card elevation={2} sx={{ mt: 3 }}>
                         <CardContent>
@@ -863,13 +866,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     color: 'primary.main',
                                     mb: 0.5
                                 }}>
-                                    لیست سایت‌های فعال
+                                    {t('manualRtlTab.sitesTitle')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ 
                                     color: 'text.secondary',
                                     fontSize: '0.85rem'
                                 }}>
-                                    سایت‌هایی که راست‌چین دستی برای آن‌ها فعال شده است
+                                    {t('manualRtlTab.sitesHint')}
                                 </Typography>
                             </Box>
                             
@@ -890,7 +893,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         fontSize: '0.9rem',
                                         fontFamily: 'iranyekan'
                                     }}>
-                                        لیست خالی است
+                                        {t('manualRtlTab.sitesEmpty')}
                                     </Typography>
                                 </Box>
                             ) : (
@@ -980,7 +983,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 }
                                             }}
                                         >
-                                            پاک کردن همه
+                                            {t('manualRtlTab.clearAll')}
                                         </Button>
                                     </Box>
                                 </>
@@ -1000,13 +1003,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 color: 'primary.main',
                                 mb: 0.5
                             }}>
-                                راهنمای استفاده
+                                {t('manualRtlTab.guideTitle')}
                             </Typography>
                             <Typography variant="body2" sx={{ 
                                 color: 'text.secondary',
                                 fontSize: '0.85rem'
                             }}>
-                                راهنمای استفاده از قابلیت راستچین دستی
+                                {t('manualRtlTab.guideSubtitle')}
                             </Typography>
                         </Box>
                         
@@ -1033,7 +1036,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 fontWeight: 600,
                                 mb: 1.5
                             }}>
-                                💡 نکات مهم:
+                                {t('manualRtlTab.tipsTitle')}
                             </Typography>
                             <Box component="ul" sx={{ 
                                 pl: 2, 
@@ -1045,11 +1048,11 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     lineHeight: 1.8
                                 }
                             }}>
-                                <li>این قابلیت کاملاً مستقل از الگوریتم هوشمند خودکار است و می‌توانید همزمان از هر دو استفاده کنید</li>
-                                <li>تغییرات فقط روی متن‌های انتخاب شده اعمال می‌شود و بقیه صفحه بدون تغییر می‌ماند</li>
-                                <li>می‌توانید برای هر بخش از صفحه، جهت متفاوتی انتخاب کنید</li>
-                                <li>تغییرات تا زمان بستن صفحه یا رفرش مرورگر باقی می‌ماند</li>
-                                <li>این قابلیت روی سایت‌هایی که امکان فعال‌سازی وجود داشته باشد کار می‌کند و ممکن است برای بعضی سایت‌ها کار نکند</li>
+                                <li>{t('manualRtlTab.tip1')}</li>
+                                <li>{t('manualRtlTab.tip2')}</li>
+                                <li>{t('manualRtlTab.tip3')}</li>
+                                <li>{t('manualRtlTab.tip4')}</li>
+                                <li>{t('manualRtlTab.tip5')}</li>
                             </Box>
                         </Box>
                     </CardContent>
@@ -1070,13 +1073,13 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
             }}
         >
             <DialogTitle id="permission-dialog-title" sx={{ fontFamily: 'iranyekan' }}>
-                درخواست دسترسی
+                {t('manualRtlTab.permission.title')}
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="permission-dialog-description" sx={{ fontFamily: 'iranyekan' }}>
-                    افزونه برای تشخیص تب فعلی و اعمال راست‌چین روی سایت‌ مشخص شده به پرمیشن Tabs نیاز دارد.
+                    {t('manualRtlTab.permission.body')}
                     <br /><br />
-                    افزونه فقط دامنه و آیکن تب فعلی را دریافت می‌کند. هیچ URL کامل، محتوای صفحه یا داده شخصی خوانده نمی‌شود.
+                    {t('manualRtlTab.permission.limited')}
                 </DialogContentText>
                 
                 <Box sx={{ mt: 2 }}>
@@ -1095,116 +1098,116 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             }}
                         >
                             <Typography sx={{ fontFamily: 'iranyekan', fontWeight: 500, fontSize: '0.9rem' }}>
-                                اطلاعات بیشتر
+                                {t('manualRtlTab.permission.more')}
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails sx={{ fontFamily: 'iranyekan', pt: 2 }}>
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.85rem', lineHeight: 1.8 }}>
-                                پرمیشن Tabs به افزونه اجازه می‌دهد تب فعلی را شناسایی کرده و قابلیت «راست‌چین دستی» را تنها روی همان صفحه فعال کند. این دسترسی بسیار محدود است و افزونه فقط دو مورد را دریافت می‌کند:
+                                {t('manualRtlTab.permission.intro')}
                             </Typography>
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
-                                ۱) دامنه سایت (Domain / Origin)
+                                {t('manualRtlTab.permission.domainTitle')}
                             </Typography>
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
-                                ۲) آیکن سایت (Favicon)
+                                {t('manualRtlTab.permission.faviconTitle')}
                             </Typography>
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.85rem', lineHeight: 1.8 }}>
-                                هیچ URL کامل، مسیر صفحه، محتوای سایت، فرم‌ها یا داده حساس دریافت نمی‌شود.
+                                {t('manualRtlTab.permission.noSensitive')}
                             </Typography>
                             
                             <Divider sx={{ my: 2 }} />
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600, color: isDarkMode ? '#4caf50' : '#2e7d32' }}>
-                                مواردی که افزونه دریافت می‌کند
+                                {t('manualRtlTab.permission.receivesTitle')}
                             </Typography>
                             
                             <Box sx={{ mb: 2, pl: 2 }}>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    <strong>دامنه سایت (Domain / Origin)</strong><br />
-                                    برای اینکه افزونه بداند کدام سرویس یا سایت باز است و آیا در لیست پشتیبانی قرار دارد.
+                                    <strong>{t('manualRtlTab.permission.domainTitle')}</strong><br />
+                                    {t('manualRtlTab.permission.domainDetail')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    <strong>آیکن سایت (Favicon)</strong><br />
-                                    تنها برای نمایش بهتر و شناسایی سریع سایت در رابط کاربری افزونه.
+                                    <strong>{t('manualRtlTab.permission.faviconTitle')}</strong><br />
+                                    {t('manualRtlTab.permission.faviconDetail')}
                                 </Typography>
                             </Box>
                             
                             <Divider sx={{ my: 2 }} />
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600, color: isDarkMode ? '#f44336' : '#d32f2f' }}>
-                                مواردی که افزونه به آنها دسترسی ندارد
+                                {t('manualRtlTab.permission.deniesTitle')}
                             </Typography>
                             
                             <Box sx={{ mb: 2, pl: 2 }}>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • مسیر کامل URL (مثل /page?id=55)
+                                    • {t('manualRtlTab.permission.deny1')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • محتوای صفحه، پیام‌ها یا متن تایپ‌شده
+                                    • {t('manualRtlTab.permission.deny2')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • کوکی‌ها یا sessionها
+                                    • {t('manualRtlTab.permission.deny3')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • رمزعبورها یا اطلاعات ورود
+                                    • {t('manualRtlTab.permission.deny4')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • تاریخچه مرورگر
+                                    • {t('manualRtlTab.permission.deny5')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • اطلاعات شخصی یا قابل‌شناسایی
+                                    • {t('manualRtlTab.permission.deny6')}
                                 </Typography>
                             </Box>
                             
                             <Divider sx={{ my: 2 }} />
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
-                                نحوه استفاده از داده‌ها
+                                {t('manualRtlTab.permission.usageTitle')}
                             </Typography>
                             
                             <Box sx={{ mb: 2, pl: 2 }}>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • همه پردازش‌ها به‌صورت محلی (Local) روی دستگاه شما انجام می‌شود.
+                                    • {t('manualRtlTab.permission.usage1')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • افزونه تنها هنگام فعال‌سازی راست‌چین یا باز کردن پنل، دامنه و آیکن تب فعلی را می‌خواند.
+                                    • {t('manualRtlTab.permission.usage2')}
                                 </Typography>
                             </Box>
                             
                             <Divider sx={{ my: 2 }} />
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
-                                چرا این دسترسی لازم است؟
+                                {t('manualRtlTab.permission.whyTitle')}
                             </Typography>
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 2, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                Chrome برای اینکه افزونه بتواند سایت فعلی را تشخیص داده و فقط روی همان تب تغییرات ایجاد کند، استفاده از پرمیشن Tabs را ضروری می‌داند. بدون آن، افزونه نمی‌تواند بفهمد کاربر در کدام سایت است و امکان فعال‌سازی کنترل‌شده راست‌چین وجود نخواهد داشت.
+                                {t('manualRtlTab.permission.whyBody')}
                             </Typography>
                             
                             <Divider sx={{ my: 2 }} />
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1.5, fontSize: '0.85rem', fontWeight: 600 }}>
-                                مثال کاربردی
+                                {t('manualRtlTab.permission.exampleTitle')}
                             </Typography>
                             
                             <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 1, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                وقتی وارد example.com می‌شوید و «راست‌چین دستی» را فعال می‌کنید:
+                                {t('manualRtlTab.permission.exampleIntro')}
                             </Typography>
                             
                             <Box sx={{ mb: 2, pl: 2 }}>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • افزونه فقط دامنه (example.com) و آیکن سایت را دریافت می‌کند.
+                                    • {t('manualRtlTab.permission.example1')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • بررسی می‌کند که آیا این سایت در لیست پشتیبانی است.
+                                    • {t('manualRtlTab.permission.example2')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • اگر بله، راست‌چین فقط روی همان تب اعمال می‌شود.
+                                    • {t('manualRtlTab.permission.example3')}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontFamily: 'iranyekan', mb: 0.5, fontSize: '0.8rem', lineHeight: 1.8 }}>
-                                    • هیچ بخش دیگری از صفحه، فرم‌ها یا داده‌های کاربری خوانده نمی‌شود.
+                                    • {t('manualRtlTab.permission.example4')}
                                 </Typography>
                             </Box>
                         </AccordionDetails>
@@ -1213,7 +1216,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
             </DialogContent>
             <DialogActions sx={{ fontFamily: 'iranyekan', direction: 'rtl' }}>
                 <Button onClick={() => setPermissionDialogOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
-                    انصراف
+                    {t('manualRtlTab.permission.cancel')}
                 </Button>
                 <Button 
                     onClick={handleRequestPermission} 
@@ -1226,7 +1229,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                         }
                     }}
                 >
-                    اعطای دسترسی
+                    {t('manualRtlTab.permission.grant')}
                 </Button>
             </DialogActions>
         </Dialog>

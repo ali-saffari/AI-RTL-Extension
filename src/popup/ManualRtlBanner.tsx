@@ -11,6 +11,7 @@ import { ManualRtlSettings } from '../types/manualRtl';
 import SiteActivationSection, { ActiveTabInfoSnapshot } from './SiteActivationSection';
 import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
 import { isFirefoxRuntime } from '../utils/isFirefox';
+import { useI18n } from '../i18n';
 
 interface ManualRtlBannerProps {
     isDarkMode: boolean;
@@ -27,6 +28,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     manualRtlInfoDismissed,
     onManualRtlInfoDismissedChange
 }) => {
+    const { t } = useI18n();
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
     const [isValidHttpPage, setIsValidHttpPage] = React.useState<boolean | null>(null);
     const [showInfoText, setShowInfoText] = React.useState<boolean>(false);
@@ -121,30 +123,29 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
 
     const statusText = React.useMemo(() => {
         if (!manualRtlSettings.manualRtlEnabled) {
-            return 'غیرفعال';
+            return t('manualRtl.inactive');
         }
         if (isFirefoxRuntime()) {
-            return 'فعال برای سایت‌های هوش مصنوعی';
+            return t('manualRtl.activeForAi');
         }
         switch (manualRtlSettings.manualRtlSiteMode) {
             case 'all':
-                return 'فعال برای همه سایت‌ها';
+                return t('manualRtl.activeForAll');
             case 'ai_sites':
-                return 'فعال برای سایت‌های هوش مصنوعی';
+                return t('manualRtl.activeForAi');
             case 'allowed_sites':
-                // return 'فعال برای سایت‌های مجاز';
-                return 'فعال';
+                return t('manualRtl.active');
             case 'ai_and_allowed':
                 return (
                     <>
-                        فعال برای هوش مصنوعی‌ها<br />
-                        و سایت‌های مجاز
+                        {t('manualRtl.activeAiLine')}<br />
+                        {t('manualRtl.activeAllowedLine')}
                     </>
                 );
             default:
-                return 'فعال';
+                return t('manualRtl.active');
         }
-    }, [manualRtlSettings.manualRtlEnabled, manualRtlSettings.manualRtlSiteMode]);
+    }, [manualRtlSettings.manualRtlEnabled, manualRtlSettings.manualRtlSiteMode, t]);
 
     return (
         <>
@@ -190,7 +191,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                                 fontFamily: 'iranyekan'
                             }}
                         >
-                            راست چین دستی
+                            {t('manualRtl.title')}
                         </Typography>
                     </Box>
                     <Box component="span" sx={{ 
@@ -206,7 +207,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         fontSize: '0.5rem',
                         fontWeight: 500
                     }}>
-                        آزمایشی
+                        {t('manualRtl.experimental')}
                     </Box>
                 </Box>
 
@@ -311,7 +312,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                                     fontFamily: 'iranyekan'
                                 }}
                             >
-                                برای این صفحه قابل فعال‌سازی نیست
+                                {t('manualRtl.notActivable')}
                             </Typography>
                         </Box>
                     ) : (
@@ -348,7 +349,19 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
                         }}
                     >
-                        فعال یا غیر فعال بودن <span style={{ fontWeight: 900 }}>راست‌چین دستی</span> هیچ ارتباطی با <span style={{ fontWeight: 900 }}>الگوریتم هوشمند</span> ندارد و دو قابلیت <span style={{ fontWeight: 900 }}>جدا از هم</span> هستند
+                        {(() => {
+                            const boldTerms = [
+                                t('manualRtl.infoManual'),
+                                t('manualRtl.infoAlgorithm'),
+                                t('manualRtl.infoSeparate'),
+                            ];
+                            const pattern = new RegExp(`(${boldTerms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
+                            return t('manualRtl.info').split(pattern).map((part, index) => (
+                                boldTerms.includes(part)
+                                    ? <span key={`info-${index}`} style={{ fontWeight: 900 }}>{part}</span>
+                                    : <React.Fragment key={`info-${index}`}>{part}</React.Fragment>
+                            ));
+                        })()}
                     </Typography>
                     <Button
                         size="small"
@@ -370,7 +383,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             }
                         }}
                     >
-                        متوجه شدم
+                        {t('manualRtl.understood')}
                     </Button>
                 </Box>
                 <Box

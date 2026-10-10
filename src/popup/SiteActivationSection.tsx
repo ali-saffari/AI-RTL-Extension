@@ -15,6 +15,7 @@ import { mdiWeb } from '@mdi/js';
 import { ManualRtlSettings, ManualRtlActiveSite } from '../types/manualRtl';
 import { hasHostPermission } from '../utils/hasHostPermission';
 import { sendRuntimeMessage } from '../utils/chromeMessaging.js';
+import { useI18n } from '../i18n';
 
 interface ActiveTabInfoSnapshot {
     tabId: number | null;
@@ -44,6 +45,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
     faviconSrc,
     displayHostname
 }) => {
+    const { t } = useI18n();
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [permissionModalOpen, setPermissionModalOpen] = React.useState(false);
@@ -54,15 +56,14 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
     const getAllowButtonText = React.useMemo(() => {
         const browserLang = navigator.language || navigator.languages?.[0] || 'en';
         const langCode = browserLang.split('-')[0].toLowerCase();
-        
         if (langCode === 'fa') {
-            return 'اجازه دادن';
-        } else if (langCode === 'ar') {
-            return 'السماح';
-        } else {
-            return 'Allow';
+            return t('shared.allowFa');
         }
-    }, []);
+        if (langCode === 'ar') {
+            return t('shared.allowAr');
+        }
+        return t('shared.allowEn');
+    }, [t]);
     
     // Function to check permission (can be called from anywhere)
     const checkPermission = React.useCallback(async () => {
@@ -247,7 +248,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                     fontFamily: 'iranyekan'
                                 }}
                             >
-                                برای این سایت امکان فعال‌سازی وجود ندارد
+                                {t('siteActivation.unsupported')}
                             </Typography>
                         </Box>
                     ) : (
@@ -292,7 +293,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                         gap: 0.5
                                     }}
                                 >
-                                    <span>برای</span>
+                                    <span>{t('siteActivation.forPrefix')}</span>
                                     <Box
                                         component="span"
                                         sx={{
@@ -332,7 +333,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                         )}
                                         <span style={{ fontWeight: 600 }} title={activeHostname}>{displayHostname}</span>
                                     </Box>
-                                    <span>راست چین دستی فعال شود؟</span>
+                                    <span>{t('siteActivation.activateSuffix')}</span>
                                 </Typography>
                             }
                             labelPlacement="start"
@@ -362,7 +363,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                             fontFamily: 'iranyekan'
                         }}
                     >
-                        صفحه رو رفرش کنید
+                        {t('siteActivation.refresh')}
                     </Typography>
                     <Typography
                         variant="body2"
@@ -374,7 +375,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                             opacity: 0.8
                         }}
                     >
-                        اگر بعد از رفرش باز هم این پیام رو دیدید، یعنی روی این سایت امکان فعال‌سازی وجود ندارد
+                        {t('siteActivation.refreshHint')}
                     </Typography>
                 </Box>
             ) : (
@@ -396,7 +397,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                             fontFamily: 'iranyekan'
                         }}
                     >
-                        سایتی پیدا نشد
+                        {t('siteActivation.noSite')}
                     </Typography>
                 </Box>
             )}
@@ -415,7 +416,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
             }}
         >
             <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
-                نیاز به مجوز
+                {t('siteActivation.needPermission')}
             </DialogTitle>
             <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
                 <Typography 
@@ -423,21 +424,21 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    برای فعال کردن راست‌چین دستی روی <strong>{displayHostname || activeHostname}</strong>، نیاز به مجوز دسترسی به این سایت دارید.
+                    {t('siteActivation.permissionIntro', { site: displayHostname || activeHostname })}
                 </Typography>
                 <Typography 
                     variant="body1" 
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    برای دریافت مجوز، روی دکمه <strong>دریافت مجوز</strong> کلیک کنید. بعد از باز شدن صفحه دریافت مجوز، روی دکمه <strong>"{getAllowButtonText}"</strong> کلیک کنید. پس از تأیید، سایت به صورت خودکار فعال می‌شود.
+                    {t('siteActivation.permissionSteps', { allow: getAllowButtonText })}
                 </Typography>
                 <Typography 
                     variant="body1" 
                     paragraph 
                     sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
                 >
-                    این مجوز برای اعمال تغییرات روی صفحه استفاده می‌شود.
+                    {t('siteActivation.permissionPurpose')}
                 </Typography>
             </DialogContent>
             <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
@@ -447,7 +448,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     color="primary"
                     sx={{ fontFamily: 'iranyekan' }}
                 >
-                    بستن
+                    {t('siteActivation.close')}
                 </Button>
                 <Button 
                     onClick={async () => {
@@ -490,7 +491,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                     color="primary"
                     sx={{ fontFamily: 'iranyekan' }}
                 >
-                    دریافت مجوز
+                    {t('siteActivation.grantPermission')}
                 </Button>
             </DialogActions>
         </Dialog>
