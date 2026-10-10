@@ -46,7 +46,8 @@ interface MenuPreviewProps {
 }
 
 const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first', isExpanded: externalIsExpanded, onExpandedChange }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [internalIsExpanded, setInternalIsExpanded] = React.useState(false);
     const menuRef = React.useRef<HTMLDivElement>(null);
     
@@ -157,7 +158,7 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
                             border: 'none',
                             background: 'none',
                             width: '100%',
-                            textAlign: 'right',
+                            textAlign: contentAlign,
                             fontSize: '12px',
                             fontFamily: 'iranyekan, "IRANYekan", Tahoma, Arial, sans-serif',
                             color: '#374151',
@@ -184,7 +185,7 @@ const MenuPreview: React.FC<MenuPreviewProps> = ({ menuDisplayMode = 'logo_first
                             border: 'none',
                             background: 'none',
                             width: '100%',
-                            textAlign: 'right',
+                            textAlign: contentAlign,
                             fontSize: '12px',
                             fontFamily: 'iranyekan, "IRANYekan", Tahoma, Arial, sans-serif',
                             color: '#374151',
@@ -216,7 +217,8 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
     isDarkMode
 }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [menuExpanded, setMenuExpanded] = React.useState(manualRtlSettings.menuDisplayMode === 'menu_direct');
     const [permissionDialogOpen, setPermissionDialogOpen] = React.useState(false);
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
@@ -1214,7 +1216,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                     </Accordion>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ fontFamily: 'iranyekan', direction: 'rtl' }}>
+            <DialogActions sx={{ fontFamily: 'iranyekan', direction: dir }}>
                 <Button onClick={() => setPermissionDialogOpen(false)} sx={{ fontFamily: 'iranyekan' }}>
                     {t('manualRtlTab.permission.cancel')}
                 </Button>

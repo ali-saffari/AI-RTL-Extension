@@ -1,6 +1,9 @@
 // Copyright utility functions
-import { extensionIconPath, saffariLink, textSaffari } from './constants.js';
+import { extensionIconPath, saffariLink } from './constants.js';
 import { BtnDonate } from './modal.js';
+import { resolveCopyrightTexts, watchCopyrightLanguage } from './copyrightI18n.js';
+
+watchCopyrightLanguage();
 
 /**
  * Adds copyright to target element with custom class and style
@@ -48,8 +51,13 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         // Check if AsBox class already exists on the site
         if (AQ('.AsBox').length === 0) {
             const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(extensionIconPath) : extensionIconPath;
+            const { hope, donate, dir } = await resolveCopyrightTexts();
             
-            $element.append(`<div class="AsRtl FontSet AsBox ${customClass}" style="${customStyle} ">
+            const boxClass = dir === 'ltr' ? 'AsLtr' : 'AsRtl';
+            const boxAlign = dir === 'ltr'
+                ? 'direction:ltr !important;text-align:left !important;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;'
+                : '';
+            $element.append(`<div class="${boxClass} FontSet AsBox ${customClass}" dir="${dir}" style="${customStyle} ${boxAlign}">
 
                     <a href="${saffariLink}" target="_blank">
 
@@ -57,9 +65,9 @@ export async function addCopyright($targetElement, customClass = '', customStyle
 
 
 
-                    ${textSaffari}
+                    <span class="AsHope" dir="${dir}">${hope}</span>
 
-${BtnDonate()}
+${BtnDonate(donate, dir)}
 
 
 

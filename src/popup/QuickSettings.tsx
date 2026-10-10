@@ -159,7 +159,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     extensionEnabled = true,
     onEnableExtension,
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const ALGORITHMS = getAlgorithms(t);
     const TITLE_MODES = getTitleModes(t);
     const THEME_MODES = getThemeModes(t);
@@ -346,7 +347,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     };
 
     return (
-        <Box className="quick-settings" dir="rtl">
+        <Box className="quick-settings" dir={dir}>
             {onClose ? (
                 <Box className="quick-settings-header">
                     <Typography
@@ -620,7 +621,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Box>
                         <FormControl size="small" disabled={controlsDisabled} sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
                             <Select
-                                dir="rtl"
+                                dir={dir}
                                 className="quick-settings-select"
                                 value={rtlAlgorithm}
                                 disabled={controlsDisabled}
@@ -646,7 +647,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     <MenuItem
                                         key={algo.id}
                                         value={algo.id}
-                                        dir="rtl"
+                                        dir={dir}
                                         className="quick-settings-algo-item"
                                         sx={{
                                             fontFamily: 'iranyekan',
@@ -654,8 +655,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                             alignItems: 'flex-start',
                                             py: 1.1,
                                             whiteSpace: 'normal',
-                                            textAlign: 'right',
-                                            direction: 'rtl',
+                                            textAlign: contentAlign,
+                                            direction: dir,
                                         }}
                                     >
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
@@ -739,7 +740,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             </Box>
                             <FormControl size="small" disabled={controlsDisabled} sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
                                 <Select
-                                    dir="rtl"
+                                    dir={dir}
                                     className="quick-settings-select"
                                     value={mixedTitleDisplayMode}
                                     disabled={controlsDisabled}
@@ -762,14 +763,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         <MenuItem
                                             key={mode.id}
                                             value={mode.id}
-                                            dir="rtl"
+                                            dir={dir}
                                             sx={{
                                                 fontFamily: 'iranyekan',
                                                 fontSize: '0.78rem',
                                                 py: 0.75,
                                                 whiteSpace: 'nowrap',
-                                                textAlign: 'right',
-                                                direction: 'rtl',
+                                                textAlign: contentAlign,
+                                                direction: dir,
                                             }}
                                         >
                                             {mode.title}
@@ -908,7 +909,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Box>
                     <FormControl size="small" disabled={controlsDisabled} sx={{ width: 136, flex: '0 0 136px', minWidth: 0 }}>
                         <Select
-                            dir="rtl"
+                            dir={dir}
                             className="quick-settings-select"
                             value={selectedFont}
                             disabled={controlsDisabled}
@@ -938,13 +939,13 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         >
                             <MenuItem
                                 value={NONE_FONT_ID}
-                                dir="rtl"
+                                dir={dir}
                                 sx={{
                                     fontFamily: 'iranyekan',
                                     fontSize: '0.82rem',
                                     py: 1,
-                                    textAlign: 'right',
-                                    direction: 'rtl',
+                                    textAlign: contentAlign,
+                                    direction: dir,
                                 }}
                             >
                                 {NONE_FONT_TITLE}
@@ -958,15 +959,15 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 <MenuItem
                                     key={font.id}
                                     value={font.id}
-                                    dir="rtl"
+                                    dir={dir}
                                     sx={{
                                         fontFamily: getFontFamilyCssValue(font),
                                         fontSize: '0.9rem',
                                         justifyContent: 'space-between',
                                         gap: 1,
                                         py: 1,
-                                        textAlign: 'right',
-                                        direction: 'rtl',
+                                        textAlign: contentAlign,
+                                        direction: dir,
                                     }}
                                 >
                                     <span>{font.title}</span>
@@ -1066,7 +1067,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         <Typography className="quick-settings-label">{t('quickSettings.theme')}</Typography>
                         <FormControl size="small" disabled={controlsDisabled} sx={{ width: '6.5rem', minWidth: '6.5rem', maxWidth: '6.5rem', flexShrink: 0 }}>
                             <Select
-                                dir="rtl"
+                                dir={dir}
                                 className="quick-settings-select"
                                 value={isDarkMode ? 'dark' : 'light'}
                                 disabled={controlsDisabled}
@@ -1113,12 +1114,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     <MenuItem
                                         key={mode.id}
                                         value={mode.id}
-                                        dir="rtl"
+                                        dir={dir}
                                         sx={{
                                             fontFamily: 'iranyekan',
                                             fontSize: '0.82rem',
-                                            textAlign: 'right',
-                                            direction: 'rtl',
+                                            textAlign: contentAlign,
+                                            direction: dir,
                                             width: '100%',
                                         }}
                                     >
@@ -1269,14 +1270,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     zIndex: 1500,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontSize: '1rem',
                         fontWeight: 600,
                         padding: '16px 16px 8px 16px',
@@ -1285,7 +1286,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 >
                     {infoAlgo?.title}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     {infoAlgo ? (
                         <>
                             <Typography
@@ -1344,14 +1345,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     zIndex: 1500,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontSize: '1rem',
                         fontWeight: 600,
                         padding: '16px 16px 8px 16px',
@@ -1360,7 +1361,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 >
                     {t('quickSettings.titleModeLabel')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.8rem',
@@ -1418,14 +1419,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     zIndex: 1500,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontSize: '1rem',
                         fontWeight: 600,
                         padding: '16px 16px 8px 16px',
@@ -1434,7 +1435,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 >
                     اصلاح متن‌های ترکیبی
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.85rem',
@@ -1477,14 +1478,14 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     zIndex: 1500,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontSize: '1rem',
                         fontWeight: 600,
                         padding: '16px 16px 8px 16px',
@@ -1493,7 +1494,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 >
                     {t('quickSettings.applyToCodeTitle')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.85rem',
@@ -1537,21 +1538,21 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     }
                 }}
             >
-                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
                     {t('quickSettings.tabPermissionTitle')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: dir === 'rtl' ? 'justify' : 'left', padding: '8px 16px' }}>
                     <Typography
                         variant="body1"
                         paragraph
-                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: dir === 'rtl' ? 'justify' : 'left', lineHeight: 1.8 }}
                     >
                         {t('quickSettings.tabPermissionBody')}
                     </Typography>
                     <Typography
                         variant="body1"
                         paragraph
-                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: dir === 'rtl' ? 'justify' : 'left', lineHeight: 1.8 }}
                     >
                         {t('quickSettings.tabPermissionPrivacy')}
                     </Typography>

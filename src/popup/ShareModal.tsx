@@ -57,7 +57,8 @@ interface ShareModalProps {
 }
 
 const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [copied, setCopied] = React.useState(false);
     const [nativeShared, setNativeShared] = React.useState(false);
     const shareText = t('share.text');

@@ -10,7 +10,8 @@ interface ManualRTLGuideProps {
 
 export const ManualRTLGuide: React.FC<ManualRTLGuideProps> = ({ image1Url, image2Url, image3Url }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     
     return (
         <>

@@ -74,7 +74,8 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
     onFontScaleCommit
 }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = React.useState('');
@@ -377,7 +378,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         {/* {t('algorithm.flipLabel')} */}
                         <Grid item xs={12} sx={{ order: 4 }}>
                             <Card elevation={2}>
-                                <CardContent dir="rtl">
+                                <CardContent dir={dir}>
                                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, mb: 0.5 }}>
                                             <Typography variant="h6" sx={{ 
@@ -442,7 +443,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         {/* {t('algorithm.codeDialogTitle')} */}
                         <Grid item xs={12} sx={{ order: 5 }}>
                             <Card elevation={2}>
-                                <CardContent dir="rtl">
+                                <CardContent dir={dir}>
                                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
                                             <Typography variant="h6" sx={{ 
@@ -526,7 +527,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
 
                         <Grid item xs={12} sx={{ order: 6 }}>
                             <Card elevation={2}>
-                                <CardContent dir="rtl">
+                                <CardContent dir={dir}>
                                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
                                             <Typography variant="h6" sx={{ 
@@ -605,7 +606,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         {/* Title display mode */}
                         <Grid item xs={12} sx={{ order: 2 }}>
                             <Card elevation={2}>
-                                <CardContent dir="rtl" sx={{ position: 'relative' }}>
+                                <CardContent dir={dir} sx={{ position: 'relative' }}>
                                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                                         <Typography variant="h6" sx={{ 
                                             fontWeight: 600, 
@@ -997,7 +998,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         backgroundColor: theme.palette.background.paper,
                         color: theme.palette.text.primary,
                         borderRadius: 2,
-                        direction: 'rtl'
+                        direction: dir
                     }
                 }}
             >
@@ -1074,7 +1075,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                         backgroundColor: theme.palette.background.paper,
                         color: theme.palette.text.primary,
                         borderRadius: 2,
-                        direction: 'rtl'
+                        direction: dir
                     }
                 }}
             >

@@ -46,7 +46,8 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
     isDarkMode
 }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const previewStyleId = 'ai-rtl-options-font-preview';
     const noneFontTitle = t('fonts.none');
@@ -99,7 +100,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
 
                 <FormControl fullWidth size="small">
                     <Select
-                        dir="rtl"
+                        dir={dir}
                         value={selectedFont}
                         onChange={handleChange}
                         renderValue={(value) => {
@@ -138,13 +139,13 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                     >
                         <MenuItem
                             value={NONE_FONT_ID}
-                            dir="rtl"
+                            dir={dir}
                             sx={{
                                 fontFamily: 'iranyekan',
                                 fontSize: '0.9rem',
                                 py: 1.1,
-                                textAlign: 'right',
-                                direction: 'rtl',
+                                textAlign: contentAlign,
+                                direction: dir,
                             }}
                         >
                             {noneFontTitle}
@@ -158,13 +159,13 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                             <MenuItem
                                 key={font.id}
                                 value={font.id}
-                                dir="rtl"
+                                dir={dir}
                                 sx={{
                                     fontFamily: getFontFamilyCssValue(font),
                                     fontSize: '0.95rem',
                                     py: 1.1,
-                                    textAlign: 'right',
-                                    direction: 'rtl',
+                                    textAlign: contentAlign,
+                                    direction: dir,
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     gap: 1,

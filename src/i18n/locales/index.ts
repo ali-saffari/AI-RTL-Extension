@@ -4,8 +4,11 @@ import { faMessages, MessageKey, Messages } from './fa';
 
 export type LocaleCode = 'fa' | 'en' | 'ar';
 
-/** UI chrome stays RTL for every language so control positions never flip. */
-export type TextDirection = 'rtl';
+/**
+ * Content text direction. Popup chrome (header controls, left side menus)
+ * stays fixed via CSS shell; only readable content follows this dir.
+ */
+export type TextDirection = 'rtl' | 'ltr';
 
 export type LocaleDefinition = {
     code: LocaleCode;
@@ -20,11 +23,11 @@ export type LocaleDefinition = {
 /**
  * Register a new language here: add its code to LocaleCode, add a messages
  * file that satisfies Messages, then append one entry to this list.
- * Persian stays first and is the default. Layout direction is always RTL.
+ * Persian stays first and is the default.
  */
 export const locales: readonly LocaleDefinition[] = [
     { code: 'fa', nativeName: 'فارسی', shortLabel: 'فا', dir: 'rtl', messages: faMessages },
-    { code: 'en', nativeName: 'English', shortLabel: 'EN', dir: 'rtl', messages: enMessages },
+    { code: 'en', nativeName: 'English', shortLabel: 'EN', dir: 'ltr', messages: enMessages },
     { code: 'ar', nativeName: 'العربية', shortLabel: 'ع', dir: 'rtl', messages: arMessages },
 ];
 

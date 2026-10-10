@@ -23,7 +23,8 @@ const firefoxDefaults = isFirefoxRuntime();
 
 const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     
     // Map hash to tab index
     const hashToTabIndex: { [key: string]: number } = {
@@ -362,7 +363,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
         <Box sx={{ width: '100%' }}>
             {/* Tabs */}
             <Box sx={{ 
-                // direction: 'rtl',
+                // direction: dir,
                 borderBottom: 1, 
                 borderColor: 'divider',
                 mb: 3

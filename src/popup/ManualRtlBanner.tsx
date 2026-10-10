@@ -28,7 +28,8 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
     manualRtlInfoDismissed,
     onManualRtlInfoDismissedChange
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [activeTabInfo, setActiveTabInfo] = React.useState<ActiveTabInfoSnapshot | null>(null);
     const [isValidHttpPage, setIsValidHttpPage] = React.useState<boolean | null>(null);
     const [showInfoText, setShowInfoText] = React.useState<boolean>(false);

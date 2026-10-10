@@ -150,7 +150,7 @@ const lightTheme = createTheme({
 });
 
 function OptionsApp() {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
     const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load theme preference from storage
@@ -191,6 +191,7 @@ function OptionsApp() {
                 <CssBaseline />
                 <Box 
                     dir="rtl"
+                    data-content-dir={dir}
                     sx={{ 
                         minHeight: '100vh',
                         backgroundColor: currentTheme.palette.background.default,
@@ -270,7 +271,7 @@ function OptionsApp() {
                     </AppBar>
 
                     {/* Main Content */}
-                    <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Container maxWidth="xl" dir={dir} sx={{ py: 4 }}>
                         <SettingsContent isDarkMode={isDarkMode} />
                     </Container>
                 </Box>

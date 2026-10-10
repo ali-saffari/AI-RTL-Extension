@@ -23,7 +23,8 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
     visible,
     isDarkMode,
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [modalOpen, setModalOpen] = React.useState(false);
     const [dismissed, setDismissed] = React.useState(false);
     const [storageReady, setStorageReady] = React.useState(false);
@@ -82,7 +83,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                 <Box
                     component="button"
                     type="button"
-                    dir="rtl"
+                    dir={dir}
                     className="site-permissions-hint-button"
                
                     onClick={() => setModalOpen(true)}
@@ -114,7 +115,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         <path d={mdiInformationOutline} />
                     </SvgIcon>
                     <Typography
-                        style={{ direction: 'rtl', textAlign: 'right' }}
+                        style={{ direction: dir, textAlign: contentAlign }}
                         sx={{
                             flex: 1,
                             minWidth: 0,
@@ -142,14 +143,14 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                     zIndex: 1600,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontFamily: 'iranyekan',
                         fontSize: '1.05rem',
                         fontWeight: 700,
@@ -161,7 +162,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                 >
                     {t('sitePermissions.title')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: dir === 'rtl' ? 'justify' : 'left', padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.88rem',

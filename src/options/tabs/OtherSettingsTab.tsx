@@ -62,7 +62,8 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     onAnalyticsChange
 }) => {
     const theme = useTheme();
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const manifest = chrome.runtime.getManifest();
     const author = typeof manifest.author === 'string' ? manifest.author : (manifest.author?.email || '');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -616,10 +617,10 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
             maxWidth="sm"
             fullWidth
         >
-            <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontFamily: 'iranyekan' }}>
+            <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontFamily: 'iranyekan' }}>
                 {t('otherSettings.tabPermissionTitle')}
             </DialogTitle>
-            <DialogContent style={{ direction: 'rtl', textAlign: 'justify' }}>
+            <DialogContent style={{ direction: dir, textAlign: 'justify' }}>
                 <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8 }}>
                     {t('otherSettings.tabPermissionBody')}
                 </Typography>

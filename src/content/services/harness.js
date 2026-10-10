@@ -2,8 +2,11 @@
 // Same targets as the Harness plugin: markdown, the composer, a user stack
 // whose class ends with _userStack, and text fields. Checkboxes are skipped.
 import { applyRtlToContainer, applyRtlToElement, detectTextDirection, getAnalyzableText } from '../utils/directionUtils/index.js';
-import { saffariLink, textSaffari } from '../utils/constants.js';
+import { saffariLink } from '../utils/constants.js';
 import { BtnDonate } from '../utils/modal.js';
+import { getCopyrightTexts, watchCopyrightLanguage } from '../utils/copyrightI18n.js';
+
+watchCopyrightLanguage();
 import { setHarnessFontsSuppressed } from '../utils/applySelectedFont.js';
 import {
     clearUntrackedTimeout,
@@ -550,7 +553,7 @@ function removeHarnessCopyright() {
 function addHarnessCopyright() {
     if (typeof AQ !== 'function' || !chrome.runtime?.id || !document.body) return;
     const current = session;
-    const finish = (supportHide) => {
+    const finish = (supportHide, locale) => {
         if (current !== session || !engaged || !chromeShouldApply()) return;
         if (supportHide) {
             removeHarnessCopyright();
@@ -562,20 +565,26 @@ function addHarnessCopyright() {
         const $host = findDockParent();
         if (!$host.length) return;
         const logo = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
-        $host.append(`<div class="AsRtl FontSet AsBox AsBoxB ${COPYRIGHT_BOX}" data-ai-rtl-engine="chrome">
+        const { hope, donate } = getCopyrightTexts(locale);
+        const textDir = locale === 'en' ? 'ltr' : 'rtl';
+        const boxClass = textDir === 'ltr' ? 'AsLtr' : 'AsRtl';
+        const boxAlign = textDir === 'ltr'
+            ? 'direction:ltr !important;text-align:left !important;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;'
+            : '';
+        $host.append(`<div class="${boxClass} FontSet AsBox AsBoxB ${COPYRIGHT_BOX}" dir="${textDir}" data-ai-rtl-engine="chrome" style="${boxAlign}">
             <a href="${saffariLink}" target="_blank" rel="noopener noreferrer">
                 <img src="${logo}" alt="AI RTL" width="22" height="22">
             </a>
-            ${textSaffari}
-            ${BtnDonate()}
+            <span class="AsHope" dir="${textDir}">${hope}</span>
+            ${BtnDonate(donate, textDir)}
         </div>`);
     };
     try {
-        chrome.storage.sync.get(['supportHide'], (data) => {
-            finish(data?.supportHide === true);
+        chrome.storage.sync.get(['supportHide', 'uiLanguage'], (data) => {
+            finish(data?.supportHide === true, data?.uiLanguage);
         });
     } catch {
-        finish(false);
+        finish(false, 'fa');
     }
 }
 

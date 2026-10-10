@@ -26,7 +26,8 @@ interface ExtensionSettingsProps {
 const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
     isDarkMode
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const theme = useTheme();
     const [autoUpdate, setAutoUpdate] = React.useState(true);
     const [notifications, setNotifications] = React.useState(true);

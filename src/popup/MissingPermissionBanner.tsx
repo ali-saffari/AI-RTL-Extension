@@ -78,7 +78,8 @@ interface MissingPermissionBannerProps {
 }
 
 const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDarkMode }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [missingServices, setMissingServices] = useState<typeof services>([]);
     const [enablingAll, setEnablingAll] = useState(false);
     const [whyOpen, setWhyOpen] = useState(false);
@@ -174,7 +175,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
 
     return (
         <Box
-            dir="rtl"
+            dir={dir}
             sx={{
                 position: 'relative',
                 zIndex: 0,
@@ -187,7 +188,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 borderTop: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
                 borderBottom: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
             }}
-            style={{ direction: 'rtl' }}
+            style={{ direction: dir }}
         >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, mb: 1 }}>
                 <SvgIcon sx={{ fontSize: '1.05rem', color: isDarkMode ? '#00e9ff' : '#0067A5' }}>
@@ -299,7 +300,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 1.5,
-                    direction: 'rtl',
+                    direction: dir,
                 }}
             >
                 <Box
@@ -360,15 +361,15 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     zIndex: 1600,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                         maxHeight: '85vh',
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontFamily: 'iranyekan',
                         fontSize: '1.05rem',
                         fontWeight: 700,
@@ -381,7 +382,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     {t('missingPermission.enableTitle')}
                 </DialogTitle>
                 <DialogContent
-                    style={{ direction: 'rtl', padding: '8px 16px' }}
+                    style={{ direction: dir, padding: '8px 16px' }}
                     sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
                 >
                     <Box
@@ -395,7 +396,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                         }}
                     >
                         <Typography
-                            style={{ textAlign: 'justify' }}
+                            style={{ textAlign: dir === 'rtl' ? 'justify' : 'left' }}
                             sx={{
                                 fontSize: '0.82rem',
                                 fontFamily: 'iranyekan',
@@ -408,7 +409,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                             {t('missingPermission.enableSteps', { allow: allowButtonText })}
                         </Typography>
                         <Typography
-                            style={{ textAlign: 'justify' }}
+                            style={{ textAlign: dir === 'rtl' ? 'justify' : 'left' }}
                             sx={{
                                 fontSize: '0.82rem',
                                 fontFamily: 'iranyekan',
@@ -540,14 +541,14 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                     zIndex: 1600,
                     '& .MuiDialog-paper': {
                         padding: '8px',
-                        direction: 'rtl',
+                        direction: dir,
                     },
                 }}
             >
                 <DialogTitle
                     style={{
-                        direction: 'rtl',
-                        textAlign: 'right',
+                        direction: dir,
+                        textAlign: contentAlign,
                         fontFamily: 'iranyekan',
                         fontSize: '1.05rem',
                         fontWeight: 700,
@@ -559,7 +560,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 >
                     {t('missingPermission.whyTitle')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: dir === 'rtl' ? 'justify' : 'left', padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.88rem',

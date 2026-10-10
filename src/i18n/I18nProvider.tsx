@@ -73,10 +73,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     const active = getLocale(locale);
 
     React.useEffect(() => {
-        document.documentElement.lang = active.code;
-        // Keep the popup/options chrome RTL so English never reshuffles the layout.
-        document.documentElement.dir = 'rtl';
-    }, [active.code]);
+        const root = document.documentElement;
+        root.lang = active.code;
+        // Shell stays RTL so side menus and header chrome keep their places.
+        root.dir = 'rtl';
+        root.setAttribute('data-content-dir', active.dir);
+        document.body.setAttribute('data-content-dir', active.dir);
+    }, [active.code, active.dir]);
 
     const value = React.useMemo<I18nContextValue>(() => ({
         locale: active.code,

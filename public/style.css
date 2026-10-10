@@ -275,6 +275,40 @@ textarea.AsRtl {
     border: none;
 }
 
+.AsBox.AsLtr {
+    direction: ltr !important;
+    text-align: left !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.AsBox.AsLtr > a:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    vertical-align: middle;
+}
+
+.AsBox.AsLtr img {
+    display: block;
+    margin: -3px 0 0;
+    vertical-align: middle;
+}
+
+.AsBox.AsLtr .AsHope,
+.AsBox.AsLtr a {
+    vertical-align: middle;
+}
+
+.AsBox.AsLtr .AsSBtn {
+    margin-right: 0;
+    margin-left: 0;
+}
+
 
 .items-center .group.w-full .markdown.prose {
     width: 100%;
@@ -1169,6 +1203,24 @@ a.AsSBtn.AsDonate {
     color: #888888;
     transform: scale(0.8);
     direction: rtl;
+}
+
+.AsBoxHarness.AsLtr {
+    direction: ltr !important;
+    text-align: left !important;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.AsBoxHarness.AsLtr > a:first-child {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+}
+
+.AsBoxHarness.AsLtr img {
+    display: block;
+    margin: -3px 0 0;
 }
 
 .AsBoxHarness img {

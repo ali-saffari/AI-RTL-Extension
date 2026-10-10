@@ -6,7 +6,8 @@ import { isFirefoxRuntime } from '../utils/isFirefox';
 import { useI18n } from '../i18n';
 
 const ChangesList: React.FC = () => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(

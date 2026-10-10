@@ -56,13 +56,13 @@ export default function LanguageMenuButton({ compact = false }: LanguageMenuButt
                 onClose={() => setAnchorEl(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                MenuListProps={{ dir: 'rtl' }}
-                PaperProps={{ dir: 'rtl' }}
+                MenuListProps={{ dir: current.dir }}
+                PaperProps={{ dir: current.dir }}
             >
                 {locales.map((item) => (
                     <MenuItem
                         key={item.code}
-                        dir="rtl"
+                        dir={item.dir}
                         selected={item.code === locale}
                         onClick={() => {
                             setLocale(item.code);
@@ -73,7 +73,7 @@ export default function LanguageMenuButton({ compact = false }: LanguageMenuButt
                             fontSize: '0.9rem',
                             minWidth: 140,
                             justifyContent: 'flex-start',
-                            textAlign: 'right',
+                            textAlign: item.dir === 'rtl' ? 'right' : 'left',
                         }}
                     >
                         {item.nativeName}

@@ -51,7 +51,8 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     focusSiteKey = null,
     focusNonce = 0,
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [settings, setSettings] = React.useState<SiteSettingsMap>(
         () => normalizeSiteSettings(undefined) as SiteSettingsMap
     );

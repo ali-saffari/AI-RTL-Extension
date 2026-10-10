@@ -187,7 +187,7 @@ const lightTheme = createTheme({
 });
 
 function App() {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
     const storePageLinkText = getStorePageLinkText({
         chrome: t('share.storePageChrome'),
         firefox: t('share.storePageFirefox'),
@@ -796,7 +796,7 @@ function App() {
         <CacheProvider value={emotionCache}>
             <ThemeProvider theme={currentTheme}>
                 <CssBaseline />
-                <div className="App" dir="rtl" >
+                <div className="App" dir="rtl" data-content-dir={dir}>
                 <Paper 
                     className="popup-header"
                     elevation={0} 
@@ -981,7 +981,7 @@ function App() {
 
                 <div className="popup-columns">
                 <div className="popup-main" ref={mainScrollRef}>
-                <div className="popup-main-inner">
+                <div className="popup-main-inner" dir={dir}>
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#dae8f1' }}>
@@ -1346,7 +1346,7 @@ function App() {
                 <div className="popup-side-slot">
                 <aside
                     className={`popup-side-menu${settingsHintActive ? ' popup-side-menu-hint' : ''}`}
-                    dir="rtl"
+                    dir={dir}
                     aria-label={t('side.menu')}
                     onMouseEnter={() => {
                         if (!hoverExpandLocked) {

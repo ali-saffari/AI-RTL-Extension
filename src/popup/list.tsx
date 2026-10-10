@@ -228,7 +228,8 @@ export default function ServiceList({
     extensionEnabled = true,
     onEnableExtension,
 }: ServiceListProps) {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const SERVICE_CATEGORIES = getServiceCategories(t);
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
@@ -1110,11 +1111,11 @@ export default function ServiceList({
                     </ListItemButton>
                 </ListItem>
                 {isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key) && (
-                    <Box sx={{ px: 2, py: 1.5 }} style={{ direction: 'rtl' }}>
+                    <Box sx={{ px: 2, py: 1.5 }} style={{ direction: dir }}>
                         <Paper
                             elevation={0}
-                            dir="rtl"
-                            style={{ direction: 'rtl', textAlign: 'right' }}
+                            dir={dir}
+                            style={{ direction: dir, textAlign: contentAlign }}
                             sx={{
                                 backgroundColor: isDarkMode ? 'rgba(211, 47, 47, 0.2)' : 'rgba(211, 47, 47, 0.1)',
                                 border: `1px solid ${isDarkMode ? 'rgba(211, 47, 47, 0.4)' : 'rgba(211, 47, 47, 0.3)'}`,
@@ -1123,8 +1124,8 @@ export default function ServiceList({
                             }}
                         >
                             <Typography
-                                dir="rtl"
-                                style={{ direction: 'rtl', textAlign: 'right' }}
+                                dir={dir}
+                                style={{ direction: dir, textAlign: contentAlign }}
                                 sx={{
                                     fontSize: '0.80rem',
                                     color: isDarkMode ? '#ffcdd2' : '#c62828',
@@ -1187,7 +1188,7 @@ export default function ServiceList({
                                     }
                                 }}
                                 placeholder={t('list.searchPlaceholder')}
-                                dir="rtl"
+                                dir={dir}
                                 className="service-list-search-input"
                             />
                         ) : (
@@ -1225,7 +1226,7 @@ export default function ServiceList({
                 }
             >
                 {filteredServices.length === 0 && (
-                    <Box sx={{ py: 4, px: 2, textAlign: 'center' }} style={{ direction: 'rtl' }}>
+                    <Box sx={{ py: 4, px: 2, textAlign: 'center' }} style={{ direction: dir }}>
                         <Typography sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
                             {t('list.noResults')}
                         </Typography>
@@ -1252,7 +1253,7 @@ export default function ServiceList({
                     <ListItem
                         disablePadding
                         className="service-list-pinned service-list-disabled-banner"
-                        style={{ direction: 'rtl' }}
+                        style={{ direction: dir }}
                         sx={{
                             backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                             boxShadow: 'none',
@@ -1279,7 +1280,7 @@ export default function ServiceList({
                                     ? '2px solid rgba(255, 138, 138, 0.75)'
                                     : '2px solid rgba(239, 83, 80, 0.75)',
                                 borderRadius: 0,
-                                direction: 'rtl',
+                                direction: dir,
                             }}
                         >
                             <Button
@@ -1342,7 +1343,7 @@ export default function ServiceList({
                     <React.Fragment key={group.id}>
                         <ListSubheader
                             component="div"
-                            style={{ direction: 'rtl' }}
+                            style={{ direction: dir }}
                             sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1427,24 +1428,23 @@ export default function ServiceList({
                 onClose={() => setHelpModalOpen(false)}
                 maxWidth="sm"
                 fullWidth
-                sx={{
-                    '& .MuiDialog-paper': {
-                        padding: '8px'
-                    }
+                PaperProps={{
+                    dir,
+                    style: { direction: dir, padding: 8 },
                 }}
             >
-                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
                     {t('list.aboutService', { name: selectedService?.name ?? '' })}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography 
                         variant="body1" 
                         paragraph 
-                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify' }}
+                        style={{ direction: dir, textAlign: contentAlign, fontSize: '0.80rem', fontWeight: 300, marginBottom: 11 }}
                         dangerouslySetInnerHTML={{ __html: (selectedService && SERVICE_HELP_KEYS[selectedService.key] ? t(SERVICE_HELP_KEYS[selectedService.key]!) : selectedService?.helpText) || '' }}
                     />
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                <DialogActions style={{ direction: dir, justifyContent: 'flex-end', padding: '8px 16px 16px 16px' }}>
                     <Button 
                         onClick={() => setHelpModalOpen(false)}
                         variant="contained"
@@ -1461,40 +1461,39 @@ export default function ServiceList({
                 onClose={() => setPermissionModalOpen(false)}
                 maxWidth="sm"
                 fullWidth
-                sx={{
-                    '& .MuiDialog-paper': {
-                        padding: '8px'
-                    }
+                PaperProps={{
+                    dir,
+                    style: { direction: dir, padding: 8 },
                 }}
             >
-                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
                     {t('list.needPermission')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography 
                         variant="body1" 
                         paragraph 
-                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                        style={{ direction: dir, textAlign: contentAlign, fontSize: '0.80rem', fontWeight: 300, marginBottom: 11, lineHeight: 1.8 }}
                     >
                         {t('list.permissionIntro', { name: permissionServiceName })}
                     </Typography>
                     <Typography 
                         variant="body1" 
                         paragraph 
-                        sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                        style={{ direction: dir, textAlign: contentAlign, fontSize: '0.80rem', fontWeight: 300, marginBottom: 11, lineHeight: 1.8 }}
                     >
                         {t('list.permissionSteps', { allow: allowButtonText })}
                     </Typography>
                     <Typography 
-                    variant="body1" 
-                    paragraph 
-                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
-                >
-                    {t('list.permissionPurpose')}
-                </Typography>
+                        variant="body1" 
+                        paragraph 
+                        style={{ direction: dir, textAlign: contentAlign, fontSize: '0.80rem', fontWeight: 300, marginBottom: 11, lineHeight: 1.8 }}
+                    >
+                        {t('list.permissionPurpose')}
+                    </Typography>
                 </DialogContent>
-                <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
-                <Button 
+                <DialogActions style={{ direction: dir, justifyContent: 'flex-end', padding: '8px 16px 16px 16px', gap: 8 }}>
+                    <Button 
                         onClick={() => setPermissionModalOpen(false)}
                         variant="text"
                         color="primary"
@@ -1542,7 +1541,6 @@ export default function ServiceList({
                     >
                         {t('shared.grantPermission')}
                     </Button>
-                
                 </DialogActions>
             </Dialog>
         </>

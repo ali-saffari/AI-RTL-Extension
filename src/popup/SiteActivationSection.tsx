@@ -45,7 +45,8 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
     faviconSrc,
     displayHostname
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [activeSites, setActiveSites] = React.useState<ManualRtlActiveSite[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [permissionModalOpen, setPermissionModalOpen] = React.useState(false);
@@ -415,28 +416,28 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                 }
             }}
         >
-            <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+            <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
                 {t('siteActivation.needPermission')}
             </DialogTitle>
-            <DialogContent style={{ direction: 'rtl', textAlign: 'justify', padding: '8px 16px' }}>
+            <DialogContent style={{ direction: dir, textAlign: dir === 'rtl' ? 'justify' : 'left', padding: '8px 16px' }}>
                 <Typography 
                     variant="body1" 
                     paragraph 
-                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: dir === 'rtl' ? 'justify' : 'left', lineHeight: 1.8 }}
                 >
                     {t('siteActivation.permissionIntro', { site: displayHostname || activeHostname })}
                 </Typography>
                 <Typography 
                     variant="body1" 
                     paragraph 
-                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: dir === 'rtl' ? 'justify' : 'left', lineHeight: 1.8 }}
                 >
                     {t('siteActivation.permissionSteps', { allow: getAllowButtonText })}
                 </Typography>
                 <Typography 
                     variant="body1" 
                     paragraph 
-                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: 'justify', lineHeight: 1.8 }}
+                    sx={{ fontSize: '0.80rem', fontWeight: 300, marginBottom: '11px', textAlign: dir === 'rtl' ? 'justify' : 'left', lineHeight: 1.8 }}
                 >
                     {t('siteActivation.permissionPurpose')}
                 </Typography>

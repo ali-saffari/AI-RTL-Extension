@@ -1488,3 +1488,62 @@ body[data-theme="light"] .popup-sponsors-note-text {
     text-align: right !important;
 }
 
+/* English content is LTR, but popup chrome (header, left menus) stays put. */
+html[data-content-dir="ltr"] .popup-main-inner,
+html[data-content-dir="ltr"] .quick-settings,
+html[data-content-dir="ltr"] .popup-side-menu,
+html[data-content-dir="ltr"] .popup-disabled-overlay-card,
+html[data-content-dir="ltr"] .install-hint-banner,
+html[data-content-dir="ltr"] .install-hint-banner-toggle,
+html[data-content-dir="ltr"] .install-hint-banner-title,
+html[data-content-dir="ltr"] .site-permissions-hint,
+html[data-content-dir="ltr"] .site-permissions-hint-button,
+html[data-content-dir="ltr"] .popup-share-dialog-paper,
+html[data-content-dir="ltr"] .popup-share-content,
+html[data-content-dir="ltr"] .popup-share-desc,
+html[data-content-dir="ltr"] .popup-share-preview {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+html[data-content-dir="ltr"] .popup-side-item,
+html[data-content-dir="ltr"] .popup-side-item-label {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+html[data-content-dir="ltr"] .quick-settings-select .MuiSelect-select,
+html[data-content-dir="ltr"] .quick-settings-select-menu,
+html[data-content-dir="ltr"] .quick-settings-select-menu .MuiMenuItem-root {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+html[data-content-dir="ltr"] .popup-side-menu {
+    text-align: left;
+}
+
+/* Keep sponsor box layout (slots/CTA order) fixed; only flip text alignment. */
+html[data-content-dir="ltr"] .popup-sponsors-caption,
+html[data-content-dir="ltr"] .popup-sponsors-note,
+html[data-content-dir="ltr"] .popup-sponsors-note-line,
+html[data-content-dir="ltr"] .popup-sponsors-note-social {
+    direction: ltr;
+    text-align: left;
+}
+
+html[data-content-dir="ltr"] .popup-sponsors-note-text {
+    text-align: left !important;
+}
+
+/* Keep both menus physically on the left, even when content is LTR. */
+html[data-content-dir="ltr"] .popup-side-menu {
+    left: 0;
+    right: auto;
+}
+
+html[data-content-dir="ltr"].popup-settings-overlay .popup-settings-panel {
+    left: 44px;
+    right: auto;
+}
+

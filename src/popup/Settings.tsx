@@ -58,7 +58,8 @@ const Settings: React.FC<SettingsProps> = ({
     onManualRtlSettingsChange,
     hideTitle = false,
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const theme = useTheme();
     const [selectedValue, setSelectedValue] = React.useState(rtlAlgorithm);
     const [modalOpen, setModalOpen] = React.useState(false);
@@ -491,7 +492,7 @@ const Settings: React.FC<SettingsProps> = ({
                     p: 2, 
                     borderRadius: 1,
                     background: isDarkMode ? '#2f2f41' : '#ffffff'
-                }} dir="rtl">
+                }} dir={dir}>
                     <Box sx={{ mb: 1.5, textAlign: 'center' }}>
                         <Typography variant="h6" sx={{ 
                             fontWeight: 600, 
@@ -728,7 +729,7 @@ const Settings: React.FC<SettingsProps> = ({
                         backgroundColor: theme.palette.background.paper,
                         color: theme.palette.text.primary,
                         borderRadius: 2,
-                        direction: 'rtl'
+                        direction: dir
                     }
                 }}
             >

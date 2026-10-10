@@ -34,7 +34,8 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     onOpenSettings,
     variant
 }) => {
-    const { t } = useI18n();
+    const { t, dir } = useI18n();
+    const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const troubleshootingSteps = getTroubleshootingSteps(t);
     const [expanded, setExpanded] = React.useState(false);
     const [hideConfirmOpen, setHideConfirmOpen] = React.useState(false);
@@ -63,8 +64,8 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     return (
         <Box
             className="install-hint-banner"
-            dir="rtl"
-            style={{ direction: 'rtl', textAlign: 'right' }}
+            dir={dir}
+            style={{ direction: dir, textAlign: contentAlign }}
             sx={{
                 mx: 2,
                 mb: 1.5,
@@ -120,9 +121,9 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                     <Box
                         component="button"
                         type="button"
-                        dir="rtl"
+                        dir={dir}
                         className="install-hint-banner-toggle"
-                        style={{ direction: 'rtl', textAlign: 'right' }}
+                        style={{ direction: dir, textAlign: contentAlign }}
                         onClick={() => setExpanded((open) => !open)}
                     >
                         <SvgIcon
@@ -136,7 +137,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         </SvgIcon>
                         <Typography
                             className="install-hint-banner-title"
-                            style={{ direction: 'rtl', textAlign: 'right' }}
+                            style={{ direction: dir, textAlign: contentAlign }}
                             sx={{
                                 fontSize: '0.75rem',
                                 fontWeight: 700,
@@ -159,7 +160,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         </SvgIcon>
                     </Box>
                     <Collapse in={expanded}>
-                        <Box sx={{ mt: 1.2 }} style={{ direction: 'rtl', textAlign: 'right' }}>
+                        <Box sx={{ mt: 1.2 }} style={{ direction: dir, textAlign: contentAlign }}>
                             {variant === 'install' ? (
                                 <>
                                     <Typography
@@ -337,10 +338,10 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                     }
                 }}
             >
-                <DialogTitle style={{ direction: 'rtl', textAlign: 'right', fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px', fontFamily: 'iranyekan' }}>
+                <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px', fontFamily: 'iranyekan' }}>
                     {t('installHint.hideTitle')}
                 </DialogTitle>
-                <DialogContent style={{ direction: 'rtl', textAlign: 'right', padding: '8px 16px' }}>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
                     <Typography
                         sx={{
                             fontSize: '0.85rem',
