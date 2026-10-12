@@ -86,10 +86,15 @@ html.popup-side-expanded .popup-columns {
     width: 378px;
     flex-shrink: 0;
     overflow-y: auto;
+    overflow-anchor: none;
     overscroll-behavior: contain;
     direction: ltr;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+.popup-main * {
+    overflow-anchor: none;
 }
 
 .popup-main-inner {

@@ -741,20 +741,23 @@ export default function ServiceList({
             return;
         }
 
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                listEl.classList.toggle('service-list--search-stuck', !entry.isIntersecting);
-            },
-            {
-                root: scrollRoot,
-                threshold: 0,
-                rootMargin: '0px 0px 0px 0px',
+        let stuck = false;
+        const update = () => {
+            const offset = sentinel.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
+            if (!stuck && offset < -1) {
+                stuck = true;
+                listEl.classList.add('service-list--search-stuck');
+            } else if (stuck && offset > 24) {
+                stuck = false;
+                listEl.classList.remove('service-list--search-stuck');
             }
-        );
+        };
 
-        observer.observe(sentinel);
+        update();
+        scrollRoot.addEventListener('scroll', update, { passive: true });
         return () => {
-            observer.disconnect();
+            scrollRoot.removeEventListener('scroll', update);
+            listEl.classList.remove('service-list--search-stuck');
         };
     }, []);
 
