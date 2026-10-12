@@ -330,7 +330,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                                             </SvgIcon>
                                                                         </IconButton>
                                                                     </Box>
-                                                                    {algorithm === 'advanced_full' && (
+                                                                    {(algorithm === 'advanced_section' || algorithm === 'advanced_full') && (
                                                                         <Box sx={{ 
                                                                             position: 'absolute', 
                                                                             top: '50%', 
@@ -345,15 +345,31 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                                                 px: 0.5, 
                                                                                 py: 0.05, 
                                                                                 bgcolor: theme.palette.mode === 'dark' 
-                                                                                    ? 'rgb(1, 91, 237)' 
-                                                                                    : 'rgba(56, 122, 242, 0.2)',
-                                                                                color: theme.palette.text.secondary, 
+                                                                                    ? 'rgb(33, 46, 65)' 
+                                                                                    : 'rgba(56, 122, 242, 0.1)',
+                                                                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                                                                color: theme.palette.primary.main, 
                                                                                 borderRadius: 0.5, 
                                                                                 fontSize: '0.6rem',
                                                                                 fontWeight: 600
                                                                             }}>
-                                                                                {t('algorithm.defaultBadge')}
+                                                                                {t('algorithm.exclusiveBadge')}
                                                                             </Box>
+                                                                            {algorithm === 'advanced_full' && (
+                                                                                <Box component="span" sx={{ 
+                                                                                    px: 0.5, 
+                                                                                    py: 0.05, 
+                                                                                    bgcolor: theme.palette.mode === 'dark' 
+                                                                                        ? 'rgb(1, 91, 237)' 
+                                                                                        : 'rgba(56, 122, 242, 0.2)',
+                                                                                    color: theme.palette.text.secondary, 
+                                                                                    borderRadius: 0.5, 
+                                                                                    fontSize: '0.6rem',
+                                                                                    fontWeight: 600
+                                                                                }}>
+                                                                                    {t('algorithm.defaultBadge')}
+                                                                                </Box>
+                                                                            )}
                                                                         </Box>
                                                                     )}
                                                                 </Box>

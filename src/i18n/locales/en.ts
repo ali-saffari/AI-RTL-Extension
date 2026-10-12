@@ -113,19 +113,21 @@ export const enMessages: Messages = {
         extensionFirefox: 'Firefox extension',
         algorithmLabel: 'Detection algorithm',
         algorithmAria: 'Detection algorithm',
-        algoInfoAria: 'About {title}',
+        algoInfoAria: 'About the detection algorithm',
+        algoInfoTitle: 'Detection algorithm',
+        algoInfoBody: 'This algorithm both detects text direction and lays the text out. You can change the algorithm from this list. The options differ in accuracy and speed. If the result is not what you want, or the site feels slow, choose another algorithm. You can also try each one on the algorithm test page.',
         algorithms: {
             advancedSection: {
                 title: 'Advanced section analysis',
                 hint: 'Each section, sentence, and paragraph is checked on its own. More accurate for mixed Persian and English text.',
-                badge: 'New',
+                badge: 'AI RTL exclusive',
                 description: 'Each section, sentence, and paragraph is checked separately and given its own direction. This works well for multilingual or mixed text and is very accurate.',
                 extra: 'Title settings turn on in this mode: you can check multilingual chat titles one by one, or keep all of them on one side.',
             },
             advancedFull: {
                 title: 'Advanced unified analysis',
                 hint: 'The whole text is processed at once. A balance of accuracy and speed, and a good fit for most chats.',
-                badge: 'Default',
+                badge: 'AI RTL exclusive',
                 description: 'The whole reply is treated as one structure and one direction is chosen for the message. This balances accuracy and speed, and it is the extension default.',
             },
             firstWord: {
@@ -238,6 +240,7 @@ export const enMessages: Messages = {
         algorithmSubtitle: 'How right-to-left is detected',
         newBadge: 'New',
         defaultBadge: 'Default',
+        exclusiveBadge: 'AI RTL exclusive',
         advancedSettings: 'Advanced settings',
         featuresTitle: 'Features:',
         algorithms: {
@@ -461,6 +464,7 @@ export const enMessages: Messages = {
         subtitle: 'How titles are processed in multilingual chats',
         newBadge: 'New',
         defaultBadge: 'Default',
+        exclusiveBadge: 'AI RTL exclusive',
         featuresTitle: 'Features:',
         close: 'Close',
         understood: 'Got it',

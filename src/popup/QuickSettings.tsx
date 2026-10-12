@@ -92,6 +92,7 @@ const getAlgorithms = (t: TranslateFn) => [
         title: t('quickSettings.algorithms.advancedSection.title'),
         hint: t('quickSettings.algorithms.advancedSection.hint'),
         badge: t('quickSettings.algorithms.advancedSection.badge'),
+        defaultBadge: '',
         description: t('quickSettings.algorithms.advancedSection.description'),
         extra: t('quickSettings.algorithms.advancedSection.extra'),
     },
@@ -100,6 +101,7 @@ const getAlgorithms = (t: TranslateFn) => [
         title: t('quickSettings.algorithms.advancedFull.title'),
         hint: t('quickSettings.algorithms.advancedFull.hint'),
         badge: t('quickSettings.algorithms.advancedFull.badge'),
+        defaultBadge: t('settings.defaultBadge'),
         description: t('quickSettings.algorithms.advancedFull.description'),
         extra: '',
     },
@@ -108,6 +110,7 @@ const getAlgorithms = (t: TranslateFn) => [
         title: t('quickSettings.algorithms.firstWord.title'),
         hint: t('quickSettings.algorithms.firstWord.hint'),
         badge: '',
+        defaultBadge: '',
         description: t('quickSettings.algorithms.firstWord.description'),
         extra: '',
     },
@@ -172,7 +175,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const TITLE_MODES = getTitleModes(t);
     const THEME_MODES = getThemeModes(t);
     const [hasTabsPermission, setHasTabsPermission] = React.useState<boolean | null>(null);
-    const [infoAlgoId, setInfoAlgoId] = React.useState<string | null>(null);
+    const [algoInfoOpen, setAlgoInfoOpen] = React.useState(false);
     const [titleInfoOpen, setTitleInfoOpen] = React.useState(false);
     const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
@@ -248,14 +251,12 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
         };
     }, []);
 
-    const selectedAlgo = ALGORITHMS.find((item) => item.id === rtlAlgorithm) ?? ALGORITHMS[1];
     const selectedFontOption = fonts.find((font) => font.id === selectedFont);
     const selectedFontFamily = selectedFont === NONE_FONT_ID
         ? 'iranyekan'
         : selectedFontOption
             ? getFontFamilyCssValue(selectedFontOption)
             : 'iranyekan, sans-serif';
-    const infoAlgo = ALGORITHMS.find((item) => item.id === infoAlgoId) ?? null;
     const manualEnabled = manualRtlSettings.manualRtlEnabled !== false;
 
     const accent = isDarkMode ? '#00e9ff' : '#387af2';
@@ -633,8 +634,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <IconButton
                                 size="small"
                                 disabled={controlsDisabled}
-                                aria-label={t('quickSettings.algoInfoAria', { title: selectedAlgo.title })}
-                                onClick={() => setInfoAlgoId(selectedAlgo.id)}
+                                aria-label={t('quickSettings.algoInfoAria')}
+                                onClick={() => setAlgoInfoOpen(true)}
                                 sx={{
                                     p: 0.2,
                                     flexShrink: 0,
@@ -692,22 +693,44 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                                                 <span>{algo.title}</span>
-                                                {algo.badge ? (
-                                                    <Box
-                                                        component="span"
-                                                        sx={{
-                                                            flexShrink: 0,
-                                                            px: 0.7,
-                                                            py: 0.1,
-                                                            borderRadius: 1,
-                                                            fontSize: '0.62rem',
-                                                            fontWeight: 600,
-                                                            color: accent,
-                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
-                                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
-                                                        }}
-                                                    >
-                                                        {algo.badge}
+                                                {(algo.badge || algo.defaultBadge) ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                                        {algo.badge ? (
+                                                            <Box
+                                                                component="span"
+                                                                sx={{
+                                                                    flexShrink: 0,
+                                                                    px: 0.7,
+                                                                    py: 0.1,
+                                                                    borderRadius: 1,
+                                                                    fontSize: '0.62rem',
+                                                                    fontWeight: 600,
+                                                                    color: accent,
+                                                                    border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                                                    background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
+                                                                }}
+                                                            >
+                                                                {algo.badge}
+                                                            </Box>
+                                                        ) : null}
+                                                        {algo.defaultBadge ? (
+                                                            <Box
+                                                                component="span"
+                                                                sx={{
+                                                                    flexShrink: 0,
+                                                                    px: 0.7,
+                                                                    py: 0.1,
+                                                                    borderRadius: 1,
+                                                                    fontSize: '0.62rem',
+                                                                    fontWeight: 600,
+                                                                    color: accent,
+                                                                    border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                                                    background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
+                                                                }}
+                                                            >
+                                                                {algo.defaultBadge}
+                                                            </Box>
+                                                        ) : null}
                                                     </Box>
                                                 ) : null}
                                             </Box>
@@ -1292,8 +1315,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
             </Box>
             <Dialog
-                open={Boolean(infoAlgo)}
-                onClose={() => setInfoAlgoId(null)}
+                open={algoInfoOpen}
+                onClose={() => setAlgoInfoOpen(false)}
                 maxWidth="xs"
                 fullWidth
                 sx={{
@@ -1314,40 +1337,23 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         fontFamily: 'iranyekan',
                     }}
                 >
-                    {infoAlgo?.title}
+                    {t('quickSettings.algoInfoTitle')}
                 </DialogTitle>
                 <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
-                    {infoAlgo ? (
-                        <>
-                            <Typography
-                                sx={{
-                                    fontSize: '0.85rem',
-                                    fontFamily: 'iranyekan',
-                                    lineHeight: 1.8,
-                                }}
-                            >
-                                {infoAlgo.description}
-                            </Typography>
-                            {infoAlgo.extra ? (
-                                <Typography
-                                    sx={{
-                                        fontSize: '0.8rem',
-                                        fontFamily: 'iranyekan',
-                                        lineHeight: 1.8,
-                                        mt: 1,
-                                        color: muted,
-                                    }}
-                                >
-                                    {infoAlgo.extra}
-                                </Typography>
-                            ) : null}
-                        </>
-                    ) : null}
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        {t('quickSettings.algoInfoBody')}
+                    </Typography>
                 </DialogContent>
                 <DialogActions style={{ padding: '8px 16px 16px 16px', gap: '8px' }}>
                     <Button
                         onClick={() => {
-                            setInfoAlgoId(null);
+                            setAlgoInfoOpen(false);
                             openOptions('algorithm');
                         }}
                         variant="text"
@@ -1357,7 +1363,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         {t('quickSettings.testAlgorithmPage')}
                     </Button>
                     <Button
-                        onClick={() => setInfoAlgoId(null)}
+                        onClick={() => setAlgoInfoOpen(false)}
                         variant="contained"
                         color="primary"
                         sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}

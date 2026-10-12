@@ -271,7 +271,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontWeight: 600
                                                 }}>
                                                     
-                                                    {t('settings.newBadge')}
+                                                    {t('settings.exclusiveBadge')}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -361,23 +361,21 @@ const Settings: React.FC<SettingsProps> = ({
                                                     fontSize: '0.7rem',
                                                     fontWeight: 600
                                                 }}>
-                                                    {t('settings.newBadge')}
+                                                    {t('settings.exclusiveBadge')}
                                                 </Box>
-                                                {selectedValue !== 'advanced_full' && (
-                                                    <Box component="span" sx={{ 
-                                                        px: 0.5, 
-                                                        py: 0.05, 
-                                                        bgcolor: theme.palette.mode === 'dark' 
-                                                            ? 'rgb(1, 91, 237)' 
-                                                            : 'rgba(56, 122, 242, 0.2)',
-                                                        color: theme.palette.text.secondary, 
-                                                        borderRadius: 0.5, 
-                                                        fontSize: '0.6rem',
-                                                        fontWeight: 600
-                                                    }}>
-                                                        {t('settings.defaultBadge')}
-                                                    </Box>
-                                                )}
+                                                <Box component="span" sx={{ 
+                                                    px: 0.5, 
+                                                    py: 0.05, 
+                                                    bgcolor: theme.palette.mode === 'dark' 
+                                                        ? 'rgb(1, 91, 237)' 
+                                                        : 'rgba(56, 122, 242, 0.2)',
+                                                    color: theme.palette.text.secondary, 
+                                                    borderRadius: 0.5, 
+                                                    fontSize: '0.6rem',
+                                                    fontWeight: 600
+                                                }}>
+                                                    {t('settings.defaultBadge')}
+                                                </Box>
                                             </Box>
                                         </Box>
                                     </Box>
