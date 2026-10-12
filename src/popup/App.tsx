@@ -1076,20 +1076,6 @@ function App() {
                     </Box>
                 )}
 
-                {!algorithmHintDismissed && rtlAlgorithm === 'advanced_full' && (
-                    <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#dae8f1',
-                        pb: 1.5
-                    }}>
-                        <InstallHintBanner
-                            variant="algorithm"
-                            isDarkMode={isDarkMode}
-                            onDismiss={handleAlgorithmHintDismiss}
-                            onOpenSettings={handleHighlightSettingsButton}
-                        />
-                    </Box>
-                )}
-
                 <Paper elevation={0} sx={{ 
                     backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
                     borderRadius: isDarkMode ? 0 : 1
@@ -1341,6 +1327,8 @@ function App() {
                         focusNonce={siteSettingsFocus?.nonce || 0}
                         extensionEnabled={extensionEnabled}
                         onEnableExtension={() => handleExtensionEnabledChange(true)}
+                        showAlgorithmHint={!algorithmHintDismissed && rtlAlgorithm === 'advanced_full'}
+                        onAlgorithmHintDismiss={handleAlgorithmHintDismiss}
                     />
                 </div>
                 <div className="popup-side-slot">

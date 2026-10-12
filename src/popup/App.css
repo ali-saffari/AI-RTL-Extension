@@ -675,8 +675,12 @@ body[data-theme="light"] .site-settings-card-focus {
 
 .quick-settings-label {
     font-size: 0.68rem !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     letter-spacing: 0;
+}
+
+.quick-settings-heading {
+    font-weight: 600 !important;
 }
 
 body[data-theme="dark"] .quick-settings-label {

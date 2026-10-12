@@ -30,7 +30,7 @@ export const SITE_SETTINGS_REGISTRY = [
         title: 'DeepSeek Harness',
         icon: '/images/sites/harness.png',
         description: 'افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.',
-        missingPluginNote: 'برای هارنس پلاگین داریم و در نسخه دسکتاپ می‌توانید از آن استفاده کنید.',
+        missingPluginNote: 'پلاگین نسخه دسکتاپ منتشر شد',
         fields: [
             {
                 key: 'engine',

@@ -17,6 +17,7 @@ import {
     Tooltip
 } from '@mui/material';
 import { mdiInformationOutline, mdiRefresh, mdiDelete, mdiDownload, mdiUpload } from '@mdi/js';
+import { shouldShowExtensionId } from '../utils/storeLinks';
 import { useI18n } from '../i18n';
 
 interface ExtensionSettingsProps {
@@ -404,15 +405,19 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             {chrome.runtime.getManifest().version}
                         </Typography>
                     </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            {t('extensionSettings.extensionId')}
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                            {chrome.runtime.id}
-                        </Typography>
-                    </Box>
+                    {shouldShowExtensionId() ? (
+                        <>
+                            <Divider />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    {t('extensionSettings.extensionId')}
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                                    {chrome.runtime.id}
+                                </Typography>
+                            </Box>
+                        </>
+                    ) : null}
                 </Box>
             </Paper>
         </Box>

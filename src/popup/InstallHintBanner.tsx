@@ -19,6 +19,7 @@ interface InstallHintBannerProps {
     onDismiss?: () => void;
     onOpenSettings?: () => void;
     variant: 'install' | 'troubleshooting' | 'notebook' | 'algorithm';
+    embedded?: boolean;
 }
 
 const getTroubleshootingSteps = (t: (key: MessageKey) => string) => [
@@ -32,7 +33,8 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     isDarkMode,
     onDismiss,
     onOpenSettings,
-    variant
+    variant,
+    embedded = false,
 }) => {
     const { t, dir } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
@@ -67,9 +69,9 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
             dir={dir}
             style={{ direction: dir, textAlign: contentAlign }}
             sx={{
-                mx: 2,
-                mb: 1.5,
-                p: 1.5,
+                mx: embedded ? 0 : 2,
+                mb: embedded ? 0 : 1.5,
+                p: embedded ? 1.25 : 1.5,
                 borderRadius: 1.5,
                 background: isDarkMode
                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.12) 0%, rgba(0, 233, 255, 0.04) 100%)'

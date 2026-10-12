@@ -21,12 +21,13 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
-import { mdiDownload, mdiUpload, mdiUpdate } from '@mdi/js';
+import { mdiDownload, mdiUpload, mdiUpdate, mdiRestore } from '@mdi/js';
 import { openUpdateModal } from '../../utils/openUpdateModal';
 import {
     getExtensionStoreUrl,
     getOfficialStoreLabel,
     getViewInStoreText,
+    shouldShowExtensionId,
 } from '../../utils/storeLinks';
 import { isFirefoxRuntime } from '../../utils/isFirefox';
 import {
@@ -71,6 +72,8 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     const [snackbarMessage, setSnackbarMessage] = React.useState('');
     const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
+    const [resetConfirmOpen, setResetConfirmOpen] = React.useState(false);
+    const [resetting, setResetting] = React.useState(false);
 
     const handlePinOpenSiteModeSelect = async (mode: PinOpenSiteMode) => {
         if (mode !== 'full' || isFirefoxRuntime()) {
@@ -168,6 +171,31 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
         } catch (error) {
             console.error('[OtherSettingsTab] Error exporting settings:', error);
             setSnackbarMessage(t('otherSettings.saveError'));
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        }
+    };
+
+    const handleResetSettings = async () => {
+        setResetting(true);
+        try {
+            const { uid } = await chrome.storage.sync.get(['uid']);
+            await chrome.storage.sync.clear();
+            if (typeof uid === 'string' && uid) {
+                await chrome.storage.sync.set({ uid });
+            }
+            await chrome.storage.local.clear();
+            setResetConfirmOpen(false);
+            setSnackbarMessage(t('otherSettings.resetDone'));
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+            window.setTimeout(() => {
+                window.location.reload();
+            }, 400);
+        } catch (error) {
+            console.error('[OtherSettingsTab] Error resetting settings:', error);
+            setResetting(false);
+            setSnackbarMessage(t('otherSettings.resetError'));
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
         }
@@ -416,6 +444,30 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                     </Button>
                                 </ListItemSecondaryAction>
                             </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary={t('otherSettings.reset')}
+                                    secondary={t('otherSettings.resetHint')}
+                                />
+                                <ListItemSecondaryAction>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        color="error"
+                                        startIcon={
+                                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                                <path d={mdiRestore} />
+                                            </SvgIcon>
+                                        }
+                                        onClick={() => setResetConfirmOpen(true)}
+                                        sx={{
+                                            fontFamily: 'iranyekan',
+                                        }}
+                                    >
+                                        {t('otherSettings.resetButton')}
+                                    </Button>
+                                </ListItemSecondaryAction>
+                            </ListItem>
                             <Divider />
                             <ListItem>
                                 <ListItemText 
@@ -478,7 +530,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                 </Box>
                             </Grid>
                             
-                            {/* شناسه افزونه */}
+                            {shouldShowExtensionId() ? (
                             <Grid item xs={12}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -489,6 +541,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                     </Typography>
                                 </Box>
                             </Grid>
+                            ) : null}
                             
                             {/* وب‌سایت */}
                             {manifest.homepage_url && (
@@ -611,6 +664,45 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                 {snackbarMessage}
             </Alert>
         </Snackbar>
+        <Dialog
+            open={resetConfirmOpen}
+            onClose={() => {
+                if (!resetting) {
+                    setResetConfirmOpen(false);
+                }
+            }}
+            maxWidth="sm"
+            fullWidth
+        >
+            <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontFamily: 'iranyekan' }}>
+                {t('otherSettings.resetConfirmTitle')}
+            </DialogTitle>
+            <DialogContent style={{ direction: dir, textAlign: 'justify' }}>
+                <Typography sx={{ fontSize: '0.85rem', fontFamily: 'iranyekan', lineHeight: 1.8 }}>
+                    {t('otherSettings.resetConfirmBody')}
+                </Typography>
+            </DialogContent>
+            <DialogActions sx={{ gap: 1, px: 3, pb: 2 }}>
+                <Button
+                    onClick={() => setResetConfirmOpen(false)}
+                    disabled={resetting}
+                    sx={{ fontFamily: 'iranyekan' }}
+                >
+                    {t('otherSettings.close')}
+                </Button>
+                <Button
+                    variant="contained"
+                    color="error"
+                    disabled={resetting}
+                    onClick={() => {
+                        void handleResetSettings();
+                    }}
+                    sx={{ fontFamily: 'iranyekan' }}
+                >
+                    {t('otherSettings.resetButton')}
+                </Button>
+            </DialogActions>
+        </Dialog>
         <Dialog
             open={pinSitePermissionOpen}
             onClose={() => setPinSitePermissionOpen(false)}

@@ -227,18 +227,72 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                 sx={{ background: cardBg, borderColor: cardBorder, gap: 0, p: 0 }}
             >
             {pluginMissing ? (
-                <Typography
-                    sx={{
-                        px: 1.5,
-                        py: 1.25,
-                        fontSize: '0.78rem',
-                        fontWeight: 500,
-                        lineHeight: 1.8,
-                        color: mutedColor,
-                    }}
-                >
-                    {entry.serviceKey === 'harness' ? t('quickSettings.harnessMissingPlugin') : entry.missingPluginNote}
-                </Typography>
+                entry.serviceKey === 'harness' ? (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 1.5,
+                            py: 1.25,
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={chrome.runtime.getURL('/images/logo/dsh-extension.png')}
+                            alt=""
+                            sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: '6px',
+                                objectFit: 'cover',
+                                flexShrink: 0,
+                            }}
+                        />
+                        <Typography
+                            sx={{
+                                flex: 1,
+                                minWidth: 0,
+                                fontSize: '0.78rem',
+                                fontWeight: 500,
+                                lineHeight: 1.8,
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.92)' : '#1e293b',
+                            }}
+                        >
+                            {t('quickSettings.harnessMissingPlugin')}{' '}
+                            <Box
+                                component="a"
+                                href="https://ai-rtl.ir/deepseek-harness/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{
+                                    color: accent,
+                                    fontWeight: 600,
+                                    textDecoration: 'underline',
+                                    textUnderlineOffset: '2px',
+                                    '&:hover': {
+                                        color: isDarkMode ? '#4dd4ff' : '#3b82f6',
+                                    },
+                                }}
+                            >
+                                {t('quickSettings.harnessMissingPluginCta')}
+                            </Box>
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Typography
+                        sx={{
+                            px: 1.5,
+                            py: 1.25,
+                            fontSize: '0.78rem',
+                            fontWeight: 500,
+                            lineHeight: 1.8,
+                            color: mutedColor,
+                        }}
+                    >
+                        {entry.missingPluginNote}
+                    </Typography>
+                )
             ) : null}
             {visibleChoiceFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;

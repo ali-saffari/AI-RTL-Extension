@@ -1,5 +1,12 @@
 import { isFirefoxRuntime } from './isFirefox.js';
 
+/** Official Chrome Web Store extension ID — hide this ID in UI. */
+export const CHROME_PRODUCTION_EXTENSION_ID = 'pjpmebofipgpjaincgoboibbmicccbne';
+
+export function shouldShowExtensionId(extensionId = chrome.runtime.id) {
+    return extensionId !== CHROME_PRODUCTION_EXTENSION_ID;
+}
+
 export const CHROME_STORE_URL =
     'https://chromewebstore.google.com/detail/ai-rtl-farsi/pjpmebofipgpjaincgoboibbmicccbne';
 

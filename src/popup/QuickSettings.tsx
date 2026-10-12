@@ -44,6 +44,7 @@ import {
     loadFontsConfig,
 } from '../utils/fonts';
 import SiteSettingsSection from './SiteSettingsSection';
+import InstallHintBanner from './InstallHintBanner';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 import { useI18n } from '../i18n';
@@ -79,6 +80,8 @@ interface QuickSettingsProps {
     focusNonce?: number;
     extensionEnabled?: boolean;
     onEnableExtension?: () => void;
+    showAlgorithmHint?: boolean;
+    onAlgorithmHintDismiss?: () => void;
 }
 
 type TranslateFn = (key: MessageKey, vars?: Record<string, string | number>) => string;
@@ -158,6 +161,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     focusNonce = 0,
     extensionEnabled = true,
     onEnableExtension,
+    showAlgorithmHint = false,
+    onAlgorithmHintDismiss,
 }) => {
     const { t, dir } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
@@ -523,6 +528,32 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         ) : null}
                     </div>
                 </Box>
+                {showAlgorithmHint ? (
+                    <InstallHintBanner
+                        variant="algorithm"
+                        isDarkMode={isDarkMode}
+                        embedded
+                        onDismiss={onAlgorithmHintDismiss}
+                        onOpenSettings={() => {
+                            document
+                                .getElementById('quick-settings-algorithm')
+                                ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }}
+                    />
+                ) : null}
+                <Box
+                    aria-hidden
+                    sx={{
+                        mx: 0.25,
+                        mt: '14px',
+                        mb: '14px',
+                        height: '1px',
+                        flexShrink: 0,
+                        backgroundColor: isDarkMode
+                            ? 'rgba(0, 233, 255, 0.45)'
+                            : 'rgba(30, 64, 175, 0.4)',
+                    }}
+                />
                 <SiteSettingsSection
                     isDarkMode={isDarkMode}
                     activeServiceKey={activeServiceKey}
@@ -543,7 +574,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             <path d={mdiCog} />
                         </SvgIcon>
                         <Typography
-                            className="quick-settings-label"
+                            className="quick-settings-label quick-settings-heading"
                             sx={{ color: isDarkMode ? '#ffffff' : '#1e293b' }}
                         >
                             {t('quickSettings.quickTitle')}
@@ -578,7 +609,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         {t('quickSettings.advancedSettings')}
                     </Button>
                 </Box>
-                <Box className="quick-settings-card" sx={{ background: cardBg, borderColor: cardBorder }}>
+                <Box
+                    id="quick-settings-algorithm"
+                    className="quick-settings-card"
+                    sx={{ background: cardBg, borderColor: cardBorder }}
+                >
                     <Box
                         sx={{
                             display: 'flex',
