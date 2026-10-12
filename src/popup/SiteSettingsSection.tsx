@@ -127,7 +127,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
 
     const accent = isDarkMode ? '#00e9ff' : '#387af2';
     const cardBg = isDarkMode ? 'rgba(47, 47, 65, 0.9)' : '#ffffff';
-    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.5)';
+    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.22)';
     const titleColor = isDarkMode ? '#ffffff' : '#1e293b';
     const mutedColor = isDarkMode ? '#94a3b8' : '#64748b';
     const siteValues = settings[entry.serviceKey] || {};
