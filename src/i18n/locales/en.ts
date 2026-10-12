@@ -23,6 +23,11 @@ export const enMessages: Messages = {
         coffee: 'cup of coffee',
         afterCoffee: '! ☕❤️',
     },
+    dshStrip: {
+        title: 'AI RTL is on DeepSeek Harness!',
+        hint: 'A dedicated plugin for the DeepSeek Harness desktop app is available now.',
+        more: 'Read more',
+    },
     sites: {
         title: 'Sites with smart RTL support',
     },

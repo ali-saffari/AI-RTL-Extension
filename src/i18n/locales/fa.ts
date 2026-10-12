@@ -21,6 +21,11 @@ export const faMessages = {
         coffee: 'فنجان قهوه',
         afterCoffee: 'مهمانمان کنید! ☕❤️',
     },
+    dshStrip: {
+        title: 'AI RTL به DeepSeek Harness آمد!',
+        hint: 'پلاگین اختصاصی برای برنامه دسکتاپ دیپ‌سیک هارنس هم‌اکنون در دسترسه.',
+        more: 'بیشتر بخوانید',
+    },
     sites: {
         title: 'سایت هایی که راست چین هوشمند پشتیبانی میشود',
     },

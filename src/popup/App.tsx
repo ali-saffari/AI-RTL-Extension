@@ -15,13 +15,23 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
-import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCogOutline, mdiStarOutline, mdiHelpCircleOutline, mdiHeadset, mdiShieldOutline } from '@mdi/js';
+import { mdiWeatherSunny, mdiWeatherNight, mdiBullhorn, mdiStar, mdiHeart, mdiCogOutline, mdiStarOutline, mdiHelpCircleOutline, mdiHeadset, mdiShieldOutline, mdiClose } from '@mdi/js';
 import CssBaseline from '@mui/material/CssBaseline';
 import ServiceList, { services } from './list';
 import QuickSettings from './QuickSettings';
 import ManualRtlBanner from './ManualRtlBanner';
 import InstallHintBanner from './InstallHintBanner';
 import ChangesList from './ChangesList';
+
+function renderBrandText(text: string) {
+    const brands = ['DeepSeek Harness', 'AI RTL'];
+    const pattern = new RegExp(`(${brands.join('|')})`, 'g');
+    return text.split(pattern).map((part, index) => (
+        brands.includes(part)
+            ? <bdi key={index} dir="ltr">{part}</bdi>
+            : <React.Fragment key={index}>{part}</React.Fragment>
+    ));
+}
 import { ManualRtlSettings } from '../types/manualRtl';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { DEFAULT_FONT_ID, DEFAULT_FONT_SCALE, FONT_SCALE_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, normalizeFontScale, previewFontScaleOnTabs } from '../utils/fonts';
@@ -237,6 +247,7 @@ function App() {
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
     const [hoverExpandLocked, setHoverExpandLocked] = React.useState(false);
     const [shareModalOpen, setShareModalOpen] = React.useState(false);
+    const [dshStripDismissed, setDshStripDismissed] = React.useState(false);
     const skipSettingsAnimation = React.useRef(true);
     const mainScrollRef = React.useRef<HTMLDivElement>(null);
     const POPUP_MAIN_WIDTH = 378;
@@ -246,7 +257,7 @@ function App() {
     // Load settings from storage on component mount
     const loadSettings = React.useCallback(() => {
         try {
-            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'popupSettingsOpen', EXTENSION_ENABLED_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
+            chrome.storage.sync.get(['rtlAlgorithmMode', 'mixedTitleDisplayMode', 'applyAlgorithmToCode', 'flipRtlArrows', 'fixMixedText', 'supportHide', PIN_OPEN_SITE_STORAGE_KEY, 'isDarkMode', 'manualRtlSettings', 'manualRtlInfoDismissed', 'activationHintDismissed', 'troubleshootingHintDismissed', 'algorithmHintDismissed', 'notebookNeedsReenable', 'dshStripDismissed', 'popupSettingsOpen', EXTENSION_ENABLED_STORAGE_KEY, SELECTED_FONT_STORAGE_KEY, FONT_SCALE_STORAGE_KEY, ...services.map(s => s.key)], (result) => {
                 if (result.rtlAlgorithmMode) {
                     setRtlAlgorithm(result.rtlAlgorithmMode);
                 }
@@ -305,6 +316,7 @@ function App() {
                     setActivationHintDismissed(true);
                 }
                 setNotebookNeedsReenable(result.notebookNeedsReenable === true);
+                setDshStripDismissed(result.dshStripDismissed === true);
                 setTroubleshootingHintDismissed(result.troubleshootingHintDismissed === true);
                 const currentAlgorithm = result.rtlAlgorithmMode || 'advanced_full';
                 if (currentAlgorithm !== 'advanced_full') {
@@ -398,6 +410,9 @@ function App() {
                 }
                 if (changes.notebookNeedsReenable) {
                     setNotebookNeedsReenable(changes.notebookNeedsReenable.newValue === true);
+                }
+                if (changes.dshStripDismissed) {
+                    setDshStripDismissed(changes.dshStripDismissed.newValue === true);
                 }
                 if (changes.troubleshootingHintDismissed) {
                     setTroubleshootingHintDismissed(changes.troubleshootingHintDismissed.newValue === true);
@@ -988,6 +1003,47 @@ function App() {
                 <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
                             ? 'transparent'
                             : '#dae8f1' }}>
+                    {!dshStripDismissed && (
+                    <div className="popup-dsh-note">
+                        <a
+                            className="popup-dsh-note-link"
+                            href="https://ai-rtl.ir/deepseek-harness/?source=extension-popup-dsh"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <img src="/images/logo/dsh-extension.png" alt="" />
+                            <span className="popup-dsh-note-copy">
+                                <strong>{renderBrandText(t('dshStrip.title'))}</strong>
+                                <span>{renderBrandText(t('dshStrip.hint'))}</span>
+                            </span>
+                        </a>
+                        <a
+                            className="popup-dsh-note-more"
+                            href="https://ai-rtl.ir/deepseek-harness/?source=extension-popup-dsh"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {t('dshStrip.more')}
+                        </a>
+                        <button
+                            type="button"
+                            className="popup-dsh-note-close"
+                            aria-label={t('shared.close')}
+                            onClick={() => {
+                                setDshStripDismissed(true);
+                                try {
+                                    chrome.storage.sync.set({ dshStripDismissed: true });
+                                } catch (error) {
+                                    // Ignore storage errors
+                                }
+                            }}
+                        >
+                            <SvgIcon sx={{ fontSize: '1rem' }}>
+                                <path d={mdiClose} />
+                            </SvgIcon>
+                        </button>
+                    </div>
+                    )}
                     {!notebookNeedsReenable && (
                     <Typography 
                         variant="body2" 

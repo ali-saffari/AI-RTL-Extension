@@ -23,6 +23,11 @@ export const arMessages: Messages = {
         coffee: 'فنجان قهوة',
         afterCoffee: '! ☕❤️',
     },
+    dshStrip: {
+        title: 'وصل AI RTL إلى DeepSeek Harness!',
+        hint: 'إضافة مخصصة لتطبيق سطح المكتب DeepSeek Harness متاحة الآن.',
+        more: 'اقرأ المزيد',
+    },
     sites: {
         title: 'المواقع التي تدعم الاتجاه من اليمين إلى اليسار بذكاء',
     },
