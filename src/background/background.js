@@ -157,23 +157,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         //         mixedTitleDisplayMode: 'unified'
         //     });
         // }).catch(() => {
-        chrome.storage.sync.set({
-            ...SERVICE_FLAGS,
-            rtlAlgorithmMode: 'advanced_full',
-            selectedFont: 'iranyekan',
-            fontScale: 100,
-            manualRtlSettings: defaultManualRtlSettings,
-            mixedTitleDisplayMode: 'unified',
-            applyAlgorithmToCode: true,
-            flipRtlArrows: true,
-            fixMixedText: false,
-            experimentalAlgoDefaultOn: true,
-            [HALF_SPACE_STORAGE_KEY]: { ...DEFAULT_HALF_SPACE_SITES },
-            [SITE_SETTINGS_STORAGE_KEY]: defaultSiteSettings(),
-            [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
-            activationHintDismissed: false,
-            troubleshootingHintDismissed: true
-        });
+        chrome.storage.sync.set(buildFreshInstallSyncState());
         // });
     }
     
@@ -641,6 +625,137 @@ function buildExtensionSiteUrl(path, extraParams = {}) {
     return `https://ai-rtl.ir${normalizedPath}${query ? `?${query}` : ''}`;
 }
 
+function buildFreshInstallSyncState() {
+    const state = {
+        ...SERVICE_FLAGS,
+        rtlAlgorithmMode: 'advanced_full',
+        selectedFont: 'iranyekan',
+        fontScale: 100,
+        manualRtlSettings: getDefaultManualRtlSettings(),
+        mixedTitleDisplayMode: 'unified',
+        applyAlgorithmToCode: true,
+        flipRtlArrows: true,
+        fixMixedText: false,
+        experimentalAlgoDefaultOn: true,
+        [HALF_SPACE_STORAGE_KEY]: { ...DEFAULT_HALF_SPACE_SITES },
+        [SITE_SETTINGS_STORAGE_KEY]: defaultSiteSettings(),
+        [PIN_OPEN_SITE_STORAGE_KEY]: getDefaultPinOpenSiteMode(),
+        activationHintDismissed: false,
+        troubleshootingHintDismissed: true
+    };
+
+    return state;
+}
+
+function parseMatchPattern(pattern) {
+    if (pattern === '<all_urls>') {
+        return { scheme: '*', host: '*' };
+    }
+    const match = /^(\*|https?|wss?|ftp|file):\/\/([^/]+)/.exec(pattern);
+    if (!match) {
+        return null;
+    }
+    return { scheme: match[1], host: match[2] };
+}
+
+function hostPatternCovers(grantedHost, requiredHost) {
+    if (grantedHost === '*') {
+        return true;
+    }
+    if (grantedHost === requiredHost) {
+        return true;
+    }
+    if (grantedHost.startsWith('*.')) {
+        const base = grantedHost.slice(2);
+        return requiredHost === base || requiredHost.endsWith(`.${base}`);
+    }
+    return false;
+}
+
+function originCoversRequiredHost(origin, requiredOrigins) {
+    const granted = parseMatchPattern(origin);
+    if (!granted) {
+        return true;
+    }
+    for (const requiredOrigin of requiredOrigins) {
+        const required = parseMatchPattern(requiredOrigin);
+        if (!required) {
+            continue;
+        }
+        const schemeCovers = granted.scheme === '*' || granted.scheme === required.scheme;
+        if (schemeCovers && hostPatternCovers(granted.host, required.host)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function removePermissionsQuietly(toRemove) {
+    try {
+        await chrome.permissions.remove(toRemove);
+    } catch (error) {
+        const message = error?.message || String(error || '');
+        if (!/required permissions/i.test(message)) {
+            devError('[Background] Could not revoke optional permissions on reset:', error);
+        }
+    }
+}
+
+async function revokeGrantedOptionalAccess() {
+    if (typeof chrome.permissions?.getAll !== 'function' || typeof chrome.permissions?.remove !== 'function') {
+        return;
+    }
+
+    const manifest = chrome.runtime.getManifest();
+    const optionalPermissions = new Set(manifest.optional_permissions || []);
+    const requiredOrigins = manifest.host_permissions || [];
+    const granted = await chrome.permissions.getAll();
+    const permissions = (granted.permissions || []).filter((permission) => optionalPermissions.has(permission));
+    const origins = (granted.origins || []).filter((origin) => !originCoversRequiredHost(origin, requiredOrigins));
+
+    if (permissions.length) {
+        await removePermissionsQuietly({ permissions });
+    }
+    for (const origin of origins) {
+        await removePermissionsQuietly({ origins: [origin] });
+    }
+}
+
+async function resetExtensionToFreshInstall() {
+    const stored = await chrome.storage.sync.get(['uid']);
+    const uid = typeof stored.uid === 'string' && stored.uid ? stored.uid : '';
+
+    await chrome.storage.sync.clear();
+    const freshState = buildFreshInstallSyncState();
+    Object.keys(DYNAMIC_SERVICES).forEach((serviceKey) => {
+        if (!Object.prototype.hasOwnProperty.call(freshState, serviceKey)) {
+            freshState[serviceKey] = false;
+        }
+    });
+    if (uid) {
+        freshState.uid = uid;
+    }
+    await chrome.storage.sync.set(freshState);
+    if (!uid) {
+        await initializeUserId();
+    }
+
+    await chrome.storage.local.clear();
+    if (UPDATE_MODAL_ENABLED && UPDATE_MODAL_ID) {
+        await chrome.storage.local.set({ [UPDATE_MODAL_STORAGE_KEY]: UPDATE_MODAL_ID });
+    }
+
+    if (typeof chrome.storage.session?.clear === 'function') {
+        try {
+            await chrome.storage.session.clear();
+        } catch (error) {
+            devError('[Background] Could not clear session storage on reset:', error);
+        }
+    }
+
+    await revokeGrantedOptionalAccess();
+}
+
 function getDefaultManualRtlSettings() {
     // Firefox: supported AI sites only, Manual RTL off by default (no allowlist UI)
     if (isFirefoxRuntime()) {
@@ -727,6 +842,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ success: false, pinned: false, error: error?.message });
             }
         })();
+        return true;
+    }
+    if (message.action === 'resetToFreshInstall') {
+        const senderUrl = sender?.url || '';
+        const extensionOrigin = chrome.runtime.getURL('');
+        if (sender?.tab && !senderUrl.startsWith(extensionOrigin)) {
+            sendResponse?.({ success: false, error: 'forbidden' });
+            return false;
+        }
+        resetExtensionToFreshInstall()
+            .then(() => sendResponse?.({ success: true }))
+            .catch((error) => sendResponse?.({ success: false, error: error?.message || 'reset failed' }));
         return true;
     }
     if (message.action === 'openOptionsPage') {

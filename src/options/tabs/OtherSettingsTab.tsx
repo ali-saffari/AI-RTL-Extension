@@ -179,12 +179,10 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     const handleResetSettings = async () => {
         setResetting(true);
         try {
-            const { uid } = await chrome.storage.sync.get(['uid']);
-            await chrome.storage.sync.clear();
-            if (typeof uid === 'string' && uid) {
-                await chrome.storage.sync.set({ uid });
+            const response = await chrome.runtime.sendMessage({ action: 'resetToFreshInstall' });
+            if (!response?.success) {
+                throw new Error(response?.error || 'reset failed');
             }
-            await chrome.storage.local.clear();
             setResetConfirmOpen(false);
             setSnackbarMessage(t('otherSettings.resetDone'));
             setSnackbarSeverity('success');
