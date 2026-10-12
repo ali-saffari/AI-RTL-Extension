@@ -1351,9 +1351,6 @@ export default function ServiceList({
                                 true,
                                 index < groupedList.pinnedItems.length - 1 || groupedList.groups.length > 0
                             )}
-                            {!searchQuery.trim() && item.service.key === 'gemini' && (
-                                <MissingPermissionBanner isDarkMode={isDarkMode} />
-                            )}
                         </React.Fragment>
                     ))}
                 {groupedList.groups.map((group) => (
@@ -1421,12 +1418,9 @@ export default function ServiceList({
                         {group.items.map((item, index) => (
                             <React.Fragment key={`row-${item.service.key}`}>
                                 {renderServiceRow(item.service, false, index < group.items.length - 1)}
-                                {!searchQuery.trim()
-                                    && item.service.key === 'gemini'
-                                    && !groupedList.pinnedItems.some((pinned) => pinned.service.key === 'gemini')
-                                    && (
-                                        <MissingPermissionBanner isDarkMode={isDarkMode} />
-                                    )}
+                                {!searchQuery.trim() && item.service.key === 'gemini' && (
+                                    <MissingPermissionBanner isDarkMode={isDarkMode} />
+                                )}
                             </React.Fragment>
                         ))}
                     </React.Fragment>
