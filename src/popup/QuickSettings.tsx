@@ -469,14 +469,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             {t('quickSettings.sponsorsCta')}
                         </a>
                     </div>
-                    <a
-                        className="popup-sponsors-box popup-sponsors-box--full"
-                        href="https://t.me/ai_rtl_support"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {t('quickSettings.sponsorAccepts')}
-                    </a>
                     <div className="popup-sponsors-slots">
                         <a
                             className="popup-sponsors-box popup-sponsors-box--half popup-sponsors-box--filled"
