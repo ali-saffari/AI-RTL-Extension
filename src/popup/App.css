@@ -973,6 +973,11 @@ body[data-theme="light"] {
     text-align: right !important;
 }
 
+.install-hint-banner--algorithm .install-hint-banner-toggle {
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .install-hint-banner-title {
     flex: 1;
     text-align: right !important;
@@ -1174,19 +1179,47 @@ body[data-theme="light"] {
     box-sizing: border-box;
 }
 
-.popup-sponsors-caption {
-    font-family: iranyekan, Tahoma, Arial, sans-serif !important;
-    font-size: 0.68rem !important;
-    font-weight: 500 !important;
-    line-height: 1.2 !important;
-    letter-spacing: 0.02em;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.88) !important;
-    flex-shrink: 0;
+.quick-settings-section-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: calc(100% + 16px);
+    margin-left: -8px;
+    margin-right: -8px;
+    padding: 8px 8px 2px;
+    box-sizing: border-box;
+    background: transparent;
+    border-radius: 0;
 }
 
-body[data-theme="light"] .popup-sponsors-caption {
-    color: rgba(15, 23, 42, 0.88) !important;
+.quick-settings-lock > .quick-settings-section-bar {
+    margin-bottom: -6px;
+}
+
+.popup-sponsors-top.quick-settings-section-bar {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.popup-sponsors-caption-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: #00e9ff;
+}
+
+body[data-theme="light"] .popup-sponsors-caption-wrap {
+    color: #1c39bb;
+}
+
+.popup-sponsors-caption {
+    font-family: iranyekan, Tahoma, Arial, sans-serif !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0;
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .popup-sponsors-cta {

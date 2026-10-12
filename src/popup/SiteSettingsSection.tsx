@@ -182,26 +182,40 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         <Box
             id={`site-settings-${entry.serviceKey}`}
             className={highlightedKey === entry.serviceKey ? 'site-settings-card-focus' : undefined}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, borderRadius: '12px' }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 0.35, borderRadius: '12px' }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.25, minWidth: 0 }}>
+            <Box className="quick-settings-section-bar" sx={{ minWidth: 0, justifyContent: 'flex-start' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
                     <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
                         <path d={mdiWrench} />
                     </SvgIcon>
-                    <Typography className="quick-settings-label" sx={{ color: titleColor }}>
+                    <Typography className="quick-settings-label quick-settings-heading" sx={{ color: titleColor }}>
                         {t('quickSettings.siteSpecific')}
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+                <Box
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.55,
+                        minWidth: 0,
+                        px: 0.7,
+                        py: 0.25,
+                        borderRadius: '8px',
+                        border: isDarkMode
+                            ? '1px solid rgba(0, 233, 255, 0.28)'
+                            : '1px solid rgba(28, 57, 187, 0.22)',
+                        background: 'transparent',
+                    }}
+                >
                     {entry.icon ? (
                         <Box
                             component="img"
                             src={chrome.runtime.getURL(entry.icon)}
                             alt=""
                             sx={{
-                                width: 22,
-                                height: 22,
+                                width: 16,
+                                height: 16,
                                 borderRadius: '50%',
                                 objectFit: 'cover',
                                 flexShrink: 0,
@@ -210,11 +224,12 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     ) : null}
                     <Typography
                         sx={{
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            fontSize: '0.68rem',
                             color: titleColor,
-                            lineHeight: 1.3,
+                            lineHeight: 1.2,
                             whiteSpace: 'nowrap',
+                            fontFamily: 'iranyekan',
                         }}
                     >
                         {entry.title}

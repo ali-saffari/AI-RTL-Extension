@@ -16,7 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { mdiOpenInNew, mdiInformationOutline, mdiCog, mdiChevronDown, mdiLinkedin, mdiClose } from '@mdi/js';
+import { mdiInformationOutline, mdiCog, mdiChevronDown, mdiLinkedin, mdiClose, mdiHeartOutline } from '@mdi/js';
 import { ManualRtlSettings } from '../types/manualRtl';
 import ExperimentalBadge from '../components/ExperimentalBadge';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -44,7 +44,7 @@ import {
     loadFontsConfig,
 } from '../utils/fonts';
 import SiteSettingsSection from './SiteSettingsSection';
-import InstallHintBanner from './InstallHintBanner';
+// import InstallHintBanner from './InstallHintBanner'; // kept for restoring algorithm personalization hint
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 import { useI18n } from '../i18n';
@@ -161,9 +161,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     focusNonce = 0,
     extensionEnabled = true,
     onEnableExtension,
-    showAlgorithmHint = false,
-    onAlgorithmHintDismiss,
+    showAlgorithmHint: _showAlgorithmHint = false,
+    onAlgorithmHintDismiss: _onAlgorithmHintDismiss,
 }) => {
+    void _showAlgorithmHint;
+    void _onAlgorithmHintDismiss;
     const { t, dir } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const ALGORITHMS = getAlgorithms(t);
@@ -461,10 +463,15 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                     className={`quick-settings-body-scroll${extensionOff ? ' is-disabled' : ''}`}
                 >
                 <Box className="popup-sponsors popup-sponsors--scroll" aria-label={t('quickSettings.sponsorsAria')}>
-                    <div className="popup-sponsors-top">
-                        <Typography className="popup-sponsors-caption" component="span">
-                            {t('quickSettings.sponsorsCaption')}
-                        </Typography>
+                    <div className="popup-sponsors-top quick-settings-section-bar">
+                        <span className="popup-sponsors-caption-wrap">
+                            <SvgIcon sx={{ fontSize: '1.05rem' }}>
+                                <path d={mdiHeartOutline} />
+                            </SvgIcon>
+                            <Typography className="popup-sponsors-caption quick-settings-label quick-settings-heading" component="span">
+                                {t('quickSettings.sponsorsCaption')}
+                            </Typography>
+                        </span>
                         <a
                             className="popup-sponsors-cta"
                             href="https://t.me/ai_rtl_support"
@@ -528,6 +535,19 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         ) : null}
                     </div>
                 </Box>
+                <Box
+                    aria-hidden
+                    sx={{
+                        width: 'calc(100% + 16px)',
+                        mx: '-8px',
+                        height: '1px',
+                        flexShrink: 0,
+                        backgroundColor: isDarkMode
+                            ? 'rgba(0, 233, 255, 0.45)'
+                            : 'rgba(30, 64, 175, 0.4)',
+                    }}
+                />
+                {/* Algorithm personalization hint hidden for now — do not remove algorithmHintDismissed storage.
                 {showAlgorithmHint ? (
                     <InstallHintBanner
                         variant="algorithm"
@@ -541,19 +561,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         }}
                     />
                 ) : null}
-                <Box
-                    aria-hidden
-                    sx={{
-                        mx: 0.25,
-                        mt: '14px',
-                        mb: '14px',
-                        height: '1px',
-                        flexShrink: 0,
-                        backgroundColor: isDarkMode
-                            ? 'rgba(0, 233, 255, 0.45)'
-                            : 'rgba(30, 64, 175, 0.4)',
-                    }}
-                />
+                */}
                 <SiteSettingsSection
                     isDarkMode={isDarkMode}
                     activeServiceKey={activeServiceKey}
@@ -568,8 +576,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         </Typography>
                     </Box>
                 ) : null}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5, pt: 0.5, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0 }}>
+                <Box className="quick-settings-section-bar" sx={{ minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexShrink: 0, minWidth: 0 }}>
                         <SvgIcon sx={{ fontSize: '1.05rem', color: accent }}>
                             <path d={mdiCog} />
                         </SvgIcon>
@@ -585,11 +593,6 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         size="small"
                         disabled={controlsDisabled}
                         onClick={() => openOptions()}
-                        endIcon={
-                            <SvgIcon sx={{ fontSize: '0.8rem !important' }}>
-                                <path d={mdiOpenInNew} />
-                            </SvgIcon>
-                        }
                         sx={{
                             minWidth: 0,
                             px: 0.5,

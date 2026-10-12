@@ -753,6 +753,7 @@ function App() {
         }
     }, []);
 
+    // Kept for restoring algorithm personalization hint UI later
     const handleAlgorithmHintDismiss = React.useCallback(() => {
         setAlgorithmHintDismissed(true);
         try {
@@ -761,6 +762,8 @@ function App() {
             // Silently handle save errors
         }
     }, []);
+    void handleAlgorithmHintDismiss;
+    void algorithmHintDismissed;
 
     // Show loading screen while data is being loaded
     if (isLoading) {
@@ -1327,8 +1330,9 @@ function App() {
                         focusNonce={siteSettingsFocus?.nonce || 0}
                         extensionEnabled={extensionEnabled}
                         onEnableExtension={() => handleExtensionEnabledChange(true)}
-                        showAlgorithmHint={!algorithmHintDismissed && rtlAlgorithm === 'advanced_full'}
-                        onAlgorithmHintDismiss={handleAlgorithmHintDismiss}
+                        // Algorithm personalization hint UI off — storage keys kept for later restore
+                        // showAlgorithmHint={!algorithmHintDismissed && rtlAlgorithm === 'advanced_full'}
+                        // onAlgorithmHintDismiss={handleAlgorithmHintDismiss}
                     />
                 </div>
                 <div className="popup-side-slot">

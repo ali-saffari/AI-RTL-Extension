@@ -57,29 +57,47 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
             {t('installHint.defaultOff')}
         </Typography>
     );
+    const isAlgorithm = variant === 'algorithm';
     const collapsibleTitle = variant === 'install'
         ? t('installHint.installTitle')
-        : variant === 'algorithm'
+        : isAlgorithm
             ? t('installHint.algorithmTitle')
             : t('installHint.troubleshootingTitle');
 
     return (
         <Box
-            className="install-hint-banner"
+            className={`install-hint-banner${isAlgorithm ? ' install-hint-banner--algorithm' : ''}`}
             dir={dir}
             style={{ direction: dir, textAlign: contentAlign }}
-            sx={{
-                mx: embedded ? 0 : 2,
-                mb: embedded ? 0 : 1.5,
-                p: embedded ? 1.25 : 1.5,
-                borderRadius: 1.5,
-                background: isDarkMode
-                    ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.12) 0%, rgba(0, 233, 255, 0.04) 100%)'
-                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.04) 100%)',
-                border: isDarkMode
-                    ? '1px solid rgba(0, 233, 255, 0.35)'
-                    : '1px solid rgba(30, 64, 175, 0.25)'
-            }}
+            sx={
+                isAlgorithm
+                    ? {
+                        width: embedded ? 'calc(100% + 16px)' : 'auto',
+                        mx: embedded ? '-8px' : 2,
+                        mb: embedded ? 0 : 1.5,
+                        px: embedded ? '8px' : 1.25,
+                        py: 0.95,
+                        borderRadius: 0,
+                        border: 'none',
+                        background: isDarkMode
+                            ? 'rgba(0, 233, 255, 0.08)'
+                            : 'rgba(28, 57, 187, 0.07)',
+                        boxShadow: 'none',
+                        boxSizing: 'border-box',
+                    }
+                    : {
+                        mx: embedded ? 0 : 2,
+                        mb: embedded ? 0 : 1.5,
+                        p: embedded ? 1.25 : 1.5,
+                        borderRadius: 1.5,
+                        background: isDarkMode
+                            ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.12) 0%, rgba(0, 233, 255, 0.04) 100%)'
+                            : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.04) 100%)',
+                        border: isDarkMode
+                            ? '1px solid rgba(0, 233, 255, 0.35)'
+                            : '1px solid rgba(30, 64, 175, 0.25)',
+                    }
+            }
         >
             {variant === 'notebook' ? (
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
@@ -128,38 +146,71 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         style={{ direction: dir, textAlign: contentAlign }}
                         onClick={() => setExpanded((open) => !open)}
                     >
-                        <SvgIcon
-                            sx={{
-                                fontSize: '1.05rem',
-                                color: accentColor,
-                                flexShrink: 0
-                            }}
-                        >
-                            <path d={mdiInformationOutline} />
-                        </SvgIcon>
-                        <Typography
-                            className="install-hint-banner-title"
-                            style={{ direction: dir, textAlign: contentAlign }}
-                            sx={{
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                fontFamily: 'iranyekan',
-                                color: accentColor
-                            }}
-                        >
-                            {collapsibleTitle}
-                        </Typography>
-                        <SvgIcon
-                            sx={{
-                                fontSize: '1.15rem',
-                                color: accentColor,
-                                flexShrink: 0,
-                                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                transition: 'transform 0.2s ease'
-                            }}
-                        >
-                            <path d={mdiChevronDown} />
-                        </SvgIcon>
+                        {isAlgorithm ? (
+                            <>
+                                <SvgIcon sx={{ fontSize: '1.1rem', color: accentColor, flexShrink: 0 }}>
+                                    <path d={mdiInformationOutline} />
+                                </SvgIcon>
+                                <Typography
+                                    className="install-hint-banner-title"
+                                    style={{ direction: dir, textAlign: contentAlign }}
+                                    sx={{
+                                        fontSize: '0.78rem',
+                                        fontWeight: 600,
+                                        fontFamily: 'iranyekan',
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.92)' : '#0f172a',
+                                    }}
+                                >
+                                    {collapsibleTitle}
+                                </Typography>
+                                <SvgIcon
+                                    sx={{
+                                        fontSize: '1.1rem',
+                                        color: isDarkMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(15, 23, 42, 0.55)',
+                                        flexShrink: 0,
+                                        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                        transition: 'transform 0.2s ease',
+                                    }}
+                                >
+                                    <path d={mdiChevronDown} />
+                                </SvgIcon>
+                            </>
+                        ) : (
+                            <>
+                                <SvgIcon
+                                    sx={{
+                                        fontSize: '1.05rem',
+                                        color: accentColor,
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <path d={mdiInformationOutline} />
+                                </SvgIcon>
+                                <Typography
+                                    className="install-hint-banner-title"
+                                    style={{ direction: dir, textAlign: contentAlign }}
+                                    sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        fontFamily: 'iranyekan',
+                                        color: accentColor,
+                                    }}
+                                >
+                                    {collapsibleTitle}
+                                </Typography>
+                                <SvgIcon
+                                    sx={{
+                                        fontSize: '1.15rem',
+                                        color: accentColor,
+                                        flexShrink: 0,
+                                        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                        transition: 'transform 0.2s ease',
+                                    }}
+                                >
+                                    <path d={mdiChevronDown} />
+                                </SvgIcon>
+                            </>
+                        )}
                     </Box>
                     <Collapse in={expanded}>
                         <Box sx={{ mt: 1.2 }} style={{ direction: dir, textAlign: contentAlign }}>
