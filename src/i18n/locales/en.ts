@@ -200,6 +200,7 @@ export const enMessages: Messages = {
         newBadge: 'New',
         siteSettings: 'Site settings',
         siteSettingsAria: 'Site settings for {name}',
+        siteSettingsNotice: 'To use this site’s settings, open the site first, then open the menu. The settings are on the left side of the menu.',
         extensionOff: 'The extension is off',
         enable: 'Turn on',
         edgeBlocked: 'In Microsoft Edge, no extension works on Microsoft sites (including {name}). This is a security limit set by Microsoft. To use this extension on {name}, please use Chrome.',

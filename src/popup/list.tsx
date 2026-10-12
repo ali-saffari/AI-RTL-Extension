@@ -23,7 +23,7 @@ import {
     Paper,
     Collapse,
 } from '@mui/material';
-import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid, mdiWrench } from '@mdi/js';
+import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid, mdiWrenchOutline } from '@mdi/js';
 import { normalizeSiteSettings, serviceHasSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
@@ -268,6 +268,7 @@ export default function ServiceList({
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
+    const [siteSettingsNotice, setSiteSettingsNotice] = useState<Service | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [permissionModalOpen, setPermissionModalOpen] = useState(false);
     const [permissionServiceName, setPermissionServiceName] = useState<string>('');
@@ -1032,7 +1033,11 @@ export default function ServiceList({
                                     onClick={(event) => {
                                         event.preventDefault();
                                         event.stopPropagation();
-                                        onOpenSiteSettings?.(service.key);
+                                        if (service.key === activeServiceKey) {
+                                            onOpenSiteSettings?.(service.key);
+                                            return;
+                                        }
+                                        setSiteSettingsNotice(service);
                                     }}
                                     sx={{
                                         ml: 0.5,
@@ -1045,7 +1050,7 @@ export default function ServiceList({
                                     }}
                                 >
                                     <SvgIcon sx={{ fontSize: '1.15rem' }}>
-                                        <path d={mdiWrench} />
+                                        <path d={mdiWrenchOutline} />
                                     </SvgIcon>
                                 </IconButton>
                             </Tooltip>
@@ -1421,6 +1426,39 @@ export default function ServiceList({
                 visible={showPermissionsHint}
                 isDarkMode={isDarkMode}
             />
+
+            <Dialog
+                open={Boolean(siteSettingsNotice)}
+                onClose={() => setSiteSettingsNotice(null)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    dir,
+                    style: { direction: dir, padding: 8 },
+                }}
+            >
+                <DialogTitle style={{ direction: dir, textAlign: contentAlign, fontSize: '1rem', fontWeight: 500, padding: '16px 16px 8px 16px' }}>
+                    {t('list.siteSettingsAria', { name: siteSettingsNotice?.name ?? '' })}
+                </DialogTitle>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
+                    <Typography
+                        variant="body1"
+                        paragraph
+                        style={{ direction: dir, textAlign: contentAlign, fontSize: '0.80rem', fontWeight: 300, marginBottom: 11 }}
+                    >
+                        {t('list.siteSettingsNotice')}
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ direction: dir, justifyContent: 'flex-end', padding: '8px 16px 16px 16px' }}>
+                    <Button
+                        onClick={() => setSiteSettingsNotice(null)}
+                        variant="contained"
+                        color="primary"
+                    >
+                        {t('list.understood')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Generic Help Modal */}
             <Dialog 

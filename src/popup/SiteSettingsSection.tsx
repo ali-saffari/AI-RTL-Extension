@@ -92,17 +92,31 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
             return;
         }
         setHighlightedKey(focusSiteKey);
-        const node = document.getElementById(`site-settings-${focusSiteKey}`);
-        const scroll = () => {
-            node?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        const reveal = () => {
+            const node = document.getElementById(`site-settings-${focusSiteKey}`);
+            const container = node?.closest('.quick-settings-body-scroll');
+            if (!node || !(container instanceof HTMLElement)) {
+                return;
+            }
+            const nodeRect = node.getBoundingClientRect();
+            const box = container.getBoundingClientRect();
+            if (box.height < 40 || box.width < 40) {
+                return;
+            }
+            const hidden = nodeRect.top < box.top + 4 || nodeRect.bottom > box.bottom - 4;
+            if (!hidden) {
+                return;
+            }
+            const top = nodeRect.top - box.top + container.scrollTop - 8;
+            container.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
         };
-        scroll();
-        const scrollTimer = window.setTimeout(scroll, 420);
+        reveal();
+        const revealTimer = window.setTimeout(reveal, 420);
         const highlightTimer = window.setTimeout(() => {
             setHighlightedKey((current) => (current === focusSiteKey ? null : current));
         }, 2200);
         return () => {
-            window.clearTimeout(scrollTimer);
+            window.clearTimeout(revealTimer);
             window.clearTimeout(highlightTimer);
         };
     }, [activeServiceKey, focusSiteKey, focusNonce]);

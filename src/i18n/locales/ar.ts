@@ -200,6 +200,7 @@ export const arMessages: Messages = {
         newBadge: 'جديد',
         siteSettings: 'إعدادات خاصة',
         siteSettingsAria: 'إعدادات خاصة لـ {name}',
+        siteSettingsNotice: 'لاستخدام الإعدادات الخاصة، افتح الموقع أولًا ثم افتح القائمة. الإعدادات متاحة في الجانب الأيسر من القائمة.',
         extensionOff: 'الإضافة متوقفة',
         enable: 'تشغيل',
         edgeBlocked: 'في متصفح Microsoft Edge لا تعمل أي إضافة على مواقع مايكروسوفت (بما فيها {name}). هذا قيد أمني من مايكروسوفت. لاستخدام هذه الإضافة على {name} استخدم متصفح Chrome.',
