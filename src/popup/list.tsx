@@ -986,15 +986,16 @@ export default function ServiceList({
                                     )}
                                     {isActive && (
                                         <Box component="span" sx={{
-                                            px: 1,
-                                            py: 0.3,
+                                            px: 0.7,
+                                            py: 0.1,
+                                            lineHeight: 1.4,
                                             bgcolor: isDarkMode
                                                 ? 'rgba(76, 175, 80, 0.2)'
                                                 : 'rgba(76, 175, 80, 0.15)',
                                             border: `1px solid ${isDarkMode ? 'rgba(76, 175, 80, 0.5)' : 'rgba(76, 175, 80, 0.4)'}`,
                                             color: isDarkMode ? '#4caf50' : '#2e7d32',
-                                            borderRadius: 1,
-                                            fontSize: '0.6rem',
+                                            borderRadius: 0.75,
+                                            fontSize: '0.56rem',
                                             fontWeight: 600
                                         }}>
                                             {t('list.openBadge')}
@@ -1002,8 +1003,9 @@ export default function ServiceList({
                                     )}
                                     {service.new && (
                                         <Box component="span" sx={{
-                                            px: 1,
-                                            py: 0.3,
+                                            px: 0.7,
+                                            py: 0.1,
+                                            lineHeight: 1.4,
                                             bgcolor: extensionEnabled
                                                 ? (isDarkMode ? 'rgb(33, 46, 65)' : 'rgba(30, 64, 175, 0.1)')
                                                 : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
@@ -1015,8 +1017,8 @@ export default function ServiceList({
                                             color: extensionEnabled
                                                 ? (isDarkMode ? '#00e9ff' : '#1c39bb')
                                                 : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
-                                            borderRadius: 1,
-                                            fontSize: '0.6rem',
+                                            borderRadius: 0.75,
+                                            fontSize: '0.56rem',
                                             fontWeight: 600,
                                             filter: extensionEnabled ? 'none' : 'grayscale(1)',
                                             transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
