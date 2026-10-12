@@ -888,6 +888,9 @@ export default function ServiceList({
 
     const renderServiceRow = (service: Service, pinned: boolean, showDivider: boolean) => {
         const isActive = service.key === activeServiceKey;
+        const showWrenchIcon = serviceHasSiteSettings(service.key);
+        const showHelpIcon = Boolean(SERVICE_HELP_KEYS[service.key])
+            && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key));
         return (
             <React.Fragment key={pinned ? `pinned-${service.key}` : service.key}>
                 <ListItem
@@ -1025,7 +1028,7 @@ export default function ServiceList({
                             }
                         />
 
-                        {serviceHasSiteSettings(service.key) && (
+                        {showWrenchIcon && (
                             <Tooltip title={t('list.siteSettings')}>
                                 <IconButton
                                     size="small"
@@ -1040,7 +1043,9 @@ export default function ServiceList({
                                         setSiteSettingsNotice(service);
                                     }}
                                     sx={{
-                                        ml: 0.5,
+                                        m: 0,
+                                        p: 0,
+                                        ml: showHelpIcon ? '6px' : '-4px',
                                         color: isDarkMode ? '#00e9ff' : '#1c39bb',
                                         '&:hover': {
                                             backgroundColor: isDarkMode
@@ -1056,11 +1061,13 @@ export default function ServiceList({
                             </Tooltip>
                         )}
 
-                        {SERVICE_HELP_KEYS[service.key] && !(isEdge && EDGE_BLOCKED_SERVICE_KEYS.has(service.key)) && (
+                        {showHelpIcon && (
                             <IconButton
                                 size="small"
                                 sx={{
-                                    ml: 1,
+                                    m: 0,
+                                    p: 0,
+                                    ml: '-4px',
                                     color: 'text.primary',
                                     opacity: 0.8,
                                     '&:hover': {
