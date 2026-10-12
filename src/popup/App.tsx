@@ -667,6 +667,40 @@ function App() {
     }, [hoverExpandLocked, sideMenuHovered, isLoading]);
 
     React.useEffect(() => {
+        const closeSideMenuIfPointerLeftPopup = (event: MouseEvent) => {
+            const next = event.relatedTarget;
+            if (next instanceof Node && document.documentElement.contains(next)) {
+                return;
+            }
+            setSideMenuHovered(false);
+        };
+
+        const root = document.documentElement;
+        root.addEventListener('mouseleave', closeSideMenuIfPointerLeftPopup);
+        root.addEventListener('pointerleave', closeSideMenuIfPointerLeftPopup);
+        document.addEventListener('mouseout', closeSideMenuIfPointerLeftPopup);
+        return () => {
+            root.removeEventListener('mouseleave', closeSideMenuIfPointerLeftPopup);
+            root.removeEventListener('pointerleave', closeSideMenuIfPointerLeftPopup);
+            document.removeEventListener('mouseout', closeSideMenuIfPointerLeftPopup);
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (!sideMenuHovered) {
+            return;
+        }
+
+        const id = window.setInterval(() => {
+            if (!document.documentElement.matches(':hover')) {
+                setSideMenuHovered(false);
+            }
+        }, 60);
+
+        return () => window.clearInterval(id);
+    }, [sideMenuHovered]);
+
+    React.useEffect(() => {
         if (isLoading) {
             return;
         }
