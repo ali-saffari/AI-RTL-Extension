@@ -180,7 +180,7 @@ export function applyDirectionMarker($element, direction, options = {}) {
 
     const rtlClass = options.rtlClass;
     const ltrClass = options.ltrClass;
-    const dir = direction || $element.attr('data-direction') || $element.attr('dir');
+    const dir = direction || $element.attr('data-ai-rtl-direction') || $element.attr('dir');
 
     if (rtlClass) {
         if (dir === 'rtl') {

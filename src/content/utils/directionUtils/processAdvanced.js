@@ -37,6 +37,164 @@ import {
 
 const FORMATTING_TAGS = ['strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins', 'mark', 'small', 'sub', 'sup', 'var', 'code', 'kbd', 'samp', 'cite', 'q', 'abbr', 'dfn', 'time', 'a', 'button'];
 
+function isRadioGroupElement(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    if (el.getAttribute('role') === 'radiogroup') {
+        return true;
+    }
+    const className = typeof el.className === 'string' ? el.className : '';
+    return /(^|\s)RadioGroup-/.test(className);
+}
+
+function isRadioGroupItemElement(el) {
+    if (!el || el.nodeType !== 1) {
+        return false;
+    }
+    return el.getAttribute('data-d-component') === 'radio';
+}
+
+function getListLikeItems($element) {
+    if (!$element || !$element.length) {
+        return AQ();
+    }
+    const el = $element[0];
+    if (el.tagName && (el.tagName.toLowerCase() === 'ol' || el.tagName.toLowerCase() === 'ul')) {
+        return $element.children('li');
+    }
+    if (isRadioGroupElement(el)) {
+        const labels = [];
+        $element.children('[data-d-component="radio"]').each(function () {
+            const label =
+                this.querySelector('label') ||
+                this.querySelector('[class^="RadioLabel-"]') ||
+                this.querySelector('[class*=" RadioLabel-"]');
+            labels.push(label || this);
+        });
+        if (labels.length) {
+            return AQ(labels);
+        }
+        // Fallback: direct labels when ChatGPT omits the radio wrapper.
+        return $element.children('label, [class^="RadioLabel-"], [class*=" RadioLabel-"]');
+    }
+    return AQ();
+}
+
+function setListLikeDataDirection($element, listDirection) {
+    $element.attr('data-ai-rtl-direction', listDirection);
+}
+
+/**
+ * Shared ul/ol + radiogroup path: per-item direction, then majority on the group.
+ */
+function processListLikeGroup($element, options = {}) {
+    const {
+        fontClass,
+        processedClass,
+        setTextAlign,
+        setUnicodeBidi,
+        rtlClass,
+        ltrClass,
+        codeFontClass,
+        directionClassOptions
+    } = options;
+
+    const $items = getListLikeItems($element);
+    if (!$items.length) {
+        return false;
+    }
+
+    setDebugAttr($element, 'data-debug-mode', 'list-processing');
+    setDebugAttr($element, 'data-as-mode', 'list-processing');
+
+    let processedCount = 0;
+    let unprocessedCount = 0;
+
+    $items.each(function () {
+        const $item = AQ(this);
+        if ($item.hasClass(processedClass)) {
+            processedCount++;
+            return;
+        }
+        unprocessedCount++;
+        setTextDirectionAndFont(this, {
+            fontClass,
+            setTextAlign,
+            setUnicodeBidi,
+            rtlClass,
+            ltrClass
+        });
+        $item.find(CODE_BLOCK_SELECTOR).each(function () {
+            processCodeBlockNode(AQ(this), { fontClass, setTextAlign, processedClass, codeFontClass });
+        });
+    });
+
+    const processedItems = $items.filter('[dir]');
+    let rtlCount = 0;
+    let ltrCount = 0;
+
+    processedItems.each(function () {
+        const dir = AQ(this).attr('data-ai-rtl-direction');
+        if (dir === 'rtl') {
+            rtlCount++;
+        } else if (dir === 'ltr') {
+            ltrCount++;
+        }
+    });
+
+    let listDirection;
+    let debugReason;
+    if (rtlCount > ltrCount) {
+        listDirection = 'rtl';
+        debugReason = `list-rtl-majority-${rtlCount}-${ltrCount}`;
+    } else if (ltrCount > rtlCount) {
+        listDirection = 'ltr';
+        debugReason = `list-ltr-majority-${ltrCount}-${rtlCount}`;
+    } else {
+        const prevElementDir = $element.prev().attr('data-ai-rtl-direction') || $element.prev().attr('dir');
+        if (prevElementDir && (prevElementDir === 'rtl' || prevElementDir === 'ltr')) {
+            listDirection = prevElementDir;
+            debugReason = `list-prev-dir-${prevElementDir}`;
+        } else {
+            const listText = $element.text().trim();
+            if (listText) {
+                const persianWords = (listText.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g) || []).length;
+                const englishWords = (listText.match(/[a-zA-Z]+/g) || []).length;
+
+                if (persianWords > englishWords) {
+                    listDirection = 'rtl';
+                    debugReason = `list-persian-words-${persianWords}-${englishWords}`;
+                } else if (englishWords > persianWords) {
+                    listDirection = 'ltr';
+                    debugReason = `list-english-words-${englishWords}-${persianWords}`;
+                } else {
+                    listDirection = 'ltr';
+                    debugReason = 'list-words-equal-default-ltr';
+                }
+            } else {
+                listDirection = 'ltr';
+                debugReason = 'list-default-ltr';
+            }
+        }
+    }
+
+    processedItems.each(function () {
+        AQ(this).attr('data-org-dir', AQ(this).attr('data-ai-rtl-direction') || AQ(this).attr('dir'));
+        applyDirectionMarker(AQ(this), listDirection, directionClassOptions);
+        applyTextAlignByDirection(this, listDirection, setTextAlign);
+        applyUnicodeBidiByDirection(this, listDirection, setUnicodeBidi);
+    });
+
+    setListLikeDataDirection($element, listDirection);
+    applyDirectionMarker($element, listDirection, directionClassOptions);
+    setDebugAttr($element, 'data-debug-reason', debugReason);
+    setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
+    applyTextAlignByDirection($element, listDirection, setTextAlign);
+    applyUnicodeBidiByDirection($element, listDirection, setUnicodeBidi);
+    return true;
+}
+
 function isInsideIgnored(el, ignoreSelector) {
     if (!ignoreSelector || !el || !el.closest) {
         return false;
@@ -251,7 +409,7 @@ export function processTextElementsAdvanced(container, options = {}) {
 
             // console.log('textToUse', textToUse , 'direction', direction);
 
-             $element.attr('data-direction', direction);
+             $element.attr('data-ai-rtl-direction', direction);
             applyDirectionMarker($element, direction, directionClassOptions);
             if (fontClass) {
                 $element.addClass(fontClass);
@@ -305,7 +463,7 @@ export function processTextElementsAdvanced(container, options = {}) {
                     // Apply majority direction to all headers if we have a majority
                     if (majorityDir) {
                         mainContainer.find(tagName).each(function() {
-                            AQ(this).attr('data-direction', majorityDir);
+                            AQ(this).attr('data-ai-rtl-direction', majorityDir);
                             applyDirectionMarker(AQ(this), majorityDir, directionClassOptions);
                 
                             applyTextAlignByDirection(this, majorityDir, setTextAlign);
@@ -366,6 +524,12 @@ export function processTextElementsAdvanced(container, options = {}) {
             }
             return;
         }
+
+        // Radio items are processed by the parent radiogroup (same as li under ul/ol).
+        if (isRadioGroupItemElement(this) && isRadioGroupElement(this.parentElement)) {
+            setDebugAttr($element, 'data-debug-mode', 'radio-inside-group-skipped');
+            return;
+        }
         
         // Skip div elements with rounded-xl class (for Copilot code sections),
         // unless they wrap a code editor that should follow the code setting
@@ -412,7 +576,11 @@ export function processTextElementsAdvanced(container, options = {}) {
             if ($directTable.length) {
                 setDebugAttr($element, 'data-debug-mode', 'div-ds-scroll-area-table-ltr');
                 $element.attr('dir', 'ltr');
-                $element.removeAttr('data-direction');
+                $element.removeAttr('data-ai-rtl-direction');
+                const legacyDirection = $element.attr('data-direction');
+                if (legacyDirection === 'rtl' || legacyDirection === 'ltr') {
+                    $element.removeAttr('data-direction');
+                }
                 if (fontClass) {
                     $element.addClass(fontClass);
                 }
@@ -428,7 +596,7 @@ export function processTextElementsAdvanced(container, options = {}) {
             const text = $element.text();
             if (text && text.trim()) {
                 const direction = detectTextDirection(text);
-                $element.attr('data-direction', direction);
+                $element.attr('data-ai-rtl-direction', direction);
                 applyDirectionMarker($element, direction, directionClassOptions);
                 if (fontClass) {
                     $element.addClass(fontClass);
@@ -458,6 +626,9 @@ export function processTextElementsAdvanced(container, options = {}) {
         if (isKatexTreeElement(this) || isSvgTreeElement(this)) {
             setDebugAttr($element, 'data-debug-mode', 'structured-media-skipped');
             $element.attr("dir", "ltr");
+            if (isKatexTreeElement(this)) {
+                $element.css('text-align', '');
+            }
             $element.find('*').addClass(processedClass);
             $element.addClass(processedClass);
             return;
@@ -557,127 +728,26 @@ export function processTextElementsAdvanced(container, options = {}) {
 
                 } else {
                     // حالت 4: هیچ فرزندی allSkipTags نیست
-               
-                    
-                    // اگر المان ol یا ul هست، جدا تصمیم بگیر
-                    if (tagName === 'ol' || tagName === 'ul') {
-                        setDebugAttr($element, 'data-debug-mode', 'list-processing');
-                        setDebugAttr($element, 'data-as-mode', 'list-processing');
-                        
-                        // آیتم‌های داخل لیست رو مستقل بررسی کن
-                        const listItems = $element.children('li');
-                        let processedCount = 0;
-                        let unprocessedCount = 0;
-                        
-                        listItems.each(function() {
-                            const $li = AQ(this);
-                            if ($li.hasClass(processedClass)) {
-                                processedCount++;
-                            } else {
-                                unprocessedCount++;
-                                
-                                // بررسی اولین چیلد - اگر strong بود، از محتوای strong استفاده کن
-                                // const firstChild = $li.children().first();
-                                // let textForDirection = null;
-                                
-                                // if (firstChild.length && firstChild.is('strong')) {
-                                //     textForDirection = firstChild.text().trim();
-                                //     $li.attr('data-debug-mode', 'li-first-child-strong');
-                                // }
-                                setTextDirectionAndFont(this, { 
-                                    fontClass, 
-                                    setTextAlign,
-                                    setUnicodeBidi,
-                                    rtlClass,
-                                    ltrClass
-                                    // text: textForDirection 
-                                });
-                                
-                                // آیتم‌های پردازش نشده رو با setTextDirectionAndFont پردازش کن
-                            
+                    // ul/ol و radiogroupهای ChatGPT مثل لیست پردازش می‌شوند.
+                    const isListLike =
+                        tagName === 'ol' ||
+                        tagName === 'ul' ||
+                        isRadioGroupElement(this);
 
-                                $li.find(CODE_BLOCK_SELECTOR).each(function() {
-                                    processCodeBlockNode(AQ(this), { fontClass, setTextAlign, processedClass, codeFontClass });
-                                })
-
-                            }
-                        });
-                        
-                        // بر اساس جهت آیتم‌های لیست، جهت اصل لیست رو تعیین کن
-                        const processedItems = $element.find('li[dir]');
-                        let rtlCount = 0;
-                        let ltrCount = 0;
-                        
-                        processedItems.each(function() {
-                            const dir = AQ(this).attr('data-direction');
-                            if (dir === 'rtl') {
-                                rtlCount++;
-                            } else if (dir === 'ltr') {
-                                ltrCount++;
-                            }
-                        });
-                        
-                        let listDirection;
-                        let debugReason;
-                        if (rtlCount > ltrCount) {
-                            listDirection = 'rtl';
-                            debugReason = `list-rtl-majority-${rtlCount}-${ltrCount}`;
-                        } else if (ltrCount > rtlCount) {
-                            listDirection = 'ltr';
-                            debugReason = `list-ltr-majority-${ltrCount}-${rtlCount}`;
-                        } else {
-                            // اگر تعداد مساوی باشه، به المنت قبل نگاه کن
-                            const prevElementDir = $element.prev().attr('data-direction') || $element.prev().attr('dir');
-                            if (prevElementDir && (prevElementDir === 'rtl' || prevElementDir === 'ltr')) {
-                                listDirection = prevElementDir;
-                                debugReason = `list-prev-dir-${prevElementDir}`;
-                            } else {
-                                // اگر المنت قبلی وجود نداشت، تعداد کلمات فارسی و انگلیسی رو بشمار
-                                const listText = $element.text().trim();
-                                if (listText) {
-                                    const persianWords = (listText.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g) || []).length;
-                                    const englishWords = (listText.match(/[a-zA-Z]+/g) || []).length;
-                                    
-                                    if (persianWords > englishWords) {
-                                        listDirection = 'rtl';
-                                        debugReason = `list-persian-words-${persianWords}-${englishWords}`;
-                                    } else if (englishWords > persianWords) {
-                                        listDirection = 'ltr';
-                                        debugReason = `list-english-words-${englishWords}-${persianWords}`;
-                                    } else {
-                                        listDirection = 'ltr';
-                                        debugReason = 'list-words-equal-default-ltr';
-                                    }
-                                } else {
-                                    listDirection = 'ltr';
-                                    debugReason = 'list-default-ltr';
-                                }
-                            }
-                        }
-                        
-              
-                        // جهت آیتم‌ها رو به جهت لیست تغییر بده
-                        processedItems.each(function() {
-
-                            AQ(this).attr('data-org-dir',  AQ(this).attr('data-direction') || AQ(this).attr('dir'));
-
-                            // AQ(this).attr('data-dir', listDirection);
-                           
-                            applyDirectionMarker(AQ(this), listDirection, directionClassOptions);
-                            
-                            applyTextAlignByDirection(this, listDirection, setTextAlign);
-                            applyUnicodeBidiByDirection(this, listDirection, setUnicodeBidi);
-                           
-                        });
-                        
-                        $element.attr('data-direction', listDirection);
-                        applyDirectionMarker($element, listDirection, directionClassOptions);
-                        setDebugAttr($element, 'data-debug-reason', debugReason);
-                        setDebugAttr($element, 'data-debug-processed', `${processedCount}-${unprocessedCount}`);
-                        
-                        applyTextAlignByDirection($element, listDirection, setTextAlign);
-                        applyUnicodeBidiByDirection($element, listDirection, setUnicodeBidi);
-                        
+                    if (
+                        isListLike &&
+                        processListLikeGroup($element, {
+                            fontClass,
+                            processedClass,
+                            setTextAlign,
+                            setUnicodeBidi,
+                            rtlClass,
+                            ltrClass,
+                            codeFontClass,
+                            directionClassOptions
+                        })
+                    ) {
+                        // Handled as list-like group.
                     } else {
                         // برای سایر المان‌ها، پردازش بازگشتی انجام بده
                         processTextElementsAdvanced($element, {
@@ -697,9 +767,10 @@ export function processTextElementsAdvanced(container, options = {}) {
                         });
 
                         // برای خود المان هم تصمیم بگیر
-                    
+                        // Avoid clobbering ChatGPT radiogroup layout data-direction="col|row".
+                        if (!isRadioGroupElement(this)) {
                             setTextDirectionAndFont(this, { fontClass, setTextAlign, setUnicodeBidi, rtlClass, ltrClass, ignoreSelector });
-                        
+                        }
 
                         setDebugAttr($element, 'data-debug-mode', 'no-formatting-children');
                     }

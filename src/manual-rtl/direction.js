@@ -2,6 +2,31 @@ import { detectTextDirection } from '../content/utils/analyzeDirection.js';
 import { applyLogoDisplayToElement } from './logo.js';
 import { manualRtlState } from './state.js';
 
+const ALIGN_RTL_CLASS = 'AsAlignRtl';
+const ALIGN_LTR_CLASS = 'AsAlignLtr';
+
+function applyAlignClass(element, direction) {
+    if (!element || !element.classList) {
+        return;
+    }
+    if (direction === 'rtl') {
+        element.classList.remove(ALIGN_LTR_CLASS);
+        element.classList.add(ALIGN_RTL_CLASS);
+        return;
+    }
+    if (direction === 'ltr') {
+        element.classList.remove(ALIGN_RTL_CLASS);
+        element.classList.add(ALIGN_LTR_CLASS);
+    }
+}
+
+function clearAlignClasses(element) {
+    if (!element || !element.classList) {
+        return;
+    }
+    element.classList.remove(ALIGN_RTL_CLASS, ALIGN_LTR_CLASS);
+}
+
 export function applyDirection(element, direction) {
     if (!element) {
         console.error('[RTL Text Selector] ❌ No element provided!');
@@ -41,6 +66,12 @@ export function applyDirection(element, direction) {
         console.error('[RTL Text Selector] ❌ Error setting direction style:', error);
     }
 
+    try {
+        applyAlignClass(element, finalDirection);
+    } catch (error) {
+        console.error('[RTL Text Selector] ❌ Error setting align class:', error);
+    }
+
     // اعمال فونت اگر تنظیمات فعال باشد و فونتی انتخاب شده باشد
     const applyFont = manualRtlState.manualRtlSettings?.applyFont !== false;
     const fontFamily = manualRtlState.selectedFontFamily;
@@ -63,6 +94,13 @@ export function hasDirectionChanges(element) {
 
     // بررسی اینکه آیا element کلاس افزونه را دارد یا نه
     if (element.classList && element.classList.contains('rtl-manual-direction-element')) {
+        return true;
+    }
+
+    if (
+        element.classList &&
+        (element.classList.contains(ALIGN_RTL_CLASS) || element.classList.contains(ALIGN_LTR_CLASS))
+    ) {
         return true;
     }
 
@@ -138,6 +176,7 @@ export function removeDirectionChanges(element) {
 
         // حذف کلاس‌های مربوط به افزونه
         if (element.classList) {
+            clearAlignClasses(element);
             element.classList.remove('rtl-manual-direction-element');
             element.classList.remove('rtl-manual-logo-always');
             element.classList.remove('rtl-manual-logo-hover');

@@ -113,7 +113,7 @@ function isElementDirectionRtl(el) {
     if (!el || el.nodeType !== 1) {
         return false;
     }
-    const dirAttr = (el.getAttribute('dir') || el.getAttribute('data-direction') || '').toLowerCase();
+    const dirAttr = (el.getAttribute('dir') || el.getAttribute('data-ai-rtl-direction') || '').toLowerCase();
     if (dirAttr === 'rtl') {
         return true;
     }
@@ -551,7 +551,7 @@ export function processLockedEditorByCss(element, rtlAlgorithm, options = {}) {
     if (processedClass) {
         $element.addClass(processedClass);
     }
-    el.removeAttribute('data-direction');
+    el.removeAttribute('data-ai-rtl-direction');
     el.style.removeProperty('text-align');
 
     const extraCssTags = new Set(normalizeTagNameList(options.includeTags));

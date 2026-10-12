@@ -41,7 +41,7 @@ function isExtensionContextValid() {
 }
 
 function resetIfDirectionChanged($el) {
-    const intended = $el.attr('data-direction');
+    const intended = $el.attr('data-ai-rtl-direction');
     const dir = $el.attr('dir');
     if (intended && dir !== intended) {
         $el.removeAttr('data-text-length');

@@ -131,6 +131,7 @@ html.ai-rtl-has-font .FontSetImportantGPT , html.ai-rtl-has-font .FontSetImporta
 }
 
 
+
 .katex {
     direction: ltr !important;
 }
@@ -143,11 +144,17 @@ html.ai-rtl-has-font .FontSetGPT {
    Enforce the selected Persian font only on actual prose blocks instead of
    the old expensive `.FontSetGPT *` universal descendant selector. */
 html.ai-rtl-has-font .FontSetGPT :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
     td, th
 ) {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+/* ChatGPT suggested-followup chips inside MarkdownRoot */
+html.ai-rtl-has-font .FontSetGPT [class*="suggested-followup"],
+html.ai-rtl-has-font .FontSetGPT [class*="suggested-followup"] span {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
@@ -229,7 +236,7 @@ html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
 }
 
 .AsAlignRtl :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption
 ) {
@@ -237,15 +244,15 @@ html.ai-rtl-has-font .items-stretch .items-start .FontSetCodeBlocksGPT :where(
 }
 
 .AsAlignLtr :where(
-    p, li, dt, dd,
+    p, li, dt, dd, label,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption
 ) {
     text-align: left !important;
 }
 
-.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]),
-.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, .katex, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]) {
+.AsAlignRtl :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]),
+.AsAlignLtr :where(pre, code, .cm-content, .cm-line, .cm-editor, .md-code-block, [class^="InlineCode-"], [class*=" InlineCode-"]):not([dir="rtl"]) {
     text-align: left !important;
 }
 
@@ -603,7 +610,7 @@ html.ai-rtl-has-font .FontSet .font-claude-message , html.ai-rtl-has-font .FontS
 }
 
 :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-ai-rtl-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 :is(.standard-markdown, .progressive-markdown) :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-left: calc(var(--spacing) * 8) !important;
@@ -611,7 +618,7 @@ html.ai-rtl-has-font .FontSet .font-claude-message , html.ai-rtl-has-font .FontS
 }
 
 :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[dir="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+:is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)[data-ai-rtl-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] :is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact) :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 :is(.standard-markdown, .progressive-markdown) :is(p, blockquote, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-right: var(--msg-text-inset, .5rem) !important;

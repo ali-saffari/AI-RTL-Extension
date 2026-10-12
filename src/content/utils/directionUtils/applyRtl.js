@@ -448,7 +448,7 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         }
     }
 
-    applyDirectionMarker($element, $element.attr('data-direction'), options);
+    applyDirectionMarker($element, $element.attr('data-ai-rtl-direction'), options);
     mirrorRtlBlockquotesInTree($element);
     isolateMixedPhrasesInTree($element);
     } catch (error) {
@@ -553,7 +553,7 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
                 
                 if (text && text.trim()) {
                     const direction = analyzeTextDirectionFirstWord(text);
-                    $element.attr('data-direction', direction);
+                    $element.attr('data-ai-rtl-direction', direction);
                     
                     applyTextAlignByDirection($element, direction, options.setTextAlign);
                     applyUnicodeBidiByDirection($element, direction, options.setUnicodeBidi);

@@ -92,6 +92,9 @@ export function lockKatexDirection($element, processedClass) {
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         node.setAttribute('dir', 'ltr');
+        if (node.style) {
+            node.style.removeProperty('text-align');
+        }
         if (processedClass) {
             node.classList.add(processedClass);
             const descendants = node.querySelectorAll('*');

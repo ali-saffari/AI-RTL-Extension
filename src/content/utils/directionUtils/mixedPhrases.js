@@ -43,7 +43,7 @@ function readExplicitDirection(el) {
     if (dir === 'rtl' || dir === 'ltr') {
         return dir;
     }
-    const dataDir = (el.getAttribute('data-direction') || '').toLowerCase();
+    const dataDir = (el.getAttribute('data-ai-rtl-direction') || '').toLowerCase();
     if (dataDir === 'rtl' || dataDir === 'ltr') {
         return dataDir;
     }

@@ -44,7 +44,7 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
                     return;
                 }
 
-                const intended = $target.attr('data-direction');
+                const intended = $target.attr('data-ai-rtl-direction');
                 const dir = $target.attr('dir');
                 if (intended && dir !== intended) {
                     $target.removeAttr('data-text-length');
@@ -87,7 +87,7 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
             //     return;
             // }
 
-            // const intended = $el.attr('data-direction');
+            // const intended = $el.attr('data-ai-rtl-direction');
             // const dir = $el.attr('dir');
             // if (intended && dir !== intended) {
             //     $el.removeAttr('data-text-length');
@@ -140,7 +140,7 @@ export function setGemini(rtlAlgorithm = 'advanced_full') {
 function processGeminiMarkdown(rtlAlgorithm) {
     AQ('.markdown-main-panel, .immersive-editor, .research-step-description').each(function () {
         const $el = AQ(this);
-        const intended = $el.attr('data-direction');
+        const intended = $el.attr('data-ai-rtl-direction');
         const dir = $el.attr('dir');
         if (intended && dir !== intended) {
             $el.removeAttr('data-text-length');

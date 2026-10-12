@@ -197,7 +197,7 @@ const CLAUDE_FONT_WEIGHT_CSS = `
 }
 
 ${CLAUDE_MARKDOWN_RTL_SELECTOR}[dir="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-ai-rtl-direction="rtl"] :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-left: calc(var(--spacing) * 8) !important;
@@ -205,7 +205,7 @@ ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, ul, ol, h1, h2, h3, h4, h5, h
 }
 
 ${CLAUDE_MARKDOWN_RTL_SELECTOR}[dir="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
-${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
+${CLAUDE_MARKDOWN_RTL_SELECTOR}[data-ai-rtl-direction="rtl"] :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 [dir="rtl"] ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, h1, h2, h3, h4, h5, h6):not([dir="ltr"]),
 ${CLAUDE_MARKDOWN_RTL_SELECTOR} :is(p, blockquote, h1, h2, h3, h4, h5, h6)[dir="rtl"] {
     padding-right: var(--msg-text-inset, .5rem) !important;

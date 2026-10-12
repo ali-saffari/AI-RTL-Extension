@@ -82,7 +82,7 @@ function applyForcedCodeLtr($element) {
         return;
     }
     $element.attr('dir', 'ltr');
-    $element.attr('data-direction', 'ltr');
+    $element.attr('data-ai-rtl-direction', 'ltr');
     $element.addClass('AsSetLtr');
     $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT AsRtl');
     if (el && el.style) {
@@ -97,7 +97,7 @@ function applyProseCodeRtl($element) {
         return;
     }
     $element.attr('dir', 'rtl');
-    $element.attr('data-direction', 'rtl');
+    $element.attr('data-ai-rtl-direction', 'rtl');
     $element.removeClass('AsSetLtr');
     el.style.setProperty('direction', 'rtl', 'important');
     el.style.setProperty('text-align', 'right', 'important');
@@ -105,7 +105,7 @@ function applyProseCodeRtl($element) {
     const pane = el.closest && el.closest('.chatgpt-code-scrollport');
     if (pane && !isCodeHeaderElement(pane)) {
         pane.setAttribute('dir', 'rtl');
-        pane.setAttribute('data-direction', 'rtl');
+        pane.setAttribute('data-ai-rtl-direction', 'rtl');
         pane.style.setProperty('direction', 'rtl', 'important');
         pane.style.setProperty('text-align', 'right', 'important');
     }
@@ -126,7 +126,7 @@ function restoreCodeBlocksToOriginal() {
     for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i];
         restoreCodeElementToOriginal(block);
-        const nested = block.querySelectorAll('[dir], [data-direction], [data-ai-rtl-orig-dir], .AsSetLtr, .cm-line, code, pre');
+        const nested = block.querySelectorAll('[dir], [data-ai-rtl-direction], [data-ai-rtl-orig-dir], .AsSetLtr, .cm-line, code, pre');
         for (let j = 0; j < nested.length; j++) {
             restoreCodeElementToOriginal(nested[j]);
         }
@@ -337,7 +337,7 @@ function applyCodeBlockDirection($targets, direction, fontClass) {
         const $el = AQ(this);
         if (direction === 'rtl') {
             $el.attr('dir', 'rtl');
-            $el.attr('data-direction', 'rtl');
+            $el.attr('data-ai-rtl-direction', 'rtl');
             $el.css('text-align', 'right');
             $el.removeClass('AsSetLtr');
             if (fontClass) {

@@ -253,7 +253,7 @@ function clearElementDirection(el) {
 
 function clearComposerShell(el) {
     clearElementDirection(el);
-    if (el.hasAttribute('data-direction')) el.removeAttribute('data-direction');
+    if (el.hasAttribute('data-ai-rtl-direction')) el.removeAttribute('data-ai-rtl-direction');
     if (el.hasAttribute('data-algorithm-rtl')) el.removeAttribute('data-algorithm-rtl');
 }
 

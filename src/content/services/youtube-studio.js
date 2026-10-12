@@ -146,7 +146,7 @@ function applyYoutubeStudioChrome() {
         #content-text[dir="rtl"],
         #description[dir="rtl"],
         yt-formatted-string[dir="rtl"],
-        [data-direction="rtl"] {
+        [data-ai-rtl-direction="rtl"] {
             direction: rtl !important;
             text-align: right !important;
             unicode-bidi: isolate !important;
@@ -156,7 +156,7 @@ function applyYoutubeStudioChrome() {
         #content-text[dir="ltr"],
         #description[dir="ltr"],
         yt-formatted-string[dir="ltr"],
-        [data-direction="ltr"] {
+        [data-ai-rtl-direction="ltr"] {
             direction: ltr !important;
             text-align: left !important;
         } */

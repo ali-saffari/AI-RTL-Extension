@@ -38,7 +38,11 @@ function repairDeepSeekTableScrollAreas() {
         if (el.getAttribute('dir') !== 'ltr') {
             el.setAttribute('dir', 'ltr');
         }
-        if (el.hasAttribute('data-direction')) {
+        if (el.hasAttribute('data-ai-rtl-direction')) {
+            el.removeAttribute('data-ai-rtl-direction');
+        }
+        const legacyDirection = el.getAttribute('data-direction');
+        if (legacyDirection === 'rtl' || legacyDirection === 'ltr') {
             el.removeAttribute('data-direction');
         }
         if (!table.getAttribute('dir')) {
@@ -134,7 +138,7 @@ function clearMessageDirectionFromTables(message) {
     } else {
         message.removeAttribute('dir');
     }
-    message.removeAttribute('data-direction');
+    message.removeAttribute('data-ai-rtl-direction');
     message.removeAttribute(DS_MESSAGE_FROM_TABLES_ATTR);
 }
 
@@ -175,7 +179,7 @@ function applyDeepSeekMessageDirectionFromTables() {
         if (message.getAttribute('dir') !== 'rtl') {
             message.setAttribute('dir', 'rtl');
         }
-        message.setAttribute('data-direction', 'rtl');
+        message.setAttribute('data-ai-rtl-direction', 'rtl');
         message.setAttribute(DS_MESSAGE_FROM_TABLES_ATTR, 'rtl');
     });
 }

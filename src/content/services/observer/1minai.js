@@ -58,7 +58,7 @@ function alignTextareaOverlay($textarea) {
         return;
     }
 
-    const direction = $textarea.attr('data-direction') || $textarea.attr('dir') || 'ltr';
+    const direction = $textarea.attr('data-ai-rtl-direction') || $textarea.attr('dir') || 'ltr';
     const siblings = $textarea.siblings('div');
     const parentContainer = $textarea.parent();
     const closestRelative = $textarea.closest('[style*="position"]');
