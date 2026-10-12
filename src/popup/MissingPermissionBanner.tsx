@@ -184,7 +184,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 py: 1.25,
                 background: isDarkMode
                     ? 'linear-gradient(90deg, rgba(0, 233, 255, 0.14) 0%, rgba(20, 28, 48, 0.95) 45%, rgba(0, 103, 165, 0.22) 100%)'
-                    : 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #e0f2fe 100%)',
+                    : 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #eef3ff 100%)',
                 borderTop: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
                 borderBottom: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
             }}

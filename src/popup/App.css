@@ -49,6 +49,30 @@ body > div {
     background: rgba(0, 233, 255, 0.05);
 }
 
+body[data-theme="light"] {
+    scrollbar-color: #3083b7 rgba(0, 103, 165, 0.12);
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-track {
+    background: rgba(0, 103, 165, 0.08);
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background: #3083b7;
+    border-color: rgba(0, 103, 165, 0.28);
+    box-shadow: none;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background: #0067A5;
+    border-color: #0067A5;
+    box-shadow: none;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 /* اطمینان از RTL برای محتوا */
 .App {
     font-family: iranyekan, sans-serif;
@@ -93,6 +117,11 @@ html.popup-side-expanded .popup-columns {
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
 }
 
+body[data-theme="light"] .popup-main {
+    background: #eef3ff;
+    scrollbar-color: #3083b7 rgba(0, 103, 165, 0.12);
+}
+
 .popup-main * {
     overflow-anchor: none;
 }
@@ -132,7 +161,7 @@ html.popup-settings-overlay .popup-settings-panel {
 }
 
 html.popup-settings-overlay body[data-theme="light"] .popup-settings-panel {
-    background: #e0f2fe;
+    background: #eef3ff;
 }
 
 html.popup-settings-overlay .quick-settings {
@@ -211,11 +240,11 @@ html.popup-side-expanded .popup-side-menu {
 
 body[data-theme="light"] .popup-side-menu {
     border-right-color: rgba(30, 64, 175, 0.2);
-    background: #e0f2fe;
+    background: #ffffff;
 }
 
 html.popup-side-expanded body[data-theme="light"] .popup-side-menu {
-    background: #e0f2fe;
+    background: #ffffff;
     box-shadow: 8px 0 24px rgba(15, 23, 42, 0.18);
 }
 
@@ -522,7 +551,7 @@ body[data-theme="light"] .popup-side-item-label {
 }
 
 body[data-theme="light"] .quick-settings {
-    background: #e0f2fe;
+    background: #eef3ff;
     border-right-color: rgba(30, 64, 175, 0.2);
 }
 
@@ -578,6 +607,10 @@ body[data-theme="light"] .quick-settings-header {
     gap: 6px;
     scrollbar-width: thin;
     scrollbar-color: #00e9ff rgba(0, 233, 255, 0.1);
+}
+
+body[data-theme="light"] .quick-settings-body-scroll {
+    scrollbar-color: #3083b7 rgba(0, 103, 165, 0.12);
 }
 
 .quick-settings-body-scroll.is-disabled > * {
@@ -757,6 +790,20 @@ body[data-theme="light"] .quick-settings-label {
 .listSite::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #4dd4ff 0%, #00e9ff 100%);
     border-color: rgba(0, 233, 255, 0.5);
+}
+
+body[data-theme="light"] .listSite::-webkit-scrollbar-track {
+    background: rgba(0, 103, 165, 0.08);
+}
+
+body[data-theme="light"] .listSite::-webkit-scrollbar-thumb {
+    background: #3083b7;
+    border-color: rgba(0, 103, 165, 0.28);
+}
+
+body[data-theme="light"] .listSite::-webkit-scrollbar-thumb:hover {
+    background: #0067A5;
+    border-color: #0067A5;
 }
 
 .appinfo-note p {

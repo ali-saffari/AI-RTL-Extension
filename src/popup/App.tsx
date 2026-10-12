@@ -154,7 +154,7 @@ const lightTheme = createTheme({
         },
         background: {
             default: '#ffffff',
-            paper: '#e0f2fe',
+            paper: '#eef3ff',
         },
         text: {
             primary: '#1e293b',
@@ -1034,9 +1034,7 @@ function App() {
                 <div className="popup-columns">
                 <div className="popup-main" ref={mainScrollRef}>
                 <div className="popup-main-inner" dir={dir}>
-                <Box sx={{ textAlign: 'center', py: 3, px: 2, background: isDarkMode 
-                            ? 'transparent'
-                            : '#dae8f1' }}>
+                <Box sx={{ textAlign: 'center', py: 3, px: 2 }}>
                     {!dshStripDismissed && (
                     <div className="popup-dsh-note">
                         <a
@@ -1132,10 +1130,7 @@ function App() {
                 </Box>
 
                 {notebookNeedsReenable && (
-                    <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#dae8f1',
-                        pb: 1.5
-                    }}>
+                    <Box sx={{ pb: 1.5 }}>
                         <InstallHintBanner
                             variant="notebook"
                             isDarkMode={isDarkMode}
@@ -1144,10 +1139,7 @@ function App() {
                 )}
 
                 {!notebookNeedsReenable && !activationHintDismissed && (
-                    <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#dae8f1',
-                        pb: 1.5
-                    }}>
+                    <Box sx={{ pb: 1.5 }}>
                         <InstallHintBanner
                             variant="install"
                             isDarkMode={isDarkMode}
@@ -1157,10 +1149,7 @@ function App() {
                 )}
 
                 {!notebookNeedsReenable && activationHintDismissed && !troubleshootingHintDismissed && (
-                    <Box sx={{
-                        background: isDarkMode ? 'transparent' : '#dae8f1',
-                        pb: 1.5
-                    }}>
+                    <Box sx={{ pb: 1.5 }}>
                         <InstallHintBanner
                             variant="troubleshooting"
                             isDarkMode={isDarkMode}
@@ -1170,10 +1159,10 @@ function App() {
                 )}
 
                 <Paper elevation={0} sx={{ 
-                    backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
+                    backgroundColor: 'transparent',
                     borderRadius: isDarkMode ? 0 : 1
                 }}>
-                    <div id="sites-section" style={{ background: isDarkMode ? 'transparent' : '#e0f2fe' }}>
+                    <div id="sites-section">
                         {manualRtlSettings.manualRtlEnabled && (
                             <ManualRtlBanner
                                 isDarkMode={isDarkMode}

@@ -1166,7 +1166,7 @@ export default function ServiceList({
             <List
                 ref={listRef}
                 className="service-list"
-                sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff' }}
+                sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : 'transparent' }}
                 style={{ direction: 'ltr' }}
                 subheader={
                     <ListSubheader 
@@ -1190,8 +1190,9 @@ export default function ServiceList({
                             sx={{
                                 textAlign: 'center',
                                 position: 'relative',
-                                backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
-                                borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : '#a2a2a2'}`,
+                                backgroundColor: isDarkMode ? '#2f2f41' : '#3083b7',
+                                color: '#ffffff',
+                                borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.22)'}`,
                             }}
                         >
                         {isSearchOpen ? (
@@ -1229,7 +1230,7 @@ export default function ServiceList({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: isDarkMode ? '#ffffff' : '#000000',
+                                color: '#ffffff',
                                 opacity: 0.55,
                                 '&:hover': { opacity: 1 },
                             }}
@@ -1370,10 +1371,10 @@ export default function ServiceList({
                                 minHeight: 36,
                                 lineHeight: 1,
                                 px: 2,
-                                backgroundColor: isDarkMode ? '#262636' : '#f4f5f7',
-                                color: isDarkMode ? 'rgba(255, 255, 255, 0.82)' : 'rgba(0, 0, 0, 0.64)',
-                                borderTop: `1px solid ${dividerColor}`,
-                                borderBottom: `1px solid ${dividerColor}`,
+                                backgroundColor: isDarkMode ? '#262636' : '#0067A5',
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.82)' : '#ffffff',
+                                borderTop: `1px solid ${isDarkMode ? dividerColor : 'rgba(255, 255, 255, 0.22)'}`,
+                                borderBottom: `1px solid ${isDarkMode ? dividerColor : 'rgba(255, 255, 255, 0.22)'}`,
                                 fontSize: '0.72rem',
                                 fontWeight: 700,
                             }}
@@ -1398,16 +1399,16 @@ export default function ServiceList({
                                     fontWeight: 700,
                                     lineHeight: 1,
                                     bgcolor: extensionEnabled
-                                        ? (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(28, 57, 187, 0.1)')
-                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
+                                        ? (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(255, 255, 255, 0.16)')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.1)'),
                                     border: `1px solid ${
                                         extensionEnabled
-                                            ? (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')
-                                            : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
+                                            ? (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(255, 255, 255, 0.35)')
+                                            : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.22)')
                                     }`,
                                     color: extensionEnabled
-                                        ? (isDarkMode ? '#00e9ff' : '#1c39bb')
-                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
+                                        ? (isDarkMode ? '#00e9ff' : '#ffffff')
+                                        : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.7)'),
                                     filter: extensionEnabled ? 'none' : 'grayscale(1)',
                                     transition: 'filter 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
                                 }}

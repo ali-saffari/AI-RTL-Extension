@@ -100,7 +100,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         cursor: 'pointer',
                         font: 'inherit',
                         color: 'inherit',
-                        backgroundColor: isDarkMode ? '#1a1a2e' : '#e0f2fe',
+                        backgroundColor: isDarkMode ? '#1a1a2e' : '#eef3ff',
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.4)'
                             : '1px solid rgba(30, 64, 175, 0.28)',
