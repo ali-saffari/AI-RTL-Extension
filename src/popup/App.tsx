@@ -143,7 +143,7 @@ const lightTheme = createTheme({
     palette: {
         mode: 'light',
         primary: {
-            main: '#1c39bb',
+            main: '#387af2',
             light: '#3b82f6',
             dark: '#1e3a8a',
         },
@@ -154,7 +154,7 @@ const lightTheme = createTheme({
         },
         background: {
             default: '#ffffff',
-            paper: '#eef3ff',
+            paper: '#f4f9fc',
         },
         text: {
             primary: '#1e293b',
@@ -862,10 +862,10 @@ function App() {
                         borderRadius: 0,
                         background: isDarkMode 
                             ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.05) 0%, rgba(0, 233, 255, 0.02) 100%)'
-                            : '#0067A5',
+                            : '#ffffff',
                         borderBottom: isDarkMode 
                             ? '1px solid rgba(0, 234, 255, 0.47)'
-                            : '1px solid rgb(0, 234, 255)',
+                            : '2px solid #E2E8F0',
                     }} 
                     dir="ltr"
                 >
@@ -924,7 +924,7 @@ function App() {
                                     fontWeight: 600,
                                     fontSize: '0.8rem',
                                     lineHeight: 1.2,
-                                    color: '#ffffff',
+                                    color: isDarkMode ? '#ffffff' : '#1e293b',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -941,9 +941,9 @@ function App() {
                                     flexShrink: 0,
                                     fontSize: '0.65rem',
                                     height: 20,
-                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
-                                    color: isDarkMode ? '#00e9ff' : '#ffffff',
-                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
+                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)',
+                                    color: isDarkMode ? '#00e9ff' : '#0067A5',
+                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(0, 103, 165, 0.28)',
                                     fontWeight: 500
                                 }}
                             />
@@ -953,23 +953,37 @@ function App() {
                                     href="https://ai-rtl.ir/?source=extension-popup-header-about#story"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
+                                    sx={{
+                                        ...headerLinkSx,
+                                        ...(narrowPopup ? { fontSize: '0.58rem' } : {}),
+                                        ...(!isDarkMode ? {
+                                            color: '#387af2',
+                                            '&:hover': { color: '#0067A5', textDecoration: 'underline' },
+                                        } : {}),
+                                    }}
                                 >
                                     {t('header.about')}
                                 </Typography>
-                                <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.55)', flexShrink: 0 }} />
+                                <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(15, 23, 42, 0.28)', flexShrink: 0 }} />
                                 <Typography
                                     component="button"
                                     type="button"
                                     onClick={() => scrollToSection('report-section')}
-                                    sx={{ ...headerLinkSx, ...(narrowPopup ? { fontSize: '0.58rem' } : {}) }}
+                                    sx={{
+                                        ...headerLinkSx,
+                                        ...(narrowPopup ? { fontSize: '0.58rem' } : {}),
+                                        ...(!isDarkMode ? {
+                                            color: '#387af2',
+                                            '&:hover': { color: '#0067A5', textDecoration: 'underline' },
+                                        } : {}),
+                                    }}
                                 >
                                     {t('header.report')}
                                 </Typography>
                             </Box>
                         </Box>
                         
-                        <LanguageMenuButton compact={narrowPopup} />
+                        <LanguageMenuButton compact={narrowPopup} onLight={!isDarkMode} />
                         <Tooltip
                             title={isDarkMode ? t('header.themeToLight') : t('header.themeToDark')}
                             placement="bottom-end"
@@ -1020,10 +1034,10 @@ function App() {
                                     transform: 'rotate(180deg) scale(1.2)',
                                     marginLeft: narrowPopup ? 0 : 1.5,
                                     '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                 }}
                             />
@@ -1092,7 +1106,7 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 textDecoration: 'none',
                                 fontWeight: 600,
                             }}
@@ -1104,7 +1118,7 @@ function App() {
                             href="#share"
                             onClick={handleIntroShare}
                             style={{
-                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 textDecoration: 'none',
                                 fontWeight: 600,
                             }}
@@ -1117,7 +1131,7 @@ function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                                color: isDarkMode ? '#00e9ff' : '#1e40af',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 textDecoration: 'none',
                                 fontWeight: 600,
                             }}
@@ -1204,11 +1218,11 @@ function App() {
                                 p: 2, 
                                 background: isDarkMode 
                                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
+                                    : 'linear-gradient(135deg, rgba(56, 122, 242, 0.08) 0%, rgba(56, 122, 242, 0.03) 100%)',
                                 borderRadius: 0, 
                                 mb: 3,
-                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
-                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
+                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #387af2',
+                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #387af2'
                             }}>
                                 <Typography variant="body1" sx={{ 
                                     fontWeight: 600,
@@ -1223,7 +1237,7 @@ function App() {
                                     <Typography variant="h6" sx={{ 
                                         mb: 2, 
                                         fontWeight: 600, 
-                                        color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                        color: isDarkMode ? '#00e9ff' : '#387af2', 
                                         textAlign: 'center',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -1249,7 +1263,7 @@ function App() {
                                         <strong style={{ color: isDarkMode ? '#00e9ff' : '#2563eb' }}>{t('report.solutionTitle')}</strong>
                                         <br />
                                         {t('report.solutionBefore')}{' '}
-                                        <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#1e40af', textDecoration: 'underline' }}>{t('report.telegram')}</a>
+                                        <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ color: isDarkMode ? '#00e9ff' : '#387af2', textDecoration: 'underline' }}>{t('report.telegram')}</a>
                                         {' '}{t('report.solutionAfter')}
                                         <br /><br />
                                         {t('report.suggestions')}
@@ -1258,7 +1272,7 @@ function App() {
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
                                             <a href="https://t.me/ai_rtl_support" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                                 <Typography variant="body2" sx={{ 
-                                                    color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2', 
                                                     '&:hover': { textDecoration: 'underline' }, 
                                                     fontWeight: 600,
                                                     display: 'flex',
@@ -1291,11 +1305,11 @@ function App() {
                                 p: 2, 
                                 background: isDarkMode 
                                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
+                                    : 'linear-gradient(135deg, rgba(56, 122, 242, 0.08) 0%, rgba(56, 122, 242, 0.03) 100%)',
                                 borderRadius: 0, 
                                 mb: 3,
-                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af',
-                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #1e40af'
+                                borderTop: isDarkMode ? '1px solid #00e9ff' : '1px solid #387af2',
+                                borderBottom: isDarkMode ? '1px solid #00e9ff' : '1px solid #387af2'
                             }}>
                                 <Typography variant="body1" sx={{ 
                                     fontWeight: 600,
@@ -1324,7 +1338,7 @@ function App() {
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                                         <a href={extensionStoreUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
-                                                color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                                color: isDarkMode ? '#00e9ff' : '#387af2', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
                                                 textAlign: 'center',
@@ -1353,7 +1367,7 @@ function App() {
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                                         <a href="https://donate.sudoshz.ir/u/ai-rtl" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                                             <Typography variant="body2" sx={{ 
-                                                color: isDarkMode ? '#00e9ff' : '#1e40af', 
+                                                color: isDarkMode ? '#00e9ff' : '#387af2', 
                                                 '&:hover': { textDecoration: 'underline' }, 
                                                 fontWeight: 600,
                                                 textAlign: 'center',

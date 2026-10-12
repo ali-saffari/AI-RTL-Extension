@@ -222,7 +222,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
             sx={{
                 borderTop: isDarkMode
                     ? '1px solid rgba(0, 233, 255, 0.3)'
-                    : '1px solid rgba(30, 64, 175, 0.2)'
+                    : '1px solid rgba(56, 122, 242, 0.2)'
             }}
         >
             {activeHostname ? (
@@ -272,9 +272,9 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                     disabled={isLoading}
                                     sx={{
                                         p: 0,
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                         '&.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                            color: isDarkMode ? '#00e9ff' : '#387af2'
                                         }
                                     }}
                                 />
@@ -306,7 +306,7 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                             borderRadius: 1,
                                             backgroundColor: isDarkMode
                                                 ? 'rgba(0, 233, 255, 0.08)'
-                                                : 'rgba(30, 64, 175, 0.08)'
+                                                : 'rgba(56, 122, 242, 0.08)'
                                         }}
                                     >
                                         {hasSiteDetails ? (
@@ -319,14 +319,14 @@ const SiteActivationSection: React.FC<SiteActivationSectionProps> = ({
                                                     borderRadius: 3,
                                                     border: isDarkMode
                                                         ? '1px solid rgba(255, 255, 255, 0.2)'
-                                                        : '1px solid rgba(30, 64, 175, 0.2)'
+                                                        : '1px solid rgba(56, 122, 242, 0.2)'
                                                 }}
                                             />
                                         ) : (
                                             <SvgIcon
                                                 sx={{
                                                     fontSize: '0.85rem',
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2'
                                                 }}
                                             >
                                                 <path d={mdiWeb} />

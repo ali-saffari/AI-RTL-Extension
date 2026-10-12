@@ -74,11 +74,11 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
     const options = React.useMemo(() => getModeOptions(t), [t]);
     const [menuOpen, setMenuOpen] = React.useState(false);
     const [infoModeId, setInfoModeId] = React.useState<PinOpenSiteMode | null>(null);
-    const accent = isDarkMode ? '#00e9ff' : '#1e40af';
+    const accent = isDarkMode ? '#00e9ff' : '#387af2';
     const muted = isDarkMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(30, 41, 59, 0.55)';
     const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
-    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.12)';
-    const selectedBg = isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.08)';
+    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.12)';
+    const selectedBg = isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.08)';
     const infoMode = options.find((option) => option.id === infoModeId) ?? null;
 
     const handleChange = (event: SelectChangeEvent<PinOpenSiteMode>) => {
@@ -150,7 +150,7 @@ const PinOpenSiteModeSelect: React.FC<PinOpenSiteModeSelectProps> = ({
                             borderColor: cardBorder,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(56, 122, 242, 0.4)',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                             borderColor: accent,

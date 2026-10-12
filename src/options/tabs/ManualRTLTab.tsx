@@ -434,10 +434,10 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                     onChange={(e) => handleManualRtlEnabledChange(e.target.checked)}
                                     sx={{
                                         '& .MuiSwitch-switchBase.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                         },
                                         '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                         },
                                     }}
                                 />
@@ -454,10 +454,10 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                 borderRadius: 2,
                                 bgcolor: theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.05)' 
-                                    : 'rgba(30, 64, 175, 0.05)',
+                                    : 'rgba(56, 122, 242, 0.05)',
                                 border: `1px solid ${theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.2)' 
-                                    : 'rgba(30, 64, 175, 0.15)'}`
+                                    : 'rgba(56, 122, 242, 0.15)'}`
                             }}
                         >
                             <Typography
@@ -493,7 +493,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                         '&:hover': {
                                             backgroundColor: theme.palette.mode === 'dark' 
                                                 ? 'rgba(0, 233, 255, 0.1)' 
-                                                : 'rgba(30, 64, 175, 0.1)'
+                                                : 'rgba(56, 122, 242, 0.1)'
                                         }
                                     }}
                                 >
@@ -799,10 +799,10 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                             })}
                                             sx={{
                                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                             }}
                                         />
@@ -846,7 +846,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                 borderColor: theme.palette.primary.main,
                                                 backgroundColor: theme.palette.mode === 'dark' 
                                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                                    : 'rgba(30, 64, 175, 0.1)'
+                                                    : 'rgba(56, 122, 242, 0.1)'
                                             }
                                         }}
                                     >
@@ -934,7 +934,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                                                             }}
                                                         />
                                                     ) : (
-                                                        <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                                        <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#387af2' }}>
                                                             <path d={mdiWeb} />
                                                         </SvgIcon>
                                                     )}
@@ -1032,7 +1032,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                             />
                         </Box>
 
-                        <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)' }}>
+                        <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)' }}>
                             <Typography variant="body2" sx={{ 
                                 color: theme.palette.primary.main,
                                 fontWeight: 600,
@@ -1088,7 +1088,7 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                     <Accordion sx={{ fontFamily: 'iranyekan' }}>
                         <AccordionSummary
                             expandIcon={
-                                <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                <SvgIcon sx={{ fontSize: '1.2rem', color: isDarkMode ? '#00e9ff' : '#387af2' }}>
                                     <path d={mdiChevronDown} />
                                 </SvgIcon>
                             }
@@ -1225,9 +1225,9 @@ const ManualRTLTab: React.FC<ManualRTLTabProps> = ({
                     variant="contained"
                     sx={{ 
                         fontFamily: 'iranyekan',
-                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                         '&:hover': {
-                            backgroundColor: isDarkMode ? '#00b8d4' : '#1e40af'
+                            backgroundColor: isDarkMode ? '#00b8d4' : '#387af2'
                         }
                     }}
                 >

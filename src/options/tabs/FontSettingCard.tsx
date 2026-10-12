@@ -129,7 +129,7 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                                 borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                                borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(56, 122, 242, 0.4)',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                 borderColor: theme.palette.primary.main,
@@ -184,8 +184,8 @@ const FontSettingCard: React.FC<FontSettingCardProps> = ({
                                             fontWeight: 600,
                                             fontFamily: 'iranyekan',
                                             color: theme.palette.primary.main,
-                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
                                         }}
                                     >
                                         {t('fonts.default')}

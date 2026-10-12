@@ -184,7 +184,7 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                 py: 1.25,
                 background: isDarkMode
                     ? 'linear-gradient(90deg, rgba(0, 233, 255, 0.14) 0%, rgba(20, 28, 48, 0.95) 45%, rgba(0, 103, 165, 0.22) 100%)'
-                    : 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #eef3ff 100%)',
+                    : 'linear-gradient(90deg, #dbeafe 0%, #eff6ff 50%, #f4f9fc 100%)',
                 borderTop: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
                 borderBottom: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.28)' : 'rgba(0, 103, 165, 0.18)'}`,
             }}
@@ -488,13 +488,13 @@ const MissingPermissionBanner: React.FC<MissingPermissionBannerProps> = ({ isDar
                                             lineHeight: 1.4,
                                             color: isAddressChange
                                                 ? (isDarkMode ? '#ffcc80' : '#e65100')
-                                                : (isDarkMode ? '#00e9ff' : '#1c39bb'),
+                                                : (isDarkMode ? '#00e9ff' : '#387af2'),
                                             bgcolor: isAddressChange
                                                 ? (isDarkMode ? 'rgba(255, 152, 0, 0.18)' : 'rgba(230, 81, 0, 0.1)')
-                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(28, 57, 187, 0.1)'),
+                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.14)' : 'rgba(56, 122, 242, 0.1)'),
                                             border: `1px solid ${isAddressChange
                                                 ? (isDarkMode ? 'rgba(255, 152, 0, 0.35)' : 'rgba(230, 81, 0, 0.28)')
-                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(28, 57, 187, 0.28)')}`,
+                                                : (isDarkMode ? 'rgba(0, 233, 255, 0.32)' : 'rgba(56, 122, 242, 0.28)')}`,
                                         }}
                                     >
                                         {reason === 'address' ? t('missingPermission.reasonAddress') : t('missingPermission.reasonNew')}

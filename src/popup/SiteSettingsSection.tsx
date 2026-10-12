@@ -125,9 +125,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         return null;
     }
 
-    const accent = isDarkMode ? '#00e9ff' : '#1c39bb';
+    const accent = isDarkMode ? '#00e9ff' : '#387af2';
     const cardBg = isDarkMode ? 'rgba(47, 47, 65, 0.9)' : '#ffffff';
-    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.12)';
+    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.5)';
     const titleColor = isDarkMode ? '#ffffff' : '#1e293b';
     const mutedColor = isDarkMode ? '#94a3b8' : '#64748b';
     const siteValues = settings[entry.serviceKey] || {};
@@ -204,7 +204,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                         borderRadius: '8px',
                         border: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.28)'
-                            : '1px solid rgba(28, 57, 187, 0.22)',
+                            : '1px solid rgba(56, 122, 242, 0.22)',
                         background: 'transparent',
                     }}
                 >
@@ -402,10 +402,10 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             }}
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                             }}
                             inputProps={{ 'aria-label': `${resolveFieldLabel(field)} ${entry.title}` }}

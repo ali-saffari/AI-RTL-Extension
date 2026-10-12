@@ -74,19 +74,19 @@ const ChangesList: React.FC = () => {
     return (
         <Accordion 
             sx={{ 
-                border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(30, 64, 175, 0.5)',
+                border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(56, 122, 242, 0.5)',
                 backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
                 borderRadius: 2,
                 '&:before': { display: 'none' },
                 '&.Mui-expanded': {
                     margin: 0,      
-                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(30, 64, 175, 0.5)'
+                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.5)' : '1px solid rgba(56, 122, 242, 0.5)'
                 }
             }}
         >
             <AccordionSummary
                 expandIcon={<Typography sx={{ 
-                    color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                    color: isDarkMode ? '#00e9ff' : '#387af2', 
                     fontSize: '0.8rem' 
                 }}>▼</Typography>}
                 sx={{
@@ -96,7 +96,7 @@ const ChangesList: React.FC = () => {
                 }}
             >
                 <Typography variant="body2" sx={{ 
-                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                    color: isDarkMode ? '#00e9ff' : '#387af2',
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
@@ -104,7 +104,7 @@ const ChangesList: React.FC = () => {
                 }}>
                     <SvgIcon sx={{ 
                         fontSize: '1.2rem',
-                        color: isDarkMode ? '#00e9ff' : '#1c39bb'
+                        color: isDarkMode ? '#00e9ff' : '#387af2'
                     }}>
                         <path d={mdiFormatListBulleted} />
                     </SvgIcon>
@@ -118,7 +118,7 @@ const ChangesList: React.FC = () => {
                             {menuChanges.length > 0 && (
                                 <Box>
                                     <Typography variant="body2" sx={{
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                         fontWeight: 700,
                                         mb: 0.5,
                                         fontSize: '0.8rem'
@@ -162,7 +162,7 @@ const ChangesList: React.FC = () => {
                             {features.length > 0 && (
                                 <Box>
                                     <Typography variant="body2" sx={{
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                         fontWeight: 700,
                                         mb: 0.5,
                                         fontSize: '0.8rem'
@@ -217,7 +217,7 @@ const ChangesList: React.FC = () => {
                                 {updatedSites.length > 0 && (
                                     <Box>
                                         <Typography variant="body2" sx={{
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                             fontWeight: 700,
                                             mb: 0.75,
                                             fontSize: '0.8rem',
@@ -237,7 +237,7 @@ const ChangesList: React.FC = () => {
                                 {addedSites.length > 0 && (
                                     <Box>
                                         <Typography variant="body2" sx={{
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                             fontWeight: 700,
                                             mb: 0.75,
                                             fontSize: '0.8rem',
@@ -247,7 +247,7 @@ const ChangesList: React.FC = () => {
                                             gap: 1
                                         }}>
                                             {t('changes.addedSites')}
-                                            <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#00e9ff' : '#1c39bb' }}>
+                                            <Box component="span" sx={{ fontWeight: 600, color: isDarkMode ? '#00e9ff' : '#387af2' }}>
                                                 {t('changes.siteCount', { count: addedSites.length })}
                                             </Box>
                                         </Typography>
@@ -270,7 +270,7 @@ const ChangesList: React.FC = () => {
                     >
                         <AccordionSummary
                             expandIcon={<Typography sx={{
-                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 fontSize: '0.7rem'
                             }}>▼</Typography>}
                             sx={{
@@ -282,7 +282,7 @@ const ChangesList: React.FC = () => {
                             }}
                         >
                             <Typography variant="body2" sx={{
-                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 fontWeight: 600
                             }}>
                                 {t('changes.previous')}
@@ -292,7 +292,7 @@ const ChangesList: React.FC = () => {
                             {previousChanges.map((versionData, index) => (
                                 <Box key={versionData.version} sx={{ mb: 2 }}>
                                     <Typography variant="body2" sx={{ 
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb', 
+                                        color: isDarkMode ? '#00e9ff' : '#387af2', 
                                         fontWeight: 600, 
                                         mb: 1,
                                         display: 'flex',

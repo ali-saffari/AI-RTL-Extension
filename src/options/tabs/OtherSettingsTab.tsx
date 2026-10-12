@@ -345,10 +345,10 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         onChange={(e) => onSupportChange(e.target.checked)}
                                         sx={{
                                             '& .MuiSwitch-switchBase.Mui-checked': {
-                                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                             },
                                             '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                             },
                                         }}
                                     />
@@ -394,11 +394,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         onClick={handleExportSettings}
                                         sx={{
                                             fontFamily: 'iranyekan',
-                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                             '&:hover': {
-                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                                borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)',
                                             },
                                         }}
                                     >
@@ -430,11 +430,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         onClick={() => fileInputRef.current?.click()}
                                         sx={{
                                             fontFamily: 'iranyekan',
-                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                             '&:hover': {
-                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                                borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)',
                                             },
                                         }}
                                     >
@@ -484,11 +484,11 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                         onClick={openUpdateModal}
                                         sx={{
                                             fontFamily: 'iranyekan',
-                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                             '&:hover': {
-                                                borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)',
+                                                borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)',
                                             },
                                         }}
                                     >
@@ -518,7 +518,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                         <Grid container spacing={2}>
                             {/* نسخه */}
                             <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(56, 122, 242, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {t('otherSettings.version')}
                                     </Typography>
@@ -530,7 +530,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             
                             {shouldShowExtensionId() ? (
                             <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(56, 122, 242, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {t('otherSettings.extensionId')}
                                     </Typography>
@@ -544,7 +544,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             {/* وب‌سایت */}
                             {manifest.homepage_url && (
                                 <Grid item xs={12}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(56, 122, 242, 0.05)' }}>
                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                             {t('otherSettings.website')}
                                         </Typography>
@@ -572,7 +572,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             
                             {/* صفحه رسمی افزونه در استور */}
                             <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(56, 122, 242, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {isFirefoxRuntime() ? t('share.officialFirefox') : t('share.officialChrome')}
                                     </Typography>
@@ -599,7 +599,7 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                             
                             {/* ارتباط با سازنده */}
                             <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(30, 64, 175, 0.05)' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.05)' : 'rgba(56, 122, 242, 0.05)' }}>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {t('otherSettings.contact')}
                                     </Typography>

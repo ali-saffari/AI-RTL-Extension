@@ -905,7 +905,7 @@ export default function ServiceList({
                         position: 'sticky',
                         top: pinnedStickyTop,
                         zIndex: 2,
-                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                        backgroundColor: isDarkMode ? '#2f2f41' : '#f5f6f7',
                         boxShadow: 'none',
                         transition: 'none',
                     } : undefined}
@@ -1010,15 +1010,15 @@ export default function ServiceList({
                                             py: 0.1,
                                             lineHeight: 1.4,
                                             bgcolor: extensionEnabled
-                                                ? (isDarkMode ? 'rgb(33, 46, 65)' : 'rgba(30, 64, 175, 0.1)')
+                                                ? (isDarkMode ? 'rgb(33, 46, 65)' : 'rgba(56, 122, 242, 0.1)')
                                                 : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'),
                                             border: `1px solid ${
                                                 extensionEnabled
-                                                    ? (isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)')
+                                                    ? (isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)')
                                                     : (isDarkMode ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.16)')
                                             }`,
                                             color: extensionEnabled
-                                                ? (isDarkMode ? '#00e9ff' : '#1c39bb')
+                                                ? (isDarkMode ? '#00e9ff' : '#387af2')
                                                 : (isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)'),
                                             borderRadius: 0.75,
                                             fontSize: '0.56rem',
@@ -1051,11 +1051,11 @@ export default function ServiceList({
                                         m: 0,
                                         p: 0,
                                         ml: showHelpIcon ? '6px' : '-4px',
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                         '&:hover': {
                                             backgroundColor: isDarkMode
                                                 ? 'rgba(0, 233, 255, 0.12)'
-                                                : 'rgba(30, 64, 175, 0.08)',
+                                                : 'rgba(56, 122, 242, 0.08)',
                                         },
                                     }}
                                 >
@@ -1108,10 +1108,10 @@ export default function ServiceList({
                             sx={{
                                 transform: 'rotate(180deg)',
                                 '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-disabled': {
                                     color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
@@ -1166,7 +1166,7 @@ export default function ServiceList({
             <List
                 ref={listRef}
                 className="service-list"
-                sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : 'transparent' }}
+                sx={{ width: '100%', backgroundColor: isDarkMode ? '#2f2f41' : '#f5f6f7' }}
                 style={{ direction: 'ltr' }}
                 subheader={
                     <ListSubheader 
@@ -1190,9 +1190,9 @@ export default function ServiceList({
                             sx={{
                                 textAlign: 'center',
                                 position: 'relative',
-                                backgroundColor: isDarkMode ? '#2f2f41' : '#3083b7',
-                                color: '#ffffff',
-                                borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.22)'}`,
+                                backgroundColor: isDarkMode ? '#2f2f41' : '#c6e0ff',
+                                color: isDarkMode ? '#ffffff' : '#3d4550',
+                                borderBottom: `1px solid ${isDarkMode ?  'rgba(255, 255, 255, 0.12)' : 'rgba(60, 93, 134, 0.28)'}`,
                             }}
                         >
                         {isSearchOpen ? (
@@ -1230,7 +1230,7 @@ export default function ServiceList({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#ffffff',
+                                color: isDarkMode ? '#ffffff' : '#3c5d86',
                                 opacity: 0.55,
                                 '&:hover': { opacity: 1 },
                             }}
@@ -1262,7 +1262,7 @@ export default function ServiceList({
                         position: 'sticky',
                         top: pinnedStickyTop,
                         zIndex: 2,
-                        backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                        backgroundColor: isDarkMode ? '#2f2f41' : '#f5f6f7',
                         '& .MuiCollapse-wrapperInner': {
                             willChange: 'height',
                         },
@@ -1273,7 +1273,7 @@ export default function ServiceList({
                         className="service-list-pinned service-list-disabled-banner"
                         style={{ direction: dir }}
                         sx={{
-                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                            backgroundColor: isDarkMode ? '#2f2f41' : '#f5f6f7',
                             boxShadow: 'none',
                         }}
                     >
@@ -1317,11 +1317,11 @@ export default function ServiceList({
                                     fontSize: '0.75rem',
                                     boxShadow: 'none',
                                     border: 'none',
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                     backgroundColor: 'transparent',
                                     '&:hover': {
                                         border: 'none',
-                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(28, 57, 187, 0.06)',
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.06)',
                                         boxShadow: 'none',
                                         transform: 'none',
                                     },
@@ -1371,7 +1371,7 @@ export default function ServiceList({
                                 minHeight: 36,
                                 lineHeight: 1,
                                 px: 2,
-                                backgroundColor: isDarkMode ? '#262636' : '#0067A5',
+                                backgroundColor: isDarkMode ? '#262636' : '#387af2',
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.82)' : '#ffffff',
                                 borderTop: `1px solid ${isDarkMode ? dividerColor : 'rgba(255, 255, 255, 0.22)'}`,
                                 borderBottom: `1px solid ${isDarkMode ? dividerColor : 'rgba(255, 255, 255, 0.22)'}`,

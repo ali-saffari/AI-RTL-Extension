@@ -258,11 +258,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const infoAlgo = ALGORITHMS.find((item) => item.id === infoAlgoId) ?? null;
     const manualEnabled = manualRtlSettings.manualRtlEnabled !== false;
 
-    const accent = isDarkMode ? '#00e9ff' : '#1e40af';
+    const accent = isDarkMode ? '#00e9ff' : '#387af2';
     const muted = isDarkMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(30, 41, 59, 0.55)';
     const cardBg = isDarkMode ? 'rgba(47, 47, 65, 0.9)' : '#ffffff';
-    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(30, 64, 175, 0.12)';
-    const selectedBg = isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.08)';
+    const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.5)';
+    const selectedBg = isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.08)';
     const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
     const inlineSelectSx = {
         width: '100%',
@@ -275,7 +275,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
             borderColor: cardBorder,
         },
         '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(56, 122, 242, 0.4)',
         },
         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderColor: accent,
@@ -294,10 +294,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
 
     const switchSx = {
         '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled)': {
-            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+            color: isDarkMode ? '#00e9ff' : '#387af2',
         },
         '& .MuiSwitch-switchBase.Mui-checked:not(.Mui-disabled) + .MuiSwitch-track': {
-            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+            backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
         },
         '& .MuiSwitch-switchBase.Mui-disabled': {
             color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.26)',
@@ -382,7 +382,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                             fontSize: '0.75rem',
                             fontWeight: 600,
                             '&:hover': {
-                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
                                 transform: 'none',
                             },
                         }}
@@ -444,11 +444,11 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     fontSize: '0.75rem',
                                     boxShadow: 'none',
                                     border: 'none',
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                     backgroundColor: 'transparent',
                                     '&:hover': {
                                         border: 'none',
-                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(28, 57, 187, 0.06)',
+                                        backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.06)',
                                         boxShadow: 'none',
                                         transform: 'none',
                                     },
@@ -544,7 +544,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                         flexShrink: 0,
                         backgroundColor: isDarkMode
                             ? 'rgba(0, 233, 255, 0.45)'
-                            : 'rgba(30, 64, 175, 0.4)',
+                            : 'rgba(56, 122, 242, 0.4)',
                     }}
                 />
                 {/* Algorithm personalization hint hidden for now — do not remove algorithmHintDismissed storage.
@@ -703,8 +703,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                                             fontSize: '0.62rem',
                                                             fontWeight: 600,
                                                             color: accent,
-                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                                            border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                                            background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
                                                         }}
                                                     >
                                                         {algo.badge}
@@ -1013,8 +1013,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                                 fontWeight: 600,
                                                 fontFamily: 'iranyekan',
                                                 color: accent,
-                                                border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
-                                                background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(30, 64, 175, 0.08)',
+                                                border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+                                                background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
                                             }}
                                         >
                                             {t('shared.default')}
@@ -1125,7 +1125,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                         borderColor: cardBorder,
                                     },
                                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(30, 64, 175, 0.4)',
+                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(56, 122, 242, 0.4)',
                                     },
                                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                         borderColor: accent,
@@ -1233,7 +1233,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                     px: 1,
                                     py: 0.25,
                                     minWidth: 0,
-                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(30, 64, 175, 0.5)',
+                                    borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(56, 122, 242, 0.5)',
                                     color: accent,
                                     '&:hover': {
                                         borderColor: accent,

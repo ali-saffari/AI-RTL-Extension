@@ -5,9 +5,10 @@ import { useI18n } from './I18nProvider';
 
 type LanguageMenuButtonProps = {
     compact?: boolean;
+    onLight?: boolean;
 };
 
-export default function LanguageMenuButton({ compact = false }: LanguageMenuButtonProps) {
+export default function LanguageMenuButton({ compact = false, onLight = false }: LanguageMenuButtonProps) {
     const { t, locale, locales, setLocale } = useI18n();
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
     const current = locales.find((item) => item.code === locale) ?? locales[0];
@@ -30,18 +31,18 @@ export default function LanguageMenuButton({ compact = false }: LanguageMenuButt
                     margin: 0,
                     px: compact ? 0.55 : 0.75,
                     py: compact ? 0.3 : 0.4,
-                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    border: onLight ? '1px solid rgba(0, 103, 165, 0.35)' : '1px solid rgba(255, 255, 255, 0.35)',
                     borderRadius: 1,
                     cursor: 'pointer',
-                    color: 'rgba(255, 255, 255, 0.92)',
+                    color: onLight ? '#0067A5' : 'rgba(255, 255, 255, 0.92)',
                     background: 'transparent',
                     fontFamily: 'iranyekan',
                     fontWeight: 500,
                     fontSize: compact ? '0.68rem' : '0.85rem',
                     lineHeight: 1,
                     '&:hover': {
-                        color: '#ffffff',
-                        borderColor: 'rgba(255, 255, 255, 0.55)',
+                        color: onLight ? '#387af2' : '#ffffff',
+                        borderColor: onLight ? '#387af2' : 'rgba(255, 255, 255, 0.55)',
                     },
                 }}
             >

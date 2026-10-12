@@ -229,7 +229,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                 <Button
                     onClick={onClose}
                     sx={{
-                        color: isDarkMode ? '#00e9ff' : '#1e40af',
+                        color: isDarkMode ? '#00e9ff' : '#387af2',
                         fontFamily: 'iranyekan',
                     }}
                 >

@@ -281,10 +281,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                         bgcolor: isSelected
                                                             ? theme.palette.mode === 'dark' 
                                                                 ? 'rgba(0, 233, 255, 0.1)' 
-                                                                : 'rgba(30, 64, 175, 0.2)'
+                                                                : 'rgba(56, 122, 242, 0.2)'
                                                             : theme.palette.background.paper,
                                                         border: isSelected
-                                                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(56, 122, 242, 1)'}` 
                                                             : 'none',
                                                         mb: 2,
                                                         py: 2,
@@ -346,7 +346,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                                                 py: 0.05, 
                                                                                 bgcolor: theme.palette.mode === 'dark' 
                                                                                     ? 'rgb(1, 91, 237)' 
-                                                                                    : 'rgba(30, 64, 175, 0.2)',
+                                                                                    : 'rgba(56, 122, 242, 0.2)',
                                                                                 color: theme.palette.text.secondary, 
                                                                                 borderRadius: 0.5, 
                                                                                 fontSize: '0.6rem',
@@ -427,10 +427,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             onChange={(e) => onFlipRtlArrowsChange?.(e.target.checked)}
                                             sx={{
                                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                             }}
                                             inputProps={{ 'aria-label': t('algorithm.flipAria') }}
@@ -512,10 +512,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             onChange={(e) => onApplyAlgorithmToCodeChange?.(e.target.checked)}
                                             sx={{
                                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                             }}
                                             inputProps={{ 'aria-label': t('algorithm.codeAria') }}
@@ -590,10 +590,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             onChange={(e) => onFixMixedTextChange?.(e.target.checked)}
                                             sx={{
                                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                                 },
                                             }}
                                             inputProps={{ 'aria-label': t('algorithm.mixedAria') }}
@@ -658,10 +658,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                                         bgcolor: isSelected
                                                             ? theme.palette.mode === 'dark' 
                                                                 ? 'rgba(0, 233, 255, 0.1)' 
-                                                                : 'rgba(30, 64, 175, 0.2)'
+                                                                : 'rgba(56, 122, 242, 0.2)'
                                                             : theme.palette.background.paper,
                                                         border: isSelected
-                                                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(56, 122, 242, 1)'}` 
                                                             : 'none',
                                                         mb: 2,
                                                         py: 2,
@@ -741,7 +741,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                             >
                                                 {t('algorithm.titlesLockedBefore')}{' '}
                                                 <Box component="span" sx={{ 
-                                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                                     fontWeight: 600
                                                 }}>
                                                    {t('algorithm.titlesLockedName')}
@@ -976,10 +976,10 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                                 onChange={(e) => onPreviewChange(e.target.checked)}
                                 sx={{
                                     '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                 }}
                             />
@@ -1139,7 +1139,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             '&:hover': {
                                 backgroundColor: theme.palette.mode === 'dark'
                                     ? 'rgba(0, 233, 255, 0.8)'
-                                    : 'rgba(30, 64, 175, 0.8)'
+                                    : 'rgba(56, 122, 242, 0.8)'
                             }
                         }}
                     >
@@ -1227,7 +1227,7 @@ const AlgorithmTab: React.FC<AlgorithmTabProps> = ({
                             '&:hover': {
                                 backgroundColor: theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.8)' 
-                                    : 'rgba(30, 64, 175, 0.8)'
+                                    : 'rgba(56, 122, 242, 0.8)'
                             }
                         }}
                     >

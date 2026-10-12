@@ -135,7 +135,7 @@ const Settings: React.FC<SettingsProps> = ({
                 p: 2, 
                 background: theme.palette.mode === 'dark' 
                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.05) 100%)',
+                    : 'linear-gradient(135deg, rgba(56, 122, 242, 0.1) 0%, rgba(56, 122, 242, 0.05) 100%)',
                 borderRadius: 0, 
                 mb: 3,
                 borderTop: `1px solid ${theme.palette.primary.main}`,
@@ -201,10 +201,10 @@ const Settings: React.FC<SettingsProps> = ({
                             bgcolor: selectedValue === 'advanced_section' 
                                 ? theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                    : 'rgba(30, 64, 175, 0.2)'
+                                    : 'rgba(56, 122, 242, 0.2)'
                                 : theme.palette.background.paper,
                             border: selectedValue === 'advanced_section' 
-                                ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                                ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(56, 122, 242, 1)'}` 
                                 : 'none',
                             mb: 2,
                             py: 2,
@@ -263,8 +263,8 @@ const Settings: React.FC<SettingsProps> = ({
                                                     py: 0.3, 
                                                     bgcolor: theme.palette.mode === 'dark' 
                                                         ? 'rgb(33, 46, 65)' 
-                                                        : 'rgba(30, 64, 175, 0.1)',
-                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                        : 'rgba(56, 122, 242, 0.1)',
+                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
                                                     color: theme.palette.primary.main, 
                                                     borderRadius: 1, 
                                                     fontSize: '0.7rem',
@@ -292,10 +292,10 @@ const Settings: React.FC<SettingsProps> = ({
                             bgcolor: selectedValue === 'advanced_full'
                                 ? theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                    : 'rgba(30, 64, 175, 0.2)'
+                                    : 'rgba(56, 122, 242, 0.2)'
                                 : theme.palette.background.paper,
                             border: selectedValue === 'advanced_full' 
-                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(56, 122, 242, 1)'}` 
                                 : 'none',
                             mb: 2,
                             py: 2,
@@ -354,8 +354,8 @@ const Settings: React.FC<SettingsProps> = ({
                                                     py: 0.3, 
                                                     bgcolor: theme.palette.mode === 'dark' 
                                                         ? 'rgb(33, 46, 65)' 
-                                                        : 'rgba(30, 64, 175, 0.1)',
-                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                                        : 'rgba(56, 122, 242, 0.1)',
+                                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
                                                     color: theme.palette.primary.main, 
                                                     borderRadius: 1, 
                                                     fontSize: '0.7rem',
@@ -369,7 +369,7 @@ const Settings: React.FC<SettingsProps> = ({
                                                         py: 0.05, 
                                                         bgcolor: theme.palette.mode === 'dark' 
                                                             ? 'rgb(1, 91, 237)' 
-                                                            : 'rgba(30, 64, 175, 0.2)',
+                                                            : 'rgba(56, 122, 242, 0.2)',
                                                         color: theme.palette.text.secondary, 
                                                         borderRadius: 0.5, 
                                                         fontSize: '0.6rem',
@@ -397,10 +397,10 @@ const Settings: React.FC<SettingsProps> = ({
                             bgcolor: selectedValue === 'first_word'
                                 ? theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                    : 'rgba(30, 64, 175, 0.2)'
+                                    : 'rgba(56, 122, 242, 0.2)'
                                 : theme.palette.background.paper,
                             border: selectedValue === 'first_word' 
-                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(30, 64, 175, 1)'}` 
+                            ? `${theme.palette.mode === 'dark' ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(56, 122, 242, 1)'}` 
                                 : 'none',
                             mb: 2,
                             py: 2,
@@ -528,8 +528,8 @@ const Settings: React.FC<SettingsProps> = ({
                                 py: 0.3, 
                                 bgcolor: theme.palette.mode === 'dark' 
                                     ? 'rgb(33, 46, 65)' 
-                                    : 'rgba(30, 64, 175, 0.1)',
-                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(30, 64, 175, 0.3)'}`,
+                                    : 'rgba(56, 122, 242, 0.1)',
+                                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
                                 color: theme.palette.primary.main, 
                                 borderRadius: 1, 
                                 fontSize: '0.7rem',
@@ -579,10 +579,10 @@ const Settings: React.FC<SettingsProps> = ({
                                     }}
                                     sx={{
                                         '& .MuiSwitch-switchBase.Mui-checked': {
-                                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            color: isDarkMode ? '#00e9ff' : '#387af2',
                                         },
                                         '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                            backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                            backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                         },
                                     }}
                                 />
@@ -598,11 +598,11 @@ const Settings: React.FC<SettingsProps> = ({
                                         fontFamily: 'iranyekan',
                                         textTransform: 'none',
                                         borderRadius: '6px',
-                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(30, 64, 175, 0.5)',
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.5)' : 'rgba(56, 122, 242, 0.5)',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                         '&:hover': {
-                                            borderColor: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                            borderColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)'
                                         }
                                     }}
                                 >
@@ -706,10 +706,10 @@ const Settings: React.FC<SettingsProps> = ({
                             data-settings-switch="true"
                             sx={{
                                 '& .MuiSwitch-switchBase.Mui-checked': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                                 '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                    backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                    backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                 },
                             }}
                         />
@@ -799,7 +799,7 @@ const Settings: React.FC<SettingsProps> = ({
                             '&:hover': {
                                 backgroundColor: theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.8)' 
-                                    : 'rgba(30, 64, 175, 0.8)'
+                                    : 'rgba(56, 122, 242, 0.8)'
                             }
                         }}
                     >

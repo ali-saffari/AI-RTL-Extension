@@ -157,7 +157,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                 p: 2, 
                 background: theme.palette.mode === 'dark' 
                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.05) 100%)',
+                    : 'linear-gradient(135deg, rgba(56, 122, 242, 0.1) 0%, rgba(56, 122, 242, 0.05) 100%)',
                 borderRadius: 0, 
                 mb: 3,
                 borderTop: `1px solid ${theme.palette.primary.main}`,
@@ -200,10 +200,10 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                                 onChange={(e) => handleAutoUpdateChange(e.target.checked)}
                                 sx={{
                                     '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                 }}
                             />
@@ -223,10 +223,10 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                                 onChange={(e) => handleNotificationsChange(e.target.checked)}
                                 sx={{
                                     '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                 }}
                             />
@@ -253,10 +253,10 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                                 onChange={(e) => handleAnalyticsChange(e.target.checked)}
                                 sx={{
                                     '& .MuiSwitch-switchBase.Mui-checked': {
-                                        color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        color: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                        backgroundColor: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                        backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
                                     },
                                 }}
                             />
@@ -299,7 +299,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                                 borderColor: theme.palette.primary.dark,
                                 backgroundColor: theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                    : 'rgba(30, 64, 175, 0.1)'
+                                    : 'rgba(56, 122, 242, 0.1)'
                             }
                         }}
                     >
@@ -322,7 +322,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                                 borderColor: theme.palette.primary.dark,
                                 backgroundColor: theme.palette.mode === 'dark' 
                                     ? 'rgba(0, 233, 255, 0.1)' 
-                                    : 'rgba(30, 64, 175, 0.1)'
+                                    : 'rgba(56, 122, 242, 0.1)'
                             }
                         }}
                     >

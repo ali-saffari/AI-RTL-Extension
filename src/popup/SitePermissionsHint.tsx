@@ -28,7 +28,7 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
     const [modalOpen, setModalOpen] = React.useState(false);
     const [dismissed, setDismissed] = React.useState(false);
     const [storageReady, setStorageReady] = React.useState(false);
-    const accent = isDarkMode ? '#00e9ff' : '#1e40af';
+    const accent = isDarkMode ? '#00e9ff' : '#387af2';
     const muted = isDarkMode ? 'rgba(255, 255, 255, 0.78)' : 'rgba(30, 41, 59, 0.82)';
     const shown = visible && storageReady && !dismissed;
 
@@ -100,10 +100,10 @@ const SitePermissionsHint: React.FC<SitePermissionsHintProps> = ({
                         cursor: 'pointer',
                         font: 'inherit',
                         color: 'inherit',
-                        backgroundColor: isDarkMode ? '#1a1a2e' : '#eef3ff',
+                        backgroundColor: isDarkMode ? '#1a1a2e' : '#f4f9fc',
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.4)'
-                            : '1px solid rgba(30, 64, 175, 0.28)',
+                            : '1px solid rgba(56, 122, 242, 0.28)',
                         boxShadow: 'none',
                         transition: 'background-color 0.28s ease',
                         '&:hover': {

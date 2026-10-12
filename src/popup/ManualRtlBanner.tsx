@@ -158,10 +158,10 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                 borderRadius: 1,
                 background: isDarkMode
                     ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.1) 0%, rgba(0, 233, 255, 0.05) 100%)'
-                    : 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(30, 64, 175, 0.03) 100%)',
+                    : 'linear-gradient(135deg, rgba(56, 122, 242, 0.08) 0%, rgba(56, 122, 242, 0.03) 100%)',
                 border: isDarkMode
                     ? '1px solid rgba(0, 233, 255, 0.3)'
-                    : '1px solid rgba(30, 64, 175, 0.2)',
+                    : '1px solid rgba(56, 122, 242, 0.2)',
                 mx: 2
             }}
         >
@@ -188,7 +188,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             sx={{
                                 fontSize: '0.7rem',
                                 fontWeight: 400,
-                                color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                                color: isDarkMode ? '#00e9ff' : '#387af2',
                                 fontFamily: 'iranyekan'
                             }}
                         >
@@ -277,8 +277,8 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                                 p: 0.5,
                                 color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                                 '&:hover': {
-                                    color: isDarkMode ? '#00e9ff' : '#1c39bb',
-                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                    color: isDarkMode ? '#00e9ff' : '#387af2',
+                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)'
                                 }
                             }}
                         >
@@ -297,7 +297,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             sx={{
                                 borderTop: isDarkMode
                                     ? '1px solid rgba(0, 233, 255, 0.3)'
-                                    : '1px solid rgba(30, 64, 175, 0.2)',
+                                    : '1px solid rgba(56, 122, 242, 0.2)',
                                 pt: 1.5,
                                 pb: 1,
                                 px: 1.5,
@@ -377,10 +377,10 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                             minWidth: 'auto',
                             whiteSpace: 'nowrap',
                             borderRadius: '6px !important',
-                            color: isDarkMode ? '#00e9ff' : '#1c39bb',
+                            color: isDarkMode ? '#00e9ff' : '#387af2',
                             '&:hover': {
                                 color: isDarkMode ? '#4dd4ff' : '#3b82f6',
-                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(30, 64, 175, 0.1)'
+                                backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)'
                             }
                         }}
                     >
@@ -393,7 +393,7 @@ const ManualRtlBanner: React.FC<ManualRtlBannerProps> = ({
                         mt: 1,
                         borderTop: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.2)'
-                            : '1px solid rgba(30, 64, 175, 0.15)'
+                            : '1px solid rgba(56, 122, 242, 0.15)'
                     }}
                 />
             </>

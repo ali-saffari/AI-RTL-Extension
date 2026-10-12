@@ -41,8 +41,17 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
     const troubleshootingSteps = getTroubleshootingSteps(t);
     const [expanded, setExpanded] = React.useState(false);
     const [hideConfirmOpen, setHideConfirmOpen] = React.useState(false);
-    const textColor = isDarkMode ? 'rgba(255, 255, 255, 0.82)' : 'rgba(0, 0, 0, 0.75)';
-    const accentColor = isDarkMode ? '#00e9ff' : '#1c39bb';
+    const isInstall = variant === 'install';
+    const textColor = isDarkMode
+        ? 'rgba(255, 255, 255, 0.82)'
+        : isInstall
+            ? '#3c5d86'
+            : 'rgba(0, 0, 0, 0.75)';
+    const accentColor = isDarkMode
+        ? '#00e9ff'
+        : isInstall
+            ? '#3c5d86'
+            : '#387af2';
     const defaultOffNote = (
         <Typography
             sx={{
@@ -81,7 +90,7 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         border: 'none',
                         background: isDarkMode
                             ? 'rgba(0, 233, 255, 0.08)'
-                            : 'rgba(28, 57, 187, 0.07)',
+                            : 'rgba(56, 122, 242, 0.07)',
                         boxShadow: 'none',
                         boxSizing: 'border-box',
                     }
@@ -92,10 +101,14 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                         borderRadius: 1.5,
                         background: isDarkMode
                             ? 'linear-gradient(135deg, rgba(0, 233, 255, 0.12) 0%, rgba(0, 233, 255, 0.04) 100%)'
-                            : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.04) 100%)',
+                            : isInstall
+                                ? '#e2eefc'
+                                : 'linear-gradient(135deg, rgba(56, 122, 242, 0.1) 0%, rgba(56, 122, 242, 0.04) 100%)',
                         border: isDarkMode
                             ? '1px solid rgba(0, 233, 255, 0.35)'
-                            : '1px solid rgba(30, 64, 175, 0.25)',
+                            : isInstall
+                                ? '1px solid #3c5d86'
+                                : '1px solid rgba(56, 122, 242, 0.25)',
                     }
             }
         >
@@ -365,10 +378,12 @@ const InstallHintBanner: React.FC<InstallHintBannerProps> = ({
                                             borderRadius: '6px !important',
                                             color: accentColor,
                                             '&:hover': {
-                                                color: isDarkMode ? '#4dd4ff' : '#3b82f6',
+                                                color: isDarkMode ? '#4dd4ff' : isInstall ? '#2f4a6c' : '#3b82f6',
                                                 backgroundColor: isDarkMode
                                                     ? 'rgba(0, 233, 255, 0.1)'
-                                                    : 'rgba(30, 64, 175, 0.1)'
+                                                    : isInstall
+                                                        ? 'rgba(60, 93, 134, 0.12)'
+                                                        : 'rgba(56, 122, 242, 0.1)'
                                             }
                                         }}
                                     >
