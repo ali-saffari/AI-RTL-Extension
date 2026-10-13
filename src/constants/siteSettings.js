@@ -8,6 +8,13 @@ export const YOUTUBE_FONT_SCOPE_SITE = 'site';
 export const YOUTUBE_CAPTIONS_RTL_ON = 'on';
 export const YOUTUBE_CAPTIONS_RTL_OFF = 'off';
 
+// User-facing slider default is 100%. Internally that maps to 60% of YouTube's size.
+export const YOUTUBE_CAPTION_FONT_SCALE_DEFAULT = 100;
+export const YOUTUBE_CAPTION_FONT_SCALE_BASE = 70;
+export const YOUTUBE_CAPTION_FONT_SCALE_MIN = 70;
+export const YOUTUBE_CAPTION_FONT_SCALE_MAX = 160;
+export const YOUTUBE_CAPTION_FONT_SCALE_STEP = 5;
+
 export const RTL_ALGORITHM_SECTION = 'advanced_section';
 export const RTL_ALGORITHM_FULL = 'advanced_full';
 export const RTL_ALGORITHM_FIRST_WORD = 'first_word';
@@ -74,6 +81,19 @@ export const SITE_SETTINGS_REGISTRY = [
                 defaultValue: YOUTUBE_CAPTIONS_RTL_OFF,
                 onValue: YOUTUBE_CAPTIONS_RTL_ON,
                 offValue: YOUTUBE_CAPTIONS_RTL_OFF,
+            },
+            {
+                key: 'captionFontScale',
+                label: 'اندازه فونت زیرنویس',
+                type: 'range',
+                defaultValue: String(YOUTUBE_CAPTION_FONT_SCALE_DEFAULT),
+                min: YOUTUBE_CAPTION_FONT_SCALE_MIN,
+                max: YOUTUBE_CAPTION_FONT_SCALE_MAX,
+                step: YOUTUBE_CAPTION_FONT_SCALE_STEP,
+                showWhenAny: [
+                    { key: 'captionsRtl', value: YOUTUBE_CAPTIONS_RTL_ON },
+                    { key: 'fontScope', value: YOUTUBE_FONT_SCOPE_SITE },
+                ],
             },
         ],
     },
@@ -161,6 +181,19 @@ export function normalizeSiteSettings(stored) {
                     } else if (value === field.offValue || value === false) {
                         site[field.key] = field.offValue;
                     }
+                    return;
+                }
+                if (field.type === 'range') {
+                    const numeric = Number(value);
+                    const min = Number(field.min);
+                    const max = Number(field.max);
+                    const step = Number(field.step) || 1;
+                    if (!Number.isFinite(numeric)) {
+                        return;
+                    }
+                    const clamped = Math.min(max, Math.max(min, numeric));
+                    const snapped = Math.round(clamped / step) * step;
+                    site[field.key] = String(snapped);
                 }
             });
         }
@@ -175,6 +208,30 @@ export function getYoutubeFontScope(stored) {
 
 export function getYoutubeCaptionsRtl(stored) {
     return normalizeSiteSettings(stored).youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON;
+}
+
+export function getYoutubeCaptionFontScale(stored) {
+    const raw = Number(normalizeSiteSettings(stored).youtube.captionFontScale);
+    if (!Number.isFinite(raw)) {
+        return YOUTUBE_CAPTION_FONT_SCALE_DEFAULT;
+    }
+    return Math.min(
+        YOUTUBE_CAPTION_FONT_SCALE_MAX,
+        Math.max(YOUTUBE_CAPTION_FONT_SCALE_MIN, raw)
+    );
+}
+
+/** User 100% → actual 60% of YouTube caption size. */
+export function getYoutubeCaptionFontScaleFactor(stored) {
+    return (getYoutubeCaptionFontScale(stored) / 100)
+        * (YOUTUBE_CAPTION_FONT_SCALE_BASE / 100);
+}
+
+/** Captions get extension styling when RTL captions or whole-site font is on. */
+export function isYoutubeCaptionEffectActive(stored) {
+    const youtube = normalizeSiteSettings(stored).youtube;
+    return youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON
+        || youtube.fontScope === YOUTUBE_FONT_SCOPE_SITE;
 }
 
 /**

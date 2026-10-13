@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, FormControl, MenuItem, Select, SvgIcon, Switch, Typography } from '@mui/material';
+import { Box, FormControl, MenuItem, Select, Slider, SvgIcon, Switch, Typography } from '@mui/material';
 import { mdiWrench } from '@mdi/js';
 import {
     SITE_SETTINGS_REGISTRY,
@@ -24,7 +24,11 @@ interface SiteField {
     recommendedValue?: string;
     onValue?: string;
     offValue?: string;
+    min?: number;
+    max?: number;
+    step?: number;
     showWhen?: { key: string; value: string };
+    showWhenAny?: { key: string; value: string }[];
     options?: SiteChoice[];
 }
 
@@ -59,6 +63,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const [settings, setSettings] = React.useState<SiteSettingsMap>(
         () => normalizeSiteSettings(undefined) as SiteSettingsMap
     );
+    const [rangeDraft, setRangeDraft] = React.useState<Record<string, string>>({});
     const [highlightedKey, setHighlightedKey] = React.useState<string | null>(null);
     const entry = registry.find((item) => item.serviceKey === activeServiceKey) || null;
     const harnessPluginPresent = useHarnessPluginPresent(entry?.serviceKey === 'harness');
@@ -165,9 +170,13 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const switchFields = entry.fields.filter((field) => field.type === 'switch' && field.onValue && field.offValue);
     const choiceFields = entry.fields.filter((field) => field.type === 'choice' && field.options && field.options.length > 0);
     const selectFields = entry.fields.filter((field) => field.type === 'select' && field.options && field.options.length > 0);
+    const rangeFields = entry.fields.filter((field) => field.type === 'range');
     const pluginMissing = entry.serviceKey === 'harness' && harnessPluginPresent === false;
     const waitingForPlugin = entry.serviceKey === 'harness' && harnessPluginPresent === null;
     const fieldIsVisible = (field: SiteField) => {
+        if (field.showWhenAny && field.showWhenAny.length) {
+            return field.showWhenAny.some((rule) => siteValues[rule.key] === rule.value);
+        }
         if (!field.showWhen) {
             return true;
         }
@@ -186,6 +195,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
             if (field.type === 'choice' || field.type === 'select') {
                 return Boolean(field.options && field.options.length > 0);
             }
+            if (field.type === 'range') {
+                return Number.isFinite(field.min) && Number.isFinite(field.max);
+            }
             return false;
         });
     const resolveFieldLabel = (field: SiteField) => {
@@ -194,6 +206,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         }
         if (entry.serviceKey === 'youtube' && field.key === 'captionsRtl') {
             return t('quickSettings.youtubeCaptionsRtl');
+        }
+        if (entry.serviceKey === 'youtube' && field.key === 'captionFontScale') {
+            return t('quickSettings.youtubeCaptionFontSize');
         }
         if (entry.serviceKey === 'harness' && field.key === 'engine') {
             return t('quickSettings.harnessEngineLabel');
@@ -274,7 +289,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         background: isDarkMode ? 'rgba(74, 222, 128, 0.12)' : 'rgba(34, 197, 94, 0.12)',
     };
 
-    if (!switchFields.length && !choiceFields.length && !selectFields.length) {
+    if (!switchFields.length && !choiceFields.length && !selectFields.length && !rangeFields.length) {
         return null;
     }
 
@@ -289,12 +304,36 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                 },
             };
             try {
-                chrome.storage.sync.set({ [SITE_SETTINGS_STORAGE_KEY]: next });
+                chrome.storage.sync.set({ [SITE_SETTINGS_STORAGE_KEY]: next }, () => {
+                    void chrome.runtime.lastError;
+                });
             } catch (error) {
                 // Extension context can disappear while the popup is closing.
             }
             return next;
         });
+    };
+    const previewRange = (fieldKey: string, value: string) => {
+        if (fieldKey !== 'captionFontScale') {
+            return;
+        }
+        try {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                void chrome.runtime.lastError;
+                const tabId = tabs && tabs[0] && tabs[0].id;
+                if (!tabId) {
+                    return;
+                }
+                chrome.tabs.sendMessage(tabId, {
+                    action: 'previewYoutubeCaptionFontScale',
+                    scale: Number(value),
+                }, () => {
+                    void chrome.runtime.lastError;
+                });
+            });
+        } catch (error) {
+            // tabs API may be unavailable
+        }
     };
 
     return (
@@ -635,6 +674,70 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                                     })}
                                 </Select>
                             </FormControl>
+                        </Box>
+                    );
+                }
+
+                if (field.type === 'range') {
+                    const numeric = Number(rangeDraft[field.key] ?? value);
+                    const fallback = Number(field.defaultValue);
+                    const scale = Number.isFinite(numeric)
+                        ? numeric
+                        : (Number.isFinite(fallback) ? fallback : 100);
+                    const defaultScale = Number.isFinite(fallback) ? fallback : 100;
+                    const scaleLabel = scale === defaultScale ? t('shared.default') : `${scale}٪`;
+                    return (
+                        <Box
+                            key={field.key}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                                px: 1.5,
+                                py: 1.25,
+                                borderTop,
+                            }}
+                        >
+                            <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                                <Typography sx={{ fontSize: '0.62rem', color: mutedColor, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                    {scaleLabel}
+                                </Typography>
+                                <Slider
+                                    size="small"
+                                    value={scale}
+                                    min={field.min}
+                                    max={field.max}
+                                    step={field.step || 5}
+                                    marks={[{ value: defaultScale }]}
+                                    onChange={(_, next) => {
+                                        const nextValue = String(next);
+                                        setRangeDraft((current) => ({ ...current, [field.key]: nextValue }));
+                                        previewRange(field.key, nextValue);
+                                    }}
+                                    onChangeCommitted={(_, next) => {
+                                        const nextValue = String(next);
+                                        setRangeDraft((current) => {
+                                            const rest = { ...current };
+                                            delete rest[field.key];
+                                            return rest;
+                                        });
+                                        updateField(field.key, nextValue);
+                                    }}
+                                    sx={{
+                                        width: 168,
+                                        flex: '0 0 168px',
+                                        m: 0,
+                                        py: 0.5,
+                                        color: accent,
+                                        '& .MuiSlider-rail': { opacity: 0.35 },
+                                        '& .MuiSlider-mark': { backgroundColor: accent, height: 6, width: 2 },
+                                        '& .MuiSlider-thumb': { width: 12, height: 12 },
+                                    }}
+                                    aria-label={resolveFieldLabel(field)}
+                                />
+                            </Box>
                         </Box>
                     );
                 }

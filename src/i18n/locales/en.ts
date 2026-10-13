@@ -105,6 +105,7 @@ export const enMessages: Messages = {
         siteSpecific: 'Site settings',
         youtubeFontScope: 'Apply the font to the whole site',
         youtubeCaptionsRtl: 'Right-to-left captions',
+        youtubeCaptionFontSize: 'Caption font size',
         harnessDescription: 'The Chrome AI RTL extension and the Harness AI RTL plugin are both on. Please pick one.',
         harnessMissingPlugin: 'The desktop plugin is now available.',
         harnessMissingPluginCta: 'Install guide',

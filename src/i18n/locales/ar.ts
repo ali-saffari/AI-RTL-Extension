@@ -105,6 +105,7 @@ export const arMessages: Messages = {
         siteSpecific: 'إعدادات خاصة بالموقع',
         youtubeFontScope: 'تطبيق الخط على الموقع كله',
         youtubeCaptionsRtl: 'محاذاة الترجمة لليمين',
+        youtubeCaptionFontSize: 'حجم خط الترجمة',
         harnessDescription: 'إضافة كروم AI RTL وإضافة هارنس AI RTL مفعّلتان معًا. اختر واحدة منهما.',
         harnessMissingPlugin: 'إضافة سطح المكتب متاحة الآن.',
         harnessMissingPluginCta: 'دليل التثبيت',

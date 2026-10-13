@@ -542,7 +542,7 @@ export function activateYoutube(rtlAlgorithm = 'advanced_full') {
     installYoutubeSiteFontWatcher();
     syncYoutubeSiteFont();
     installYoutubeCaptionsWatcher();
-    syncYoutubeCaptions(rtlAlgorithm);
+    syncYoutubeCaptions();
 
     const session = ++youtubeSession;
     if (youtubeInterval) {

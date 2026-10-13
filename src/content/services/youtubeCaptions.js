@@ -1,147 +1,102 @@
 import {
     SITE_SETTINGS_STORAGE_KEY,
-    getYoutubeCaptionsRtl,
+    YOUTUBE_CAPTION_FONT_SCALE_BASE,
+    YOUTUBE_CAPTIONS_RTL_ON,
+    getYoutubeCaptionFontScaleFactor,
+    isYoutubeCaptionEffectActive,
+    normalizeSiteSettings,
 } from '../../constants/siteSettings.js';
-import { applyRtlToElement } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
 
-const CAPTIONS_SELECTOR = '.captions-text';
+const ROOT_CLASS = 'ai-rtl-yt-captions';
+const RTL_CLASS = 'ai-rtl-yt-captions-rtl';
+const SCALE_VAR = '--ai-rtl-caption-scale';
+const STYLE_ID = 'ai-rtl-yt-captions-style';
+const MIRROR_CLASS = 'ai-rtl-caption-mirror';
+const SOURCE_CLASS = 'ai-rtl-caption-source';
+const DEFAULT_FACTOR = YOUTUBE_CAPTION_FONT_SCALE_BASE / 100;
 
-const CAPTION_OPTIONS = {
-    fontClass: 'FontSet',
-    processedClass: false,
-    setTextAlign: 'important',
-    setUnicodeBidi: 'plaintext',
-    applyFontIfRtl: true,
-    removeDirAuto: true,
-};
-
-const CLEAR_ATTRS = [
-    'dir',
-    'data-ai-rtl-direction',
-    'data-algorithm-rtl',
-    'data-text-length',
-    'data-ai-rtl-orig-dir',
-    'data-ai-rtl-orig-align',
-    'data-ai-rtl-orig-bidi',
-    'data-ai-rtl-orig-css-direction',
-    'data-ai-rtl-orig-font',
-];
+const CAPTIONS_CSS = `
+html.${ROOT_CLASS} .caption-window {
+    scale: var(${SCALE_VAR}, ${DEFAULT_FACTOR});
+    transform-origin: center bottom;
+}
+html.${ROOT_CLASS}.${RTL_CLASS} .captions-text {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: plaintext !important;
+}
+html.${ROOT_CLASS} .ytp-caption-segment {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+`;
 
 let watcherInstalled = false;
 let syncToken = 0;
-let running = false;
-let captionsEnabled = false;
-let rtlAlgorithm = 'advanced_full';
-let observer = null;
-let pendingFrame = 0;
 
 function isYoutubePage() {
     const host = window.location.hostname;
     return host === 'youtube.com' || host === 'www.youtube.com' || host === 'm.youtube.com';
 }
 
-function clearCaptionElement(element) {
-    if (!element?.classList) {
-        return;
+function ensureStyle() {
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = STYLE_ID;
+        (document.head || document.documentElement).appendChild(style);
     }
-    element.classList.remove('FontSet', 'AsRtl', 'AsLtr', 'AsAlignRtl', 'AsAlignLtr');
-    CLEAR_ATTRS.forEach((name) => {
-        element.removeAttribute(name);
+    if (style.textContent !== CAPTIONS_CSS) {
+        style.textContent = CAPTIONS_CSS;
+    }
+}
+
+function removeCopiedCaptions() {
+    document.querySelectorAll(`.${MIRROR_CLASS}`).forEach((element) => {
+        element.remove();
     });
-    if (element.style) {
-        element.style.removeProperty('direction');
-        element.style.removeProperty('text-align');
-        element.style.removeProperty('unicode-bidi');
-        element.style.removeProperty('font-family');
-    }
-}
-
-function applyCaptionElement(element) {
-    if (!captionsEnabled || !isRtlEngineActive()) {
-        return;
-    }
-    if (!String(element.textContent || '').trim()) {
-        return;
-    }
-    applyRtlToElement(element, rtlAlgorithm, CAPTION_OPTIONS);
-}
-
-function processAllCaptions() {
-    document.querySelectorAll(CAPTIONS_SELECTOR).forEach((element) => {
-        if (captionsEnabled && isRtlEngineActive()) {
-            applyCaptionElement(element);
-        } else {
-            clearCaptionElement(element);
-        }
+    document.querySelectorAll(`.${SOURCE_CLASS}`).forEach((element) => {
+        element.classList.remove(SOURCE_CLASS);
     });
+    document.getElementById('ai-rtl-caption-mirror-style')?.remove();
 }
 
-function queueProcess() {
-    if (pendingFrame) {
+function applyCaptions({ enabled, rtl, factor }) {
+    const root = document.documentElement;
+    if (!root) {
         return;
     }
-    pendingFrame = requestAnimationFrame(() => {
-        pendingFrame = 0;
-        processAllCaptions();
+    removeCopiedCaptions();
+    if (!enabled || !isRtlEngineActive()) {
+        root.classList.remove(ROOT_CLASS, RTL_CLASS);
+        root.style.removeProperty(SCALE_VAR);
+        document.getElementById(STYLE_ID)?.remove();
+        return;
+    }
+    const scaleFactor = Number.isFinite(factor) ? factor : DEFAULT_FACTOR;
+    ensureStyle();
+    root.style.setProperty(SCALE_VAR, String(scaleFactor));
+    root.classList.add(ROOT_CLASS);
+    root.classList.toggle(RTL_CLASS, Boolean(rtl));
+}
+
+function applyFromStored(stored) {
+    const youtube = normalizeSiteSettings(stored).youtube;
+    applyCaptions({
+        enabled: Boolean(isRtlEngineActive() && isYoutubeCaptionEffectActive(stored)),
+        rtl: youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON,
+        factor: getYoutubeCaptionFontScaleFactor(stored),
     });
-}
-
-function startCaptionsObserver() {
-    if (running || !document.documentElement) {
-        return;
-    }
-    running = true;
-    observer = new MutationObserver(queueProcess);
-    observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-    });
-}
-
-function stopCaptionsObserver() {
-    running = false;
-    if (pendingFrame) {
-        cancelAnimationFrame(pendingFrame);
-        pendingFrame = 0;
-    }
-    if (observer) {
-        observer.disconnect();
-        observer = null;
-    }
-}
-
-function setCaptionsEnabled(enabled, algorithm) {
-    if (algorithm) {
-        rtlAlgorithm = algorithm;
-    }
-    captionsEnabled = Boolean(enabled);
-    if (captionsEnabled && isRtlEngineActive()) {
-        startCaptionsObserver();
-        processAllCaptions();
-        return;
-    }
-    stopCaptionsObserver();
-    processAllCaptions();
-}
-
-function applyFromStored(stored, algorithm) {
-    const enabled = Boolean(isRtlEngineActive() && getYoutubeCaptionsRtl(stored));
-    setCaptionsEnabled(enabled, algorithm);
 }
 
 export function stopYoutubeCaptions() {
     syncToken += 1;
-    setCaptionsEnabled(false);
+    applyCaptions({ enabled: false, rtl: false, factor: DEFAULT_FACTOR });
 }
 
-export function syncYoutubeCaptions(algorithm) {
+export function syncYoutubeCaptions() {
     if (!isYoutubePage()) {
         return;
-    }
-    if (algorithm) {
-        rtlAlgorithm = algorithm;
     }
     const token = ++syncToken;
     try {
@@ -149,11 +104,19 @@ export function syncYoutubeCaptions(algorithm) {
             if (token !== syncToken || !isYoutubePage()) {
                 return;
             }
-            applyFromStored(result[SITE_SETTINGS_STORAGE_KEY], algorithm);
+            applyFromStored(result[SITE_SETTINGS_STORAGE_KEY]);
         });
     } catch (error) {
         stopYoutubeCaptions();
     }
+}
+
+function previewCaptionScale(userScale) {
+    const root = document.documentElement;
+    if (!root?.classList.contains(ROOT_CLASS) || !Number.isFinite(userScale)) {
+        return;
+    }
+    root.style.setProperty(SCALE_VAR, String((userScale / 100) * DEFAULT_FACTOR));
 }
 
 export function installYoutubeCaptionsWatcher() {
@@ -168,6 +131,13 @@ export function installYoutubeCaptionsWatcher() {
         if (!isYoutubePage()) {
             return;
         }
-        applyFromStored(changes[SITE_SETTINGS_STORAGE_KEY].newValue, rtlAlgorithm);
+        applyFromStored(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
+    });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (!message || message.action !== 'previewYoutubeCaptionFontScale' || !isYoutubePage()) {
+            return;
+        }
+        previewCaptionScale(Number(message.scale));
+        sendResponse({ success: true });
     });
 }
