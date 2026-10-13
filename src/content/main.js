@@ -1,6 +1,6 @@
 // Main content script - orchestrates all services
 
-import { activateChatGptRTL as activateChatGpt, stopChatGptRTL } from './services/chatgpt.js';
+import { activateChatGptRTL as activateChatGpt, stopChatGptRTL } from './services/chatgpt/chatgpt.js';
 import { activateClaude, stopClaude } from './services/claude.js';
 import { activateCopilot } from './services/copilot.js';
 import { activateGitHubCopilot } from './services/github-copilot.js';

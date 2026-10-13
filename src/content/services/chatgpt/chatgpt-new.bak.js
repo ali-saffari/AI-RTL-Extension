@@ -1,14 +1,14 @@
-// Current ChatGPT UI. Active when #stage-sidebar-tiny-bar is not in the DOM.
-import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/index.js';
-import { isRtlEngineActive, preserveOriginalDir } from '../utils/originalState.js';
+﻿// Current ChatGPT UI. Active when #stage-sidebar-tiny-bar is not in the DOM.
+import { addCopyright } from '../../utils/copyright.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../../utils/originalState.js';
 import {
     createViewportMessageWatch,
     eachMatch,
     hasSelector,
     isNearViewport,
     MARKDOWN_THROTTLE_MS
-} from '../utils/viewport.js';
+} from '../../utils/viewport.js';
 
 const MARKDOWN_ROOT = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
 const MARKDOWN_ASSISTANT = '[data-assistant-markdown]';

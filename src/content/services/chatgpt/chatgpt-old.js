@@ -1,8 +1,8 @@
 // ChatGPT 4.0.16 UI. Used when #stage-sidebar-tiny-bar is on the page.
-import { isRTL } from '../utils/analyzeDirection.js';
-import { addCopyright } from '../utils/copyright.js';
-import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../utils/directionUtils/index.js';
-import { isRtlEngineActive } from '../utils/originalState.js';
+import { isRTL } from '../../utils/analyzeDirection.js';
+import { addCopyright } from '../../utils/copyright.js';
+import { applyRtlToContainer, applyRtlToElement, processCodeMirrorBlocks } from '../../utils/directionUtils/index.js';
+import { isRtlEngineActive } from '../../utils/originalState.js';
 
 let markdownObserver = null;
 let markdownFlushRaf = 0;

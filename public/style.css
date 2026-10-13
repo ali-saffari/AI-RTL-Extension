@@ -6,6 +6,21 @@ html.ai-rtl-has-font {
     background: red !important;
 }
 
+.AsDoneBorder,
+.AsFlashBorder {
+    box-shadow:
+        var(--ai-rtl-ring-done, 0 0 0 0 transparent),
+        var(--ai-rtl-ring-flash, 0 0 0 0 transparent) !important;
+}
+
+.AsDoneBorder {
+    --ai-rtl-ring-done: 0 0 0 5px #22c55e;
+}
+
+.AsFlashBorder {
+    --ai-rtl-ring-flash: 0 0 0 12px red;
+}
+
 /*
  * Fix for CSS conflict with FontAra Extension v5.0.0.
  * Restores the intended centered alignment of the Codex description.
