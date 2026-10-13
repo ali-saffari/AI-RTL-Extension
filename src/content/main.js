@@ -21,7 +21,7 @@ import { activateYoucom } from './services/youcom.js';
 import { activateQwen } from './services/qwen.js';
 import { activateQwenCoder } from './services/qwen-coder.js';
 import { activateNotebooklm } from './services/notebooklm.js';
-import { activateZai } from './services/zai.js';
+import { activateZai } from './services/observer/zai.js';
 import { activateArena } from './services/arena.js';
 import { activateOpenRouter } from './services/openrouter.js';
 import { activateMinimax } from './services/minimax.js';
