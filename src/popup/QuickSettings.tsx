@@ -46,7 +46,12 @@ import {
 import SiteSettingsSection from './SiteSettingsSection';
 // import InstallHintBanner from './InstallHintBanner'; // kept for restoring algorithm personalization hint
 import { useHarnessPluginPresent } from './harnessPluginPresence';
-import { normalizeSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
+import {
+    getSiteRtlAlgorithm,
+    normalizeSiteSettings,
+    serviceHasSiteRtlAlgorithm,
+    SITE_SETTINGS_STORAGE_KEY,
+} from '../constants/siteSettings';
 import { useI18n } from '../i18n';
 import type { MessageKey } from '../i18n';
 
@@ -178,12 +183,15 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const [algoInfoOpen, setAlgoInfoOpen] = React.useState(false);
     const [titleInfoOpen, setTitleInfoOpen] = React.useState(false);
     const [codeInfoOpen, setCodeInfoOpen] = React.useState(false);
+    const [siteLockInfoOpen, setSiteLockInfoOpen] = React.useState(false);
     // const [mixedInfoOpen, setMixedInfoOpen] = React.useState(false);
     const [fonts, setFonts] = React.useState<RtlFont[]>([]);
     const [pinSitePermissionOpen, setPinSitePermissionOpen] = React.useState(false);
     const [sponsorNoteExpanded, setSponsorNoteExpanded] = React.useState(false);
     const [harnessEngine, setHarnessEngine] = React.useState('chrome');
+    const [siteRtlAlgorithm, setSiteRtlAlgorithm] = React.useState<string | null>(null);
     const harnessPluginPresent = useHarnessPluginPresent(activeServiceKey === 'harness');
+    const siteAlgorithmLocked = Boolean(activeServiceKey && serviceHasSiteRtlAlgorithm(activeServiceKey));
 
     React.useEffect(() => {
         const checkTabsPermission = async () => {
@@ -198,24 +206,29 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     }, []);
 
     React.useEffect(() => {
-        const applyEngine = (stored: unknown) => {
+        const applySiteSettings = (stored: unknown) => {
             const engine = (normalizeSiteSettings(stored) as { harness?: { engine?: string } }).harness?.engine;
             setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
+            if (activeServiceKey && serviceHasSiteRtlAlgorithm(activeServiceKey)) {
+                setSiteRtlAlgorithm(getSiteRtlAlgorithm(stored, activeServiceKey, rtlAlgorithm));
+            } else {
+                setSiteRtlAlgorithm(null);
+            }
         };
 
         try {
             chrome.storage.sync.get([SITE_SETTINGS_STORAGE_KEY], (result) => {
-                applyEngine(result?.[SITE_SETTINGS_STORAGE_KEY]);
+                applySiteSettings(result?.[SITE_SETTINGS_STORAGE_KEY]);
             });
         } catch {
-            applyEngine(undefined);
+            applySiteSettings(undefined);
         }
 
         const handleEngineChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
             if (areaName !== 'sync' || !changes[SITE_SETTINGS_STORAGE_KEY]) {
                 return;
             }
-            applyEngine(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
+            applySiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
         };
 
         try {
@@ -231,7 +244,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 // Ignore cleanup when storage is unavailable.
             }
         };
-    }, []);
+    }, [activeServiceKey, rtlAlgorithm]);
 
     React.useEffect(() => {
         let cancelled = false;
@@ -316,6 +329,8 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     const extensionOff = !extensionEnabled;
     const harnessQuickLocked = !extensionOff && activeServiceKey === 'harness' && harnessEngine === 'dsh' && harnessPluginPresent !== false;
     const controlsDisabled = extensionOff || harnessQuickLocked;
+    const algorithmControlsDisabled = controlsDisabled || (!extensionOff && siteAlgorithmLocked);
+    const effectiveAlgorithm = siteAlgorithmLocked && siteRtlAlgorithm ? siteRtlAlgorithm : rtlAlgorithm;
 
     const openOptions = (hash = '') => {
         const page = hash ? `options.html#${hash}` : 'options.html';
@@ -650,12 +665,28 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 </SvgIcon>
                             </IconButton>
                         </Box>
-                        <FormControl size="small" disabled={controlsDisabled} sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
+                        <Box sx={{ position: 'relative', width: 168, flex: '0 0 168px', minWidth: 0 }}>
+                            {!extensionOff && siteAlgorithmLocked ? (
+                                <Box
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={t('quickSettings.siteLockInfoAria')}
+                                    onClick={() => setSiteLockInfoOpen(true)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault();
+                                            setSiteLockInfoOpen(true);
+                                        }
+                                    }}
+                                    sx={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer' }}
+                                />
+                            ) : null}
+                        <FormControl size="small" disabled={algorithmControlsDisabled} sx={{ width: '100%' }}>
                             <Select
                                 dir={dir}
                                 className="quick-settings-select"
-                                value={rtlAlgorithm}
-                                disabled={controlsDisabled}
+                                value={effectiveAlgorithm}
+                                disabled={algorithmControlsDisabled}
                                 renderValue={(value) => ALGORITHMS.find((item) => item.id === value)?.title ?? ''}
                                 onChange={(event) => onRtlAlgorithmChange(event.target.value)}
                                 MenuProps={{
@@ -753,9 +784,10 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                                 ))}
                             </Select>
                         </FormControl>
+                        </Box>
                     </Box>
 
-                    {rtlAlgorithm === 'advanced_section' && (
+                    {!siteAlgorithmLocked && effectiveAlgorithm === 'advanced_section' && (
                         <Box
                             sx={{
                                 display: 'flex',
@@ -1314,6 +1346,53 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 </Box>
                 </Box>
             </Box>
+            <Dialog
+                open={siteLockInfoOpen}
+                onClose={() => setSiteLockInfoOpen(false)}
+                maxWidth="xs"
+                fullWidth
+                sx={{
+                    zIndex: 1500,
+                    '& .MuiDialog-paper': {
+                        padding: '8px',
+                        direction: dir,
+                    },
+                }}
+            >
+                <DialogTitle
+                    style={{
+                        direction: dir,
+                        textAlign: contentAlign,
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        padding: '16px 16px 8px 16px',
+                        fontFamily: 'iranyekan',
+                    }}
+                >
+                    {t('quickSettings.siteLockInfoTitle')}
+                </DialogTitle>
+                <DialogContent style={{ direction: dir, textAlign: contentAlign, padding: '8px 16px' }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontFamily: 'iranyekan',
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        {t('quickSettings.siteLockInfoBody')}
+                    </Typography>
+                </DialogContent>
+                <DialogActions style={{ padding: '8px 16px 16px 16px' }}>
+                    <Button
+                        onClick={() => setSiteLockInfoOpen(false)}
+                        variant="contained"
+                        color="primary"
+                        sx={{ fontFamily: 'iranyekan', textTransform: 'none' }}
+                    >
+                        {t('shared.close')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Dialog
                 open={algoInfoOpen}
                 onClose={() => setAlgoInfoOpen(false)}

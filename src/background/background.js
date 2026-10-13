@@ -11,7 +11,12 @@ import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermis
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY } from '../utils/pinOpenSite';
 import { getActivateGuidePath } from '../utils/storeLinks.js';
 import { DEFAULT_HALF_SPACE_SITES, HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
-import { defaultSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings.js';
+import {
+    defaultSiteSettings,
+    normalizeSiteSettings,
+    SITE_SETTINGS_REGISTRY,
+    SITE_SETTINGS_STORAGE_KEY,
+} from '../constants/siteSettings.js';
 // import { getSitesConfig } from '../constants/sitesConfig.js';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
@@ -267,6 +272,19 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
                 if (!storedData.hasOwnProperty(SITE_SETTINGS_STORAGE_KEY)) {
                     updates[SITE_SETTINGS_STORAGE_KEY] = defaultSiteSettings();
+                } else {
+                    const normalizedSiteSettings = normalizeSiteSettings(storedData[SITE_SETTINGS_STORAGE_KEY]);
+                    const rawSiteSettings = storedData[SITE_SETTINGS_STORAGE_KEY];
+                    const needsSiteSettingsMerge = SITE_SETTINGS_REGISTRY.some((entry) => {
+                        const rawSite = rawSiteSettings?.[entry.serviceKey];
+                        if (!rawSite || typeof rawSite !== 'object') {
+                            return true;
+                        }
+                        return entry.fields.some((field) => rawSite[field.key] === undefined);
+                    });
+                    if (needsSiteSettingsMerge) {
+                        updates[SITE_SETTINGS_STORAGE_KEY] = normalizedSiteSettings;
+                    }
                 }
 
                 if (storedData.experimentalAlgoDefaultOn !== true) {

@@ -83,7 +83,13 @@ import { activateYoutube, stopYoutube } from './services/youtube.js';
 import { activateM365 } from './services/observer/m365.js';
 import { setHalfSpaceHotkeyEnabled, syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled.js';
-import { SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings.js';
+import {
+    SITE_SETTINGS_STORAGE_KEY,
+    getSiteRtlAlgorithm,
+    getSiteTitleMode,
+    normalizeSiteSettings,
+    serviceHasSiteRtlAlgorithm,
+} from '../constants/siteSettings.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -544,7 +550,8 @@ async function initializeAllServices(token = applyToken) {
         return;
     }
 
-    rtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
+    const globalRtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
+    rtlAlgorithm = globalRtlAlgorithm;
     setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
     setApplyAlgorithmToCode(results.applyAlgorithmToCode !== false);
     setFlipRtlArrows(results.flipRtlArrows !== false);
@@ -555,6 +562,18 @@ async function initializeAllServices(token = applyToken) {
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
         if (results[serviceKey] !== false && isCurrentSite(config.urls, config.exact === true, config.port)) {
             activeService = serviceKey;
+            rtlAlgorithm = getSiteRtlAlgorithm(
+                results[SITE_SETTINGS_STORAGE_KEY],
+                serviceKey,
+                globalRtlAlgorithm
+            );
+            setMixedTitleDisplayMode(
+                getSiteTitleMode(
+                    results[SITE_SETTINGS_STORAGE_KEY],
+                    serviceKey,
+                    results.mixedTitleDisplayMode
+                )
+            );
             if (typeof window.AQ !== 'undefined') {
                 if (token !== applyToken) {
                     return;
@@ -683,6 +702,21 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     if (changes.rtlAlgorithm || changes.rtlAlgorithmMode || changes.mixedTitleDisplayMode) {
         await requestRtlEnable();
         return;
+    }
+
+    if (changes[SITE_SETTINGS_STORAGE_KEY]) {
+        const serviceKey = getCurrentServiceKey();
+        if (serviceKey && serviceHasSiteRtlAlgorithm(serviceKey)) {
+            const prev = normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].oldValue);
+            const next = normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
+            if (
+                prev?.[serviceKey]?.rtlAlgorithm !== next?.[serviceKey]?.rtlAlgorithm
+                || prev?.[serviceKey]?.titleMode !== next?.[serviceKey]?.titleMode
+            ) {
+                await requestRtlEnable();
+                return;
+            }
+        }
     }
 
     if (changes.applyAlgorithmToCode || changes.flipRtlArrows || changes.fixMixedText) {

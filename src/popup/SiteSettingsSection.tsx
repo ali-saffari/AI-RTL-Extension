@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, SvgIcon, Switch, Typography } from '@mui/material';
+import { Box, FormControl, MenuItem, Select, SvgIcon, Switch, Typography } from '@mui/material';
 import { mdiWrench } from '@mdi/js';
 import {
     SITE_SETTINGS_REGISTRY,
@@ -11,7 +11,8 @@ import { useI18n } from '../i18n';
 
 interface SiteChoice {
     value: string;
-    label: string;
+    label?: string;
+    labelKey?: string;
     icon?: string;
 }
 
@@ -20,8 +21,10 @@ interface SiteField {
     label: string;
     type: string;
     defaultValue: string;
+    recommendedValue?: string;
     onValue?: string;
     offValue?: string;
+    showWhen?: { key: string; value: string };
     options?: SiteChoice[];
 }
 
@@ -130,12 +133,49 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     const cardBorder = isDarkMode ? 'rgba(0, 233, 255, 0.12)' : 'rgba(56, 122, 242, 0.22)';
     const titleColor = isDarkMode ? '#ffffff' : '#1e293b';
     const mutedColor = isDarkMode ? '#94a3b8' : '#64748b';
+    const fieldBg = isDarkMode ? 'rgba(26, 26, 46, 0.7)' : '#f8fafc';
     const siteValues = settings[entry.serviceKey] || {};
+    const algorithmSelectSx = {
+        width: '100%',
+        fontFamily: 'iranyekan',
+        fontSize: '0.68rem',
+        backgroundColor: fieldBg,
+        color: titleColor,
+        borderRadius: '8px',
+        '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: cardBorder,
+        },
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDarkMode ? 'rgba(0, 233, 255, 0.4)' : 'rgba(56, 122, 242, 0.4)',
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: accent,
+            borderWidth: '1px',
+        },
+        '& .MuiSelect-select': {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            py: 0.35,
+        },
+        '& .MuiSelect-icon': {
+            color: mutedColor,
+        },
+    };
     const switchFields = entry.fields.filter((field) => field.type === 'switch' && field.onValue && field.offValue);
     const choiceFields = entry.fields.filter((field) => field.type === 'choice' && field.options && field.options.length > 0);
+    const selectFields = entry.fields.filter((field) => field.type === 'select' && field.options && field.options.length > 0);
     const pluginMissing = entry.serviceKey === 'harness' && harnessPluginPresent === false;
     const waitingForPlugin = entry.serviceKey === 'harness' && harnessPluginPresent === null;
-    const visibleChoiceFields = pluginMissing || waitingForPlugin ? [] : choiceFields;
+    const fieldIsVisible = (field: SiteField) => {
+        if (!field.showWhen) {
+            return true;
+        }
+        const current = siteValues[field.showWhen.key];
+        return current === field.showWhen.value;
+    };
+    const visibleChoiceFields = pluginMissing || waitingForPlugin ? [] : choiceFields.filter(fieldIsVisible);
+    const visibleSelectFields = pluginMissing || waitingForPlugin ? [] : selectFields.filter(fieldIsVisible);
     const resolveFieldLabel = (field: SiteField) => {
         if (entry.serviceKey === 'youtube' && field.key === 'fontScope') {
             return t('quickSettings.youtubeFontScope');
@@ -143,19 +183,83 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         if (entry.serviceKey === 'harness' && field.key === 'engine') {
             return t('quickSettings.harnessEngineLabel');
         }
+        if (field.key === 'rtlAlgorithm') {
+            return t('quickSettings.siteAlgorithmLabel');
+        }
+        if (field.key === 'titleMode') {
+            return t('quickSettings.titleModeLabel');
+        }
         return field.label;
     };
     const resolveOptionLabel = (option: SiteChoice) => {
-        if (entry.serviceKey !== 'harness') {
-            return option.label;
+        if (option.labelKey === 'advancedSection') {
+            return t('quickSettings.algorithms.advancedSection.title');
         }
-        if (option.value === 'dsh') {
+        if (option.labelKey === 'advancedFull') {
+            return t('quickSettings.algorithms.advancedFull.title');
+        }
+        if (option.labelKey === 'firstWord') {
+            return t('quickSettings.algorithms.firstWord.title');
+        }
+        if (option.labelKey === 'unified') {
+            return t('quickSettings.titleModes.unified.title');
+        }
+        if (option.labelKey === 'individual') {
+            return t('quickSettings.titleModes.individual.title');
+        }
+        if (entry.serviceKey === 'harness' && option.value === 'dsh') {
             return t('quickSettings.harnessPlugin');
         }
-        return option.label;
+        return option.label || option.value;
+    };
+    const resolveAlgorithmMeta = (option: SiteChoice) => {
+        if (option.labelKey === 'advancedSection') {
+            return {
+                title: t('quickSettings.algorithms.advancedSection.title'),
+                hint: t('quickSettings.algorithms.advancedSection.hint'),
+                badge: t('quickSettings.algorithms.advancedSection.badge'),
+            };
+        }
+        if (option.labelKey === 'advancedFull') {
+            return {
+                title: t('quickSettings.algorithms.advancedFull.title'),
+                hint: t('quickSettings.algorithms.advancedFull.hint'),
+                badge: t('quickSettings.algorithms.advancedFull.badge'),
+            };
+        }
+        if (option.labelKey === 'firstWord') {
+            return {
+                title: t('quickSettings.algorithms.firstWord.title'),
+                hint: t('quickSettings.algorithms.firstWord.hint'),
+                badge: '',
+            };
+        }
+        return {
+            title: resolveOptionLabel(option),
+            hint: '',
+            badge: '',
+        };
+    };
+    const badgeSx = {
+        flexShrink: 0,
+        px: 0.7,
+        py: 0.1,
+        borderRadius: 1,
+        fontSize: '0.62rem',
+        fontWeight: 600,
+        color: accent,
+        border: `1px solid ${isDarkMode ? 'rgba(0, 233, 255, 0.3)' : 'rgba(56, 122, 242, 0.3)'}`,
+        background: isDarkMode ? 'rgba(0, 233, 255, 0.08)' : 'rgba(56, 122, 242, 0.08)',
+        whiteSpace: 'nowrap',
+    };
+    const recommendedBadgeSx = {
+        ...badgeSx,
+        color: isDarkMode ? '#4ade80' : '#15803d',
+        border: `1px solid ${isDarkMode ? 'rgba(74, 222, 128, 0.35)' : 'rgba(21, 128, 61, 0.28)'}`,
+        background: isDarkMode ? 'rgba(74, 222, 128, 0.12)' : 'rgba(34, 197, 94, 0.12)',
     };
 
-    if (!switchFields.length && !choiceFields.length) {
+    if (!switchFields.length && !choiceFields.length && !selectFields.length) {
         return null;
     }
 
@@ -377,6 +481,146 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     </Box>
                 );
             })}
+            {visibleSelectFields.map((field, index) => {
+                const value = siteValues[field.key] || field.defaultValue;
+                const borderTop = index > 0 || visibleChoiceFields.length > 0;
+                const isAlgorithmField = field.key === 'rtlAlgorithm';
+                return (
+                    <Box
+                        key={field.key}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            px: 1.5,
+                            py: 1.25,
+                            borderTop: borderTop ? `1px solid ${cardBorder}` : 'none',
+                        }}
+                    >
+                        <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {resolveFieldLabel(field)}
+                        </Typography>
+                        <FormControl size="small" sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
+                            <Select
+                                dir={dir}
+                                className="quick-settings-select"
+                                value={value}
+                                onChange={(event) => updateField(field.key, String(event.target.value))}
+                                renderValue={(selected) => {
+                                    const option = (field.options || []).find((item) => item.value === selected);
+                                    return option ? resolveOptionLabel(option) : '';
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        className: isAlgorithmField
+                                            ? 'quick-settings-select-menu quick-settings-algo-menu'
+                                            : 'quick-settings-select-menu',
+                                        sx: {
+                                            mt: 0.5,
+                                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                            backgroundImage: 'none',
+                                            ...(isAlgorithmField
+                                                ? { width: 330, maxWidth: 330, boxSizing: 'border-box' }
+                                                : {}),
+                                        },
+                                    },
+                                }}
+                                sx={algorithmSelectSx}
+                                inputProps={{ 'aria-label': resolveFieldLabel(field) }}
+                            >
+                                {(field.options || []).map((option) => {
+                                    if (!isAlgorithmField) {
+                                        return (
+                                            <MenuItem
+                                                key={option.value}
+                                                value={option.value}
+                                                dir={dir}
+                                                sx={{
+                                                    fontFamily: 'iranyekan',
+                                                    fontSize: '0.78rem',
+                                                    py: 0.75,
+                                                    whiteSpace: 'nowrap',
+                                                    textAlign: contentAlign,
+                                                    direction: dir,
+                                                }}
+                                            >
+                                                {resolveOptionLabel(option)}
+                                            </MenuItem>
+                                        );
+                                    }
+
+                                    const meta = resolveAlgorithmMeta(option);
+                                    const isRecommended = Boolean(
+                                        field.recommendedValue && option.value === field.recommendedValue
+                                    );
+                                    return (
+                                        <MenuItem
+                                            key={option.value}
+                                            value={option.value}
+                                            dir={dir}
+                                            className="quick-settings-algo-item"
+                                            sx={{
+                                                fontFamily: 'iranyekan',
+                                                fontSize: '0.82rem',
+                                                alignItems: 'flex-start',
+                                                py: 1.1,
+                                                whiteSpace: 'normal',
+                                                textAlign: contentAlign,
+                                                direction: dir,
+                                            }}
+                                        >
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                                    <span>{meta.title}</span>
+                                                    {(meta.badge || isRecommended) ? (
+                                                        <Box
+                                                            sx={{
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                alignItems: contentAlign === 'right' ? 'flex-end' : 'flex-start',
+                                                                gap: 0.4,
+                                                                flexShrink: 0,
+                                                            }}
+                                                        >
+                                                            {isRecommended ? (
+                                                                <Box component="span" sx={recommendedBadgeSx}>
+                                                                    {t('quickSettings.siteRecommendedBadge', { name: entry.title })}
+                                                                </Box>
+                                                            ) : null}
+                                                            {meta.badge ? (
+                                                                <Box component="span" sx={badgeSx}>
+                                                                    {meta.badge}
+                                                                </Box>
+                                                            ) : null}
+                                                        </Box>
+                                                    ) : null}
+                                                </Box>
+                                                {meta.hint ? (
+                                                    <Typography
+                                                        component="span"
+                                                        sx={{
+                                                            fontSize: '0.68rem',
+                                                            color: mutedColor,
+                                                            lineHeight: 1.5,
+                                                            whiteSpace: 'normal',
+                                                            overflowWrap: 'break-word',
+                                                            wordBreak: 'break-word',
+                                                            fontFamily: 'iranyekan',
+                                                        }}
+                                                    >
+                                                        {meta.hint}
+                                                    </Typography>
+                                                ) : null}
+                                            </Box>
+                                        </MenuItem>
+                                    );
+                                })}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                );
+            })}
             {switchFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;
                 const checked = value === field.onValue;
@@ -390,7 +634,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             gap: 1,
                             px: 1.5,
                             py: 1.25,
-                            borderTop: index > 0 || visibleChoiceFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
+                            borderTop: index > 0 || visibleChoiceFields.length > 0 || visibleSelectFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
                         }}
                     >
                         <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
