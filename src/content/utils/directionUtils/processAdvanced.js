@@ -97,6 +97,8 @@ function processListLikeGroup($element, options = {}) {
         rtlClass,
         ltrClass,
         codeFontClass,
+        forceCodeLtr = false,
+        siteConfig,
         directionClassOptions
     } = options;
 
@@ -126,7 +128,14 @@ function processListLikeGroup($element, options = {}) {
             ltrClass
         });
         $item.find(CODE_BLOCK_SELECTOR).each(function () {
-            processCodeBlockNode(AQ(this), { fontClass, setTextAlign, processedClass, codeFontClass });
+            processCodeBlockNode(AQ(this), {
+                fontClass,
+                setTextAlign,
+                processedClass,
+                codeFontClass,
+                forceCodeLtr,
+                siteConfig
+            });
         });
     });
 
@@ -305,8 +314,18 @@ export function processTextElementsAdvanced(container, options = {}) {
         endTyping = false,
         codeFontClass,
         rtlClass = false,
-        ltrClass = false
+        ltrClass = false,
+        forceCodeLtr = false,
+        siteConfig
     } = options;
+    const codeOptions = {
+        fontClass,
+        setTextAlign,
+        processedClass,
+        codeFontClass,
+        forceCodeLtr,
+        siteConfig
+    };
     const ignoreSelector = typeof options.ignoreSelector === 'string' && options.ignoreSelector.length
         ? options.ignoreSelector
         : null;
@@ -381,6 +400,13 @@ export function processTextElementsAdvanced(container, options = {}) {
         // ChatGPT-style walk skip: same as ms-code-block (mark + return, no text analysis ignore).
         if (matchesWalkSkip(this, walkSkipSelector)) {
             skipWalkElement($element, processedClass, 'walk-skip-selector-skipped');
+            return;
+        }
+
+        // Icon ligatures (Claude data-cds="Icon") must keep their own font.
+        if (typeof this.matches === 'function' && this.matches('[data-cds="Icon"]')) {
+            setDebugAttr($element, 'data-debug-mode', 'cds-icon-skipped');
+            $element.addClass(processedClass);
             return;
         }
         
@@ -516,7 +542,7 @@ export function processTextElementsAdvanced(container, options = {}) {
             const hasPreOrCode = $element.find(`pre, code, .cm-content, .cm-editor, ${CUSTOM_CODE_BLOCK_SELECTOR}`).length > 0;
             
             if (hasPreOrCode) {
-                processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                processCodeLikeElement($element, this, codeOptions);
             } else {
                 // If li doesn't contain pre or code, skip processing
                 setDebugAttr($element, 'data-debug-mode', 'li-inside-list-skipped');
@@ -539,9 +565,9 @@ export function processTextElementsAdvanced(container, options = {}) {
                 $innerCode.each(function() {
                     const $inner = AQ(this);
                     if (isCodeMirrorCodeBlock($inner)) {
-                        processCodeMirrorBlock($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                        processCodeMirrorBlock($inner, this, codeOptions);
                     } else {
-                        processCodeLikeElement($inner, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+                        processCodeLikeElement($inner, this, codeOptions);
                     }
                 });
                 $element.addClass(processedClass);
@@ -611,14 +637,14 @@ export function processTextElementsAdvanced(container, options = {}) {
         
         // CodeMirror / markdown code editors (ChatGPT cm-content, DeepSeek md-code-block, ...)
         if (tagName === 'div' && isCodeMirrorCodeBlock($element)) {
-            processCodeMirrorBlock($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+            processCodeMirrorBlock($element, this, codeOptions);
             return;
         }
 
         // Custom code boxes that don't use pre/code (data-language, data-streamdown="code-block")
         // ChatGPT inline code is a hashed InlineCode-* class, not a <code> tag.
         if (isCustomCodeBlock($element) || isInlineCodeClassElement($element)) {
-            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+            processCodeLikeElement($element, this, codeOptions);
             return;
         }
 
@@ -644,7 +670,7 @@ export function processTextElementsAdvanced(container, options = {}) {
         
         // Special handling for code elements - use code detection algorithm
         if (['pre', 'code'].includes(tagName)) {
-            processCodeLikeElement($element, this, { fontClass, setTextAlign, processedClass, codeFontClass });
+            processCodeLikeElement($element, this, codeOptions);
             return;
         }
 
@@ -744,6 +770,8 @@ export function processTextElementsAdvanced(container, options = {}) {
                             rtlClass,
                             ltrClass,
                             codeFontClass,
+                            forceCodeLtr,
+                            siteConfig,
                             directionClassOptions
                         })
                     ) {
@@ -763,6 +791,9 @@ export function processTextElementsAdvanced(container, options = {}) {
                             rtlClass,
                             ltrClass,
                             ignoreSelector,
+                            codeFontClass,
+                            forceCodeLtr,
+                            siteConfig,
                             onlyCss: options.onlyCss
                         });
 

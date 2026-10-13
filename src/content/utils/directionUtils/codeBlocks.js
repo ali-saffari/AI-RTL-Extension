@@ -22,7 +22,7 @@ import {
     processLockedEditorByCss
 } from './lockedEditor.js';
 import {
-    alignCodeCommentsIn,
+    alignSiteCodeComments,
     codeBlockKind,
     restoreCodeCommentsIn
 } from './codeLanguage.js';
@@ -52,12 +52,27 @@ function resolveCodeFontClass(fontClass, codeFontClass) {
     return codeFontClass || fontClass;
 }
 
+function detectLiveCodeSite() {
+    if (typeof location === 'undefined') {
+        return '';
+    }
+    const host = location.hostname || '';
+    if (/(^|\.)chatgpt\.com$/i.test(host) || /(^|\.)chat\.openai\.com$/i.test(host)) {
+        return 'chatgpt';
+    }
+    if (/(^|\.)claude\.ai$/i.test(host)) {
+        return 'claude';
+    }
+    return '';
+}
+
 function getLiveCodeProcessOptions() {
     const isGpt = Boolean(document.body && document.body.classList.contains('FontSetGPT'));
     return {
         fontClass: isGpt ? 'FontSetGPT' : 'FontSet',
         codeFontClass: isGpt ? 'FontSetCodeBlocksGPT' : (isGeminiHost() ? false : 'FontSet'),
-        setTextAlign: true
+        setTextAlign: true,
+        siteConfig: detectLiveCodeSite()
     };
 }
 
@@ -84,14 +99,14 @@ function applyForcedCodeLtr($element) {
     $element.attr('dir', 'ltr');
     $element.attr('data-ai-rtl-direction', 'ltr');
     $element.addClass('AsSetLtr');
-    $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT AsRtl');
+    $element.removeClass('FontSet FontSetCode FontSetGPT FontSetCodeBlocksGPT FontClaude AsRtl');
     if (el && el.style) {
         el.style.setProperty('direction', 'ltr', 'important');
         el.style.setProperty('text-align', 'left', 'important');
     }
 }
 
-function applyProseCodeRtl($element) {
+function applyProseCodeRtl($element, fontClass) {
     const el = unwrapElement($element);
     if (!el || isCodeHeaderElement(el)) {
         return;
@@ -99,6 +114,9 @@ function applyProseCodeRtl($element) {
     $element.attr('dir', 'rtl');
     $element.attr('data-ai-rtl-direction', 'rtl');
     $element.removeClass('AsSetLtr');
+    if (fontClass) {
+        $element.addClass(fontClass);
+    }
     el.style.setProperty('direction', 'rtl', 'important');
     el.style.setProperty('text-align', 'right', 'important');
 
@@ -248,13 +266,13 @@ export function processCodeLikeElement($element, element, options = {}) {
     const text = $element.text();
     const $targets = getCodeBlockDirectionTargets($element);
     const el = unwrapElement($element);
-    const kind = codeBlockKind(el);
+    const kind = codeBlockKind(el, options.siteConfig);
     // Unified mode sets forceCodeLtr for fenced code. Persian inline code still
     // follows the code-box switch, including inside a blockquote.
     if (isInlineCodeClassElement($element) && shouldApplyRtlToCodeBlock(text)) {
         setDebugAttr($element, 'data-debug-mode', 'inline-code-prose-rtl');
         $targets.each(function() {
-            applyProseCodeRtl(AQ(this));
+            applyProseCodeRtl(AQ(this), blockFontClass);
         });
         markCodeBlockProcessed($element, options);
         return;
@@ -262,7 +280,7 @@ export function processCodeLikeElement($element, element, options = {}) {
     if (!forceCodeLtr && kind === 'prose') {
         setDebugAttr($element, 'data-debug-mode', 'code-prose-rtl');
         $targets.each(function() {
-            applyProseCodeRtl(AQ(this));
+            applyProseCodeRtl(AQ(this), blockFontClass);
         });
         markCodeBlockProcessed($element, options);
         return;
@@ -273,7 +291,7 @@ export function processCodeLikeElement($element, element, options = {}) {
             applyForcedCodeLtr(AQ(this));
         });
         if (kind === 'code') {
-            alignCodeCommentsIn(unwrapElement($element));
+            alignSiteCodeComments(unwrapElement($element), options.siteConfig);
         }
         markCodeBlockProcessed($element, options);
         return;
@@ -370,11 +388,11 @@ export function processCodeMirrorBlock($element, element, options = {}) {
     const $targets = getCodeMirrorTargets($element, $content);
 
     const blockText = $content.text();
-    const kind = codeBlockKind($content[0] || unwrapElement($element));
+    const kind = codeBlockKind($content[0] || unwrapElement($element), options.siteConfig);
     if (!forceCodeLtr && kind === 'prose') {
         setDebugAttr($element, 'data-debug-mode', 'cm-code-prose-rtl');
         $targets.each(function() {
-            applyProseCodeRtl(AQ(this));
+            applyProseCodeRtl(AQ(this), blockFontClass);
         });
         markCodeBlockProcessed($element, options);
         $element.find('*').addClass(CODE_PROCESSED_CLASS);
@@ -384,7 +402,7 @@ export function processCodeMirrorBlock($element, element, options = {}) {
         setDebugAttr($element, 'data-debug-mode', forceCodeLtr ? 'cm-code-forced-ltr' : (kind === 'code' ? 'cm-code-lang-ltr' : 'cm-code-block-ltr'));
         applyCodeBlockDirection($targets, 'ltr', blockFontClass);
         if (kind === 'code') {
-            alignCodeCommentsIn($content[0] || unwrapElement($element));
+            alignSiteCodeComments($content[0] || unwrapElement($element), options.siteConfig);
         }
         markCodeBlockProcessed($element, options);
         $element.find('*').addClass(CODE_PROCESSED_CLASS);

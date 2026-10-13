@@ -54,40 +54,24 @@ html.ai-rtl-has-font .FontSet {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-html.ai-rtl-has-font .FontSet p{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-html.ai-rtl-has-font .FontSet b{
+html.ai-rtl-has-font .FontSet :is(p, b, h1, h2, h3, h4, li):not([data-not-prose], [data-not-prose] *) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
 }
 
-
-html.ai-rtl-has-font .FontSet h1{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-html.ai-rtl-has-font .FontSet h2{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-
-html.ai-rtl-has-font .FontSet h3{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-html.ai-rtl-has-font .FontSet h4{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-html.ai-rtl-has-font .FontSet li{
-    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
-}
-
-html.ai-rtl-has-font .FontSet,
+html.ai-rtl-has-font .FontSet:not([data-cds="Icon"], [data-not-prose]),
 html.ai-rtl-has-font .FontSet :is(
     p, li, dt, dd,
     h1, h2, h3, h4, h5, h6,
     blockquote, figcaption,
     span, div, a, strong, em, b,
     table, thead, tbody, tfoot, tr, th, td, caption
-) {
+):not([data-cds="Icon"], [data-not-prose], [data-not-prose] *) {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+
+/* Code boxes keep the site font. Parent .FontSet must not inherit into them. */
+html.ai-rtl-has-font [data-not-prose] {
+    font-family: revert;
 }
 
 body.rtl-algorithm-active [data-code-wrap] {
@@ -95,11 +79,11 @@ body.rtl-algorithm-active [data-code-wrap] {
     text-align: left !important;
 }
 
-html.ai-rtl-has-font .FontSet :is(pre, code, kbd, samp) {
+html.ai-rtl-has-font .FontSet :is(pre, code, kbd, samp):not([data-not-prose] *) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }
 
-html.ai-rtl-has-font span.FontSet,
+html.ai-rtl-has-font span.FontSet:not([data-cds="Icon"]),
 html.ai-rtl-has-font .FontSet .body-sm,
 html.ai-rtl-has-font [data-sidebar="menu-item"].FontSet span {
     font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;

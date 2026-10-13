@@ -282,7 +282,8 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             codeFontClass: mergedOptions.codeFontClass,
             setTextAlign: mergedOptions.setTextAlign,
             processedClass: mergedOptions.processedClass,
-            forceCodeLtr: mergedOptions.forceCodeLtr === true
+            forceCodeLtr: mergedOptions.forceCodeLtr === true,
+            siteConfig: mergedOptions.siteConfig
         }, true);
         //  else {
         //     // Log when processing is skipped (only once)
@@ -371,7 +372,8 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
             codeFontClass: mergedOptions.codeFontClass,
             setTextAlign: mergedOptions.setTextAlign,
             processedClass: mergedOptions.processedClass,
-            forceCodeLtr: mergedOptions.forceCodeLtr === true
+            forceCodeLtr: mergedOptions.forceCodeLtr === true,
+            siteConfig: mergedOptions.siteConfig
         };
         if (mergedOptions.isContainer) {
             processCodeBlocksInContainer($element, codeOptions, true);

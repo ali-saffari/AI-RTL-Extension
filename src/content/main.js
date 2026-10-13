@@ -1,7 +1,7 @@
 // Main content script - orchestrates all services
 
 import { activateChatGptRTL as activateChatGpt, stopChatGptRTL } from './services/chatgpt.js';
-import { activateClaude } from './services/claude.js';
+import { activateClaude, stopClaude } from './services/claude.js';
 import { activateCopilot } from './services/copilot.js';
 import { activateGitHubCopilot } from './services/github-copilot.js';
 import { activateBlackbox } from './services/blackbox.js';
@@ -522,6 +522,7 @@ function deactivateCurrentRtl() {
     stopYoutube();
     stopHarness();
     stopChatGptRTL();
+    stopClaude();
     disconnectAllDomObservers();
     stopPageRtlEngine();
     resetRtlDomCaches();
@@ -637,6 +638,7 @@ function requestRtlDisable() {
         stopYoutube();
         stopHarness();
         stopChatGptRTL();
+        stopClaude();
         disconnectAllDomObservers();
         stopPageRtlEngine();
         resetRtlDomCaches();
@@ -661,6 +663,7 @@ function requestRtlEnable() {
         }
         stopYoutube();
         stopChatGptRTL();
+        stopClaude();
         disconnectAllDomObservers();
         if (!pluginOwnsHarnessPage()) {
             if (isHarnessPage()) {
