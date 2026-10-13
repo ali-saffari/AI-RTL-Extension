@@ -528,10 +528,21 @@ function enqueueHarnessCss(tabId, job) {
     return run;
 }
 
-function harnessExtensionCssFiles() {
-    return isFirefoxRuntime()
-        ? ['style.css']
-        : ['css/fontiran-iranyekan.css', 'style.css'];
+function isYoutubeWatchHostname(hostname) {
+    const host = String(hostname || '').toLowerCase();
+    return host === 'youtube.com'
+        || host === 'www.youtube.com'
+        || host === 'm.youtube.com';
+}
+
+function harnessExtensionCssFiles(hostname) {
+    // Firefox + YouTube: never inject @font-face sheets that point at
+    // chrome-extension:// — the page frame tries to fetch them and YouTube logs
+    // "Unsafe attempt to load URL". Fonts are registered from bytes in JS instead.
+    if (isFirefoxRuntime() || isYoutubeWatchHostname(hostname)) {
+        return ['style.css'];
+    }
+    return ['css/fontiran-iranyekan.css', 'style.css'];
 }
 
 function harnessCssOnThisDocument(slot) {
@@ -837,7 +848,34 @@ function isMissingTabError(error) {
 
 
 // Handle messages from content scripts
+function readExtensionFontBytes(relativePath) {
+    const relative = String(relativePath || '').replace(/\\/g, '/');
+    if (!relative || relative.includes('..') || relative.startsWith('/')) {
+        return Promise.resolve(null);
+    }
+    const encoded = relative
+        .split('/')
+        .filter(Boolean)
+        .map((segment) => encodeURIComponent(segment))
+        .join('/');
+    return fetch(chrome.runtime.getURL(`fonts/${encoded}`))
+        .then((response) => {
+            if (!response.ok) {
+                return null;
+            }
+            return response.arrayBuffer();
+        })
+        .then((buffer) => (buffer ? Array.from(new Uint8Array(buffer)) : null))
+        .catch(() => null);
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'readExtensionFont') {
+        readExtensionFontBytes(message.path).then((bytes) => {
+            sendResponse(bytes ? { success: true, bytes } : { success: false });
+        });
+        return true;
+    }
     if (message.action === 'setHarnessExtensionCss') {
         const tabId = sender?.tab?.id;
         setHarnessExtensionCss(tabId, message.enabled !== false).then(() => {
@@ -1293,7 +1331,14 @@ async function injectContentFiles(tabId, options = {}) {
     if (options.allFrames) {
         target.allFrames = true;
     }
-    const files = harnessExtensionCssFiles();
+    let hostname = '';
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        hostname = tab?.url ? new URL(tab.url).hostname : '';
+    } catch {
+        hostname = '';
+    }
+    const files = harnessExtensionCssFiles(hostname);
     if (isFirefoxRuntime()) {
         // Sequential files: Firefox does not always run a files[] array in order.
         if (options.manageHarnessCss) {

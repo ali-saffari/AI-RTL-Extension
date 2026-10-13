@@ -32,7 +32,7 @@ initSelectedFont();
 
         faces.forEach(function (item) {
             try {
-                var url = api.runtime.getURL('fonts/iranyekan/' + item.file);
+                var url = api.runtime.getURL('fonts/iranyekan/' + encodeURIComponent(item.file));
                 fetch(url)
                     .then(function (response) {
                         if (!response.ok) {
@@ -41,7 +41,7 @@ initSelectedFont();
                         return response.arrayBuffer();
                     })
                     .then(function (buffer) {
-                        var face = new FontFace('iranyekan', buffer, {
+                        var face = new FontFace('iranyekan', new Uint8Array(buffer), {
                             style: 'normal',
                             weight: item.weight
                         });
