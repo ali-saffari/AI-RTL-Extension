@@ -6,7 +6,6 @@ import {
     SELECTED_FONT_STORAGE_KEY,
     getFontById,
     getFontFamilyCssValue,
-    getFontFormat,
     loadFontsConfig,
     normalizeFontScale,
     normalizeSelectedFontId,
@@ -177,26 +176,29 @@ async function loadFontFaces(font) {
     }
 
     const canUseFontFace = typeof FontFace !== 'undefined' && document.fonts;
-    const loaders = (font.files || []).map((file) => {
+    if (!canUseFontFace) {
+        return;
+    }
+
+    // Fetch in the content-script context, then build FontFace from bytes.
+    // Passing chrome-extension:// URLs into FontFace makes the page load them
+    // and triggers cross-origin warnings on sites like YouTube.
+    const loaders = (font.files || []).map(async (file) => {
         try {
             const url = runtime.runtime.getURL('fonts/' + file.path);
-            if (!canUseFontFace) {
-                return Promise.resolve();
+            const response = await fetch(url);
+            if (!response.ok) {
+                return;
             }
-            const format = getFontFormat(file.path);
-            const source = `url(${JSON.stringify(url)}) format("${format}")`;
-            const face = new FontFace(font.family, source, {
+            const buffer = await response.arrayBuffer();
+            const face = new FontFace(font.family, buffer, {
                 style: 'normal',
                 weight: String(file.weight),
             });
-            return face
-                .load()
-                .then((loaded) => {
-                    document.fonts.add(loaded);
-                })
-                .catch(() => {});
+            const loaded = await face.load();
+            document.fonts.add(loaded);
         } catch (error) {
-            return Promise.resolve();
+            // Ignore individual font failures; content script must keep running
         }
     });
 

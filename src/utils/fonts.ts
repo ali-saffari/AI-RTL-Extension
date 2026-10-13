@@ -1,4 +1,5 @@
 import { sendRuntimeMessage, sendTabMessage } from './chromeMessaging.js';
+import bundledFontsConfig from '../../public/fonts/ai-rtl-fonts.json';
 
 export const NONE_FONT_ID = 'none';
 export const DEFAULT_FONT_ID = 'iranyekan';
@@ -37,24 +38,16 @@ export interface FontsConfig {
 }
 
 let cachedConfig: FontsConfig | null = null;
-let cachedPromise: Promise<FontsConfig> | null = null;
 
+/**
+ * Use the bundled JSON. Fetching chrome-extension://fonts/*.json from a content
+ * script can log a cross-origin warning on sites like YouTube.
+ */
 export function loadFontsConfig(): Promise<FontsConfig> {
-    if (cachedConfig) {
-        return Promise.resolve(cachedConfig);
+    if (!cachedConfig) {
+        cachedConfig = bundledFontsConfig as FontsConfig;
     }
-    if (cachedPromise) {
-        return cachedPromise;
-    }
-
-    cachedPromise = (async () => {
-        const url = chrome.runtime.getURL('fonts/ai-rtl-fonts.json');
-        const response = await fetch(url);
-        cachedConfig = await response.json();
-        return cachedConfig as FontsConfig;
-    })();
-
-    return cachedPromise;
+    return Promise.resolve(cachedConfig);
 }
 
 export function getSelectableFonts(config: FontsConfig): RtlFont[] {

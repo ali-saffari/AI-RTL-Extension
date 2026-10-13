@@ -1,7 +1,8 @@
 /**
  * Firefox-safe font injection for content scripts.
  * Page CSP blocks moz-extension:// @font-face in stylesheets.
- * Load fonts from the extension context via FontFace + getURL.
+ * Fetch font bytes in the extension context, then register FontFace from buffers
+ * so the page never loads chrome-extension:// URLs directly.
  */
 import { initSelectedFont } from './utils/applySelectedFont.js';
 
@@ -32,15 +33,26 @@ initSelectedFont();
         faces.forEach(function (item) {
             try {
                 var url = api.runtime.getURL('fonts/iranyekan/' + item.file);
-                var face = new FontFace('iranyekan', 'url(' + JSON.stringify(url) + ')', {
-                    style: 'normal',
-                    weight: item.weight
-                });
-                face.load().then(function (loaded) {
-                    document.fonts.add(loaded);
-                }).catch(function () {
-                    // Ignore individual font failures; content script must keep running
-                });
+                fetch(url)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('font fetch failed');
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(function (buffer) {
+                        var face = new FontFace('iranyekan', buffer, {
+                            style: 'normal',
+                            weight: item.weight
+                        });
+                        return face.load();
+                    })
+                    .then(function (loaded) {
+                        document.fonts.add(loaded);
+                    })
+                    .catch(function () {
+                        // Ignore individual font failures; content script must keep running
+                    });
             } catch (e) {
                 // Ignore
             }

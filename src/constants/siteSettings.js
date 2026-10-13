@@ -5,6 +5,9 @@ export const SITE_SETTINGS_STORAGE_KEY = 'siteSettings';
 export const YOUTUBE_FONT_SCOPE_AI = 'ai';
 export const YOUTUBE_FONT_SCOPE_SITE = 'site';
 
+export const YOUTUBE_CAPTIONS_RTL_ON = 'on';
+export const YOUTUBE_CAPTIONS_RTL_OFF = 'off';
+
 export const RTL_ALGORITHM_SECTION = 'advanced_section';
 export const RTL_ALGORITHM_FULL = 'advanced_full';
 export const RTL_ALGORITHM_FIRST_WORD = 'first_word';
@@ -63,6 +66,14 @@ export const SITE_SETTINGS_REGISTRY = [
                 defaultValue: YOUTUBE_FONT_SCOPE_AI,
                 onValue: YOUTUBE_FONT_SCOPE_SITE,
                 offValue: YOUTUBE_FONT_SCOPE_AI,
+            },
+            {
+                key: 'captionsRtl',
+                label: 'راست‌چین کردن زیرنویس',
+                type: 'switch',
+                defaultValue: YOUTUBE_CAPTIONS_RTL_OFF,
+                onValue: YOUTUBE_CAPTIONS_RTL_ON,
+                offValue: YOUTUBE_CAPTIONS_RTL_OFF,
             },
         ],
     },
@@ -160,6 +171,10 @@ export function normalizeSiteSettings(stored) {
 
 export function getYoutubeFontScope(stored) {
     return normalizeSiteSettings(stored).youtube.fontScope;
+}
+
+export function getYoutubeCaptionsRtl(stored) {
+    return normalizeSiteSettings(stored).youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON;
 }
 
 /**

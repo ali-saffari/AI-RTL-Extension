@@ -174,11 +174,26 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         const current = siteValues[field.showWhen.key];
         return current === field.showWhen.value;
     };
-    const visibleChoiceFields = pluginMissing || waitingForPlugin ? [] : choiceFields.filter(fieldIsVisible);
-    const visibleSelectFields = pluginMissing || waitingForPlugin ? [] : selectFields.filter(fieldIsVisible);
+    const visibleOrderedFields = pluginMissing || waitingForPlugin
+        ? []
+        : entry.fields.filter((field) => {
+            if (!fieldIsVisible(field)) {
+                return false;
+            }
+            if (field.type === 'switch') {
+                return Boolean(field.onValue && field.offValue);
+            }
+            if (field.type === 'choice' || field.type === 'select') {
+                return Boolean(field.options && field.options.length > 0);
+            }
+            return false;
+        });
     const resolveFieldLabel = (field: SiteField) => {
         if (entry.serviceKey === 'youtube' && field.key === 'fontScope') {
             return t('quickSettings.youtubeFontScope');
+        }
+        if (entry.serviceKey === 'youtube' && field.key === 'captionsRtl') {
+            return t('quickSettings.youtubeCaptionsRtl');
         }
         if (entry.serviceKey === 'harness' && field.key === 'engine') {
             return t('quickSettings.harnessEngineLabel');
@@ -413,216 +428,217 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                     </Typography>
                 )
             ) : null}
-            {visibleChoiceFields.map((field, index) => {
+            {visibleOrderedFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;
-                return (
-                    <Box
-                        key={field.key}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 0.75,
-                            px: 1.5,
-                            py: 1.25,
-                            borderTop: index > 0 ? `1px solid ${cardBorder}` : 'none',
-                        }}
-                    >
-                        <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                const borderTop = index > 0 ? `1px solid ${cardBorder}` : 'none';
+
+                if (field.type === 'choice') {
+                    return (
                         <Box
+                            key={field.key}
                             sx={{
                                 display: 'flex',
-                                p: '3px',
-                                borderRadius: '10px',
-                                background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(28,57,187,0.08)',
+                                flexDirection: 'column',
+                                gap: 0.75,
+                                px: 1.5,
+                                py: 1.25,
+                                borderTop,
                             }}
                         >
-                            {(field.options || []).map((option) => {
-                                const selected = value === option.value;
-                                return (
-                                    <Box
-                                        key={option.value}
-                                        component="button"
-                                        type="button"
-                                        aria-pressed={selected}
-                                        onClick={() => updateField(field.key, option.value)}
-                                        sx={{
-                                            flex: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: 0.5,
-                                            border: 0,
-                                            borderRadius: '8px',
-                                            py: 0.75,
-                                            px: 0.5,
-                                            font: 'inherit',
-                                            fontWeight: 700,
-                                            fontSize: '0.72rem',
-                                            lineHeight: 1.4,
-                                            cursor: 'pointer',
-                                            whiteSpace: 'nowrap',
-                                            background: selected ? accent : 'transparent',
-                                            color: selected ? (isDarkMode ? '#041018' : '#ffffff') : titleColor,
-                                        }}
-                                    >
-                                        {option.icon ? (
-                                            <Box
-                                                component="img"
-                                                src={chrome.runtime.getURL(option.icon)}
-                                                alt=""
-                                                sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
-                                            />
-                                        ) : null}
-                                        {resolveOptionLabel(option)}
-                                    </Box>
-                                );
-                            })}
-                        </Box>
-                    </Box>
-                );
-            })}
-            {visibleSelectFields.map((field, index) => {
-                const value = siteValues[field.key] || field.defaultValue;
-                const borderTop = index > 0 || visibleChoiceFields.length > 0;
-                const isAlgorithmField = field.key === 'rtlAlgorithm';
-                return (
-                    <Box
-                        key={field.key}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            px: 1.5,
-                            py: 1.25,
-                            borderTop: borderTop ? `1px solid ${cardBorder}` : 'none',
-                        }}
-                    >
-                        <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-                            {resolveFieldLabel(field)}
-                        </Typography>
-                        <FormControl size="small" sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
-                            <Select
-                                dir={dir}
-                                className="quick-settings-select"
-                                value={value}
-                                onChange={(event) => updateField(field.key, String(event.target.value))}
-                                renderValue={(selected) => {
-                                    const option = (field.options || []).find((item) => item.value === selected);
-                                    return option ? resolveOptionLabel(option) : '';
+                            <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    p: '3px',
+                                    borderRadius: '10px',
+                                    background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(28,57,187,0.08)',
                                 }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        className: isAlgorithmField
-                                            ? 'quick-settings-select-menu quick-settings-algo-menu'
-                                            : 'quick-settings-select-menu',
-                                        sx: {
-                                            mt: 0.5,
-                                            backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
-                                            backgroundImage: 'none',
-                                            ...(isAlgorithmField
-                                                ? { width: 330, maxWidth: 330, boxSizing: 'border-box' }
-                                                : {}),
-                                        },
-                                    },
-                                }}
-                                sx={algorithmSelectSx}
-                                inputProps={{ 'aria-label': resolveFieldLabel(field) }}
                             >
                                 {(field.options || []).map((option) => {
-                                    if (!isAlgorithmField) {
+                                    const selected = value === option.value;
+                                    return (
+                                        <Box
+                                            key={option.value}
+                                            component="button"
+                                            type="button"
+                                            aria-pressed={selected}
+                                            onClick={() => updateField(field.key, option.value)}
+                                            sx={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 0.5,
+                                                border: 0,
+                                                borderRadius: '8px',
+                                                py: 0.75,
+                                                px: 0.5,
+                                                font: 'inherit',
+                                                fontWeight: 700,
+                                                fontSize: '0.72rem',
+                                                lineHeight: 1.4,
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap',
+                                                background: selected ? accent : 'transparent',
+                                                color: selected ? (isDarkMode ? '#041018' : '#ffffff') : titleColor,
+                                            }}
+                                        >
+                                            {option.icon ? (
+                                                <Box
+                                                    component="img"
+                                                    src={chrome.runtime.getURL(option.icon)}
+                                                    alt=""
+                                                    sx={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+                                                />
+                                            ) : null}
+                                            {resolveOptionLabel(option)}
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                        </Box>
+                    );
+                }
+
+                if (field.type === 'select') {
+                    const isAlgorithmField = field.key === 'rtlAlgorithm';
+                    return (
+                        <Box
+                            key={field.key}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1,
+                                px: 1.5,
+                                py: 1.25,
+                                borderTop,
+                            }}
+                        >
+                            <Typography className="quick-settings-label" sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                {resolveFieldLabel(field)}
+                            </Typography>
+                            <FormControl size="small" sx={{ width: 168, flex: '0 0 168px', minWidth: 0 }}>
+                                <Select
+                                    dir={dir}
+                                    className="quick-settings-select"
+                                    value={value}
+                                    onChange={(event) => updateField(field.key, String(event.target.value))}
+                                    renderValue={(selected) => {
+                                        const option = (field.options || []).find((item) => item.value === selected);
+                                        return option ? resolveOptionLabel(option) : '';
+                                    }}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            className: isAlgorithmField
+                                                ? 'quick-settings-select-menu quick-settings-algo-menu'
+                                                : 'quick-settings-select-menu',
+                                            sx: {
+                                                mt: 0.5,
+                                                backgroundColor: isDarkMode ? '#2f2f41' : '#ffffff',
+                                                backgroundImage: 'none',
+                                                ...(isAlgorithmField
+                                                    ? { width: 330, maxWidth: 330, boxSizing: 'border-box' }
+                                                    : {}),
+                                            },
+                                        },
+                                    }}
+                                    sx={algorithmSelectSx}
+                                    inputProps={{ 'aria-label': resolveFieldLabel(field) }}
+                                >
+                                    {(field.options || []).map((option) => {
+                                        if (!isAlgorithmField) {
+                                            return (
+                                                <MenuItem
+                                                    key={option.value}
+                                                    value={option.value}
+                                                    dir={dir}
+                                                    sx={{
+                                                        fontFamily: 'iranyekan',
+                                                        fontSize: '0.78rem',
+                                                        py: 0.75,
+                                                        whiteSpace: 'nowrap',
+                                                        textAlign: contentAlign,
+                                                        direction: dir,
+                                                    }}
+                                                >
+                                                    {resolveOptionLabel(option)}
+                                                </MenuItem>
+                                            );
+                                        }
+
+                                        const meta = resolveAlgorithmMeta(option);
+                                        const isRecommended = Boolean(
+                                            field.recommendedValue && option.value === field.recommendedValue
+                                        );
                                         return (
                                             <MenuItem
                                                 key={option.value}
                                                 value={option.value}
                                                 dir={dir}
+                                                className="quick-settings-algo-item"
                                                 sx={{
                                                     fontFamily: 'iranyekan',
-                                                    fontSize: '0.78rem',
-                                                    py: 0.75,
-                                                    whiteSpace: 'nowrap',
+                                                    fontSize: '0.82rem',
+                                                    alignItems: 'flex-start',
+                                                    py: 1.1,
+                                                    whiteSpace: 'normal',
                                                     textAlign: contentAlign,
                                                     direction: dir,
                                                 }}
                                             >
-                                                {resolveOptionLabel(option)}
-                                            </MenuItem>
-                                        );
-                                    }
-
-                                    const meta = resolveAlgorithmMeta(option);
-                                    const isRecommended = Boolean(
-                                        field.recommendedValue && option.value === field.recommendedValue
-                                    );
-                                    return (
-                                        <MenuItem
-                                            key={option.value}
-                                            value={option.value}
-                                            dir={dir}
-                                            className="quick-settings-algo-item"
-                                            sx={{
-                                                fontFamily: 'iranyekan',
-                                                fontSize: '0.82rem',
-                                                alignItems: 'flex-start',
-                                                py: 1.1,
-                                                whiteSpace: 'normal',
-                                                textAlign: contentAlign,
-                                                direction: dir,
-                                            }}
-                                        >
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                                                    <span>{meta.title}</span>
-                                                    {(meta.badge || isRecommended) ? (
-                                                        <Box
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, width: '100%', minWidth: 0 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                                                        <span>{meta.title}</span>
+                                                        {(meta.badge || isRecommended) ? (
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    alignItems: contentAlign === 'right' ? 'flex-end' : 'flex-start',
+                                                                    gap: 0.4,
+                                                                    flexShrink: 0,
+                                                                }}
+                                                            >
+                                                                {isRecommended ? (
+                                                                    <Box component="span" sx={recommendedBadgeSx}>
+                                                                        {t('quickSettings.siteRecommendedBadge', { name: entry.title })}
+                                                                    </Box>
+                                                                ) : null}
+                                                                {meta.badge ? (
+                                                                    <Box component="span" sx={badgeSx}>
+                                                                        {meta.badge}
+                                                                    </Box>
+                                                                ) : null}
+                                                            </Box>
+                                                        ) : null}
+                                                    </Box>
+                                                    {meta.hint ? (
+                                                        <Typography
+                                                            component="span"
                                                             sx={{
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                alignItems: contentAlign === 'right' ? 'flex-end' : 'flex-start',
-                                                                gap: 0.4,
-                                                                flexShrink: 0,
+                                                                fontSize: '0.68rem',
+                                                                color: mutedColor,
+                                                                lineHeight: 1.5,
+                                                                whiteSpace: 'normal',
+                                                                overflowWrap: 'break-word',
+                                                                wordBreak: 'break-word',
+                                                                fontFamily: 'iranyekan',
                                                             }}
                                                         >
-                                                            {isRecommended ? (
-                                                                <Box component="span" sx={recommendedBadgeSx}>
-                                                                    {t('quickSettings.siteRecommendedBadge', { name: entry.title })}
-                                                                </Box>
-                                                            ) : null}
-                                                            {meta.badge ? (
-                                                                <Box component="span" sx={badgeSx}>
-                                                                    {meta.badge}
-                                                                </Box>
-                                                            ) : null}
-                                                        </Box>
+                                                            {meta.hint}
+                                                        </Typography>
                                                     ) : null}
                                                 </Box>
-                                                {meta.hint ? (
-                                                    <Typography
-                                                        component="span"
-                                                        sx={{
-                                                            fontSize: '0.68rem',
-                                                            color: mutedColor,
-                                                            lineHeight: 1.5,
-                                                            whiteSpace: 'normal',
-                                                            overflowWrap: 'break-word',
-                                                            wordBreak: 'break-word',
-                                                            fontFamily: 'iranyekan',
-                                                        }}
-                                                    >
-                                                        {meta.hint}
-                                                    </Typography>
-                                                ) : null}
-                                            </Box>
-                                        </MenuItem>
-                                    );
-                                })}
-                            </Select>
-                        </FormControl>
-                    </Box>
-                );
-            })}
-            {switchFields.map((field, index) => {
-                const value = siteValues[field.key] || field.defaultValue;
+                                            </MenuItem>
+                                        );
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    );
+                }
+
                 const checked = value === field.onValue;
                 return (
                     <Box
@@ -634,7 +650,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             gap: 1,
                             px: 1.5,
                             py: 1.25,
-                            borderTop: index > 0 || visibleChoiceFields.length > 0 || visibleSelectFields.length > 0 ? `1px solid ${cardBorder}` : 'none',
+                            borderTop,
                         }}
                     >
                         <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>

@@ -7,6 +7,11 @@ import {
     stopYoutubeSiteFont,
     syncYoutubeSiteFont,
 } from './youtubeSiteFont.js';
+import {
+    installYoutubeCaptionsWatcher,
+    stopYoutubeCaptions,
+    syncYoutubeCaptions,
+} from './youtubeCaptions.js';
 
 const PANEL_SELECTOR = 'ytd-engagement-panel-section-list-renderer[target-id="PAyouchat"]';
 const MARKDOWN_SELECTOR = 'markdown-div';
@@ -501,6 +506,7 @@ function clearYoutubeFontScale() {
 export function stopYoutube() {
     youtubeSession += 1;
     stopYoutubeSiteFont();
+    stopYoutubeCaptions();
     if (youtubeInterval) {
         clearInterval(youtubeInterval);
         youtubeInterval = null;
@@ -535,6 +541,8 @@ export function activateYoutube(rtlAlgorithm = 'advanced_full') {
 
     installYoutubeSiteFontWatcher();
     syncYoutubeSiteFont();
+    installYoutubeCaptionsWatcher();
+    syncYoutubeCaptions(rtlAlgorithm);
 
     const session = ++youtubeSession;
     if (youtubeInterval) {

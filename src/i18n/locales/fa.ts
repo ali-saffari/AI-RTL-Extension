@@ -102,6 +102,7 @@ export const faMessages = {
         advancedSettings: 'تنظیمات پیشرفته',
         siteSpecific: 'تنظیمات مخصوص',
         youtubeFontScope: 'اعمال فونت روی کل سایت',
+        youtubeCaptionsRtl: 'راست‌چین کردن زیرنویس',
         harnessDescription: 'افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.',
         harnessMissingPlugin: 'پلاگین نسخه دسکتاپ منتشر شد.',
         harnessMissingPluginCta: 'راهنمای نصب',

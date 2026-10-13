@@ -4,7 +4,9 @@ import {
     getYoutubeFontScope,
 } from '../../constants/siteSettings.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
-import { NONE_FONT_ID, SELECTED_FONT_STORAGE_KEY } from '../../utils/fonts';
+
+const NONE_FONT_ID = 'none';
+const SELECTED_FONT_STORAGE_KEY = 'selectedFont';
 
 const ROOT_CLASS = 'ai-rtl-yt-font-site';
 const DOCUMENT_STYLE_ID = 'ai-rtl-yt-site-font';
@@ -28,6 +30,7 @@ const TEXT_SELECTOR = `:where(
     [class*="icon"], [class*="Icon"]
 )`;
 
+
 const DOCUMENT_CSS = `
 html.${ROOT_CLASS} ${TEXT_SELECTOR} {
     font-family: var(--ai-rtl-font) !important;
@@ -39,7 +42,6 @@ const SHADOW_CSS = `
     font-family: var(--ai-rtl-font) !important;
 }
 `;
-
 let watcherInstalled = false;
 let syncToken = 0;
 let running = false;
