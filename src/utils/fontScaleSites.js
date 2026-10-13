@@ -84,10 +84,9 @@ export const FONT_SCALE_SITE_MODES = {
     'forms.google.com': 'font-size',
     'analytics.google.com': 'font-size',
     'studio.youtube.com': 'font-size',
-    // Watch page keeps its own root font-size. A page-wide percent or zoom enlarges all of YouTube.
-    // Typeface scope is siteSettings.youtube.fontScope (AI panel or the whole page).
-    'youtube.com': 'none',
-    'm.youtube.com': 'none',
+    // Scale is relative to YouTube's own html font-size. See applySelectedFont.
+    'youtube.com': 'font-size',
+    'm.youtube.com': 'font-size',
     'www-veo3.com': 'font-size',
     'fal.ai': 'font-size',
     'bfl.ai': 'font-size',

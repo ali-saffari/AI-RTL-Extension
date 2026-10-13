@@ -12,7 +12,6 @@ import {
 } from '../../utils/fonts';
 import { FONT_SCALE_MODE_FONT_SIZE, FONT_SCALE_MODE_NONE, getFontScaleMode } from '../../utils/fontScaleSites';
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../../constants/extensionEnabled.js';
-
 const STYLE_ID = 'ai-rtl-selected-font-style';
 const FONT_SCALE_STYLE_ID = 'ai-rtl-font-scale-style';
 const HAS_FONT_CLASS = 'ai-rtl-has-font';
@@ -79,12 +78,82 @@ function clearLegacyElementScales() {
     });
 }
 
-function buildFontScaleCss(value) {
+function isYoutubeWatchHost() {
+    const host = typeof location !== 'undefined' ? location.hostname : '';
+    return host === 'youtube.com' || host === 'www.youtube.com' || host === 'm.youtube.com';
+}
+
+// YouTube's own html font-size percent, read before we override it.
+let youtubeRootFontPercent = null;
+
+function percentFromFontSize(value) {
+    const match = String(value || '').trim().match(/^(\d+(?:\.\d+)?)%$/);
+    return match ? Number(match[1]) : null;
+}
+
+function readHtmlFontSizePercentFromSheets() {
+    const sheets = document.styleSheets;
+    for (let index = 0; index < sheets.length; index += 1) {
+        const sheet = sheets[index];
+        if (sheet.ownerNode && sheet.ownerNode.id === FONT_SCALE_STYLE_ID) {
+            continue;
+        }
+        let rules;
+        try {
+            rules = sheet.cssRules;
+        } catch (error) {
+            continue;
+        }
+        if (!rules) {
+            continue;
+        }
+        for (let ruleIndex = rules.length - 1; ruleIndex >= 0; ruleIndex -= 1) {
+            const rule = rules[ruleIndex];
+            if (!rule.selectorText || !rule.style) {
+                continue;
+            }
+            const matchesHtml = rule.selectorText.split(',').some((part) => part.trim() === 'html');
+            if (!matchesHtml) {
+                continue;
+            }
+            const percent = percentFromFontSize(rule.style.fontSize);
+            if (percent != null) {
+                return percent;
+            }
+        }
+    }
+    return null;
+}
+
+function captureYoutubeRootFontPercent(root) {
+    const inline = percentFromFontSize(root.style.fontSize);
+    if (inline != null) {
+        youtubeRootFontPercent = inline;
+        return inline;
+    }
+    if (youtubeRootFontPercent != null) {
+        return youtubeRootFontPercent;
+    }
+    const fromSheets = readHtmlFontSizePercentFromSheets();
+    if (fromSheets != null) {
+        youtubeRootFontPercent = fromSheets;
+    }
+    return youtubeRootFontPercent;
+}
+
+function buildFontScaleCss(value, youtubeBasePercent) {
     const mode = getFontScaleMode();
     if (mode === FONT_SCALE_MODE_NONE) {
         return '';
     }
     if (mode === FONT_SCALE_MODE_FONT_SIZE) {
+        if (isYoutubeWatchHost()) {
+            if (youtubeBasePercent == null) {
+                return '';
+            }
+            const percent = (youtubeBasePercent * value) / 100;
+            return `html { font-size: ${percent}% !important; }`;
+        }
         return `html { font-size: ${value}% !important; }`;
     }
     return `html { zoom: ${value / 100} !important; }`;
@@ -146,12 +215,16 @@ export function applyFontScale(scale) {
     }
 
     clearLegacyElementScales();
-    const css = buildFontScaleCss(value);
-    // Mode "none" must not strip a site's own html font-size or zoom.
-    // YouTube sets that inline; removing it leaves the page larger after toggle-off.
-    if (css) {
-        root.style.removeProperty('font-size');
-        root.style.removeProperty('zoom');
+    const onYoutube = isYoutubeWatchHost();
+    const youtubeBase = onYoutube ? captureYoutubeRootFontPercent(root) : null;
+    const css = buildFontScaleCss(value, youtubeBase);
+
+    // Put YouTube's own root percent back. Clearing the sheet is not enough
+    // after a scaled value has been applied.
+    if (value === DEFAULT_FONT_SCALE && onYoutube && youtubeBase != null) {
+        ensureStyleElement(FONT_SCALE_STYLE_ID).textContent =
+            `html { font-size: ${youtubeBase}% !important; }`;
+        return;
     }
 
     if (value === DEFAULT_FONT_SCALE || !css) {
@@ -162,7 +235,25 @@ export function applyFontScale(scale) {
         return;
     }
 
+    // Do not strip YouTube's inline root; override with !important only.
+    if (!onYoutube) {
+        root.style.removeProperty('font-size');
+        root.style.removeProperty('zoom');
+    }
     ensureStyleElement(FONT_SCALE_STYLE_ID).textContent = css;
+}
+
+async function readFontBytes(runtime, relativePath) {
+    // Ask the service worker. A content-script fetch of chrome-extension:// is
+    // attributed to the YouTube frame and logged as an unsafe load.
+    const response = await runtime.runtime.sendMessage({
+        action: 'readExtensionFont',
+        path: relativePath,
+    });
+    if (!response?.success || !response.bytes) {
+        return null;
+    }
+    return new Uint8Array(response.bytes);
 }
 
 async function loadFontFaces(font) {
@@ -171,7 +262,7 @@ async function loadFontFaces(font) {
     }
 
     const runtime = getRuntime();
-    if (!runtime) {
+    if (!runtime?.runtime?.sendMessage) {
         return;
     }
 
@@ -180,18 +271,13 @@ async function loadFontFaces(font) {
         return;
     }
 
-    // Fetch in the content-script context, then build FontFace from bytes.
-    // Passing chrome-extension:// URLs into FontFace makes the page load them
-    // and triggers cross-origin warnings on sites like YouTube.
     const loaders = (font.files || []).map(async (file) => {
         try {
-            const url = runtime.runtime.getURL('fonts/' + file.path);
-            const response = await fetch(url);
-            if (!response.ok) {
+            const bytes = await readFontBytes(runtime, file.path);
+            if (!bytes) {
                 return;
             }
-            const buffer = await response.arrayBuffer();
-            const face = new FontFace(font.family, buffer, {
+            const face = new FontFace(font.family, bytes, {
                 style: 'normal',
                 weight: String(file.weight),
             });
