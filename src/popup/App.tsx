@@ -935,13 +935,19 @@ function App() {
                             >
                                 {narrowPopup ? 'AI RTL' : t('header.title')}
                             </Typography>
-                            <Chip
-                                label={channelInfo.displayVersion}
-                                size="small"
+                            <Box
+                                dir={dir}
                                 sx={{
                                     flexShrink: 0,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
                                     fontSize: '0.65rem',
+                                    fontWeight: 500,
                                     height: 20,
+                                    px: 1,
+                                    borderRadius: '16px',
+                                    lineHeight: 1,
                                     backgroundColor: channelInfo.isAlpha
                                         ? (isDarkMode ? 'rgba(251, 146, 60, 0.15)' : 'rgba(234, 88, 12, 0.12)')
                                         : (isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)'),
@@ -951,9 +957,13 @@ function App() {
                                     border: channelInfo.isAlpha
                                         ? (isDarkMode ? '1px solid rgba(251, 146, 60, 0.4)' : '1px solid rgba(234, 88, 12, 0.35)')
                                         : (isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(0, 103, 165, 0.28)'),
-                                    fontWeight: 500
                                 }}
-                            />
+                            >
+                                <span>{t('header.version', { version: '' }).trim()}</span>
+                                <Box component="div" dir="ltr" sx={{ unicodeBidi: 'isolate' }}>
+                                    {channelInfo.displayVersion}
+                                </Box>
+                            </Box>
                             {channelInfo.isAlpha ? (
                                 <Chip
                                     label={t('header.alphaBadge')}
