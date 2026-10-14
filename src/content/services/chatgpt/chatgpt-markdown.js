@@ -70,8 +70,8 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
         }
         lastRun.set(target, Date.now());
         // Debug rings: green stays after first apply, red flashes on each change.
-        target.classList.add('AsFlashBorder');
-        setTimeout(() => target.classList.remove('AsFlashBorder'), 450);
+        // target.classList.add('AsFlashBorder');
+        // setTimeout(() => target.classList.remove('AsFlashBorder'), 450);
         const count = (applyCount.get(target) || 0) + 1;
         applyCount.set(target, count);
         console.log('applyMarkdown', reason.why, count, reason);

@@ -6,9 +6,16 @@ import { applySidebarHistory, applySmallBlocks, setCopyright, setInputs } from '
 
 let rtlAlgorithm = 'advanced_full';
 let uiObserver = null;
+let uiLastRun = 0;
+let uiTimer = null;
+const UI_MS = 1000;
 
 export function stopChatGptRTL() {
     stopMarkdown();
+    if (uiTimer) {
+        clearTimeout(uiTimer);
+        uiTimer = null;
+    }
     if (uiObserver) {
         uiObserver.disconnect();
         uiObserver = null;
@@ -22,16 +29,32 @@ export function activateChatGptRTL(algorithm = 'advanced_full') {
     rtlAlgorithm = algorithm;
 
     startMarkdown(rtlAlgorithm);
-    // applySmallBlocks(rtlAlgorithm);
-    // applySidebarHistory(rtlAlgorithm);
-    // setCopyright();
-    // setInputs(rtlAlgorithm);
+    applySmallBlocks(rtlAlgorithm);
+    applySidebarHistory(rtlAlgorithm);
+    setCopyright();
+    setInputs(rtlAlgorithm);
 
-    // uiObserver = new MutationObserver(() => {
-    //     applySmallBlocks(rtlAlgorithm);
-    //     applySidebarHistory(rtlAlgorithm);
-    //     setCopyright();
-    //     setInputs(rtlAlgorithm);
-    // });
-    // uiObserver.observe(document.body, { childList: true, subtree: true });
+    uiLastRun = 0;
+    uiObserver = new MutationObserver(() => {
+        const elapsed = Date.now() - uiLastRun;
+        const run = () => {
+            uiLastRun = Date.now();
+            console.log('ChatGPT uiObserver');
+            applySmallBlocks(rtlAlgorithm);
+            applySidebarHistory(rtlAlgorithm);
+            setCopyright();
+            setInputs(rtlAlgorithm);
+        };
+        if (elapsed < UI_MS) {
+            if (!uiTimer) {
+                uiTimer = setTimeout(() => {
+                    uiTimer = null;
+                    run();
+                }, UI_MS - elapsed);
+            }
+            return;
+        }
+        run();
+    });
+    uiObserver.observe(document.body, { childList: true, subtree: true });
 }
