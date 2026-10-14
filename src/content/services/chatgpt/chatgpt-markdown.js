@@ -1,7 +1,7 @@
 // Assistant markdown near the viewport.
 // Streaming updates are throttled; if text changes during the wait, one trailing pass still runs.
 // When Dil UI appears inside a markdown root, follow Dil instead of the markdown wrapper.
-import { applyRtlToContainer } from '../../utils/directionUtils/index.js';
+import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
 
 export const MARKDOWN = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
 const DIL = '[class*="DilRenderer"], [class*="DilResponseRoot"]';
@@ -13,6 +13,12 @@ let applyCount = new WeakMap();
 const streams = new Map();
 let lastRun = new WeakMap();
 const trailing = new Map();
+const streamReports = new WeakMap();
+const streamQuiet = new Map();
+const paragraphJoin = new Map();
+let streamReportId = 0;
+const STREAM_END_MS = 4500;
+const JOIN_MS = 500;
 
 function findDils(root) {
     if (!root || root.nodeType !== 1) {
@@ -86,10 +92,101 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             // rtlClass: 'AsAlignRtl',
             // ltrClass: 'AsAlignLtr',
             removeDirAuto: true,
-            walkSkipSelector: '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"]',
+            walkSkipSelector: '[class*="TableContainer"], [class*="tableContainer"], [class*="CodeBlock-"], [class*="InlineCodePane-"], [data-d-text-flow="word"]',
             onlyCss: '.ProseMirror[contenteditable]',
             forceCodeLtr: rtlAlgorithm === 'advanced_full',
         });
+
+        target.querySelectorAll('p[data-d-component="text"]').forEach((paragraph) => {
+            if (!paragraph.querySelector('[data-d-text-flow="word"]')) {
+                return;
+            }
+            if (paragraphJoin.has(paragraph)) {
+                clearTimeout(paragraphJoin.get(paragraph));
+            }
+            paragraphJoin.set(paragraph, setTimeout(() => {
+                paragraphJoin.delete(paragraph);
+                if (!paragraph.isConnected || !paragraph.querySelector('[data-d-text-flow="word"]')) {
+                    return;
+                }
+                paragraph.textContent = paragraph.textContent;
+                AQ(paragraph).removeClass('AsOk').removeAttr('data-text-length');
+                applyRtlToElement(paragraph, rtlAlgorithm, {
+                    fontClass: 'FontSetGPT',
+                    processedClass: 'AsOk',
+                    setTextAlign: true,
+                    removeDirAuto: true
+                });
+            }, JOIN_MS));
+        });
+
+        // Stream class timeline: capture each stage, dump copyable JSON after quiet.
+        let report = streamReports.get(target);
+        if (!report) {
+            streamReportId += 1;
+            report = { id: streamReportId, stages: [] };
+            streamReports.set(target, report);
+        }
+        const stage = {
+            n: report.stages.length + 1,
+            why: reason && reason.why,
+            count,
+            textLen: (target.textContent || '').length,
+            tag: target.tagName,
+            className: typeof target.className === 'string' ? target.className : '',
+            classes: Array.from(target.classList || []),
+            html: target.outerHTML,
+            children: Array.from(target.children).slice(0, 40).map((child) => ({
+                tag: child.tagName,
+                className: typeof child.className === 'string' ? child.className : '',
+                classes: Array.from(child.classList || []),
+                html: child.outerHTML
+            }))
+        };
+        if (!report.firstHtml) {
+            report.firstHtml = target.outerHTML;
+        }
+        report.lastHtml = target.outerHTML;
+        const prev = report.stages[report.stages.length - 1];
+        if (
+            !prev ||
+            prev.className !== stage.className ||
+            JSON.stringify(prev.children) !== JSON.stringify(stage.children)
+        ) {
+            report.stages.push(stage);
+        } else {
+            prev.textLen = stage.textLen;
+            prev.count = count;
+            prev.why = stage.why;
+        }
+        if (streamQuiet.has(target)) {
+            clearTimeout(streamQuiet.get(target));
+        }
+        streamQuiet.set(target, setTimeout(() => {
+            streamQuiet.delete(target);
+            const current = streamReports.get(target);
+            if (!current || !current.stages.length) {
+                return;
+            }
+            current.lastHtml = target.outerHTML;
+            const first = current.stages[0];
+            const last = current.stages[current.stages.length - 1];
+            const copy = JSON.stringify({
+                id: current.id,
+                stageCount: current.stages.length,
+                classDiff: {
+                    rootAdded: last.classes.filter((name) => !first.classes.includes(name)),
+                    rootRemoved: first.classes.filter((name) => !last.classes.includes(name))
+                },
+                firstHtml: current.firstHtml,
+                lastHtml: current.lastHtml,
+                first,
+                last,
+                stages: current.stages
+            }, null, 2);
+            console.log('AI-RTL-STREAM-CLASSES-COPY\n' + copy);
+            streamReports.delete(target);
+        }, STREAM_END_MS));
     });
 }
 
@@ -106,6 +203,10 @@ export function stopMarkdown() {
     streams.clear();
     trailing.forEach((slot) => clearTimeout(slot.timer));
     trailing.clear();
+    streamQuiet.forEach((timer) => clearTimeout(timer));
+    streamQuiet.clear();
+    paragraphJoin.forEach((timer) => clearTimeout(timer));
+    paragraphJoin.clear();
     lastRun = new WeakMap();
     applyCount = new WeakMap();
 }

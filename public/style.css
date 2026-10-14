@@ -7,10 +7,12 @@ html.ai-rtl-has-font {
 }
 
 .AsDoneBorder,
-.AsFlashBorder {
+.AsFlashBorder,
+.AsStreamBorder {
     box-shadow:
         var(--ai-rtl-ring-done, 0 0 0 0 transparent),
-        var(--ai-rtl-ring-flash, 0 0 0 0 transparent) !important;
+        var(--ai-rtl-ring-flash, 0 0 0 0 transparent),
+        var(--ai-rtl-ring-stream, 0 0 0 0 transparent) !important;
 }
 
 .AsDoneBorder {
@@ -19,6 +21,10 @@ html.ai-rtl-has-font {
 
 .AsFlashBorder {
     --ai-rtl-ring-flash: 0 0 0 12px red;
+}
+
+.AsStreamBorder {
+    --ai-rtl-ring-stream: 0 0 0 8px #f97316;
 }
 
 /*
