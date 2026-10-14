@@ -2,13 +2,48 @@
 import { addCopyright } from '../../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUtils/index.js';
 import { isRtlEngineActive, preserveOriginalDir } from '../../utils/originalState.js';
-import {
-    createViewportMessageWatch,
-    eachMatch,
-    hasSelector,
-    isNearViewport,
-    MARKDOWN_THROTTLE_MS
-} from '../../utils/viewport.js';
+
+// Parked snapshot. The shared viewport helper this file used has been removed.
+const MARKDOWN_THROTTLE_MS = 650;
+
+function isNearViewport(element, marginPx = 300) {
+    if (!element || typeof element.getBoundingClientRect !== 'function') {
+        return false;
+    }
+    const rect = element.getBoundingClientRect();
+    const height = window.innerHeight || document.documentElement.clientHeight || 0;
+    return rect.bottom >= -marginPx && rect.top <= height + marginPx;
+}
+
+function hasSelector(node, matchSelector, containsSelector = matchSelector) {
+    if (!node || node.nodeType !== 1) {
+        return false;
+    }
+    try {
+        if (node.matches && node.matches(matchSelector)) {
+            return true;
+        }
+        return Boolean(node.querySelector && node.querySelector(containsSelector));
+    } catch {
+        return false;
+    }
+}
+
+function eachMatch(root, selector, run) {
+    const $root = AQ(root || document);
+    $root.find(selector).add($root.filter(selector)).each(function () {
+        run(this);
+    });
+}
+
+function createViewportMessageWatch() {
+    return {
+        start() {},
+        stop() {},
+        recheck() {},
+        setExtraFlush() {}
+    };
+}
 
 const MARKDOWN_ROOT = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"]';
 const MARKDOWN_ASSISTANT = '[data-assistant-markdown]';

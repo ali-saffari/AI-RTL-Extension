@@ -1,15 +1,11 @@
-// پاسخ‌های کلاد با آبزرور دیده می‌شوند و فقط نزدیک صفحه پردازش می‌شوند.
+// پاسخ‌های کلاد نزدیک صفحه دیده می‌شوند. استریم با تأخیر پردازش می‌شود و یک پاس آخر هم می‌ماند.
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, detectDirectionByAlgorithm } from '../utils/directionUtils/index.js';
 import { isRtlEngineActive } from '../utils/originalState.js';
-import {
-    createViewportMessageWatch,
-    eachMatch,
-    hasSelector,
-    isNearViewport
-} from '../utils/viewport.js';
 
 const MARKDOWN = '.standard-markdown, .progressive-markdown, .font-claude-response, #standard-markdown-artifact, #markdown-artifact';
+const THROTTLE_MS = 400;
+const UI_MS = 1000;
 
 const markdownOptions = {
     fontClass: 'FontSet FontClaude',
@@ -20,8 +16,14 @@ const markdownOptions = {
     walkSkipSelector: '[data-not-prose]'
 };
 
-let messageWatch = null;
-let refreshTimer = 0;
+let markdownPageObserver = null;
+let markdownViewportObserver = null;
+const streams = new Map();
+let lastRun = new WeakMap();
+const trailing = new Map();
+let uiObserver = null;
+let uiTimer = null;
+let uiLastRun = 0;
 
 function watchComposer(element, rtlAlgorithm) {
     const $element = AQ(element);
@@ -40,7 +42,137 @@ function watchComposer(element, rtlAlgorithm) {
     });
 }
 
-// نوار کناری، باکس نوشتن و کپی‌رایت. پیام‌ها اینجا نیستند.
+function applyMarkdown(element, rtlAlgorithm, reason) {
+    if (
+        reason &&
+        reason.why === 'change' &&
+        reason.changes &&
+        reason.changes.length &&
+        reason.changes.every((change) => {
+            if (change.type === 'characterData') {
+                return !(change.to || '').trim() && !(change.from || '').trim();
+            }
+            return !(change.text || '').trim();
+        })
+    ) {
+        return;
+    }
+    const elapsed = Date.now() - (lastRun.get(element) || 0);
+    if (elapsed < THROTTLE_MS) {
+        const pending = trailing.get(element);
+        if (pending) {
+            if (reason && reason.changes) {
+                if (pending.reason.changes) {
+                    pending.reason.changes.push(...reason.changes);
+                } else {
+                    pending.reason = { why: reason.why, changes: reason.changes.slice() };
+                }
+            }
+            return;
+        }
+        const slot = {
+            reason: reason && reason.changes
+                ? { why: reason.why, changes: reason.changes.slice() }
+                : reason
+        };
+        slot.timer = setTimeout(() => {
+            trailing.delete(element);
+            applyMarkdown(element, rtlAlgorithm, slot.reason);
+        }, THROTTLE_MS - elapsed);
+        trailing.set(element, slot);
+        return;
+    }
+    lastRun.set(element, Date.now());
+    const $element = AQ(element);
+    $element.addClass('AsSetAlgorithm');
+    if (element.id === 'standard-markdown-artifact' || element.id === 'markdown-artifact') {
+        $element.addClass('AsOk FontSet FontClaude');
+    }
+    applyRtlToContainer(element, rtlAlgorithm, markdownOptions);
+}
+
+function stopMarkdown() {
+    if (markdownPageObserver) {
+        markdownPageObserver.disconnect();
+        markdownPageObserver = null;
+    }
+    if (markdownViewportObserver) {
+        markdownViewportObserver.disconnect();
+        markdownViewportObserver = null;
+    }
+    streams.forEach((observer) => observer.disconnect());
+    streams.clear();
+    trailing.forEach((slot) => clearTimeout(slot.timer));
+    trailing.clear();
+    lastRun = new WeakMap();
+}
+
+function startMarkdown(rtlAlgorithm) {
+    stopMarkdown();
+
+    markdownViewportObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            const root = entry.target;
+            if (!entry.isIntersecting) {
+                const stream = streams.get(root);
+                if (stream) {
+                    stream.disconnect();
+                    streams.delete(root);
+                }
+                return;
+            }
+            if (streams.has(root)) {
+                return;
+            }
+            const stream = new MutationObserver((mutations) => {
+                const changes = [];
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'characterData') {
+                        changes.push({
+                            type: 'characterData',
+                            from: (mutation.oldValue || '').slice(-80),
+                            to: (mutation.target.textContent || '').slice(-80)
+                        });
+                        return;
+                    }
+                    mutation.addedNodes.forEach((added) => {
+                        changes.push({ type: 'added', text: (added.textContent || '').slice(0, 80) });
+                    });
+                    mutation.removedNodes.forEach((removed) => {
+                        changes.push({ type: 'removed', text: (removed.textContent || '').slice(0, 80) });
+                    });
+                });
+                applyMarkdown(root, rtlAlgorithm, { why: 'change', changes });
+            });
+            stream.observe(root, { childList: true, subtree: true, characterData: true, characterDataOldValue: true });
+            streams.set(root, stream);
+            applyMarkdown(root, rtlAlgorithm, { why: 'viewport' });
+        });
+    }, { root: null, rootMargin: '300px 0px', threshold: 0 });
+
+    markdownPageObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType !== 1) {
+                    return;
+                }
+                if (node.matches(MARKDOWN)) {
+                    markdownViewportObserver.observe(node);
+                }
+                node.querySelectorAll(MARKDOWN).forEach((element) => {
+                    markdownViewportObserver.observe(element);
+                });
+            });
+        });
+    });
+
+    markdownPageObserver.observe(document.body, { childList: true, subtree: true });
+    document.querySelectorAll(MARKDOWN).forEach((element) => {
+        markdownViewportObserver.observe(element);
+    });
+}
+
+// نوار کناری، باکس نوشتن، پیام کاربر و بلوک‌های کوچک.
 function refreshChrome(rtlAlgorithm) {
     if (!isRtlEngineActive()) {
         return;
@@ -80,76 +212,34 @@ function refreshChrome(rtlAlgorithm) {
         }
     });
 
-    eachMatch(document, '[data-row-key^="chat:"] .flex-1', (element) => {
-        applyRtlToElement(element, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
+    AQ('[data-row-key^="chat:"] .flex-1').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
     });
 
-    if (messageWatch) {
-        messageWatch.recheck();
-    }
-}
-
-function applyUserMessages(root, rtlAlgorithm) {
-    eachMatch(root, '[data-testid="user-message"]', (element) => {
-        if (!isNearViewport(element)) {
-            return;
-        }
-        applyRtlToElement(element, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
+    AQ('[data-testid="user-message"]').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
     });
-}
 
-function applySmallBlocks(root, rtlAlgorithm) {
     const textOptions = {
         fontClass: 'FontSet FontClaude',
         processedClass: 'AsOkText',
         removeInnerDir: true
     };
-    eachMatch(root, '.contents .truncate', (element) => {
-        applyRtlToContainer(element, rtlAlgorithm, { ...textOptions, isContainer: false });
+    AQ('.contents .truncate').each(function () {
+        applyRtlToContainer(this, rtlAlgorithm, { ...textOptions, isContainer: false });
     });
-    eachMatch(root, '[data-ask-user-input-banner="true"], [data-testid="ask-user-answers-card"]', (element) => {
-        applyRtlToContainer(element, rtlAlgorithm, { ...textOptions, isContainer: true });
+    AQ('[data-ask-user-input-banner="true"], [data-testid="ask-user-answers-card"]').each(function () {
+        applyRtlToContainer(this, rtlAlgorithm, { ...textOptions, isContainer: true });
     });
-    eachMatch(root, '.contents .font-base-bold, [data-orientation="horizontal"] button', (element) => {
-        applyRtlToElement(element, rtlAlgorithm, { ...textOptions, isContainer: true });
+    AQ('.contents .font-base-bold, [data-orientation="horizontal"] button').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, { ...textOptions, isContainer: true });
     });
-    eachMatch(root, '.artifact-block-cell .leading-tight, .whitespace-pre-wrap.rounded-lg, .group\\/thumbnail p', (element) => {
-        applyRtlToElement(element, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
+    AQ('.artifact-block-cell .leading-tight, .whitespace-pre-wrap.rounded-lg, .group\\/thumbnail p').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, { fontClass: 'FontSet', processedClass: 'AsOk' });
     });
-    eachMatch(root, 'text', (element) => {
-        applyRtlToElement(element, rtlAlgorithm, textOptions);
+    AQ('text').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, textOptions);
     });
-}
-
-function startMessageWatch(rtlAlgorithm) {
-    if (messageWatch) {
-        messageWatch.stop();
-    }
-
-    messageWatch = createViewportMessageWatch({
-        markdownSelector: MARKDOWN,
-        isEngineActive: isRtlEngineActive,
-        processMarkdown: (element) => {
-            const $element = AQ(element);
-            $element.addClass('AsSetAlgorithm');
-            if (element.id === 'standard-markdown-artifact' || element.id === 'markdown-artifact') {
-                $element.addClass('AsOk FontSet FontClaude');
-            }
-            applyRtlToContainer(element, rtlAlgorithm, markdownOptions);
-        },
-        onAdded: (node, { queueExtra }) => {
-            if (hasSelector(node, '[data-testid="user-message"]')) {
-                queueExtra('users', node);
-            }
-            if (hasSelector(node, '.contents .truncate, [data-ask-user-input-banner="true"], [data-testid="ask-user-answers-card"], .artifact-block-cell, text')) {
-                queueExtra('small', node);
-            }
-        }
-    });
-
-    messageWatch.setExtraFlush('users', (node) => applyUserMessages(node, rtlAlgorithm));
-    messageWatch.setExtraFlush('small', (node) => applySmallBlocks(node, rtlAlgorithm));
-    messageWatch.start();
 }
 
 const fontStyleId = 'ai-rtl-claude-font-weights';
@@ -192,14 +282,15 @@ function applyFontWeights() {
 }
 
 export function stopClaude() {
-    if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = 0;
+    if (uiTimer) {
+        clearTimeout(uiTimer);
+        uiTimer = null;
     }
-    if (messageWatch) {
-        messageWatch.stop();
-        messageWatch = null;
+    if (uiObserver) {
+        uiObserver.disconnect();
+        uiObserver = null;
     }
+    stopMarkdown();
 }
 
 export function activateClaude(rtlAlgorithm = 'advanced_full') {
@@ -209,8 +300,25 @@ export function activateClaude(rtlAlgorithm = 'advanced_full') {
     }
     applyFontWeights();
     refreshChrome(rtlAlgorithm);
-    applyUserMessages(document.body, rtlAlgorithm);
-    applySmallBlocks(document.body, rtlAlgorithm);
-    startMessageWatch(rtlAlgorithm);
-    refreshTimer = setInterval(() => refreshChrome(rtlAlgorithm), 1000);
+    startMarkdown(rtlAlgorithm);
+
+    uiLastRun = 0;
+    uiObserver = new MutationObserver(() => {
+        const elapsed = Date.now() - uiLastRun;
+        const run = () => {
+            uiLastRun = Date.now();
+            refreshChrome(rtlAlgorithm);
+        };
+        if (elapsed < UI_MS) {
+            if (!uiTimer) {
+                uiTimer = setTimeout(() => {
+                    uiTimer = null;
+                    run();
+                }, UI_MS - elapsed);
+            }
+            return;
+        }
+        run();
+    });
+    uiObserver.observe(document.body, { childList: true, subtree: true });
 }
