@@ -10,72 +10,74 @@
  * @property {string} [type]
  * @property {string} [group]
  * @property {boolean} [chromeOnly]
+ * @property {string[]} [details]
  */
-
-/** @type {VersionChange} */
-export const chatgptUpdateChange = {
-    id: '2',
-    text: 'آپدیت ChatGPT',
-    note: 'هماهنگ شدن افزونه با آخرین نسخه ChatGPT',
-    icon: 'sites/openAi-icon.png',
-    type: 'update',
-    group: 'feature',
-};
-
-/** @type {VersionChange} */
-export const chatgptPerfChange = {
-    id: '9',
-    text: 'بهبود عملکرد در ChatGPT',
-    icon: 'sites/openAi-icon.png',
-    type: 'update',
-    group: 'feature',
-};
-
-/** @type {VersionChange} */
-export const copilotUpdateChange = {
-    id: '8',
-    text: 'آپدیت Copilot',
-    note: 'برای استفاده باید از طریق منوی افزونه فعال کنید',
-    icon: 'sites/copilot-icon.png',
-    type: 'update',
-    group: 'feature',
-};
-
-/** Chrome-only: MissingPermissionBanner + enable-all (not shown on Firefox). */
-/** @type {VersionChange} */
-export const enableAllSitesChange = {
-    id: '10',
-    text: 'قابلیت فعال کردن همه سایت‌ها با هم',
-    icon: 'logo/ai-rtl-logo.png',
-    type: 'add',
-    group: 'feature',
-    chromeOnly: true,
-};
-
-// Seen first modal (2026-09-20) but not the second (2026-09-26).
-/** @type {VersionChange[]} */
-export const chatgptAndCopilotChanges = [chatgptUpdateChange, copilotUpdateChange, enableAllSitesChange];
-
-// Seen second modal (2026-09-26) already.
-/** @type {VersionChange[]} */
-export const chatgptPerfAndCopilotChanges = [chatgptPerfChange, copilotUpdateChange, enableAllSitesChange];
 
 /** @type {VersionChange[]} */
 export const versionChanges = [
-    chatgptUpdateChange,
-    copilotUpdateChange,
-    enableAllSitesChange,
-    { id: '7', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن', type: 'add', group: 'feature', icon: 'logo/ai-rtl-logo.png' },
-    { id: '1', text: 'حل مشکل نیم‌فاصله در ChatGPT', note: 'افزودن نیم‌فاصله با Ctrl+Shift+2', icon: 'sites/openAi-icon.png', type: 'add', group: 'feature' },
-    { id: '11', text: 'افزودن سایت YouTube', note: 'راست‌چین پنل پرسش از ویدیو', icon: 'sites/youtube.png', type: 'add', group: 'site' },
-    { id: '3', text: 'افزودن سایت YouTube Studio', icon: 'sites/youtube-studio.png', type: 'add', group: 'site' },
-    { id: '4', text: 'افزودن سایت Elicit', icon: 'sites/elicit.png', type: 'add', group: 'site' },
-    { id: '5', text: 'افزودن سایت LongCat', icon: 'sites/longcat.png', type: 'add', group: 'site' },
-    { id: '6', text: 'افزودن سایت MathGPT', icon: 'sites/mathgpt.png', type: 'add', group: 'site' },
-    { id: '12', text: 'افزودن سایت Notta Brain', note: 'راست‌چین گفتگوی Notta Brain', icon: 'sites/notta.png', type: 'add', group: 'site' },
-    { id: '13', text: 'افزودن سایت Roboflow', icon: 'sites/roboflow.png', type: 'add', group: 'site' },
-    { id: '14', text: 'افزودن سایت DeepSeek Harness', note: 'راست‌چین هارنس محلی روی پورت ۳۰۸۰', icon: 'sites/harness.png', type: 'add', group: 'site' },
-    { id: '15', text: 'افزودن سایت CodeCraft API', icon: 'sites/codecraft.png', type: 'add', group: 'site' },
+    {
+        id: '1',
+        text: 'آپدیت ChatGPT',
+        note: 'هماهنگ شدن افزونه با آخرین نسخه و رفع ایرادات',
+        icon: 'sites/openAi-icon.png',
+        type: 'update',
+        group: 'feature',
+    },
+    {
+        id: '2',
+        text: 'آپدیت Claude',
+        note: 'بهبود عملکرد، آپدیت باکس کدها و راست‌چین شدن پرسش‌ها',
+        icon: 'sites/claude-icon.png',
+        type: 'update',
+        group: 'feature',
+    },
+    {
+        id: '12',
+        text: 'آپدیت DeepSeek',
+        note: 'حل مشکل اسکرول جدول‌های راست‌چین',
+        icon: 'sites/deepseek.jpg',
+        type: 'update',
+        group: 'feature',
+    },
+    {
+        id: '13',
+        text: 'آپدیت Z.ai',
+        note: 'بهبود عملکرد',
+        icon: 'sites/z.ai.png',
+        type: 'update',
+        group: 'feature',
+    },
+    {
+        id: '5',
+        text: 'بهبود و آپدیت رابط کاربری افزونه',
+        icon: 'logo/ai-rtl-logo.png',
+        type: 'update',
+        group: 'menu',
+    },
+    {
+        id: '6',
+        text: 'چندزبانه شدن منوی افزونه؛ فارسی، انگلیسی و عربی',
+        icon: 'logo/ai-rtl-logo.png',
+        type: 'add',
+        group: 'menu',
+    },
+    {
+        id: '7',
+        text: 'افزودن سایت YouTube',
+        icon: 'sites/youtube.png',
+        type: 'add',
+        group: 'site',
+        details: [
+            'راست‌چین هوش مصنوعی یوتیوب',
+            'راست‌چین هوشمند برای زیرنویس',
+            'تنظیمات اختصاصی برای یوتیوب',
+            'قابلیت اعمال فونت روی کل یوتیوب',
+        ],
+    },
+    { id: '8', text: 'افزودن سایت Notta Brain', note: 'راست‌چین گفتگوی Notta Brain', icon: 'sites/notta.png', type: 'add', group: 'site' },
+    { id: '9', text: 'افزودن سایت Roboflow', icon: 'sites/roboflow.png', type: 'add', group: 'site' },
+    { id: '10', text: 'افزودن سایت CodeCraft API', icon: 'sites/codecraft.png', type: 'add', group: 'site' },
+    { id: '11', text: 'افزودن سایت DeepSeek Harness', note: 'راست‌چین هارنس محلی روی پورت ۳۰۸۰', icon: 'sites/harness.png', type: 'add', group: 'site' },
 ];
 
 /**
@@ -142,6 +144,20 @@ export function splitVersionChanges(changes = versionChanges) {
 
 // لیست تغییرات نسخه‌های قبلی
 export const previousChanges = [
+    {
+        version: '1405/07/16',
+        changes: [
+            { id: '1', text: 'آپدیت ChatGPT' },
+            { id: '2', text: 'آپدیت Copilot' },
+            { id: '3', text: 'قابلیت فعال کردن همه سایت‌ها با هم' },
+            { id: '4', text: 'دسته‌بندی لیست سایت‌ها در منوی اکستنشن' },
+            { id: '5', text: 'حل مشکل نیم‌فاصله در ChatGPT' },
+            { id: '6', text: 'افزودن سایت YouTube Studio' },
+            { id: '7', text: 'افزودن سایت Elicit' },
+            { id: '8', text: 'افزودن سایت LongCat' },
+            { id: '9', text: 'افزودن سایت MathGPT' },
+        ]
+    },
     {
         version: '1405/06/29',
         changes: [

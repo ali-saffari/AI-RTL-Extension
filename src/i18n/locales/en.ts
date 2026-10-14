@@ -2,6 +2,7 @@ import { Messages } from './fa';
 
 export const enMessages: Messages = {
     header: {
+        title: 'AI RTL',
         about: 'About',
         report: 'Report a problem',
         version: 'Version {version}',

@@ -2,16 +2,18 @@ import React from 'react';
 import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, useTheme, SvgIcon } from '@mui/material';
 import { mdiFormatListBulleted, mdiArrowUp, mdiCheck } from '@mdi/js';
 import { previousChanges, splitVersionChanges, getSiteShortName, versionChanges, filterVersionChangesForBrowser } from '../constants/versionChanges';
+import { localizeVersionChange } from '../constants/updateModalCopy';
 import { isFirefoxRuntime } from '../utils/isFirefox';
 import { useI18n } from '../i18n';
 
 const ChangesList: React.FC = () => {
-    const { t, dir } = useI18n();
+    const { t, dir, locale } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(
         filterVersionChangesForBrowser(versionChanges, isFirefoxRuntime())
+            .map((change) => localizeVersionChange(change, locale))
     );
 
     const renderSiteGrid = (siteList: typeof updatedSites) => (
@@ -23,10 +25,14 @@ const ChangesList: React.FC = () => {
                     sx={{
                         position: 'relative',
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: site.details?.length ? 'row' : 'column',
+                        flexWrap: 'nowrap',
                         alignItems: 'center',
-                        gap: 0.4,
+                        justifyContent: site.details?.length ? 'space-between' : 'center',
+                        direction: site.details?.length ? dir : undefined,
+                        gap: 0.75,
                         p: 0.75,
+                        gridColumn: site.details?.length ? '1 / -1' : undefined,
                         borderRadius: 1.5,
                         border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
                         backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
@@ -47,25 +53,51 @@ const ChangesList: React.FC = () => {
                     >
                         {site.type === 'add' ? '+' : '↻'}
                     </Box>
-                    <Box
-                        component="img"
-                        src={chrome.runtime.getURL('images/' + site.icon)}
-                        alt={getSiteShortName(site)}
-                        sx={{ width: 20, height: 20, objectFit: 'contain' }}
-                    />
-                    <Typography variant="caption" sx={{
-                        fontSize: '0.65rem',
-                        fontWeight: 600,
-                        lineHeight: 1.2,
-                        textAlign: 'center',
-                        color: isDarkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
-                        maxWidth: '100%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 0.4,
+                        flex: site.details?.length ? '0 0 86px' : undefined
                     }}>
-                        {getSiteShortName(site)}
-                    </Typography>
+                        <Box
+                            component="img"
+                            src={chrome.runtime.getURL('images/' + site.icon)}
+                            alt={getSiteShortName(site)}
+                            sx={{ width: 20, height: 20, objectFit: 'contain' }}
+                        />
+                        <Typography variant="caption" sx={{
+                            fontSize: '0.65rem',
+                            fontWeight: 600,
+                            lineHeight: 1.2,
+                            textAlign: 'center',
+                            color: isDarkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            {getSiteShortName(site)}
+                        </Typography>
+                    </Box>
+                    {site.details?.length ? (
+                        <Box component="ul" sx={{
+                            flex: 1,
+                            m: 0,
+                            pl: dir === 'rtl' ? 0 : 2,
+                            pr: dir === 'rtl' ? 2 : 0,
+                            direction: dir,
+                            textAlign: contentAlign,
+                            color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                            fontSize: '0.65rem',
+                            fontWeight: 300,
+                            lineHeight: 1.6
+                        }}>
+                            {site.details.map((line) => (
+                                <li key={line}>{line}</li>
+                            ))}
+                        </Box>
+                    ) : null}
                 </Box>
             ))}
         </Box>

@@ -1,22 +1,27 @@
-import {
-    UPDATE_MODAL_ENABLED,
-    UPDATE_MODAL_ID,
-    FIRST_UPDATE_MODAL_ID,
-    SECOND_UPDATE_MODAL_ID,
-    UPDATE_MODAL_STORAGE_KEY,
-} from '../../constants/updateModalConfig.js';
-import {
-    versionChanges,
-    chatgptAndCopilotChanges,
-    chatgptPerfAndCopilotChanges,
-    filterVersionChangesForBrowser,
-    splitVersionChanges,
-    getSiteShortName,
-} from '../../constants/versionChanges.js';
+import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../../constants/updateModalConfig.js';
+import { versionChanges, filterVersionChangesForBrowser, splitVersionChanges, getSiteShortName } from '../../constants/versionChanges.js';
+import { UPDATE_MODAL_LOCALES, getUpdateModalCopy, getUpdateModalLocale, localizeVersionChange, normalizeUpdateLocale } from '../../constants/updateModalCopy.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 import { isFirefoxRuntime } from '../../utils/isFirefox.js';
 
+const UI_LANGUAGE_STORAGE_KEY = 'uiLanguage';
+
 let isModalShowing = false;
+let activeModal = { persistClose: true, options: {} };
+
+function esc(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function fill(template, vars) {
+    return String(template).replace(/\{(\w+)\}/g, (_, name) => (
+        vars[name] === undefined ? '' : String(vars[name])
+    ));
+}
 
 function renderFeatureItems(changes) {
     return changes.map((change) => `
@@ -28,31 +33,58 @@ function renderFeatureItems(changes) {
                 ${change.type === 'add' ? '+' : '↻'}
             </div>
             <div class="As-change-text">
-                ${change.text}${change.note ? `<span class="As-change-note"> ${change.note}</span>` : ''}
+                ${esc(change.text)}${change.note ? `<span class="As-change-note"> ${esc(change.note)}</span>` : ''}
             </div>
         </div>
     `).join('');
 }
 
 function renderSiteChips(changes) {
-    return changes.map((change) => `
-        <div class="As-site-chip" title="${change.text}">
+    return changes.map((change) => {
+        const details = Array.isArray(change.details) ? change.details : [];
+        const name = getSiteShortName(change);
+        return `
+        <div class="As-site-chip${details.length ? ' As-site-chip-wide' : ''}" title="${esc(change.text)}">
             <span class="As-site-chip-badge" style="color: ${change.type === 'add' ? '#00ff7f' : '#ff8c00'};">
                 ${change.type === 'add' ? '+' : '↻'}
             </span>
-            <img class="As-site-chip-img" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="${getSiteShortName(change)}" onerror="this.style.display='none'">
-            <span class="As-site-chip-name">${getSiteShortName(change)}</span>
+            ${details.length ? `<div class="As-site-chip-brand">` : ''}
+            <img class="As-site-chip-img" src="${chrome.runtime.getURL('images/' + change.icon)}" alt="${esc(name)}" onerror="this.style.display='none'">
+            <span class="As-site-chip-name">${esc(name)}</span>
+            ${details.length ? `</div><ul class="As-site-chip-details">${details.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>` : ''}
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
-function renderChangeItems(changes) {
+function renderLanguageSwitch(locale) {
+    const current = getUpdateModalLocale(locale);
+    const copy = getUpdateModalCopy(locale);
+    const options = UPDATE_MODAL_LOCALES.map((item) => `
+        <button class="As-lang-option${item.code === locale ? ' is-current' : ''}" type="button" data-locale="${item.code}" dir="${item.dir}">
+            ${item.nativeName}
+        </button>
+    `).join('');
+    return `
+        <div class="As-lang" dir="ltr">
+            <button class="As-lang-btn" id="AsLangBtn" type="button" aria-label="${esc(copy.language)}" aria-haspopup="listbox" aria-expanded="false">
+                <span>${current.shortLabel}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"></path></svg>
+            </button>
+            <div class="As-lang-menu" id="AsLangMenu" hidden>
+                ${options}
+            </div>
+        </div>
+    `;
+}
+
+function renderChangeItems(changes, copy) {
     const { menuChanges, features, updatedSites, addedSites } = splitVersionChanges(changes);
 
     return `
         ${features.length ? `
             <div class="As-change-group">
-                <div class="As-change-group-title">تغییرات این نسخه</div>
+                <div class="As-change-group-title">${esc(copy.versionChanges)}</div>
                 <div class="As-change-list">
                     ${renderFeatureItems(features)}
                 </div>
@@ -60,7 +92,7 @@ function renderChangeItems(changes) {
         ` : ''}
         ${menuChanges.length ? `
             <div class="As-change-group">
-                <div class="As-change-group-title">تغییرات منوی افزونه</div>
+                <div class="As-change-group-title">${esc(copy.menuChanges)}</div>
                 <div class="As-change-list">
                     ${renderFeatureItems(menuChanges)}
                 </div>
@@ -71,8 +103,8 @@ function renderChangeItems(changes) {
                 ${updatedSites.length ? `
                     <div class="As-site-subgroup">
                         <div class="As-change-group-title">
-                            سایت‌های آپدیت‌شده
-                            <span class="As-change-group-count">${updatedSites.length} سایت</span>
+                            ${esc(copy.updatedSites)}
+                            <span class="As-change-group-count">${esc(fill(copy.siteCount, { count: updatedSites.length }))}</span>
                         </div>
                         <div class="As-site-grid">
                             ${renderSiteChips(updatedSites)}
@@ -82,8 +114,8 @@ function renderChangeItems(changes) {
                 ${addedSites.length ? `
                     <div class="As-site-subgroup">
                         <div class="As-change-group-title">
-                            سایت‌های جدید
-                            <span class="As-change-group-count">${addedSites.length} سایت</span>
+                            ${esc(copy.addedSites)}
+                            <span class="As-change-group-count">${esc(fill(copy.siteCount, { count: addedSites.length }))}</span>
                         </div>
                         <div class="As-site-grid As-site-grid-new">
                             ${renderSiteChips(addedSites)}
@@ -91,7 +123,7 @@ function renderChangeItems(changes) {
                         <div class="As-sites-note">
                             <span class="As-sites-note-icon">!</span>
                             <p class="As-sites-note-text">
-                                <strong>توجه:</strong> سایت‌های جدید به‌صورت پیش‌فرض غیرفعال هستند و باید از طریق منوی اکستنشن فعال کنید
+                                <strong>${esc(copy.noteLabel)}</strong> ${esc(copy.noteBody)}
                             </p>
                         </div>
                     </div>
@@ -112,14 +144,59 @@ function appendModalToBody(modalHTML) {
     }
 }
 
+function readUiLocale(done) {
+    try {
+        if (!chrome?.storage?.sync?.get) {
+            done('fa');
+            return;
+        }
+        chrome.storage.sync.get([UI_LANGUAGE_STORAGE_KEY], function(result) {
+            done(normalizeUpdateLocale(result?.[UI_LANGUAGE_STORAGE_KEY]));
+        });
+    } catch (error) {
+        done('fa');
+    }
+}
+
 function mountUpdateModal(persistClose, modalOptions = {}) {
     if (document.getElementById('AsUpdateModal') || isModalShowing) {
         return;
     }
 
     isModalShowing = true;
-    appendModalToBody(createUpdateModalHTML(modalOptions));
-    setupUpdateModalListeners(UPDATE_MODAL_ID, persistClose);
+
+    const open = (locale) => {
+        if (document.getElementById('AsUpdateModal')) {
+            return;
+        }
+        const options = { ...modalOptions, locale };
+        activeModal = { persistClose, options };
+        appendModalToBody(createUpdateModalHTML(options));
+        setupUpdateModalListeners(UPDATE_MODAL_ID, persistClose);
+    };
+
+    if (modalOptions.locale) {
+        open(normalizeUpdateLocale(modalOptions.locale));
+        return;
+    }
+
+    readUiLocale(open);
+}
+
+function switchModalLocale(locale) {
+    const next = normalizeUpdateLocale(locale);
+    const { persistClose, options } = activeModal;
+    const modal = document.getElementById('AsUpdateModal');
+    isModalShowing = false;
+    if (modal?.parentNode) {
+        modal.parentNode.removeChild(modal);
+    }
+    try {
+        chrome?.storage?.sync?.set({ [UI_LANGUAGE_STORAGE_KEY]: next });
+    } catch (error) {
+        // Keep the chosen language for this modal even if storage is unavailable.
+    }
+    mountUpdateModal(persistClose, { ...options, locale: next });
 }
 
 /**
@@ -158,25 +235,6 @@ export function showUpdateModal(options = {}) {
                 return;
             }
 
-            // Saw the second modal → performance + Copilot follow-up
-            if (closedId === SECOND_UPDATE_MODAL_ID) {
-                mountUpdateModal(true, {
-                    changes: chatgptPerfAndCopilotChanges,
-                    includeStory: false,
-                });
-                return;
-            }
-
-            // Saw the first modal but not the second → ChatGPT + Copilot
-            if (closedId === FIRST_UPDATE_MODAL_ID) {
-                mountUpdateModal(true, {
-                    changes: chatgptAndCopilotChanges,
-                    includeStory: false,
-                });
-                return;
-            }
-
-            // Never saw the first modal → full changelog + story
             mountUpdateModal(true);
         });
     } catch (error) {
@@ -227,36 +285,68 @@ function setupStoryCapsuleAnimation() {
     setupCapsuleAnimation('AsStoryCapsule', 'AsStoryToggle', 'AsStoryPanel');
 }
 
+function setupLanguageSwitch() {
+    const button = document.getElementById('AsLangBtn');
+    const menu = document.getElementById('AsLangMenu');
+    const modal = document.getElementById('AsUpdateModal');
+    if (!button || !menu || !modal) {
+        return;
+    }
 
-function createUpdateModalHTML({ changes = versionChanges, includeStory = true } = {}) {
+    button.addEventListener('click', function(event) {
+        event.stopPropagation();
+        const open = menu.hasAttribute('hidden');
+        if (open) {
+            menu.removeAttribute('hidden');
+        } else {
+            menu.setAttribute('hidden', '');
+        }
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    menu.querySelectorAll('[data-locale]').forEach((option) => {
+        option.addEventListener('click', function(event) {
+            event.stopPropagation();
+            switchModalLocale(option.getAttribute('data-locale'));
+        });
+    });
+
+    modal.addEventListener('click', function(event) {
+        if (event.target.closest('.As-lang')) {
+            return;
+        }
+        menu.setAttribute('hidden', '');
+        button.setAttribute('aria-expanded', 'false');
+    });
+}
+
+
+function createUpdateModalHTML({ changes = versionChanges, includeStory = true, locale = 'fa' } = {}) {
     const manifest = chrome.runtime.getManifest();
     const extensionName = chrome.i18n.getMessage('extension_name') || manifest.name;
     const iconUrl = chrome.runtime.getURL('images/logo/ai-rtl-logo.png');
     const currentVersion = manifest.version;
-    const visibleChanges = filterVersionChangesForBrowser(changes, isFirefoxRuntime());
+    const activeLocale = normalizeUpdateLocale(locale);
+    const copy = getUpdateModalCopy(activeLocale);
+    const visibleChanges = filterVersionChangesForBrowser(changes, isFirefoxRuntime())
+        .map((change) => localizeVersionChange(change, activeLocale));
 
-    // متن استاتیک اصلی که کاملاً از لیست جدا شده است
     const staticAnnouncementHTML = `
         <div class="As-story-capsule" id="AsStoryCapsule">
             <button class="As-story-summary" id="AsStoryToggle" type="button" aria-expanded="false">
-                <span class="As-story-summary-text">چرا اسم اکستشن تغییر کرده؟</span>
+                <span class="As-story-summary-text">${esc(copy.storySummary)}</span>
                 <span class="As-story-arrow" aria-hidden="true">▼</span>
             </button>
             <div class="As-story-panel" id="AsStoryPanel">
                 <div class="As-special-announcement As-story-content">
-                    ما برگشتیم، اما با یک نام و نشان جدید! 🚀<br><br>
-                    اگر متوجه غیبت کوتاه‌مدت ما شده بودید، دلیلش شکایت شرکت OpenAI روی نام ChatGPT بود. این موضوع ما را مجبور کرد تا نام و لوگوی افزونه را تغییر دهیم.<br><br>
-                    راستش را بخواهید، این افزونه در ابتدا فقط برای راحتی کار با ChatGPT طراحی شده بود؛ اما به مرور زمان و به درخواست شما عزیزان، پشتیبانی از سایت‌های هوش مصنوعی دیگر را هم به آن اضافه کردیم. متأسفانه فراموش کرده بودیم اسم افزونه را به‌روزرسانی کنیم و فکرش را هم نمی‌کردیم با چنین مشکلی روبه‌رو شویم!<br><br>
-                    خلاصه اینکه ما پرقدرت‌تر از قبل برگشتیم. لطفاً نام و لوگوی جدید ما را به خاطر بسپارید تا گممان نکنید: <strong>AI RTL (Persian/Farsi)</strong><br><br>
-                    📢 برای باخبر شدن از آخرین اخبار، به‌روزرسانی‌ها و اتفاقات بعدی، حتماً کانال تلگرام ما را دنبال کنید:<br>
-                    🔗 <a href="https://t.me/AI_RTL_ir" target="_blank">t.me/AI_RTL_ir</a>
+                    ${copy.storyHtml}
                 </div>
             </div>
         </div>
     `;
 
     return `
-        <div class="As-modal-backdrop FontSet" id="AsUpdateModal">
+        <div class="As-modal-backdrop FontSet" id="AsUpdateModal" data-locale="${activeLocale}">
             <style>
                 @keyframes fadeIn {
                     from { opacity: 0; }
@@ -327,6 +417,104 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
                     padding: 0 20px 10px;
                     border-bottom: 1px solid rgba(0, 234, 255, 0.2);
                     direction: rtl;
+                    position: relative;
+                    z-index: 5;
+                }
+                #AsUpdateModal .As-lang {
+                    position: absolute;
+                    top: 0;
+                    right: 20px;
+                    z-index: 6;
+                }
+                #AsUpdateModal .As-lang-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    margin: 0;
+                    padding: 4px 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.35);
+                    border-radius: 8px;
+                    background: rgba(26, 26, 46, 0.72);
+                    color: rgba(255, 255, 255, 0.92);
+                    font-family: iranyekan, sans-serif;
+                    font-size: 12px;
+                    font-weight: 500;
+                    line-height: 1;
+                    cursor: pointer;
+                }
+                #AsUpdateModal .As-lang-btn svg {
+                    width: 14px;
+                    height: 14px;
+                    fill: currentColor;
+                }
+                #AsUpdateModal .As-lang-btn:hover {
+                    color: #ffffff;
+                    border-color: rgba(255, 255, 255, 0.55);
+                }
+                #AsUpdateModal .As-lang-menu {
+                    position: absolute;
+                    top: calc(100% + 6px);
+                    right: 0;
+                    min-width: 140px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                    padding: 4px;
+                    background: #1a1a2e;
+                    border: 1px solid rgba(0, 233, 255, 0.45);
+                    border-radius: 10px;
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                }
+                #AsUpdateModal .As-lang-menu[hidden] {
+                    display: none;
+                }
+                #AsUpdateModal .As-lang-option {
+                    display: block;
+                    width: 100%;
+                    margin: 0;
+                    padding: 8px 10px;
+                    border: 0;
+                    border-radius: 8px;
+                    background: transparent;
+                    color: #ffffff;
+                    font-family: iranyekan, sans-serif;
+                    font-size: 13px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    text-align: start;
+                }
+                #AsUpdateModal .As-lang-option:hover,
+                #AsUpdateModal .As-lang-option.is-current {
+                    color: #00e9ff;
+                    background: rgba(0, 233, 255, 0.08);
+                }
+                #AsUpdateModal[data-locale="en"] .As-modal,
+                #AsUpdateModal[data-locale="en"] .As-content,
+                #AsUpdateModal[data-locale="en"] .As-header,
+                #AsUpdateModal[data-locale="en"] .As-section,
+                #AsUpdateModal[data-locale="en"] .As-title,
+                #AsUpdateModal[data-locale="en"] .As-change-text,
+                #AsUpdateModal[data-locale="en"] .As-change-group-title,
+                #AsUpdateModal[data-locale="en"] .As-sites-note-text,
+                #AsUpdateModal[data-locale="en"] .As-story-summary,
+                #AsUpdateModal[data-locale="en"] .As-story-content,
+                #AsUpdateModal[data-locale="en"] .As-site-chip-wide,
+                #AsUpdateModal[data-locale="en"] .As-site-chip-details {
+                    direction: ltr;
+                    text-align: left;
+                }
+                #AsUpdateModal[data-locale="en"] .As-story-summary-text,
+                #AsUpdateModal[data-locale="en"] .As-special-announcement {
+                    text-align: left;
+                }
+                #AsUpdateModal[data-locale="en"] .As-header {
+                    justify-content: flex-start;
+                }
+                #AsUpdateModal[data-locale="en"] .As-header-brand {
+                    flex-direction: row;
+                }
+                #AsUpdateModal[data-locale="en"] .As-site-chip-details {
+                    padding: 0 0 0 18px;
                 }
                 #AsUpdateModal .As-header-brand {
                     display: flex;
@@ -546,6 +734,39 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
                     font-weight: 800;
                     line-height: 1;
                 }
+                #AsUpdateModal .As-site-chip-wide {
+                    grid-column: 1 / -1;
+                    flex-direction: row;
+                    flex-wrap: nowrap;
+                    justify-content: flex-start;
+                    align-items: center;
+                    direction: rtl;
+                    gap: 8px;
+                }
+                #AsUpdateModal .As-site-chip-brand {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    flex: 0 0 calc((100% - 24px) / 4);
+                    min-height: 76px;
+                }
+                #AsUpdateModal .As-site-chip-details {
+                    width: auto;
+                    flex: 1;
+                    margin: 0;
+                    padding: 0 18px 0 0;
+                    list-style: disc;
+                    direction: rtl;
+                    text-align: right;
+                }
+                #AsUpdateModal .As-site-chip-details li {
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 10.5px;
+                    font-weight: 300;
+                    line-height: 1.6;
+                }
                 
                 #AsUpdateModal .As-story-capsule {
                     background: linear-gradient(135deg, rgba(0, 233, 255, 0.06) 0%, rgba(0, 153, 204, 0.02) 100%);
@@ -757,11 +978,12 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
             <div class="As-modal">
                 <div class="As-content">
                     <div class="As-header">
+                        ${renderLanguageSwitch(activeLocale)}
                         <div class="As-header-brand">
-                            <img class="As-logo" src="${iconUrl}" alt="${extensionName}">
+                            <img class="As-logo" src="${iconUrl}" alt="${esc(extensionName)}">
                             <div class="As-ext-info">
                                 <div class="As-version">
-                                    نسخه ${currentVersion}
+                                    ${esc(fill(copy.version, { version: currentVersion }))}
                                 </div>
                                 <h2 class="As-ext-name">
                                     AI RTL (Persian/Farsi)
@@ -772,18 +994,18 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true }
 
                     <div class="As-section">
                         <h3 class="As-title">
-                            افزونه با موفقیت به‌روزرسانی شد
+                            ${esc(copy.title)}
                         </h3>
                         <div class="As-changes As-version-changes">
-                            ${renderChangeItems(visibleChanges)}
+                            ${renderChangeItems(visibleChanges, copy)}
                         </div>
 
                         ${includeStory ? staticAnnouncementHTML : ''}
                     </div>
 
                     <div class="As-footer">
-                        <button class="As-close-btn" id="AsUpdateCloseBtn">متوجه شدم</button>
-                        <a class="As-footer-link" href="https://ai-rtl.ir/supporters/" target="_blank" rel="noopener noreferrer">حمایت از اکستنشن</a>
+                        <button class="As-close-btn" id="AsUpdateCloseBtn">${esc(copy.close)}</button>
+                        <a class="As-footer-link" href="https://ai-rtl.ir/supporters/" target="_blank" rel="noopener noreferrer">${esc(copy.support)}</a>
                     </div>
                 </div>
             </div>
@@ -814,6 +1036,7 @@ function setupUpdateModalListeners(modalId, persistClose = true) {
     }
 
     setupStoryCapsuleAnimation();
+    setupLanguageSwitch();
 
     closeBtn.addEventListener('click', function() {
         if (!persistClose) {

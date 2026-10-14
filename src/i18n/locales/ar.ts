@@ -2,6 +2,7 @@ import { Messages } from './fa';
 
 export const arMessages: Messages = {
     header: {
+        title: 'AI RTL (Arabic)',
         about: 'حول الإضافة',
         report: 'الإبلاغ عن مشكلة',
         version: 'الإصدار {version}',

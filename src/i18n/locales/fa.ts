@@ -1,5 +1,6 @@
 export const faMessages = {
     header: {
+        title: 'AI RTL (Persian/Farsi)',
         about: 'درباره افزونه',
         report: 'گزارش مشکل',
         version: 'نسخه {version}',
