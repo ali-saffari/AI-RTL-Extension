@@ -14,13 +14,18 @@ export function setPageFont() {
 // and Codex request-card questions/options. Composer inputs inside request cards stay on setInputs.
 export function applySmallBlocks(rtlAlgorithm) {
     AQ('[data-message-author-role="user"], .text-user-message, [data-user-message-bubble]').each(function () {
-        applyRtlToElement(this, rtlAlgorithm, {
+        const wraps = this.querySelectorAll('.whitespace-pre-wrap');
+        const targets = wraps.length ? wraps : [this];
+        const userOptions = {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true,
             removeDirAuto: true,
             forceCodeLtr: rtlAlgorithm === 'advanced_full'
-        });
+        };
+        for (let i = 0; i < targets.length; i++) {
+            applyRtlToElement(targets[i], rtlAlgorithm, userOptions);
+        }
     });
 
     AQ('button[class*="suggested-followup"]').each(function () {
