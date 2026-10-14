@@ -1,7 +1,7 @@
 // پاسخ‌های کلاد نزدیک صفحه دیده می‌شوند. استریم با تأخیر پردازش می‌شود و یک پاس آخر هم می‌ماند.
 import { addCopyright } from '../utils/copyright.js';
 import { applyRtlToContainer, applyRtlToElement, detectDirectionByAlgorithm } from '../utils/directionUtils/index.js';
-import { isRtlEngineActive } from '../utils/originalState.js';
+import { isRtlEngineActive, preserveOriginalDir } from '../utils/originalState.js';
 
 const MARKDOWN = '.standard-markdown, .progressive-markdown, .font-claude-response, #standard-markdown-artifact, #markdown-artifact';
 const THROTTLE_MS = 400;
@@ -228,8 +228,25 @@ function refreshChrome(rtlAlgorithm) {
     AQ('.contents .truncate').each(function () {
         applyRtlToContainer(this, rtlAlgorithm, { ...textOptions, isContainer: false });
     });
-    AQ('[data-ask-user-input-banner="true"], [data-testid="ask-user-answers-card"]').each(function () {
+    AQ('[data-testid="ask-user-answers-card"]').each(function () {
         applyRtlToContainer(this, rtlAlgorithm, { ...textOptions, isContainer: true });
+    });
+    AQ('[data-ask-user-input-banner], [data-cds="AskUserQuestion"]').each(function () {
+        const label = this.querySelector('[id$="-label"]');
+        const question = label ? label.textContent : '';
+        if (detectDirectionByAlgorithm(question, rtlAlgorithm) !== 'rtl') {
+            return;
+        }
+        if (this.getAttribute('dir') !== 'rtl') {
+            preserveOriginalDir(this);
+            this.setAttribute('dir', 'rtl');
+        }
+        AQ(this).addClass('FontSet FontClaude');
+        const field = this.querySelector('input[type="text"]');
+        if (field && field.getAttribute('dir') !== 'rtl') {
+            preserveOriginalDir(field);
+            field.setAttribute('dir', 'rtl');
+        }
     });
     AQ('.contents .font-base-bold, [data-orientation="horizontal"] button').each(function () {
         applyRtlToElement(this, rtlAlgorithm, { ...textOptions, isContainer: true });
@@ -245,6 +262,10 @@ function refreshChrome(rtlAlgorithm) {
 const fontStyleId = 'ai-rtl-claude-font-weights';
 const markdownCss = ':is(.standard-markdown, .progressive-markdown, #standard-markdown-artifact, #markdown-artifact)';
 const fontCss = `
+[data-ask-user-input-banner][dir="rtl"] .text-left,
+[data-cds="AskUserQuestion"][dir="rtl"] .text-left {
+    text-align: right !important;
+}
 * {
     --cds-font-weight-regular: 350 !important;
     --cds-font-weight-medium: 500 !important;
