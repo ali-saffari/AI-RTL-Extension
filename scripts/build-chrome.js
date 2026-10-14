@@ -3,15 +3,26 @@ const path = require('path');
 const { execSync } = require('child_process');
 const archiver = require('archiver');
 const { assertChromeManifestUnchanged } = require('./check-chrome-manifest');
+const {
+    getChannelVersionInfo,
+    bumpReleasePatch,
+    bumpAlphaBuild,
+    CHROME_MANIFEST_PATH,
+} = require('./channel-version');
 
-// Paths
-const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json');
-const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
-const packagePath = path.join(__dirname, '../package.json');
 const distPath = path.join(__dirname, '../dist-chrome');
-const outputPath = path.join(__dirname, '../releases/chrome');
 
-// Colors for console output
+const args = process.argv.slice(2);
+const channel = args.includes('--alpha') ? 'alpha' : 'release';
+const outputPath = path.join(
+    __dirname,
+    channel === 'alpha' ? '../releases/chrome-alpha' : '../releases/chrome'
+);
+// Alpha zip bumps by default so each test package gets a new number.
+// Release stays pinned unless --bump is passed.
+const shouldBump =
+    channel === 'alpha' ? !args.includes('--no-bump') : args.includes('--bump');
+
 const colors = {
     reset: '\x1b[0m',
     bright: '\x1b[1m',
@@ -19,8 +30,7 @@ const colors = {
     green: '\x1b[32m',
     yellow: '\x1b[33m',
     blue: '\x1b[34m',
-    magenta: '\x1b[35m',
-    cyan: '\x1b[36m'
+    cyan: '\x1b[36m',
 };
 
 function log(message, color = 'reset') {
@@ -39,125 +49,93 @@ function logError(message) {
     log(`❌ ${message}`, 'red');
 }
 
-function logWarning(message) {
-    log(`⚠️  ${message}`, 'yellow');
-}
-
 async function main() {
     try {
-        logStep('1', 'Starting build process...');
+        logStep('1', `Starting Chrome ${channel} build...`);
 
         logStep('1b', 'Checking Chrome manifest permissions against last store snapshot...');
         assertChromeManifestUnchanged();
         logSuccess('Chrome manifest permission check passed');
-        
-        // Step 1: Read current version
-        logStep('2', 'Reading current version...');
-        const chromeManifest = JSON.parse(fs.readFileSync(chromeManifestPath, 'utf8'));
-        const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-        
-        const currentVersion = chromeManifest.version;
-        log(`Current version: ${currentVersion}`, 'cyan');
-        
-        // Step 2: Increment version
-        logStep('3', 'Incrementing version...');
-        const versionParts = currentVersion.split('.').map(Number);
-        versionParts[2] += 1; // Increment patch version
-        const newVersion = versionParts.join('.');
-        
-        log(`New version: ${newVersion}`, 'cyan');
-        
-        // Update manifest.chrome.json
-        chromeManifest.version = newVersion;
-        fs.writeFileSync(chromeManifestPath, JSON.stringify(chromeManifest, null, 4));
 
-        // Keep Firefox manifest version in sync (Chrome release does not build Firefox)
-        if (fs.existsSync(firefoxManifestPath)) {
-            const firefoxManifest = JSON.parse(fs.readFileSync(firefoxManifestPath, 'utf8'));
-            firefoxManifest.version = newVersion;
-            fs.writeFileSync(firefoxManifestPath, JSON.stringify(firefoxManifest, null, 4));
+        if (shouldBump) {
+            logStep('2', `Bumping ${channel} version...`);
+            if (channel === 'alpha') {
+                const info = bumpAlphaBuild();
+                log(`Alpha version: ${info.versionName}`, 'cyan');
+            } else {
+                const newVersion = bumpReleasePatch();
+                log(`Release version: ${newVersion}`, 'cyan');
+            }
+        } else {
+            logStep('2', 'Using current version (no bump; pass --bump to increment)...');
         }
-        
-        // Update package.json
-        packageJson.version = newVersion;
-        fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
-        
-        logSuccess(`Version updated to ${newVersion} in Chrome/Firefox manifests and package.json`);
-        
-        // Step 3: Clean dist-chrome directory
-        logStep('4', 'Cleaning dist-chrome directory...');
+
+        const info = getChannelVersionInfo(channel);
+        const sourceManifest = JSON.parse(fs.readFileSync(CHROME_MANIFEST_PATH, 'utf8'));
+        log(`Source release version: ${sourceManifest.version}`, 'cyan');
+        log(`Build channel: ${info.channel}`, 'cyan');
+        log(`Output version: ${info.version}${info.channel === 'alpha' ? ` (${info.versionName})` : ''}`, 'cyan');
+
+        logStep('3', 'Cleaning dist-chrome directory...');
         if (fs.existsSync(distPath)) {
             fs.rmSync(distPath, { recursive: true, force: true });
             logSuccess('Dist directory cleaned');
         }
-        
-        // Step 4: Build project
-        logStep('5', 'Building project...');
-        log('Running webpack build...', 'yellow');
-        
+
+        logStep('4', 'Building project...');
+        const npmScript = channel === 'alpha' ? 'build:chrome:alpha' : 'build:chrome';
         try {
-            execSync('npm run build:chrome', { 
+            execSync(`npm run ${npmScript}`, {
                 stdio: 'inherit',
-                cwd: path.join(__dirname, '..')
+                cwd: path.join(__dirname, '..'),
+                env: { ...process.env, BUILD_CHANNEL: channel },
             });
             logSuccess('Build completed successfully');
         } catch (error) {
             logError('Build failed');
             throw error;
         }
-        
-        // Step 5: Create zip file
-        logStep('6', 'Creating zip file...');
-        
-        // Ensure output directory exists
+
+        logStep('5', 'Creating zip file...');
         if (!fs.existsSync(outputPath)) {
             fs.mkdirSync(outputPath, { recursive: true });
-            logSuccess('Created releases/chrome directory');
+            logSuccess(`Created ${path.relative(path.join(__dirname, '..'), outputPath)} directory`);
         }
-        
-        const zipFileName = `chrome-extension-v${newVersion}.zip`;
+
+        const zipFileName = `chrome-extension-v${info.zipTag}.zip`;
         const zipFilePath = path.join(outputPath, zipFileName);
-        
-        // Remove existing zip file if it exists
+
         if (fs.existsSync(zipFilePath)) {
             fs.unlinkSync(zipFilePath);
         }
-        
+
         const output = fs.createWriteStream(zipFilePath);
-        const archive = archiver('zip', {
-            zlib: { level: 9 } // Maximum compression
-        });
-        
+        const archive = archiver('zip', { zlib: { level: 9 } });
+
         return new Promise((resolve, reject) => {
             output.on('close', () => {
                 logSuccess(`Zip file created: ${zipFileName}`);
                 log(`File size: ${archive.pointer()} bytes`, 'cyan');
-                log(`\n${colors.bright}${colors.green}🎉 Build process completed successfully!${colors.reset}`);
-                log(`📦 Output file: ${zipFilePath}`, 'cyan');
+                log(`\n${colors.bright}${colors.green}Build completed successfully!${colors.reset}`);
+                log(`Output file: ${zipFilePath}`, 'cyan');
                 resolve();
             });
-            
+
             archive.on('error', (err) => {
                 logError(`Archive error: ${err.message}`);
                 reject(err);
             });
-            
+
             archive.pipe(output);
-            
-            // Add all files from dist directory
             archive.directory(distPath, false);
-            
-            // Finalize the archive
             archive.finalize();
         });
-        
     } catch (error) {
         logError(`Build process failed: ${error.message}`);
         process.exit(1);
     }
 }
 
-// Run the build process
 main().catch((error) => {
     logError(`Fatal error: ${error.message}`);
     process.exit(1);

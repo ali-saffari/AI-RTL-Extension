@@ -3,9 +3,11 @@ const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { iranyekanFontPattern } = require('./scripts/private-assets');
+const { applyChannelToManifest, getChannel } = require('./scripts/channel-version');
 
 const isProduction = process.env.NODE_ENV !== 'development';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+const buildChannel = getChannel();
 
 class BundleBackgroundPlugin {
     apply(compiler) {
@@ -103,6 +105,15 @@ module.exports = {
                 {
                     from: 'public/manifest.firefox.json',
                     to: '../manifest.json',
+                    transform(content) {
+                        const source = JSON.parse(content.toString('utf8'));
+                        const { manifest, info } = applyChannelToManifest(source, buildChannel);
+                        console.log(
+                            `📦 Firefox channel=${info.channel} version=${info.version}` +
+                                (info.versionName !== info.version ? ` (${info.versionName})` : '')
+                        );
+                        return Buffer.from(JSON.stringify(manifest, null, 4));
+                    },
                 },
                 iranyekanFontPattern('../fonts/iranyekan'),
                 {

@@ -19,6 +19,7 @@ import {
 import { mdiInformationOutline, mdiRefresh, mdiDelete, mdiDownload, mdiUpload } from '@mdi/js';
 import { shouldShowExtensionId } from '../utils/storeLinks';
 import { useI18n } from '../i18n';
+import { getExtensionChannelInfo } from '../utils/extensionChannel';
 
 interface ExtensionSettingsProps {
     isDarkMode: boolean;
@@ -30,6 +31,7 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
     const { t, dir } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const theme = useTheme();
+    const channelInfo = getExtensionChannelInfo();
     const [autoUpdate, setAutoUpdate] = React.useState(true);
     const [notifications, setNotifications] = React.useState(true);
     const [analytics, setAnalytics] = React.useState(true);
@@ -402,7 +404,24 @@ const ExtensionSettings: React.FC<ExtensionSettingsProps> = ({
                             {t('extensionSettings.version')}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {chrome.runtime.getManifest().version}
+                            {channelInfo.displayVersion}
+                        </Typography>
+                    </Box>
+                    <Divider />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            {t('extensionSettings.channel')}
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontWeight: 600,
+                                color: channelInfo.isAlpha ? 'warning.main' : 'text.primary',
+                            }}
+                        >
+                            {channelInfo.isAlpha
+                                ? t('extensionSettings.channelAlpha')
+                                : t('extensionSettings.channelRelease')}
                         </Typography>
                     </Box>
                     {shouldShowExtensionId() ? (

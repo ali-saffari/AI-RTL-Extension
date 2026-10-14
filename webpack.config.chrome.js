@@ -4,9 +4,11 @@ const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { iranyekanFontPattern } = require('./scripts/private-assets');
 const { assertChromeManifestUnchanged } = require('./scripts/check-chrome-manifest');
+const { applyChannelToManifest, getChannel } = require('./scripts/channel-version');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+const buildChannel = getChannel();
 
 // Plugin to bundle background script with all dependencies
 class CheckChromeManifestPlugin {
@@ -104,6 +106,15 @@ module.exports = {
                 {
                     from: 'public/manifest.chrome.json',
                     to: '../manifest.json',
+                    transform(content) {
+                        const source = JSON.parse(content.toString('utf8'));
+                        const { manifest, info } = applyChannelToManifest(source, buildChannel);
+                        console.log(
+                            `📦 Chrome channel=${info.channel} version=${info.version}` +
+                                (info.versionName !== info.version ? ` (${info.versionName})` : '')
+                        );
+                        return Buffer.from(JSON.stringify(manifest, null, 4));
+                    },
                 },
                 iranyekanFontPattern('../fonts/iranyekan'),
             ],

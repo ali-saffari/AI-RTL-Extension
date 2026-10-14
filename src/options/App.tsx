@@ -21,8 +21,8 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import CssBaseline from '@mui/material/CssBaseline';
 import { mdiWeatherSunny, mdiWeatherNight } from '@mdi/js';
 import SettingsContent from './SettingsContent';
-import manifest from '../../public/manifest.chrome.json';
 import { LanguageMenuButton, useI18n } from '../i18n';
+import { getExtensionChannelInfo } from '../utils/extensionChannel';
 
 // Create rtl cache
 const cacheRtl = createCache({
@@ -151,6 +151,7 @@ const lightTheme = createTheme({
 
 function OptionsApp() {
     const { t, dir } = useI18n();
+    const channelInfo = getExtensionChannelInfo();
     const [isDarkMode, setIsDarkMode] = React.useState(true);
 
     // Load theme preference from storage
@@ -232,18 +233,38 @@ function OptionsApp() {
                                     >
                                         {t('options.title')}
                                     </Typography>
-                                    <Chip 
-                                        label={t('options.version', { version: manifest.version })} 
-                                        size="small" 
-                                        sx={{ 
-                                            fontSize: '0.7rem',
-                                            height: 20,
-                                            backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
-                                            color: isDarkMode ? '#00e9ff' : '#ffffff',
-                                            border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)',
-                                            fontWeight: 500
-                                        }} 
-                                    />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                        <Chip
+                                            label={channelInfo.displayVersion}
+                                            size="small"
+                                            sx={{
+                                                fontSize: '0.7rem',
+                                                height: 20,
+                                                backgroundColor: channelInfo.isAlpha
+                                                    ? (isDarkMode ? 'rgba(251, 146, 60, 0.18)' : 'rgba(255, 255, 255, 0.22)')
+                                                    : (isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)'),
+                                                color: isDarkMode ? (channelInfo.isAlpha ? '#fdba74' : '#00e9ff') : '#ffffff',
+                                                border: channelInfo.isAlpha
+                                                    ? (isDarkMode ? '1px solid rgba(251, 146, 60, 0.4)' : '1px solid rgba(255, 255, 255, 0.4)')
+                                                    : (isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.3)'),
+                                                fontWeight: 500
+                                            }}
+                                        />
+                                        {channelInfo.isAlpha ? (
+                                            <Chip
+                                                label={t('header.alphaBadge')}
+                                                size="small"
+                                                sx={{
+                                                    fontSize: '0.65rem',
+                                                    height: 20,
+                                                    backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.22)' : 'rgba(255, 255, 255, 0.28)',
+                                                    color: isDarkMode ? '#fed7aa' : '#ffffff',
+                                                    border: isDarkMode ? '1px solid rgba(251, 146, 60, 0.45)' : '1px solid rgba(255, 255, 255, 0.45)',
+                                                    fontWeight: 600
+                                                }}
+                                            />
+                                        ) : null}
+                                    </Box>
                                 </Box>
                             </Box>
                             

@@ -1,29 +1,30 @@
-const fs = require('fs');
-const path = require('path');
+const {
+    getChannelVersionInfo,
+    bumpReleasePatch,
+    bumpAlphaBuild,
+    getReleaseVersion,
+    getAlphaBuild,
+} = require('./channel-version');
 
-const chromeManifestPath = path.join(__dirname, '../public/manifest.chrome.json');
-const firefoxManifestPath = path.join(__dirname, '../public/manifest.firefox.json');
-const packagePath = path.join(__dirname, '../package.json');
+const mode = (process.argv[2] || 'release').toLowerCase();
 
-const chromeManifest = JSON.parse(fs.readFileSync(chromeManifestPath, 'utf8'));
-const firefoxManifest = JSON.parse(fs.readFileSync(firefoxManifestPath, 'utf8'));
-const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+if (mode === 'alpha') {
+    const before = getAlphaBuild();
+    const info = bumpAlphaBuild();
+    console.log(`Release base: ${getReleaseVersion()}`);
+    console.log(`Alpha build: ${before} -> ${info.alphaBuild}`);
+    console.log(`Alpha version: ${info.version} (${info.versionName})`);
+    console.log('Source manifests stay on the release version; alpha is applied at build time.');
+    process.exit(0);
+}
 
-const currentVersion = chromeManifest.version;
-console.log(`Current version: ${currentVersion}`);
+if (mode === 'release' || mode === 'patch') {
+    const before = getReleaseVersion();
+    const after = bumpReleasePatch();
+    console.log(`Release version: ${before} -> ${after}`);
+    console.log(`Current alpha would be: ${getChannelVersionInfo('alpha').versionName}`);
+    process.exit(0);
+}
 
-const versionParts = currentVersion.split('.').map(Number);
-versionParts[2] += 1;
-const newVersion = versionParts.join('.');
-console.log(`New version: ${newVersion}`);
-
-chromeManifest.version = newVersion;
-fs.writeFileSync(chromeManifestPath, JSON.stringify(chromeManifest, null, 4));
-
-firefoxManifest.version = newVersion;
-fs.writeFileSync(firefoxManifestPath, JSON.stringify(firefoxManifest, null, 4));
-
-packageJson.version = newVersion;
-fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2));
-
-console.log(`✅ Version updated to ${newVersion} in manifest.chrome.json, manifest.firefox.json, and package.json`);
+console.error('Usage: node scripts/version-bump.js [release|alpha]');
+process.exit(1);

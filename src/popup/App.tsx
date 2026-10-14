@@ -51,7 +51,7 @@ import {
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled';
 import ShareModal from './ShareModal';
 import './App.css';
-import manifest from '../../public/manifest.chrome.json';
+import { getExtensionChannelInfo } from '../utils/extensionChannel';
 import { LanguageMenuButton, useI18n } from '../i18n';
 
 const headerLinkSx = {
@@ -239,6 +239,7 @@ function App() {
     // On a wide window the settings panel stays open. On a narrow window it
     // collapses to the side toggle so the popup does not scroll horizontally.
     const settingsAlwaysOpen = !narrowPopup;
+    const channelInfo = getExtensionChannelInfo();
     const [extensionEnabled, setExtensionEnabled] = React.useState(true);
     const [siteSettingsFocus, setSiteSettingsFocus] = React.useState<{ key: string; nonce: number } | null>(null);
     const [openServiceKey, setOpenServiceKey] = React.useState<string | null>(null);
@@ -932,21 +933,44 @@ function App() {
                                     flexShrink: 1
                                 }}
                             >
-                                {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
+                                {narrowPopup
+                                    ? (channelInfo.isAlpha ? 'AI RTL α' : 'AI RTL')
+                                    : (channelInfo.isAlpha ? 'AI RTL (Alpha)' : 'AI RTL (Persian/Farsi)')}
                             </Typography>
                             <Chip
-                                label={t('header.version', { version: manifest.version })}
+                                label={channelInfo.displayVersion}
                                 size="small"
                                 sx={{
                                     flexShrink: 0,
                                     fontSize: '0.65rem',
                                     height: 20,
-                                    backgroundColor: isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)',
-                                    color: isDarkMode ? '#00e9ff' : '#0067A5',
-                                    border: isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(0, 103, 165, 0.28)',
+                                    backgroundColor: channelInfo.isAlpha
+                                        ? (isDarkMode ? 'rgba(251, 146, 60, 0.15)' : 'rgba(234, 88, 12, 0.12)')
+                                        : (isDarkMode ? 'rgba(0, 233, 255, 0.1)' : 'rgba(56, 122, 242, 0.1)'),
+                                    color: channelInfo.isAlpha
+                                        ? (isDarkMode ? '#fdba74' : '#c2410c')
+                                        : (isDarkMode ? '#00e9ff' : '#0067A5'),
+                                    border: channelInfo.isAlpha
+                                        ? (isDarkMode ? '1px solid rgba(251, 146, 60, 0.4)' : '1px solid rgba(234, 88, 12, 0.35)')
+                                        : (isDarkMode ? '1px solid rgba(0, 233, 255, 0.3)' : '1px solid rgba(0, 103, 165, 0.28)'),
                                     fontWeight: 500
                                 }}
                             />
+                            {channelInfo.isAlpha ? (
+                                <Chip
+                                    label={t('header.alphaBadge')}
+                                    size="small"
+                                    sx={{
+                                        flexShrink: 0,
+                                        fontSize: '0.6rem',
+                                        height: 20,
+                                        backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.2)' : 'rgba(234, 88, 12, 0.14)',
+                                        color: isDarkMode ? '#fed7aa' : '#9a3412',
+                                        border: isDarkMode ? '1px solid rgba(251, 146, 60, 0.45)' : '1px solid rgba(234, 88, 12, 0.4)',
+                                        fontWeight: 600
+                                    }}
+                                />
+                            ) : null}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: narrowPopup ? 0.75 : 1.25, flexShrink: 0 }}>
                                 <Typography
                                     component="a"

@@ -1,6 +1,7 @@
 {
   "name": "ai-rtl",
-  "version": "4.0.28",
+  "version": "4.5.0",
+  "alphaBuild": 2,
   "private": true,
   "license": "UNLICENSED",
   "dependencies": {
@@ -30,19 +31,22 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "build:chrome": "node scripts/check-chrome-manifest.js && cross-env NODE_ENV=production webpack --config webpack.config.chrome.js",
-    "build:chrome:dev": "cross-env NODE_ENV=development webpack --config webpack.config.chrome.js",
+    "build:chrome": "node scripts/check-chrome-manifest.js && cross-env NODE_ENV=production BUILD_CHANNEL=release webpack --config webpack.config.chrome.js",
+    "build:chrome:alpha": "node scripts/check-chrome-manifest.js && cross-env NODE_ENV=production BUILD_CHANNEL=alpha webpack --config webpack.config.chrome.js",
+    "build:chrome:dev": "cross-env NODE_ENV=development BUILD_CHANNEL=alpha webpack --config webpack.config.chrome.js",
     "build:chrome:release": "node scripts/build-chrome.js",
+    "build:chrome:alpha:zip": "node scripts/build-chrome.js --alpha",
     "build:firefox": "node scripts/build-firefox.js",
     "build-for-amo": "npm run build:firefox",
     "zip:source": "node scripts/zip-source.js",
     "firefox": "node scripts/run-firefox.js",
     "firefox:lint": "web-ext lint --source-dir dist-firefox",
-    "firefox:dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.firefox.js",
-    "chrome:dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
-    "chrome:watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
-    "watch": "cross-env NODE_ENV=development webpack --watch --config webpack.config.chrome.js",
-    "version:bump": "node scripts/version-bump.js"
+    "firefox:dev": "cross-env NODE_ENV=development BUILD_CHANNEL=alpha webpack --watch --config webpack.config.firefox.js",
+    "chrome:dev": "cross-env NODE_ENV=development BUILD_CHANNEL=alpha webpack --watch --config webpack.config.chrome.js",
+    "chrome:watch": "cross-env NODE_ENV=development BUILD_CHANNEL=alpha webpack --watch --config webpack.config.chrome.js",
+    "watch": "cross-env NODE_ENV=development BUILD_CHANNEL=alpha webpack --watch --config webpack.config.chrome.js",
+    "version:bump": "node scripts/version-bump.js release",
+    "version:bump:alpha": "node scripts/version-bump.js alpha"
   },
   "cursor": {
     "commitMessage": {
