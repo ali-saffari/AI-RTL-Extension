@@ -2,7 +2,7 @@
 // Markdown watches the viewport on its own. The rest shares one page observer.
 // Legacy UI is parked in chatgpt-old.js. Snapshot of the previous new UI is in chatgpt-new.bak.js.
 import { startMarkdown, stopMarkdown } from './chatgpt-markdown.js';
-import { applySidebarHistory, applySmallBlocks, setCopyright, setInputs } from './chatgpt-ui.js';
+import { applySidebarHistory, applySmallBlocks, setCopyright, setInputs, setMobileComposer, setPageFont } from './chatgpt-ui.js';
 
 let rtlAlgorithm = 'advanced_full';
 let uiObserver = null;
@@ -20,6 +20,7 @@ export function stopChatGptRTL() {
         uiObserver.disconnect();
         uiObserver = null;
     }
+    AQ('body').removeClass('FontSetGPT');
 }
 
 export function activateChatGptRTL(algorithm = 'advanced_full') {
@@ -29,10 +30,12 @@ export function activateChatGptRTL(algorithm = 'advanced_full') {
     rtlAlgorithm = algorithm;
 
     startMarkdown(rtlAlgorithm);
+    setPageFont();
     applySmallBlocks(rtlAlgorithm);
     applySidebarHistory(rtlAlgorithm);
     setCopyright();
     setInputs(rtlAlgorithm);
+    setMobileComposer(rtlAlgorithm);
 
     uiLastRun = 0;
     uiObserver = new MutationObserver(() => {
@@ -40,10 +43,12 @@ export function activateChatGptRTL(algorithm = 'advanced_full') {
         const run = () => {
             uiLastRun = Date.now();
             console.log('ChatGPT uiObserver');
+            setPageFont();
             applySmallBlocks(rtlAlgorithm);
             applySidebarHistory(rtlAlgorithm);
             setCopyright();
             setInputs(rtlAlgorithm);
+            setMobileComposer(rtlAlgorithm);
         };
         if (elapsed < UI_MS) {
             if (!uiTimer) {

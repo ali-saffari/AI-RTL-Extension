@@ -5,6 +5,11 @@ import { MARKDOWN } from './chatgpt-markdown.js';
 
 const INPUT = 'textarea, input[type="text"], input[type="search"], input:not([type]), .ProseMirror, [contenteditable="true"]';
 
+// Global ChatGPT font for the whole page.
+export function setPageFont() {
+    AQ('body').addClass('FontSetGPT');
+}
+
 // User bubbles, suggested follow-ups, suggestion rows, writing-block titles,
 // and Codex request-card questions/options. Composer inputs inside request cards stay on setInputs.
 export function applySmallBlocks(rtlAlgorithm) {
@@ -76,6 +81,13 @@ export function applySmallBlocks(rtlAlgorithm) {
             });
         });
     });
+
+    AQ('.text-token-text-secondary span').each(function () {
+        applyRtlToElement(this, rtlAlgorithm, {
+            fontClass: 'FontSetGPT',
+            processedClass: 'AsOk'
+        });
+    });
 }
 
 // Recent chat titles and project rows. Titles can appear after the sidebar opens.
@@ -85,6 +97,19 @@ export function applySidebarHistory(rtlAlgorithm) {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
             setTextAlign: true
+        });
+    });
+}
+
+// Mobile composer prompt (kept out of setInputs; it uses its own algorithm attr).
+export function setMobileComposer(rtlAlgorithm) {
+    AQ('#mobile-composer-prompt, [data-mobile-composer-prompt]').each(function () {
+        const algorithm = AQ(this).attr('data-algorithm-rtl') || rtlAlgorithm;
+        applyRtlToElement(this, algorithm, {
+            fontClass: 'FontSetGPT',
+            setTextAlign: true,
+            removeDirAuto: true,
+            forceCodeLtr: algorithm === 'advanced_full'
         });
     });
 }
