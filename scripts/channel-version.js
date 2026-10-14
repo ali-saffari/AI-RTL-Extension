@@ -57,8 +57,8 @@ function applyChannelToManifest(manifest, channel = getChannel(), pkg = readPack
 
     if (info.channel === 'alpha') {
         next.version_name = info.versionName;
-        next.name = 'AI RTL (Alpha)';
-        next.short_name = 'AI RTL α';
+        next.description =
+            'نسخه غیررسمی برای آزمایش و تست. به‌روزرسانی خودکار دریافت نمی‌کند. برای دریافت به‌روزرسانی‌ها نسخه رسمی را از Chrome Web Store نصب کنید.';
     } else {
         delete next.version_name;
     }

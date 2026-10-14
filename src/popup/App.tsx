@@ -933,9 +933,7 @@ function App() {
                                     flexShrink: 1
                                 }}
                             >
-                                {narrowPopup
-                                    ? (channelInfo.isAlpha ? 'AI RTL α' : 'AI RTL')
-                                    : (channelInfo.isAlpha ? 'AI RTL (Alpha)' : 'AI RTL (Persian/Farsi)')}
+                                {narrowPopup ? 'AI RTL' : 'AI RTL (Persian/Farsi)'}
                             </Typography>
                             <Chip
                                 label={channelInfo.displayVersion}
