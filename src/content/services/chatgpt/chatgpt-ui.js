@@ -90,9 +90,9 @@ export function applySmallBlocks(rtlAlgorithm) {
     });
 }
 
-// Recent chat titles and project rows. Titles can appear after the sidebar opens.
+// Project rows, Recents chats, and chats inside projects (same listitem pass).
 export function applySidebarHistory(rtlAlgorithm) {
-    AQ('[data-app-action-sidebar-section-heading="Recents"] [role="listitem"], [data-app-action-sidebar-project-row]').each(function () {
+    AQ('[data-app-action-sidebar-section-heading="Recents"] [role="listitem"], [data-sidebar-project-kind] [role="list"] [role="listitem"], [data-app-action-sidebar-project-row]').each(function () {
         applyRtlToElement(this, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             processedClass: 'AsOk',
