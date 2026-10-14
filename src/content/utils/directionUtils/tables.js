@@ -2,8 +2,8 @@
  * Unified direction for HTML tables and ARIA role=table.
  * Called from applyRtlToContainer on every site. Extra tweaks:
  * - ChatGPT: force direction:rtl !important on RTL tables
- * - ChatGPT: a td that contains .katex stays direction:ltr !important.
- *   No katex leaves the table on the normal direction path.
+ * - ChatGPT: a td with only .katex stays direction:ltr !important.
+ *   If the cell also has other text, direction follows detectTextDirection.
  * - Grok: mark mask-image parents and swap right-1 to left-1
  */
 
@@ -35,8 +35,22 @@ function lockChatGptKatexCells($table, cellSelector) {
             return;
         }
         seen.add(cell);
-        cell.setAttribute('dir', 'ltr');
-        cell.style.setProperty('direction', 'ltr', 'important');
+
+        // Text outside katex decides cell direction; katex-only cells stay LTR.
+        const clone = cell.cloneNode(true);
+        AQ(clone).find('.katex, math, [data-d-component="math"]').remove();
+        const text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
+        const direction = text ? detectTextDirection(text) : 'ltr';
+
+        cell.setAttribute('dir', direction);
+        if (direction === 'ltr') {
+            cell.style.setProperty('direction', 'ltr', 'important');
+        } else {
+            cell.style.setProperty('direction', 'rtl', 'important');
+        }
+        // Table RTL keeps cell content on the right, even when the cell itself is LTR (formula).
+        const alignDirection = $table.attr('dir') === 'rtl' ? 'rtl' : direction;
+        applyTextAlignByDirection(AQ(cell), alignDirection, true);
     });
 }
 
@@ -93,7 +107,9 @@ export function processTablesInContainer(container, options = {}) {
             return !AQ(this).hasClass(processedClass);
         });
 
-        if (unprocessedItems.length === 0) {
+        // ChatGPT Plus often marks cells AsOk before dir is set (TableContainer path).
+        // Only skip when direction is already on the table.
+        if (unprocessedItems.length === 0 && $table.attr('dir')) {
             if (siteConfig === 'chatgpt') {
                 lockChatGptKatexCells($table, 'td');
             }
@@ -117,11 +133,18 @@ export function processTablesInContainer(container, options = {}) {
             $table.attr('dir', tableDirection);
             $table.find('table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col').attr('dir', tableDirection);
 
-            if (siteConfig === 'chatgpt' && tableDirection === 'rtl') {
-                $table[0].style.setProperty('direction', 'rtl', 'important');
-                $table.find('th, td, caption').each(function() {
-                    this.style.setProperty('direction', 'rtl', 'important');
-                });
+            if (siteConfig === 'chatgpt') {
+                if (tableDirection === 'rtl') {
+                    $table[0].style.setProperty('direction', 'rtl', 'important');
+                    $table.find('th, td, caption').each(function() {
+                        this.style.setProperty('direction', 'rtl', 'important');
+                    });
+                } else {
+                    $table[0].style.removeProperty('direction');
+                    $table.find('th, td, caption').each(function() {
+                        this.style.removeProperty('direction');
+                    });
+                }
             }
 
             if (tableDirection === 'rtl' && siteConfig === 'grok') {
@@ -174,7 +197,7 @@ export function processTablesInContainer(container, options = {}) {
             return !AQ(this).hasClass(processedClass);
         });
 
-        if (unprocessedAriaItems.length === 0) {
+        if (unprocessedAriaItems.length === 0 && $table.attr('dir')) {
             if (siteConfig === 'chatgpt') {
                 lockChatGptKatexCells($table, ARIA_TABLE_CELL_SELECTOR);
             }
