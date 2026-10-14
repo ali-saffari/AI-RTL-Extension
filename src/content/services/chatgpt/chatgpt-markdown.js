@@ -9,15 +9,10 @@ const THROTTLE_MS = 400;
 
 let markdownPageObserver = null;
 let markdownViewportObserver = null;
-let applyCount = new WeakMap();
 const streams = new Map();
 let lastRun = new WeakMap();
 const trailing = new Map();
-const streamReports = new WeakMap();
-const streamQuiet = new Map();
 const paragraphJoin = new Map();
-let streamReportId = 0;
-const STREAM_END_MS = 4500;
 const JOIN_MS = 500;
 
 function findDils(root) {
@@ -48,7 +43,6 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             return !(change.text || '').trim();
         })
     ) {
-        console.log('applyMarkdown skip empty', reason);
         return;
     }
     const targets = element.matches && element.matches(DIL) ? [element] : findDils(element);
@@ -75,12 +69,6 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             return;
         }
         lastRun.set(target, Date.now());
-        // Debug rings: green stays after first apply, red flashes on each change.
-        // target.classList.add('AsFlashBorder');
-        // setTimeout(() => target.classList.remove('AsFlashBorder'), 450);
-        const count = (applyCount.get(target) || 0) + 1;
-        applyCount.set(target, count);
-        console.log('applyMarkdown', reason.why, count, reason);
         applyRtlToContainer(target, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             codeFontClass: 'FontSetCodeBlocksGPT',
@@ -119,74 +107,6 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
                 });
             }, JOIN_MS));
         });
-
-        // Stream class timeline: capture each stage, dump copyable JSON after quiet.
-        let report = streamReports.get(target);
-        if (!report) {
-            streamReportId += 1;
-            report = { id: streamReportId, stages: [] };
-            streamReports.set(target, report);
-        }
-        const stage = {
-            n: report.stages.length + 1,
-            why: reason && reason.why,
-            count,
-            textLen: (target.textContent || '').length,
-            tag: target.tagName,
-            className: typeof target.className === 'string' ? target.className : '',
-            classes: Array.from(target.classList || []),
-            html: target.outerHTML,
-            children: Array.from(target.children).slice(0, 40).map((child) => ({
-                tag: child.tagName,
-                className: typeof child.className === 'string' ? child.className : '',
-                classes: Array.from(child.classList || []),
-                html: child.outerHTML
-            }))
-        };
-        if (!report.firstHtml) {
-            report.firstHtml = target.outerHTML;
-        }
-        report.lastHtml = target.outerHTML;
-        const prev = report.stages[report.stages.length - 1];
-        if (
-            !prev ||
-            prev.className !== stage.className ||
-            JSON.stringify(prev.children) !== JSON.stringify(stage.children)
-        ) {
-            report.stages.push(stage);
-        } else {
-            prev.textLen = stage.textLen;
-            prev.count = count;
-            prev.why = stage.why;
-        }
-        if (streamQuiet.has(target)) {
-            clearTimeout(streamQuiet.get(target));
-        }
-        streamQuiet.set(target, setTimeout(() => {
-            streamQuiet.delete(target);
-            const current = streamReports.get(target);
-            if (!current || !current.stages.length) {
-                return;
-            }
-            current.lastHtml = target.outerHTML;
-            const first = current.stages[0];
-            const last = current.stages[current.stages.length - 1];
-            const copy = JSON.stringify({
-                id: current.id,
-                stageCount: current.stages.length,
-                classDiff: {
-                    rootAdded: last.classes.filter((name) => !first.classes.includes(name)),
-                    rootRemoved: first.classes.filter((name) => !last.classes.includes(name))
-                },
-                firstHtml: current.firstHtml,
-                lastHtml: current.lastHtml,
-                first,
-                last,
-                stages: current.stages
-            }, null, 2);
-            console.log('AI-RTL-STREAM-CLASSES-COPY\n' + copy);
-            streamReports.delete(target);
-        }, STREAM_END_MS));
     });
 }
 
@@ -203,12 +123,9 @@ export function stopMarkdown() {
     streams.clear();
     trailing.forEach((slot) => clearTimeout(slot.timer));
     trailing.clear();
-    streamQuiet.forEach((timer) => clearTimeout(timer));
-    streamQuiet.clear();
     paragraphJoin.forEach((timer) => clearTimeout(timer));
     paragraphJoin.clear();
     lastRun = new WeakMap();
-    applyCount = new WeakMap();
 }
 
 export function startMarkdown(rtlAlgorithm) {
