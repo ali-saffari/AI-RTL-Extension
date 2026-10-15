@@ -13,7 +13,7 @@ function ensureGrokFontStyle() {
     const style = document.createElement('style');
     style.id = GROK_FONT_STYLE_ID;
     style.textContent = `
-        html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp) {
+        html.ai-rtl-has-font, html.ai-rtl-has-font body, html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(.katex):not(.katex-display):not(.katex *):not(.katex-display *) {
             font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
         html.ai-rtl-has-font :is(code, pre, kbd, samp),

@@ -128,7 +128,7 @@ function applyYoutubeStudioChrome() {
             text-align: left !important;
         }
         html.ai-rtl-has-font .persistent-panel-wrapper.FontSet,
-        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet *:not(code):not(pre):not(kbd):not(samp):not(yt-icon):not(yt-icon-shape):not(tp-yt-iron-icon):not(iron-icon):not(svg):not(path):not(use) {
+        html.ai-rtl-has-font .persistent-panel-wrapper.FontSet *:not(code):not(pre):not(kbd):not(samp):not(.katex):not(.katex-display):not(.katex *):not(.katex-display *):not(yt-icon):not(yt-icon-shape):not(tp-yt-iron-icon):not(iron-icon):not(svg):not(path):not(use) {
             font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
         }
         html.ai-rtl-has-font .persistent-panel-wrapper.FontSet yt-icon,

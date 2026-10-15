@@ -30,7 +30,7 @@ function apply1minaiChrome() {
     if (!AQ('#1minai-font-style').length) {
         AQ(`<style id="1minai-font-style">
             html.ai-rtl-has-font, html.ai-rtl-has-font body,
-            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(.katex):not(.katex-display):not(.katex *):not(.katex-display *):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             html.ai-rtl-has-font :where(.css-b9n3i9).ant-input,

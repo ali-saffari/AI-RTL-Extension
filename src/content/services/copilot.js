@@ -39,7 +39,7 @@ function applyCopilotChrome() {
     if (!AQ('#copilot-font-style').length) {
         AQ(`<style id="copilot-font-style">
             html.ai-rtl-has-font, html.ai-rtl-has-font body,
-            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]):not(.scriptor-component-code-block) {
+            html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(.katex):not(.katex-display):not(.katex *):not(.katex-display *):not(i):not(svg):not(path):not(use):not([class*="icon"]):not([class*="Icon"]):not(.scriptor-component-code-block) {
                 font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
             }
             html.ai-rtl-has-font :is(code, pre, kbd, samp, .scriptor-component-code-block),

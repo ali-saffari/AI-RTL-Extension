@@ -37,7 +37,11 @@ const DEFAULT_NOT_SELECTORS = [
     '.lm-icon-m',
     '.mat-ligature-font',
     '.mat-icon-no-color',
-    '[data-mat-icon-type="font"]'
+    '[data-mat-icon-type="font"]',
+    '.katex',
+    '.katex *',
+    '.katex-display',
+    '.katex-display *'
 ];
 
 function buildPageFontCss(uiFallback) {
