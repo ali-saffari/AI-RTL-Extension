@@ -591,6 +591,60 @@ export function processTextElementsAdvanced(container, options = {}) {
             setDebugAttr($element, 'data-debug-mode', 'locked-markdown-editor-skipped');
             return;
         }
+
+        // ChatGPT column box: each row gets one direction. Do not walk inside the row.
+        if (
+            siteConfig === 'chatgpt' &&
+            this.getAttribute('data-d-component') === 'box' &&
+            this.getAttribute('data-d-direction') === 'col'
+        ) {
+            const rows = [];
+            this.querySelectorAll('[data-d-component="row"]').forEach((row) => {
+                if (row.parentElement && row.parentElement.closest('[data-d-component="row"]')) {
+                    return;
+                }
+                if (row.closest('[data-d-component="box"][data-d-direction="col"]') !== this) {
+                    return;
+                }
+                rows.push(row);
+            });
+            if (rows.length) {
+                rows.forEach((row) => {
+                    setTextDirectionAndFont(row, {
+                        fontClass,
+                        setTextAlign,
+                        setUnicodeBidi,
+                        rtlClass,
+                        ltrClass
+                    });
+                    const $row = AQ(row);
+                    $row.addClass(processedClass);
+                    $row.find('*').addClass(processedClass);
+                });
+                setDebugAttr($element, 'data-debug-mode', 'chatgpt-col-box-rows');
+                processTextElementsAdvanced($element, {
+                    fontClass,
+                    processedClass,
+                    isContainer: false,
+                    skipTags,
+                    removeSkipTags,
+                    includeTags,
+                    excludeTags,
+                    setTextAlign,
+                    setUnicodeBidi,
+                    rtlClass,
+                    ltrClass,
+                    ignoreSelector,
+                    walkSkipSelector,
+                    codeFontClass,
+                    forceCodeLtr,
+                    siteConfig,
+                    onlyCss: options.onlyCss
+                });
+                $element.addClass(processedClass);
+                return;
+            }
+        }
         
 
 
