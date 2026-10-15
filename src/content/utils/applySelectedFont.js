@@ -88,136 +88,75 @@ function isChatGptHost() {
     return host === 'chatgpt.com' || host === 'chat.openai.com';
 }
 
-// ChatGPT locks text to px tokens, so html { font-size } never reaches it.
-const CHATGPT_FONT_VAR_FALLBACKS = {
-    '--markdown-font-size': 16,
-    '--codex-chat-font-size': 16,
-    '--codex-chat-code-font-size': 12,
-    '--font-text-xs-size': 12,
-    '--font-text-sm-size': 14,
-    '--font-text-md-size': 16,
-    '--font-text-lg-size': 18,
-    '--font-text-xl-size': 20,
-    '--text-xs': 12,
-    '--text-sm': 14,
-    '--text-base': 16,
-    '--text-lg': 18
-};
-const chatgptFontVarBases = new Map();
-let chatgptScaleRetries = 0;
-let chatgptScaleTimer = 0;
+// ChatGPT writes its own html font-size/zoom. Stripping those leaves the
+// scaled size in place after the extension turns off.
+let htmlScaleSnapshot = null;
+let appliedScaleFactor = 1;
 
-function rememberChatgptFontVar(name, value) {
-    if (!name || chatgptFontVarBases.has(name)) {
+function snapshotHtmlScale(root) {
+    if (htmlScaleSnapshot || !root || isYoutubeWatchHost()) {
         return;
     }
-    const match = String(value || '').trim().match(/^(\d+(?:\.\d+)?)px$/);
-    if (match) {
-        chatgptFontVarBases.set(name, Number(match[1]));
-    }
+    htmlScaleSnapshot = {
+        fontSize: root.style.getPropertyValue('font-size'),
+        fontSizePriority: root.style.getPropertyPriority('font-size'),
+        zoom: root.style.getPropertyValue('zoom'),
+        zoomPriority: root.style.getPropertyPriority('zoom')
+    };
 }
 
-function captureChatgptFontVars(root) {
-    const style = document.getElementById(FONT_SCALE_STYLE_ID);
-    const written = style && style.textContent ? style.textContent : '';
-    const nodes = [
-        root,
-        document.body,
-        document.querySelector('[class*="MarkdownRoot"]'),
-        document.querySelector('.ProseMirror')
-    ];
-    Object.keys(CHATGPT_FONT_VAR_FALLBACKS).forEach((name) => {
-        if (written.includes(name + ':')) {
-            return;
+function restoreHtmlScale(root) {
+    if (!root || !htmlScaleSnapshot || isYoutubeWatchHost()) {
+        return;
+    }
+    const fontSize = root.style.getPropertyValue('font-size');
+    const fontPx = parseFloat(fontSize);
+    const scaledPx = 16 * appliedScaleFactor;
+    const fontLooksScaled = fontSize && (
+        Math.abs(fontPx - scaledPx) < 0.4
+        || fontSize.replace(/\s/g, '') === (appliedScaleFactor * 100) + '%'
+    );
+    if (!fontSize || fontLooksScaled) {
+        if (htmlScaleSnapshot.fontSize) {
+            root.style.setProperty('font-size', htmlScaleSnapshot.fontSize, htmlScaleSnapshot.fontSizePriority);
+        } else {
+            root.style.removeProperty('font-size');
         }
-        for (let i = 0; i < nodes.length; i += 1) {
-            if (!nodes[i]) {
-                continue;
-            }
-            rememberChatgptFontVar(name, getComputedStyle(nodes[i]).getPropertyValue(name));
-        }
-    });
-
-    const sheets = document.styleSheets;
-    for (let index = 0; index < sheets.length; index += 1) {
-        const sheet = sheets[index];
-        if (sheet.ownerNode && sheet.ownerNode.id === FONT_SCALE_STYLE_ID) {
-            continue;
-        }
-        let rules;
-        try {
-            rules = sheet.cssRules;
-        } catch (error) {
-            continue;
-        }
-        if (!rules) {
-            continue;
-        }
-        const pending = [rules];
-        while (pending.length) {
-            const list = pending.pop();
-            for (let ruleIndex = 0; ruleIndex < list.length; ruleIndex += 1) {
-                const rule = list[ruleIndex];
-                if (rule.cssRules) {
-                    pending.push(rule.cssRules);
-                }
-                if (!rule.style) {
-                    continue;
-                }
-                for (let propIndex = 0; propIndex < rule.style.length; propIndex += 1) {
-                    const prop = rule.style[propIndex];
-                    if (!prop || prop.charAt(0) !== '-' || prop.charAt(1) !== '-') {
-                        continue;
-                    }
-                    if (!/font-size|font-text-|markdown-font|^--text-(2xs|xs|sm|base|md|lg|xl|2xl|3xl)$/.test(prop)) {
-                        continue;
-                    }
-                    rememberChatgptFontVar(prop, rule.style.getPropertyValue(prop));
-                }
-            }
+    }
+    const zoom = root.style.getPropertyValue('zoom');
+    const zoomLooksScaled = zoom && Math.abs(parseFloat(zoom) - appliedScaleFactor) < 0.02;
+    if (!zoom || zoomLooksScaled) {
+        if (htmlScaleSnapshot.zoom) {
+            root.style.setProperty('zoom', htmlScaleSnapshot.zoom, htmlScaleSnapshot.zoomPriority);
+        } else {
+            root.style.removeProperty('zoom');
         }
     }
 }
 
 function chatgptFontScaleExtra(value) {
-    const root = document.documentElement;
-    if (root) {
-        captureChatgptFontVars(root);
-    }
     const factor = value / 100;
+    appliedScaleFactor = factor;
     const px = (size) => `${Math.round(size * factor * 100) / 100}px`;
-    const vars = Object.keys(CHATGPT_FONT_VAR_FALLBACKS).map((name) => {
-        const base = chatgptFontVarBases.has(name)
-            ? chatgptFontVarBases.get(name)
-            : CHATGPT_FONT_VAR_FALLBACKS[name];
-        return `${name}: ${px(base)} !important`;
-    });
-    chatgptFontVarBases.forEach((base, name) => {
-        if (!Object.prototype.hasOwnProperty.call(CHATGPT_FONT_VAR_FALLBACKS, name)) {
-            vars.push(`${name}: ${px(base)} !important`);
-        }
-    });
-    const body = px(chatgptFontVarBases.get('--markdown-font-size') || 16);
-    const code = px(chatgptFontVarBases.get('--codex-chat-code-font-size') || 12);
+    const body = px(16);
+    const code = px(12);
     return `
-        html, html * { ${vars.join('; ')}; }
+        html {
+            --markdown-font-size: ${body} !important;
+            --codex-chat-font-size: ${body} !important;
+            --codex-chat-code-font-size: ${code} !important;
+            --font-text-md-size: ${body} !important;
+            --text-base: ${body} !important;
+        }
         [class*="MarkdownRoot"] :is(p, li, blockquote),
-        [data-message-author-role="user"],
         [data-message-author-role="user"] .whitespace-pre-wrap,
-        [data-user-message-bubble],
         [data-user-message-bubble] .whitespace-pre-wrap,
         .ProseMirror,
         #prompt-textarea,
-        [data-mobile-composer-prompt],
-        [class*="suggested-followup"] {
+        [data-mobile-composer-prompt] {
             font-size: ${body} !important;
         }
-        [class*="MarkdownRoot"] :is(td, th) {
-            font-size: ${px(14)} !important;
-        }
-        [class*="MarkdownRoot"] :is(pre, code),
-        [class*="MarkdownRoot"] [class*="CodeBlock"],
-        [class*="MarkdownRoot"] [class*="InlineCode"] {
+        [class*="MarkdownRoot"] :is(pre, code) {
             font-size: ${code} !important;
         }
     `;
@@ -295,7 +234,7 @@ function buildFontScaleCss(value, youtubeBasePercent) {
             return `html { font-size: ${percent}% !important; }`;
         }
         const rootRule = `html { font-size: ${value}% !important; }`;
-        if (!isChatGptHost()) {
+        if (!isChatGptHost() || value === DEFAULT_FONT_SCALE) {
             return rootRule;
         }
         return rootRule + chatgptFontScaleExtra(value);
@@ -305,19 +244,20 @@ function buildFontScaleCss(value, youtubeBasePercent) {
 
 function clearPageEffects() {
     const root = document.documentElement;
+    const scaleStyle = document.getElementById(FONT_SCALE_STYLE_ID);
+    if (scaleStyle) {
+        scaleStyle.remove();
+    }
     if (root) {
         root.style.removeProperty('--ai-rtl-font');
-        root.style.removeProperty('font-size');
-        root.style.removeProperty('zoom');
+        restoreHtmlScale(root);
         root.classList.remove(HAS_FONT_CLASS, NONE_FONT_CLASS);
     }
     clearLegacyElementScales();
-    [STYLE_ID, FONT_SCALE_STYLE_ID].forEach((styleId) => {
-        const style = document.getElementById(styleId);
-        if (style) {
-            style.textContent = '';
-        }
-    });
+    const fontStyle = document.getElementById(STYLE_ID);
+    if (fontStyle) {
+        fontStyle.textContent = '';
+    }
 }
 
 function restorePageEffectsFromStorage() {
@@ -360,6 +300,14 @@ export function applyFontScale(scale) {
 
     clearLegacyElementScales();
     const onYoutube = isYoutubeWatchHost();
+    if (value === DEFAULT_FONT_SCALE && !onYoutube) {
+        const style = document.getElementById(FONT_SCALE_STYLE_ID);
+        if (style) {
+            style.remove();
+        }
+        restoreHtmlScale(root);
+        return;
+    }
     const youtubeBase = onYoutube ? captureYoutubeRootFontPercent(root) : null;
     const css = buildFontScaleCss(value, youtubeBase);
 
@@ -379,21 +327,11 @@ export function applyFontScale(scale) {
         return;
     }
 
-    // Do not strip YouTube's inline root; override with !important only.
     if (!onYoutube) {
-        root.style.removeProperty('font-size');
-        root.style.removeProperty('zoom');
+        snapshotHtmlScale(root);
+        appliedScaleFactor = value / 100;
     }
     ensureStyleElement(FONT_SCALE_STYLE_ID).textContent = css;
-    if (isChatGptHost() && !chatgptFontVarBases.has('--markdown-font-size') && chatgptScaleRetries < 6) {
-        if (!chatgptScaleTimer) {
-            chatgptScaleRetries += 1;
-            chatgptScaleTimer = setTimeout(() => {
-                chatgptScaleTimer = 0;
-                applyFontScale(value);
-            }, 500);
-        }
-    }
 }
 
 async function readFontBytes(runtime, relativePath) {
