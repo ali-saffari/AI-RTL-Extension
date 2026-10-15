@@ -12,7 +12,7 @@ export const DEFAULT_FONT_SCALE_MODE = FONT_SCALE_MODE_FONT_SIZE;
  * Unlisted sites (including manual RTL) use DEFAULT_FONT_SCALE_MODE.
  */
 export const FONT_SCALE_SITE_MODES = {
-    'chatgpt.com': 'zoom',
+    'chatgpt.com': 'font-size',
     'chat.openai.com': 'font-size',
 
     'claude.ai': 'font-size',
