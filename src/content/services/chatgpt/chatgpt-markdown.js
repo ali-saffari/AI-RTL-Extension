@@ -15,6 +15,41 @@ const trailing = new Map();
 const paragraphJoin = new Map();
 const JOIN_MS = 500;
 
+// Neighboring word spans in the same parent become one text node.
+// A span that wraps its own words stays; those inner words join on their own.
+function mergeAdjacentWords(parent) {
+    const children = Array.from(parent.childNodes);
+    let text = '';
+    let first = null;
+    const rest = [];
+    const flush = () => {
+        if (!first) {
+            return;
+        }
+        first.replaceWith(document.createTextNode(text));
+        rest.forEach((node) => node.remove());
+        text = '';
+        first = null;
+        rest.length = 0;
+    };
+    children.forEach((node) => {
+        if (node.nodeType === 1 && node.getAttribute('data-d-text-flow') === 'word') {
+            if (!first) {
+                first = node;
+            } else {
+                rest.push(node);
+            }
+            text += node.textContent;
+            return;
+        }
+        flush();
+        if (node.nodeType === 1) {
+            mergeAdjacentWords(node);
+        }
+    });
+    flush();
+}
+
 function findDils(root) {
     if (!root || root.nodeType !== 1) {
         return [];
@@ -97,7 +132,7 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
                 if (!paragraph.isConnected || !paragraph.querySelector('[data-d-text-flow="word"]')) {
                     return;
                 }
-                paragraph.textContent = paragraph.textContent;
+                mergeAdjacentWords(paragraph);
                 AQ(paragraph).removeClass('AsOk').removeAttr('data-text-length');
                 applyRtlToElement(paragraph, rtlAlgorithm, {
                     fontClass: 'FontSetGPT',
