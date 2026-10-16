@@ -1,7 +1,7 @@
 {
   "name": "ai-rtl",
-  "version": "4.5.1",
-  "alphaBuild": 2,
+  "version": "4.5.2",
+  "alphaBuild": 3,
   "private": true,
   "license": "UNLICENSED",
   "dependencies": {
