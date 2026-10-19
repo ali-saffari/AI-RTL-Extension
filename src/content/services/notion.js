@@ -1,377 +1,200 @@
-// Notion.js service functions
-import { addCopyright } from '../utils/copyright.js';
-import { detectTextDirection, analyzeTextDirectionFirstWord } from '../utils/analyzeDirection.js';
-import { processTextElementsAdvanced, applyRtlToContainer, applyRtlToElement , detectDirectionByAlgorithm } from '../utils/directionUtils/index.js';
+import { observeDomSections } from '../utils/domObserver.js';
+import { applyRtlToContainer, applyRtlToElement, processTablesInContainer, setTextDirectionAndFont } from '../utils/directionUtils/index.js';
+import { SITE_SETTINGS_STORAGE_KEY, isNotionSiteFontOn, isNotionTablesRtlOn } from '../../constants/siteSettings.js';
 
-// Storage key for Notion collection view direction
-const NOTION_COLLECTION_DIRECTION_KEY = 'notion_collection_direction';
+const USER_MESSAGE_SELECTOR = '[data-agent-service-scroll-anchor^="local:"] div:has(> span)';
+const ASSISTANT_MESSAGE_SELECTOR = '[data-agent-service-scroll-anchor^="event_"] p';
+const INPUT_SELECTOR = 'textarea, input[type="text"], input[type="search"], input:not([type]), [contenteditable="true"]';
+const TABLE_SELECTOR = 'table, [role="table"], .notion-table-view-cell, .notion-table-view-header-cell';
+const SITE_FONT_STYLE_ID = 'notion-site-font-style';
 
-// Function to apply direction from storage
-function applyCollectionDirection() {
-    const $collectionBody = AQ('.notion-scroller.notion-collection-view-body');
-    if ($collectionBody.length === 0) {
+const INPUT_OPTIONS = {
+    fontClass: 'FontSet',
+    setTextAlign: true,
+    setUnicodeBidi: 'isolate',
+    rtlClass: 'AsRtl',
+    ltrClass: 'AsLtr'
+};
+
+const USER_MESSAGE_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOk',
+    isContainer: true,
+    setTextAlign: true
+};
+
+const ASSISTANT_MESSAGE_OPTIONS = {
+    fontClass: 'FontSet',
+    setTextAlign: true
+};
+
+const TABLE_OPTIONS = {
+    fontClass: 'FontSet',
+    processedClass: 'AsOk',
+    setTextAlign: true,
+    siteConfig: 'notion'
+};
+
+const SITE_FONT_CSS = `
+html.ai-rtl-notion-site-font, html.ai-rtl-notion-site-font body,
+html.ai-rtl-notion-site-font body *:not(code):not(pre):not(kbd):not(samp):not(svg):not(path):not([class*="icon"]):not([class*="Icon"]) {
+    font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+}
+html.ai-rtl-notion-site-font :is(code, pre, kbd, samp),
+html.ai-rtl-notion-site-font :is(code, pre) * {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+`;
+
+let siteFontOn = true;
+let tablesRtlOn = false;
+let settingsWatcherInstalled = false;
+
+function clearNotionTableDirection(el) {
+    if (!el || el.nodeType !== 1) {
         return;
     }
-    
-    const $body = $collectionBody.first();
-    
+    el.removeAttribute('dir');
+    el.removeAttribute('data-ai-rtl-direction');
+    el.style.removeProperty('direction');
+    el.style.removeProperty('text-align');
+    el.style.removeProperty('unicode-bidi');
+    el.classList.remove('FontSet', 'AsOk');
+}
 
-    
-    // Check if already processed to prevent reprocessing
-    if ($body.attr('data-rtl-processed') === 'true') {
-        return;
-    }
-
-    console.log('applyCollectionDirection fired - element found:', $collectionBody.length, 'element(s)');
-    
-    chrome.storage.local.get([NOTION_COLLECTION_DIRECTION_KEY], function(result) {
-        const direction = result[NOTION_COLLECTION_DIRECTION_KEY] || 'ltr';
-        
-        // Apply direction to collection body
-        $body.attr('dir', direction);
-        $body.css('direction', direction);
-        
-        // Apply direction to child elements
-        $body.find('[role="textbox"], .notranslate').each(function() {
-            AQ(this).attr('dir', direction);
-            AQ(this).css('direction', direction);
-            if (direction === 'rtl') {
-                AQ(this).css('text-align', 'right');
-            } else {
-                AQ(this).css('text-align', 'left');
-            }
-        });
-        
-        // Mark as processed to prevent reprocessing
-        $body.attr('data-rtl-processed', 'true');
-        
-        // Update button text to show current state
-        const $button = AQ('.notion-rtl-toggle-btn');
-        if ($button.length > 0) {
-            $button.html(direction === 'rtl' ? '←' : '→');
+function clearNotionTables() {
+    AQ(TABLE_SELECTOR).each(function () {
+        clearNotionTableDirection(this);
+        if (this.matches('table, [role="table"]')) {
+            AQ(this).find('[dir], [data-ai-rtl-direction], .FontSet, .AsOk').each(function () {
+                clearNotionTableDirection(this);
+            });
         }
     });
 }
 
-// Function to add floating RTL/LTR toggle button
-function addFloatingRtlButton() {
-    // Check if button already exists
-    if (AQ('.notion-rtl-toggle-btn').length > 0) {
+function applyNotionSiteFont(on) {
+    const root = document.documentElement;
+    let style = document.getElementById(SITE_FONT_STYLE_ID);
+    if (!on) {
+        root.classList.remove('ai-rtl-notion-site-font');
+        if (style) {
+            style.remove();
+        }
         return;
     }
-    
-    // Create floating button
-    const $button = AQ('<button>')
-        .addClass('notion-rtl-toggle-btn')
-        .attr('title', 'Toggle RTL/LTR')
-        .html('⇄')
-        .css({
-            'position': 'fixed',
-            'bottom': '90px',
-            'right': '30px',
-            'width': '45px',
-            'height': '45px',
-            'border-radius': '50%',
-            'background': '#37352f',
-            'color': '#ffffff',
-            'border': 'none',
-            'cursor': 'pointer',
-            'font-size': '20px',
-            'z-index': '10000',
-            'box-shadow': '0 2px 8px rgba(0, 0, 0, 0.15)',
-            'transition': 'all 0.2s ease',
-            'display': 'flex',
-            'align-items': 'center',
-            'justify-content': 'center',
-            'font-family': 'iranyekan, sans-serif'
-        })
-        .on('mouseenter', function() {
-            AQ(this).css({
-                'background': '#2e2d29',
-                'transform': 'scale(1.1)',
-                'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.25)'
-            });
-        })
-        .on('mouseleave', function() {
-            AQ(this).css({
-                'background': '#37352f',
-                'transform': 'scale(1)',
-                'box-shadow': '0 2px 8px rgba(0, 0, 0, 0.15)'
-            });
-        })
-        .on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Get current direction from storage
-            chrome.storage.local.get([NOTION_COLLECTION_DIRECTION_KEY], function(result) {
-                const currentDir = result[NOTION_COLLECTION_DIRECTION_KEY] || 'ltr';
-                const newDir = currentDir === 'rtl' ? 'ltr' : 'rtl';
-                
-                // Reset processed attribute to allow reprocessing
-                const $collectionBody = AQ('.notion-scroller.notion-collection-view-body');
-                if ($collectionBody.length > 0) {
-                    $collectionBody.first().attr('data-rtl-processed', 'false');
-                }
-                
-                // Save to storage only
-                chrome.storage.local.set({ [NOTION_COLLECTION_DIRECTION_KEY]: newDir }, function() {
-                    // Apply direction after storage is saved
-                    applyCollectionDirection();
-                });
-            });
-        });
-    
-    // Append button to body (so it stays fixed)
-    AQ('body').append($button);
-    
-    // Apply direction from storage
-    applyCollectionDirection();
-}
-
-export function setNotionlm(rtlAlgorithm = 'advanced_full') {
-    if (chrome.runtime?.id) {
-
-              let fo2 = `.chat-message-input-container.in-chat`
-         addCopyright(AQ(fo2), 'AsBoxNotion AsBoxB' ,`margin-top: 11px; margin-bottom: -5px; transform: scale(0.9);`);
-
-
+    root.classList.add('ai-rtl-notion-site-font');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = SITE_FONT_STYLE_ID;
+        (document.head || root).appendChild(style);
     }
-    
-    // Add floating RTL toggle button
- 
-
-    addFloatingRtlButton();
-    
-    // Apply direction from storage
-    applyCollectionDirection();
-
-
-    
-
-    // Process markdown prose elements
-    AQ('[role="textbox"]').each(function (each) {
-        applyRtlToContainer(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
-            processedClass: 'AsOk',
-            isContainer: true
-        });
-    });
-
-    
-
-
-
-    
-
+    if (style.textContent !== SITE_FONT_CSS) {
+        style.textContent = SITE_FONT_CSS;
+    }
 }
 
+function processNotionTable(el) {
+    if (!tablesRtlOn || !el) {
+        return;
+    }
+    if (el.matches('table, [role="table"]')) {
+        const parent = el.parentElement;
+        if (parent) {
+            processTablesInContainer(AQ(parent), TABLE_OPTIONS);
+        }
+        return;
+    }
+    setTextDirectionAndFont(el, {
+        fontClass: 'FontSet',
+        setTextAlign: true
+    });
+}
 
+function syncNotionSettings() {
+    try {
+        chrome.storage.sync.get([SITE_SETTINGS_STORAGE_KEY], (result) => {
+            const stored = result[SITE_SETTINGS_STORAGE_KEY];
+            siteFontOn = isNotionSiteFontOn(stored);
+            tablesRtlOn = isNotionTablesRtlOn(stored);
+            applyNotionSiteFont(siteFontOn);
+            if (!document.body) {
+                return;
+            }
+            if (tablesRtlOn) {
+                AQ(TABLE_SELECTOR).each(function () {
+                    processNotionTable(this);
+                });
+                return;
+            }
+            clearNotionTables();
+        });
+    } catch (error) {
+        applyNotionSiteFont(siteFontOn);
+    }
+}
 
-// Main activation function for Notion
+function installNotionSettingsWatcher() {
+    if (settingsWatcherInstalled) {
+        return;
+    }
+    settingsWatcherInstalled = true;
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName !== 'sync' || !changes[SITE_SETTINGS_STORAGE_KEY]) {
+            return;
+        }
+        syncNotionSettings();
+    });
+}
+
+export function stopNotion() {
+    siteFontOn = false;
+    tablesRtlOn = false;
+    applyNotionSiteFont(false);
+    clearNotionTables();
+}
+
 export function activateNotion(rtlAlgorithm = 'advanced_full') {
     console.log('Notion RTL activated with algorithm:', rtlAlgorithm);
-    
-    // Initial setup
 
-    addFloatingRtlButton();
+    installNotionSettingsWatcher();
+    syncNotionSettings();
 
-    // Listen for storage changes
-    chrome.storage.onChanged.addListener(function(changes, areaName) {
-        if (areaName === 'local' && changes[NOTION_COLLECTION_DIRECTION_KEY]) {
-            applyCollectionDirection();
-        }
-    });
+    observeDomSections([
+        {
+            selector: USER_MESSAGE_SELECTOR,
+            process: (el) => applyRtlToContainer(el, rtlAlgorithm, {
+                ...USER_MESSAGE_OPTIONS,
+                processTables: tablesRtlOn
+            }),
+            debounceMs: 150
+        },
+        {
+            selector: ASSISTANT_MESSAGE_SELECTOR,
+            process: (el) => applyRtlToElement(el, rtlAlgorithm, ASSISTANT_MESSAGE_OPTIONS),
+            debounceMs: 150
+        },
+        {
+            selector: INPUT_SELECTOR,
+            ignore: '[data-block-id]',
+            process: (el) => {
+                applyRtlToElement(el, rtlAlgorithm, INPUT_OPTIONS);
 
-    setNotionlm(rtlAlgorithm);
-    
-    // SetInterval for continuous processing
-    let interval = setInterval(() => {
-        setNotionlm(rtlAlgorithm);
-    }, 1000);
-
-    // Observer for notion-table-view-cell and notranslate elements
-    const tableCellObserver = new MutationObserver(function(mutations) {
-        // Check for .notion-scroller.notion-collection-view-body
-        const $collectionBody = AQ('.notion-scroller.notion-collection-view-body');
-        if ($collectionBody.length > 0) {
-            // Apply direction from storage when collection body appears
-            // applyCollectionDirection will check if already processed with same direction
-            applyCollectionDirection();
-        }
-        
-        // Process notion-table-view-cell elements
-        AQ('.notion-table-view-cell').each(function() {
-            const $cell = AQ(this);
-            const processedText = $cell.attr('rtl-processed');
-            // Only process if not already processed
-            if (processedText === 'true') {
-                return;
-            }
-            const currentText = $cell.text();
-            console.log('notion-table-view-cell', currentText);
-
-            const direction = detectDirectionByAlgorithm(currentText, rtlAlgorithm);
-
-            if (direction === 'rtl') {
-                const $firstDiv = $cell.find('div').first();
-                if ($firstDiv.length > 0) {
-                    $firstDiv.addClass('FontSet');
-                    $firstDiv.attr('dir', 'rtl');
+                if (AQ(el).data('rtl-listener-added')) {
+                    return;
                 }
-            }
-            
-            // Mark as processed
-            $cell.attr('rtl-processed', 'true');
-        });
+                AQ(el).data('rtl-listener-added', true);
 
-        // Process notion-table-view-header-cell elements
-        AQ('.notion-table-view-header-cell').each(function() {
-            const $cell = AQ(this);
-            const processedText = $cell.attr('rtl-processed');
-            // Only process if not already processed
-            if (processedText === 'true') {
-                return;
-            }
-            const currentText = $cell.text();
-            
-            console.log('notion-table-view-header-cell', currentText);
-
-            const direction = detectDirectionByAlgorithm(currentText, rtlAlgorithm);
-
-            if (direction === 'rtl') {
-                const $firstDiv = $cell.find('div').first();
-                if ($firstDiv.length > 0) {
-                    $firstDiv.addClass('FontSet');
-                    $firstDiv.attr('dir', 'rtl');
-                }
-            }
-            
-            // Mark as processed
-            $cell.attr('rtl-processed', 'true');
-        });
-
-        // Process notranslate elements
-        AQ('.notranslate').each(function() {
-            const $element = AQ(this);
-            const processedText = $element.attr('rtl-processed');
-            // Only process if not already processed
-            if (processedText === 'true') {
-                return;
-            }
-            
-            if (!$element.hasClass("FontSet")) {
-                $element.addClass('FontSet');
-            }
-            
-            if (!$element.data('rtl-listener-added')) {
-                $element.data('rtl-listener-added', true);
-                
-                // Add event listener for real-time direction detection
-                $element.on('keyup paste input', function() {
-                    applyRtlToElement(this, rtlAlgorithm, {
-                        fontClass: 'FontSet',
-                        setTextAlign: true
-                    });
+                AQ(el).on('input keyup paste', function () {
+                    applyRtlToElement(this, rtlAlgorithm, INPUT_OPTIONS);
                 });
-            }
-
-            applyRtlToElement(this, rtlAlgorithm, {
-                fontClass: 'FontSet',
-                processedClass: 'AsRtl'
-            });
-            
-            // Mark as processed
-            $element.attr('rtl-processed', 'true');
-        });
-    });
-
-    // Start observing the document body for changes
-    tableCellObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class']
-    });
-
-    // Initial check for existing cells
-    AQ('.notion-table-view-cell').each(function() {
-        const $cell = AQ(this);
-        const processedText = $cell.attr('rtl-processed');
-        // Only process if not already processed
-        if (processedText === 'true') {
-            return;
+            },
+            debounceMs: 50
+        },
+        {
+            selector: TABLE_SELECTOR,
+            process: processNotionTable,
+            debounceMs: 150
         }
-        const currentText = $cell.text();
-        const direction = detectDirectionByAlgorithm(currentText, rtlAlgorithm);
-
-        if (direction === 'rtl') {
-            const $firstDiv = $cell.find('div').first();
-            if ($firstDiv.length > 0) {
-                $firstDiv.addClass('FontSet');
-                $firstDiv.attr('dir', 'rtl');
-            }
-        }
-        
-        // Mark as processed
-        $cell.attr('rtl-processed', 'true');
-    });
-
-    // Initial check for existing header cells
-    AQ('.notion-table-view-header-cell').each(function() {
-        const $cell = AQ(this);
-        const processedText = $cell.attr('rtl-processed');
-        // Only process if not already processed
-        if (processedText === 'true') {
-            return;
-        }
-        const currentText = $cell.text();
-        const direction = detectDirectionByAlgorithm(currentText, rtlAlgorithm);
-
-        if (direction === 'rtl') {
-            const $firstDiv = $cell.find('div').first();
-            if ($firstDiv.length > 0) {
-                $firstDiv.addClass('FontSet');
-                $firstDiv.attr('dir', 'rtl');
-            }
-        }
-        
-        // Mark as processed
-        $cell.attr('rtl-processed', 'true');
-    });
-
-    // Initial check for existing notranslate elements
-    AQ('.notranslate').each(function() {
-        const $element = AQ(this);
-        const processedText = $element.attr('rtl-processed');
-        // Only process if not already processed
-        if (processedText === 'true') {
-            return;
-        }
-        
-        if (!$element.hasClass("FontSet")) {
-            $element.addClass('FontSet');
-        }
-        
-        if (!$element.data('rtl-listener-added')) {
-            $element.data('rtl-listener-added', true);
-            
-            // Add event listener for real-time direction detection
-            $element.on('keyup paste input', function() {
-                applyRtlToElement(this, rtlAlgorithm, {
-                    fontClass: 'FontSet',
-                    setTextAlign: true
-                });
-            });
-        }
-
-        applyRtlToElement(this, rtlAlgorithm, {
-            fontClass: 'FontSet',
-            processedClass: 'AsRtl'
-        });
-        
-        // Mark as processed
-        $element.attr('rtl-processed', 'true');
-    });
-
+    ]);
 }

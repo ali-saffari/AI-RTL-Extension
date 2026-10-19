@@ -9,6 +9,7 @@ import {
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { useI18n } from '../i18n';
 import { siteUrl } from '../utils/siteUrl';
+import ExperimentalBadge from '../components/ExperimentalBadge';
 
 interface SiteChoice {
     value: string;
@@ -30,6 +31,7 @@ interface SiteField {
     step?: number;
     showWhen?: { key: string; value: string };
     showWhenAny?: { key: string; value: string }[];
+    experimental?: boolean;
     options?: SiteChoice[];
 }
 
@@ -210,6 +212,12 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         }
         if (entry.serviceKey === 'youtube' && field.key === 'captionFontScale') {
             return t('quickSettings.youtubeCaptionFontSize');
+        }
+        if (entry.serviceKey === 'notion' && field.key === 'siteFont') {
+            return t('quickSettings.notionSiteFont');
+        }
+        if (entry.serviceKey === 'notion' && field.key === 'tablesRtl') {
+            return t('quickSettings.notionTablesRtl');
         }
         if (entry.serviceKey === 'harness' && field.key === 'engine') {
             return t('quickSettings.harnessEngineLabel');
@@ -757,7 +765,10 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             borderTop,
                         }}
                     >
-                        <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+                            <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                            {field.experimental ? <ExperimentalBadge isDarkMode={isDarkMode} /> : null}
+                        </Box>
                         <Switch
                             size="small"
                             checked={checked}

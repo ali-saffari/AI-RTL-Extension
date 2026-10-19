@@ -39,7 +39,7 @@ import { activateChatsonic } from './services/chatsonic.js';
 window.activateChatsonic = activateChatsonic;
 import { activateErnie } from './services/ernie.js';
 import { activateGamma } from './services/gamma.js';
-import { activateNotion } from './services/notion.js';
+import { activateNotion, stopNotion } from './services/notion.js';
 import { activateGenspark } from './services/observer/genspark.js';
 // import { activateGoogle } from './services/google.js';
 import { showUpdateModal } from './utils/updateModal.js';
@@ -520,6 +520,7 @@ function stopPageRtlEngine() {
 function deactivateCurrentRtl() {
     applyToken += 1;
     stopYoutube();
+    stopNotion();
     stopHarness();
     stopChatGptRTL();
     stopClaude();
@@ -636,6 +637,7 @@ function requestRtlDisable() {
             return;
         }
         stopYoutube();
+        stopNotion();
         stopHarness();
         stopChatGptRTL();
         stopClaude();
@@ -662,6 +664,7 @@ function requestRtlEnable() {
             return;
         }
         stopYoutube();
+        stopNotion();
         stopChatGptRTL();
         stopClaude();
         disconnectAllDomObservers();

@@ -8,6 +8,9 @@ export const YOUTUBE_FONT_SCOPE_SITE = 'site';
 export const YOUTUBE_CAPTIONS_RTL_ON = 'on';
 export const YOUTUBE_CAPTIONS_RTL_OFF = 'off';
 
+export const NOTION_SETTING_ON = 'on';
+export const NOTION_SETTING_OFF = 'off';
+
 // User-facing slider default is 100%. Internally that maps to 60% of YouTube's size.
 export const YOUTUBE_CAPTION_FONT_SCALE_DEFAULT = 100;
 export const YOUTUBE_CAPTION_FONT_SCALE_BASE = 70;
@@ -128,6 +131,30 @@ export const SITE_SETTINGS_REGISTRY = [
         icon: '/images/sites/z.ai.png',
         fields: [createSiteRtlAlgorithmField(RTL_ALGORITHM_SECTION), SITE_TITLE_MODE_FIELD],
     },
+    {
+        serviceKey: 'notion',
+        title: 'Notion',
+        icon: '/images/sites/notion.png',
+        fields: [
+            {
+                key: 'siteFont',
+                label: 'اعمال فونت روی کل سایت',
+                type: 'switch',
+                defaultValue: NOTION_SETTING_ON,
+                onValue: NOTION_SETTING_ON,
+                offValue: NOTION_SETTING_OFF,
+            },
+            {
+                key: 'tablesRtl',
+                label: 'اعمال راست‌چین روی جداول',
+                type: 'switch',
+                experimental: true,
+                defaultValue: NOTION_SETTING_ON,
+                onValue: NOTION_SETTING_ON,
+                offValue: NOTION_SETTING_OFF,
+            },
+        ],
+    },
 ];
 
 export function serviceHasSiteSettings(serviceKey) {
@@ -232,6 +259,14 @@ export function isYoutubeCaptionEffectActive(stored) {
     const youtube = normalizeSiteSettings(stored).youtube;
     return youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON
         || youtube.fontScope === YOUTUBE_FONT_SCOPE_SITE;
+}
+
+export function isNotionSiteFontOn(stored) {
+    return normalizeSiteSettings(stored).notion?.siteFont === NOTION_SETTING_ON;
+}
+
+export function isNotionTablesRtlOn(stored) {
+    return normalizeSiteSettings(stored).notion?.tablesRtl === NOTION_SETTING_ON;
 }
 
 /**

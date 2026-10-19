@@ -107,6 +107,8 @@ export const faMessages = {
         youtubeFontScope: 'اعمال فونت روی کل سایت',
         youtubeCaptionsRtl: 'راست‌چین کردن زیرنویس',
         youtubeCaptionFontSize: 'اندازه فونت زیرنویس',
+        notionSiteFont: 'اعمال فونت روی کل سایت',
+        notionTablesRtl: 'اعمال راست‌چین روی جداول',
         harnessDescription: 'افزونهٔ کروم AI RTL و پلاگین هارنس AI RTL به‌طور هم‌زمان فعال هستند. لطفاً یکی را برای استفاده انتخاب کنید.',
         harnessMissingPlugin: 'پلاگین نسخه دسکتاپ منتشر شد.',
         harnessMissingPluginCta: 'راهنمای نصب',

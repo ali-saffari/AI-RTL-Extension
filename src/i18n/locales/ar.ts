@@ -109,6 +109,8 @@ export const arMessages: Messages = {
         youtubeFontScope: 'تطبيق الخط على الموقع كله',
         youtubeCaptionsRtl: 'محاذاة الترجمة لليمين',
         youtubeCaptionFontSize: 'حجم خط الترجمة',
+        notionSiteFont: 'تطبيق الخط على الموقع كله',
+        notionTablesRtl: 'محاذاة الجداول لليمين',
         harnessDescription: 'إضافة كروم AI RTL وإضافة هارنس AI RTL مفعّلتان معًا. اختر واحدة منهما.',
         harnessMissingPlugin: 'إضافة سطح المكتب متاحة الآن.',
         harnessMissingPluginCta: 'دليل التثبيت',
