@@ -81,6 +81,7 @@ import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
 import { activateYoutube, stopYoutube } from './services/youtube.js';
 import { activateM365 } from './services/observer/m365.js';
+import { activateRoadmap, stopRoadmap } from './services/observer/roadmap.js';
 import { setHalfSpaceHotkeyEnabled, syncHalfSpaceHotkeyForService } from './utils/halfSpaceHotkey.js';
 import { EXTENSION_ENABLED_STORAGE_KEY, isExtensionEnabledValue } from '../constants/extensionEnabled.js';
 import {
@@ -444,6 +445,11 @@ const serviceConfig = {
         urls: ["m365.cloud.microsoft", "copilot.cloud.microsoft"],
         activate: activateM365
     },
+    roadmap: {
+        urls: ["roadmap.sh", "www.roadmap.sh"],
+        exact: true,
+        activate: activateRoadmap
+    },
     // google: {
     //     urls: ["google.com", "www.google.com"],
     //     activate: activateGoogle
@@ -524,6 +530,7 @@ function deactivateCurrentRtl() {
     stopHarness();
     stopChatGptRTL();
     stopClaude();
+    stopRoadmap();
     disconnectAllDomObservers();
     stopPageRtlEngine();
     resetRtlDomCaches();
@@ -641,6 +648,7 @@ function requestRtlDisable() {
         stopHarness();
         stopChatGptRTL();
         stopClaude();
+        stopRoadmap();
         disconnectAllDomObservers();
         stopPageRtlEngine();
         resetRtlDomCaches();
@@ -667,6 +675,7 @@ function requestRtlEnable() {
         stopNotion();
         stopChatGptRTL();
         stopClaude();
+        stopRoadmap();
         disconnectAllDomObservers();
         if (!pluginOwnsHarnessPage()) {
             if (isHarnessPage()) {

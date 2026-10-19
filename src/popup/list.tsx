@@ -146,7 +146,8 @@ const services: Service[] = [
     { key: 'notta', name: 'Notta Brain', icon: '/images/sites/notta.png', url: 'https://app.notta.ai/brain', new: true, hosts: ['app.notta.ai'], keywords: ['notta', 'نوتا', 'نتا', 'brain', 'برین', 'جلسه', 'رونویسی', 'transcript'] },
     { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
     { key: 'codecraft', name: 'CodeCraft API', icon: '/images/sites/codecraft.png', url: 'https://codecraftapi.com/', new: true, hosts: ['codecraftapi.com'], keywords: ['codecraft', 'code craft', 'کدکرفت', 'کد کرفت', 'کدکرافت', 'api', 'اوپن ای آی', 'openai'] },
-    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] }
+    { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] },
+    { key: 'roadmap', name: 'roadmap.sh', icon: '/images/sites/roadmap.png', url: 'https://roadmap.sh/', new: true, hosts: ['roadmap.sh', 'www.roadmap.sh'], keywords: ['roadmap', 'رودمپ', 'رود مپ', 'نقشه راه', 'tutor', 'تیوتر'] }
 ];
 
 
@@ -194,7 +195,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORY_DEFS)[number]['id']
     ],
     coding: [
         'githubCopilot', 'qwenCoder', 'blackbox', 'jules', 'lovable', 'cursor',
-        'vivado', 'huggingface', 'aiStudio', 'codecraft',
+        'vivado', 'huggingface', 'aiStudio', 'codecraft', 'roadmap',
     ],
     media: ['googleLabs', 'veo3', 'fal', 'bfl', 'gamma'],
     workspace: [

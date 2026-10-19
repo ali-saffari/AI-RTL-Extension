@@ -275,6 +275,13 @@ export const DYNAMIC_SERVICES = {
         name: 'Microsoft 365 Copilot',
         origins: ['*://m365.cloud.microsoft/*', '*://copilot.cloud.microsoft/*'],
         hostnames: ['m365.cloud.microsoft', 'copilot.cloud.microsoft']
+    },
+    roadmap: {
+        name: 'roadmap.sh',
+        requireComplete: false,
+        origins: ['*://roadmap.sh/*', '*://www.roadmap.sh/*'],
+        hostnames: ['roadmap.sh', 'www.roadmap.sh'],
+        exactHostnames: true
     }
 };
 

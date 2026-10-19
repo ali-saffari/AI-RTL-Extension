@@ -78,6 +78,7 @@ export const versionChanges = [
     { id: '9', text: 'افزودن سایت Roboflow', icon: 'sites/roboflow.png', type: 'add', group: 'site' },
     { id: '10', text: 'افزودن سایت CodeCraft API', icon: 'sites/codecraft.png', type: 'add', group: 'site' },
     { id: '11', text: 'افزودن سایت DeepSeek Harness', note: 'راست‌چین هارنس محلی روی پورت ۳۰۸۰', icon: 'sites/harness.png', type: 'add', group: 'site' },
+    { id: '14', text: 'افزودن سایت roadmap.sh', note: 'راست‌چین AI Tutor و متن درس‌ها', icon: 'sites/roadmap.png', type: 'add', group: 'site' },
 ];
 
 /**
