@@ -17,6 +17,7 @@ const JOIN_MS = 500;
 
 // Neighboring word spans in the same parent become one text node.
 // A span that wraps its own words stays; those inner words join on their own.
+// Spans with --fade-delay stay as ChatGPT wrote them.
 function mergeAdjacentWords(parent) {
     const children = Array.from(parent.childNodes);
     let text = '';
@@ -34,6 +35,10 @@ function mergeAdjacentWords(parent) {
     };
     children.forEach((node) => {
         if (node.nodeType === 1 && node.getAttribute('data-d-text-flow') === 'word') {
+            if ((node.getAttribute('style') || '').includes('--fade-delay')) {
+                flush();
+                return;
+            }
             if (!first) {
                 first = node;
             } else {

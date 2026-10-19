@@ -226,6 +226,11 @@ function matchesWalkSkip(el, walkSkipSelector) {
     }
 }
 
+// ChatGPT fade-in word spans. Leave the node as the site wrote it.
+function isFadeDelaySpan(el) {
+    return Boolean(el && el.tagName === 'SPAN' && (el.getAttribute('style') || '').includes('--fade-delay'));
+}
+
 function skipWalkElement($element, processedClass, debugMode) {
     setDebugAttr($element, 'data-debug-mode', debugMode);
     // Same pattern as ms-code-block: mark and leave without RTL walk.
@@ -257,6 +262,9 @@ export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = 
     // ChatGPT unified (advanced_full): keep paragraph dir, and put dir="auto" back if we stripped it earlier.
     if (skipSelector) {
         $container.find(skipSelector).addBack(skipSelector).each(function () {
+            if (isFadeDelaySpan(this)) {
+                return;
+            }
             if (isInsideIgnored(this, ignoreSelector) || isInsideIgnored(this, onlyCssScope)) {
                 return;
             }
@@ -274,6 +282,9 @@ export function applyRemoveDirAuto(container, enabled = false, ignoreSelector = 
         return;
     }
     $container.find('[dir="auto"]').addBack('[dir="auto"]').each(function () {
+        if (isFadeDelaySpan(this)) {
+            return;
+        }
         if (isInsideIgnored(this, ignoreSelector) || isInsideIgnored(this, onlyCssScope)) {
             return;
         }
@@ -386,6 +397,10 @@ export function processTextElementsAdvanced(container, options = {}) {
     
     allElements.each(function() {
         const $element = AQ(this);
+
+        if (isFadeDelaySpan(this)) {
+            return;
+        }
         
         // Skip if already processed
         if ($element.hasClass(processedClass)) {
@@ -619,7 +634,12 @@ export function processTextElementsAdvanced(container, options = {}) {
                     });
                     const $row = AQ(row);
                     $row.addClass(processedClass);
-                    $row.find('*').addClass(processedClass);
+                    $row.find('*').each(function () {
+                        if (isFadeDelaySpan(this)) {
+                            return;
+                        }
+                        this.classList.add(processedClass);
+                    });
                 });
                 setDebugAttr($element, 'data-debug-mode', 'chatgpt-col-box-rows');
                 processTextElementsAdvanced($element, {

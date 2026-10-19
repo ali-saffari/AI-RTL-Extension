@@ -480,8 +480,13 @@ export function applyRtlToElement(element, rtlAlgorithm, options = {}) {
     }
     rtlAlgorithm = resolveRtlAlgorithm(rtlAlgorithm);
     const $element = AQ(element);
+    const target = $element[0];
 
-    if (processLockedEditorByCss($element[0], rtlAlgorithm, options)) {
+    if (target && target.tagName === 'SPAN' && (target.getAttribute('style') || '').includes('--fade-delay')) {
+        return;
+    }
+
+    if (processLockedEditorByCss(target, rtlAlgorithm, options)) {
         return;
     }
 
