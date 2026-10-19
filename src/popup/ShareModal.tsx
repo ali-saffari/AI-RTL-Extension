@@ -19,7 +19,7 @@ import {
     mdiInstagram,
 } from '@mdi/js';
 import {
-    EXTENSION_SHARE_URL,
+    extensionShareUrl,
     getSocialShareTargets,
     shareExtension,
 } from '../utils/storeLinks';
@@ -57,7 +57,8 @@ interface ShareModalProps {
 }
 
 const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) => {
-    const { t, dir } = useI18n();
+    const { t, dir, locale } = useI18n();
+    const shareUrl = extensionShareUrl(locale);
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [copied, setCopied] = React.useState(false);
     const [nativeShared, setNativeShared] = React.useState(false);
@@ -71,8 +72,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
             facebook: t('share.facebook'),
             linkedin: t('share.linkedin'),
             email: t('share.email'),
-        }, shareText) as ShareTarget[],
-        [t, shareText],
+        }, shareText, locale) as ShareTarget[],
+        [t, shareText, locale],
     );
     const canNativeShare =
         typeof navigator !== 'undefined' && typeof navigator.share === 'function';
@@ -85,7 +86,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
     }, [open]);
 
     const handleCopy = async () => {
-        const result = await shareExtension({ preferNative: false, shareText });
+        const result = await shareExtension({ preferNative: false, shareText, locale });
         if (result === 'copied') {
             setCopied(true);
             window.setTimeout(() => setCopied(false), 1800);
@@ -93,7 +94,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
     };
 
     const handleNativeShare = async () => {
-        const result = await shareExtension({ preferNative: true, shareText });
+        const result = await shareExtension({ preferNative: true, shareText, locale });
         if (result === 'shared') {
             setNativeShared(true);
             window.setTimeout(() => setNativeShared(false), 1800);
@@ -102,7 +103,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
 
     const openTarget = async (target: ShareTarget) => {
         if (target.action === 'copy-and-open') {
-            await shareExtension({ preferNative: false, shareText });
+            await shareExtension({ preferNative: false, shareText, locale });
         }
         window.open(target.href, '_blank', 'noopener,noreferrer');
     };
@@ -222,7 +223,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ open, onClose, isDarkMode }) =>
                         fontSize: '0.68rem',
                     }}
                 >
-                    {`${shareText}\n${EXTENSION_SHARE_URL}`}
+                    {`${shareText}\n${shareUrl}`}
                 </Typography>
             </DialogContent>
             <DialogActions sx={{ padding: '8px 16px 16px 16px' }}>

@@ -8,6 +8,7 @@ import {
 } from '../constants/siteSettings';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { useI18n } from '../i18n';
+import { siteUrl } from '../utils/siteUrl';
 
 interface SiteChoice {
     value: string;
@@ -58,7 +59,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     focusSiteKey = null,
     focusNonce = 0,
 }) => {
-    const { t, dir } = useI18n();
+    const { t, dir, locale } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const [settings, setSettings] = React.useState<SiteSettingsMap>(
         () => normalizeSiteSettings(undefined) as SiteSettingsMap
@@ -435,7 +436,7 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
                             {t('quickSettings.harnessMissingPlugin')}{' '}
                             <Box
                                 component="a"
-                                href="https://ai-rtl.ir/deepseek-harness/"
+                                href={siteUrl('/deepseek-harness/', locale)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{

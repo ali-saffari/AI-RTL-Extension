@@ -10,6 +10,7 @@ import {
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission.js';
 import { applyPendingFullPinOpenSite, getDefaultPinOpenSiteMode, PIN_OPEN_SITE_STORAGE_KEY } from '../utils/pinOpenSite';
 import { getActivateGuidePath } from '../utils/storeLinks.js';
+import { siteUrl } from '../utils/siteUrl.js';
 import { DEFAULT_HALF_SPACE_SITES, HALF_SPACE_STORAGE_KEY } from '../constants/halfSpaceHotkey.js';
 import {
     defaultSiteSettings,
@@ -46,8 +47,9 @@ const SERVICE_FLAGS = {
  */
 async function initializeUserId() {
     try {
-        const result = await chrome.storage.sync.get(['uid']);
+        const result = await chrome.storage.sync.get(['uid', 'uiLanguage']);
         let uid = result.uid;
+        const locale = result.uiLanguage;
         
         if (!uid) {
             // Generate 10-digit random number
@@ -69,7 +71,7 @@ async function initializeUserId() {
         chrome.runtime.setUninstallURL(buildExtensionSiteUrl('/uninstall-feedback/', {
             uid,
             source: 'extension-uninstall'
-        }));
+        }, locale));
         return uid;
     } catch (error) {
         devError('Error initializing user ID:', error);
@@ -79,6 +81,12 @@ async function initializeUserId() {
         }));
     }
 }
+
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.uiLanguage) {
+        initializeUserId();
+    }
+});
 
 // ============================================
 // INITIALIZATION
@@ -181,12 +189,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         
         // Open activation guide page in new tab after installation
         try {
-            const uidResult = await chrome.storage.sync.get(['uid']);
+            const uidResult = await chrome.storage.sync.get(['uid', 'uiLanguage']);
             chrome.tabs.create({
                 url: buildExtensionSiteUrl(getActivateGuidePath(), {
                     uid: uidResult.uid || '',
                     source: 'extension-install'
-                })
+                }, uidResult.uiLanguage)
             });
         } catch (error) {
             devError('[Background] Error opening activation guide page:', error);
@@ -633,7 +641,7 @@ function getExtensionBrowserParam() {
     return isFirefoxRuntime() ? 'f' : 'c';
 }
 
-function buildExtensionSiteUrl(path, extraParams = {}) {
+function buildExtensionSiteUrl(path, extraParams = {}, locale = 'fa') {
     const params = new URLSearchParams();
 
     Object.entries(extraParams).forEach(([key, value]) => {
@@ -651,7 +659,7 @@ function buildExtensionSiteUrl(path, extraParams = {}) {
 
     const query = params.toString();
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `https://ai-rtl.ir${normalizedPath}${query ? `?${query}` : ''}`;
+    return siteUrl(query ? `${normalizedPath}?${query}` : normalizedPath, locale);
 }
 
 function buildFreshInstallSyncState() {

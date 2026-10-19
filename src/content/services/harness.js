@@ -576,7 +576,7 @@ function addHarnessCopyright() {
                 <img src="${logo}" alt="AI RTL" width="22" height="22">
             </a>
             <span class="AsHope" dir="${textDir}">${hope}</span>
-            ${BtnDonate(donate, textDir)}
+            ${BtnDonate(donate, textDir, locale)}
         </div>`);
     };
     try {

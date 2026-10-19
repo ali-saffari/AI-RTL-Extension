@@ -53,6 +53,7 @@ import ShareModal from './ShareModal';
 import './App.css';
 import { getExtensionChannelInfo } from '../utils/extensionChannel';
 import { LanguageMenuButton, useI18n } from '../i18n';
+import { siteUrl } from '../utils/siteUrl';
 
 const headerLinkSx = {
     background: 'none',
@@ -197,7 +198,7 @@ const lightTheme = createTheme({
 });
 
 function App() {
-    const { t, dir } = useI18n();
+    const { t, dir, locale } = useI18n();
     const storePageLinkText = getStorePageLinkText({
         chrome: t('share.storePageChrome'),
         firefox: t('share.storePageFirefox'),
@@ -982,7 +983,7 @@ function App() {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: narrowPopup ? 0.75 : 1.25, flexShrink: 0 }}>
                                 <Typography
                                     component="a"
-                                    href="https://ai-rtl.ir/?source=extension-popup-header-about#story"
+                                    href={siteUrl('/?source=extension-popup-header-about#story', locale)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     sx={{
@@ -1085,7 +1086,7 @@ function App() {
                     <div className="popup-dsh-note">
                         <a
                             className="popup-dsh-note-link"
-                            href="https://ai-rtl.ir/deepseek-harness/?source=extension-popup-dsh"
+                            href={siteUrl('/deepseek-harness/?source=extension-popup-dsh', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -1097,7 +1098,7 @@ function App() {
                         </a>
                         <a
                             className="popup-dsh-note-more"
-                            href="https://ai-rtl.ir/deepseek-harness/?source=extension-popup-dsh"
+                            href={siteUrl('/deepseek-harness/?source=extension-popup-dsh', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -1491,7 +1492,7 @@ function App() {
                         </button>
                         ) : null}
                         <a
-                            href="https://ai-rtl.ir/report/?source=extension-popup-side-faq"
+                            href={siteUrl('/report/?source=extension-popup-side-faq', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-faq"
@@ -1521,7 +1522,7 @@ function App() {
                             <span className="popup-side-item-label">{t('side.telegram')}</span>
                         </a>
                         <a
-                            href="https://ai-rtl.ir/?source=extension-popup-side-site"
+                            href={siteUrl('/?source=extension-popup-side-site', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-site"
@@ -1533,7 +1534,7 @@ function App() {
                             <span className="popup-side-item-label">{t('side.site')}</span>
                         </a>
                         <a
-                            href="https://ai-rtl.ir/support/?source=extension-popup-side-support"
+                            href={siteUrl('/support/?source=extension-popup-side-support', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-support"
@@ -1550,7 +1551,7 @@ function App() {
                         </div>
                         <div className="popup-side-item-group">
                         <a
-                            href="https://ai-rtl.ir/privacy-policy/?source=extension-popup-side-privacy"
+                            href={siteUrl('/privacy-policy/?source=extension-popup-side-privacy', locale)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="popup-side-item popup-side-item-privacy"

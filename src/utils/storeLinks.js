@@ -1,4 +1,5 @@
 import { isFirefoxRuntime } from './isFirefox.js';
+import { siteUrl } from './siteUrl.js';
 
 /** Official Chrome Web Store extension ID — hide this ID in UI. */
 export const CHROME_PRODUCTION_EXTENSION_ID = 'pjpmebofipgpjaincgoboibbmicccbne';
@@ -81,7 +82,11 @@ export function getViewInStoreText(labels = {}) {
         : (labels.chrome || 'مشاهده در Chrome Web Store');
 }
 
-export const EXTENSION_SHARE_URL = 'https://ai-rtl.ir/?ref=eshare';
+export function extensionShareUrl(locale) {
+    return siteUrl('/?ref=eshare', locale);
+}
+
+export const EXTENSION_SHARE_URL = extensionShareUrl('fa');
 
 export const EXTENSION_SHARE_TEXT =
     'اگه با متن‌های نامرتب فارسی توی چت‌جی‌پی‌تی و بقیه هوش مصنوعی‌ها مشکل دارید، این افزونه با راست‌چین هوشمند و فونت تمیز، همه‌چیز رو در بیش از ۵۰ سایت درست می‌کنه:';
@@ -90,8 +95,8 @@ export function getExtensionShareText(shareText) {
     return typeof shareText === 'string' && shareText ? shareText : EXTENSION_SHARE_TEXT;
 }
 
-export function getExtensionShareLine(shareText) {
-    return `${getExtensionShareText(shareText)}\n${EXTENSION_SHARE_URL}`;
+export function getExtensionShareLine(shareText, locale) {
+    return `${getExtensionShareText(shareText)}\n${extensionShareUrl(locale)}`;
 }
 
 export const EXTENSION_SHARE_LINE = `${EXTENSION_SHARE_TEXT}\n${EXTENSION_SHARE_URL}`;
@@ -105,10 +110,10 @@ export const EXTENSION_SHARE_LINE = `${EXTENSION_SHARE_TEXT}\n${EXTENSION_SHARE_
  * @param {string} [shareText]
  * @returns {SocialShareTarget[]}
  */
-export function getSocialShareTargets(labels = {}, shareText) {
+export function getSocialShareTargets(labels = {}, shareText, locale) {
     const textValue = getExtensionShareText(shareText);
-    const shareLine = getExtensionShareLine(shareText);
-    const url = encodeURIComponent(EXTENSION_SHARE_URL);
+    const shareLine = getExtensionShareLine(shareText, locale);
+    const url = encodeURIComponent(extensionShareUrl(locale));
     const text = encodeURIComponent(textValue);
     const fullText = encodeURIComponent(shareLine);
 
@@ -162,26 +167,26 @@ export function getSocialShareTargets(labels = {}, shareText) {
 /**
  * @param {string} [shareText]
  */
-export function getExtensionShareHref(shareText) {
+export function getExtensionShareHref(shareText, locale) {
     const textValue = getExtensionShareText(shareText);
-    return getSocialShareTargets({}, textValue).find((target) => target.id === 'telegram')?.href
-        || `https://t.me/share/url?url=${encodeURIComponent(EXTENSION_SHARE_URL)}&text=${encodeURIComponent(textValue)}`;
+    return getSocialShareTargets({}, textValue, locale).find((target) => target.id === 'telegram')?.href
+        || `https://t.me/share/url?url=${encodeURIComponent(extensionShareUrl(locale))}&text=${encodeURIComponent(textValue)}`;
 }
 
 /**
- * @param {{ preferNative?: boolean, shareText?: string }} [options]
+ * @param {{ preferNative?: boolean, shareText?: string, locale?: string }} [options]
  */
 export async function shareExtension(options = {}) {
     const preferNative = options.preferNative !== false;
     const textValue = getExtensionShareText(options.shareText);
-    const shareLine = getExtensionShareLine(options.shareText);
+    const shareLine = getExtensionShareLine(options.shareText, options.locale);
 
     if (preferNative && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
         try {
             await navigator.share({
                 title: 'AI RTL',
                 text: textValue,
-                url: EXTENSION_SHARE_URL,
+                url: extensionShareUrl(options.locale),
             });
             return 'shared';
         } catch (error) {

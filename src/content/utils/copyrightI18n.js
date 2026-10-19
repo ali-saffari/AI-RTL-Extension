@@ -1,3 +1,5 @@
+import { siteUrl } from '../../utils/siteUrl.js';
+
 const COPYRIGHT_BY_LOCALE = {
     fa: {
         hope: 'امیدوارم از نسخه بهینه شده برای فارسی زبانان لذت ببرید',
@@ -62,6 +64,7 @@ export function applyCopyrightLocale(locale) {
         root.querySelectorAll('a.AsDonate').forEach((el) => {
             el.textContent = texts.donate;
             el.setAttribute('dir', dir);
+            el.setAttribute('href', siteUrl('/supporters/', locale));
         });
     });
 }
@@ -92,5 +95,5 @@ export async function resolveCopyrightTexts() {
         // Keep Persian default outside a valid extension context.
     }
     const texts = getCopyrightTexts(locale);
-    return { ...texts, dir: locale === 'en' ? 'ltr' : 'rtl' };
+    return { ...texts, locale, dir: locale === 'en' ? 'ltr' : 'rtl' };
 }

@@ -51,7 +51,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
         // Check if AsBox class already exists on the site
         if (AQ('.AsBox').length === 0) {
             const alisaffari = chrome.runtime?.id ? chrome.runtime.getURL(extensionIconPath) : extensionIconPath;
-            const { hope, donate, dir } = await resolveCopyrightTexts();
+            const { hope, donate, dir, locale } = await resolveCopyrightTexts();
             
             const boxClass = dir === 'ltr' ? 'AsLtr' : 'AsRtl';
             const boxAlign = dir === 'ltr'
@@ -67,7 +67,7 @@ export async function addCopyright($targetElement, customClass = '', customStyle
 
                     <span class="AsHope" dir="${dir}">${hope}</span>
 
-${BtnDonate(donate, dir)}
+${BtnDonate(donate, dir, locale)}
 
 
 

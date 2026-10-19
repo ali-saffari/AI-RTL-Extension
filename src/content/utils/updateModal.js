@@ -3,6 +3,7 @@ import { versionChanges, filterVersionChangesForBrowser, splitVersionChanges, ge
 import { UPDATE_MODAL_LOCALES, getUpdateModalCopy, getUpdateModalLocale, localizeVersionChange, normalizeUpdateLocale } from '../../constants/updateModalCopy.js';
 import { sendRuntimeMessage } from '../../utils/chromeMessaging.js';
 import { isFirefoxRuntime } from '../../utils/isFirefox.js';
+import { siteUrl } from '../../utils/siteUrl.js';
 
 const UI_LANGUAGE_STORAGE_KEY = 'uiLanguage';
 
@@ -1005,7 +1006,7 @@ function createUpdateModalHTML({ changes = versionChanges, includeStory = true, 
 
                     <div class="As-footer">
                         <button class="As-close-btn" id="AsUpdateCloseBtn">${esc(copy.close)}</button>
-                        <a class="As-footer-link" href="https://ai-rtl.ir/supporters/" target="_blank" rel="noopener noreferrer">${esc(copy.support)}</a>
+                        <a class="As-footer-link" href="${siteUrl('/supporters/', activeLocale)}" target="_blank" rel="noopener noreferrer">${esc(copy.support)}</a>
                     </div>
                 </div>
             </div>
