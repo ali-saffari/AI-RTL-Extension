@@ -607,24 +607,35 @@ export function processTextElementsAdvanced(container, options = {}) {
             return;
         }
 
-        // ChatGPT column box: each row gets one direction. Do not walk inside the row.
+        // ChatGPT column box: one direction on every row in the list.
+        // Do not go inside a row. The box stays unmarked so rows that
+        // arrive later in the stream are still visited.
         if (
             siteConfig === 'chatgpt' &&
             this.getAttribute('data-d-component') === 'box' &&
             this.getAttribute('data-d-direction') === 'col'
         ) {
             const rows = [];
-            this.querySelectorAll('[data-d-component="row"]').forEach((row) => {
-                if (row.parentElement && row.parentElement.closest('[data-d-component="row"]')) {
-                    return;
+            const queue = Array.from(this.children);
+            for (let i = 0; i < queue.length; i++) {
+                const node = queue[i];
+                const component = node.getAttribute('data-d-component');
+                if (component === 'row') {
+                    rows.push(node);
+                    continue;
                 }
-                if (row.closest('[data-d-component="box"][data-d-direction="col"]') !== this) {
-                    return;
+                if (component === 'box' && node.getAttribute('data-d-direction') === 'col') {
+                    continue;
                 }
-                rows.push(row);
-            });
+                for (let c = 0; c < node.children.length; c++) {
+                    queue.push(node.children[c]);
+                }
+            }
             if (rows.length) {
                 rows.forEach((row) => {
+                    if (row.classList.contains(processedClass) && row.getAttribute('data-ai-rtl-direction')) {
+                        return;
+                    }
                     setTextDirectionAndFont(row, {
                         fontClass,
                         setTextAlign,
@@ -632,36 +643,9 @@ export function processTextElementsAdvanced(container, options = {}) {
                         rtlClass,
                         ltrClass
                     });
-                    const $row = AQ(row);
-                    $row.addClass(processedClass);
-                    $row.find('*').each(function () {
-                        if (isFadeDelaySpan(this)) {
-                            return;
-                        }
-                        this.classList.add(processedClass);
-                    });
+                    AQ(row).addClass(processedClass);
                 });
                 setDebugAttr($element, 'data-debug-mode', 'chatgpt-col-box-rows');
-                processTextElementsAdvanced($element, {
-                    fontClass,
-                    processedClass,
-                    isContainer: false,
-                    skipTags,
-                    removeSkipTags,
-                    includeTags,
-                    excludeTags,
-                    setTextAlign,
-                    setUnicodeBidi,
-                    rtlClass,
-                    ltrClass,
-                    ignoreSelector,
-                    walkSkipSelector,
-                    codeFontClass,
-                    forceCodeLtr,
-                    siteConfig,
-                    onlyCss: options.onlyCss
-                });
-                $element.addClass(processedClass);
                 return;
             }
         }
