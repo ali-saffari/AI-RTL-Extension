@@ -65,11 +65,11 @@ const KNOWN_EXTENSION_CLASSES = new Set([
     'FontSetImportant', 'FontSetImportant2', 'FontSetImportantGPT', 'CopilotFontSet',
     'FontSetPerplexity', 'FontSetVivado', 'FontSetVivadoInput', 'FontSetNodeName',
     'FontOpenRouter', 'FontMinimax', 'noFont',
-    'rtl-algorithm-active', 'rtlEelemt', 'listboxRtlCopilot', 'notion-rtl-toggle-btn',
+    'rtl-algorithm-active', 'rtlEelemt', 'listboxRtlCopilot',
     'rtl-mask-applied', 'activateDuckduckgo', 'removeedDirAuto', 'setRight'
 ]);
 
-const EXTENSION_CLASS_RE = /^(As[A-Z0-9_-]|Asok$|AsOK$|AsOk|FontSet|FontClaude|FontOpenRouter|FontMinimax|CopilotFontSet|rtl-algorithm-active|rtlEelemt|listboxRtlCopilot|notion-rtl|rtl-mask-applied|activateDuckduckgo|removeedDirAuto|setRight$|noFont$|As-modal|As-close|As-change)/;
+const EXTENSION_CLASS_RE = /^(As[A-Z0-9_-]|Asok$|AsOK$|AsOk|FontSet|FontClaude|FontOpenRouter|FontMinimax|CopilotFontSet|rtl-algorithm-active|rtlEelemt|listboxRtlCopilot|rtl-mask-applied|activateDuckduckgo|removeedDirAuto|setRight$|noFont$|As-modal|As-close|As-change)/;
 
 const EXTENSION_CLASS_SWEEP_SELECTOR = [
     '[class*="As"]',
@@ -81,7 +81,6 @@ const EXTENSION_CLASS_SWEEP_SELECTOR = [
     '[class*="rtl-algorithm"]',
     '[class*="rtlEelemt"]',
     '[class*="listboxRtl"]',
-    '[class*="notion-rtl"]',
     '[class*="rtl-mask"]',
     '[class*="activateDuckduckgo"]',
     '[class*="removeedDirAuto"]',

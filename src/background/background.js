@@ -1,5 +1,5 @@
 // Import dynamic services configuration
-import { DYNAMIC_SERVICES, getServiceNameFromHostname } from '../constants/dynamicServices.js';
+import { DYNAMIC_SERVICES, getServiceNameFromHostname, serviceRequiresComplete } from '../constants/dynamicServices.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
 import {
     consumeLastError,
@@ -1391,14 +1391,12 @@ async function injectContentFiles(tabId, options = {}) {
 async function activateManualRtlForSite(tabId, options = {}) {
     if (!tabId) return;
     const skipOriginCheck = options.skipOriginCheck === true;
-    const ignoreComplete = options.ignoreComplete === true;
     
     try {
         const tab = await chrome.tabs.get(tabId);
         if (!tab.url) return;
         
-        // Check if tab is in a valid state
-        if (isRestrictedBrowserUrl(tab.url) || (!ignoreComplete && tab.status !== 'complete')) {
+        if (isRestrictedBrowserUrl(tab.url)) {
             return;
         }
         
@@ -1474,7 +1472,7 @@ async function pingOrInjectDynamicRtl(tabId) {
         return;
     }
 
-    await activateContentScriptForDynamicSites(tabId, { ignoreComplete: true });
+    await activateContentScriptForDynamicSites(tabId);
 }
 
 async function activateDynamicServiceOnMatchingTabs(serviceKey) {
@@ -1535,9 +1533,8 @@ async function injectHarnessBridge(tabId) {
     }
 }
 
-async function activateContentScriptForDynamicSites(tabId, options = {}) {
+async function activateContentScriptForDynamicSites(tabId) {
     if (!tabId) return;
-    const ignoreComplete = options.ignoreComplete === true;
     
     devLog('[Background] activateContentScriptForDynamicSites', tabId);
     try {
@@ -1545,8 +1542,7 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         devLog('[Background] tab', tab);
         if (!tab.url) return;
         
-        // Check if tab is in a valid state (not error page, not browser internal pages)
-        if (isRestrictedBrowserUrl(tab.url) || (!ignoreComplete && tab.status !== 'complete')) {
+        if (isRestrictedBrowserUrl(tab.url)) {
             return;
         }
         
@@ -1556,6 +1552,10 @@ async function activateContentScriptForDynamicSites(tabId, options = {}) {
         const serviceName = getServiceNameFromHostname(url.hostname, url.port);
         
         if (!serviceName) {
+            return;
+        }
+
+        if (serviceRequiresComplete(serviceName) && tab.status !== 'complete') {
             return;
         }
 
@@ -1651,8 +1651,7 @@ async function injectTabNow(tabId, options = {}) {
         }
 
         await activateManualRtlForSite(tabId, {
-            skipOriginCheck: options.skipOriginCheck === true,
-            ignoreComplete: true
+            skipOriginCheck: options.skipOriginCheck === true
         });
     } catch (error) {
         if (isMissingTabError(error)) {
@@ -1698,7 +1697,7 @@ function setupEventListeners() {
         broadcastActiveTabInfo('tab-activated');
         
         // Activate content script for dynamic sites (not in manifest)
-        await activateContentScriptForDynamicSites(activeInfo.tabId);
+        await pingOrInjectDynamicRtl(activeInfo.tabId);
         
         // Activate manual RTL for active sites
         await activateManualRtlForSite(activeInfo.tabId);
@@ -1742,16 +1741,34 @@ function setupEventListeners() {
 
 
 
-        // Injected CSS is dropped with the document; the tab id is reused.
         if (changeInfo?.status === 'loading') {
             noteHarnessCssNavigation(tabId);
         }
 
-        // Inject content script for dynamic sites (not in manifest) when page is complete
+        let injectBeforeComplete = false;
+        if (changeInfo?.status === 'loading' || changeInfo?.url) {
+            let pageUrl = changeInfo.url || '';
+            if (!pageUrl) {
+                try {
+                    pageUrl = (await chrome.tabs.get(tabId))?.url || '';
+                } catch {
+                    pageUrl = '';
+                }
+            }
+            try {
+                const parsed = new URL(pageUrl);
+                const serviceName = getServiceNameFromHostname(parsed.hostname, parsed.port);
+                injectBeforeComplete = !!serviceName && !serviceRequiresComplete(serviceName);
+            } catch {
+                injectBeforeComplete = false;
+            }
+        }
+
+        if (changeInfo?.status === 'complete' || injectBeforeComplete) {
+            await pingOrInjectDynamicRtl(tabId);
+        }
+
         if (changeInfo?.status === 'complete') {
-            await activateContentScriptForDynamicSites(tabId);
-            
-            // Activate manual RTL for active sites
             await activateManualRtlForSite(tabId);
         }
     });

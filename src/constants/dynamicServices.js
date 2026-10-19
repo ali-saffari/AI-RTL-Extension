@@ -1,4 +1,5 @@
-// Services that are not in the browser manifests (dynamically injected)
+// Services that are not in the browser manifests (dynamically injected).
+// requireComplete defaults to true. Set false to inject while the tab is still loading.
 export const DYNAMIC_SERVICES = {
     synaps: {
         name: 'Synaps',
@@ -7,6 +8,7 @@ export const DYNAMIC_SERVICES = {
     },
     notion: {
         name: 'Notion',
+        requireComplete: false,
         origins: [
             '*://notion.so/*',
             '*://www.notion.so/*',
@@ -281,6 +283,10 @@ export const DYNAMIC_SERVICES = {
 
 
 
+
+export function serviceRequiresComplete(serviceKey) {
+    return DYNAMIC_SERVICES[serviceKey]?.requireComplete !== false;
+}
 
 // Helper function to get service name from hostname (for background script)
 export function getServiceNameFromHostname(hostname, port) {
