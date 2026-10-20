@@ -20,12 +20,14 @@ import {
 } from './youtubeMetadata.js';
 
 const PANEL_SELECTOR = 'ytd-engagement-panel-section-list-renderer[target-id="PAyouchat"]';
+const AI_SEARCH_SELECTOR = 'ytd-search[page-subtype="ai-search"]';
 const MARKDOWN_SELECTOR = 'markdown-div';
 const USER_TEXT_SELECTOR = '.ytwYouChatItemViewModelHost';
 const USER_TURN_SELECTOR = '.ytChatUserTurnViewModelTextContainer';
 const USER_TURN_HOST_SELECTOR = 'yt-chat-user-turn-view-model';
 const CHIP_SELECTOR = 'you-chat-chips-data button, button.ytwYouChatChipsDataChip';
 const INPUT_SELECTOR = 'yt-chat-input-view-model textarea, textarea.chatInputViewModelChatInput';
+const AI_SEARCH_INPUT_SELECTOR = 'textarea.ytAiSearchInputViewModelInput';
 const DISCLAIMER_SELECTOR = '.chatInputViewModelChatDisclaimer, yt-disclaimer-item-view-model';
 const SHELF_SELECTOR = '.ytwHorizontalShelfViewModelItems';
 const TEXT_LINE_SELECTOR = '.ytAttributedStringHost, yt-formatted-string#title-text';
@@ -139,8 +141,37 @@ ytd-engagement-panel-section-list-renderer[target-id="PAyouchat"] yt-formatted-s
     direction: ltr !important;
     text-align: left !important;
 }
+/* Ask YouTube AI search (results page, always on with YouTube). */
+ytd-search[page-subtype="ai-search"] .ytChatUserTurnViewModelTextContainer[dir="rtl"],
+ytd-search[page-subtype="ai-search"] yt-chat-user-turn-view-model[dir="rtl"],
+ytd-search[page-subtype="ai-search"] .ytAttributedStringHost[dir="rtl"],
+ytd-search[page-subtype="ai-search"] .ytAiCompanionAttachmentViewModelDescription[dir="rtl"],
+ytd-search[page-subtype="ai-search"] textarea.ytAiSearchInputViewModelInput[dir="rtl"] {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: isolate !important;
+}
+ytd-search[page-subtype="ai-search"] .ytChatUserTurnViewModelTextContainer[dir="ltr"],
+ytd-search[page-subtype="ai-search"] yt-chat-user-turn-view-model[dir="ltr"],
+ytd-search[page-subtype="ai-search"] .ytAttributedStringHost[dir="ltr"],
+ytd-search[page-subtype="ai-search"] .ytAiCompanionAttachmentViewModelDescription[dir="ltr"],
+ytd-search[page-subtype="ai-search"] textarea.ytAiSearchInputViewModelInput[dir="ltr"] {
+    direction: ltr !important;
+    text-align: left !important;
+}
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutLabelContainer:has([dir="rtl"]),
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutTitleRow:has([dir="rtl"]),
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutTitle:has([dir="rtl"]) {
+    direction: rtl !important;
+    text-align: right !important;
+}
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutLabelContainer:has([dir="ltr"]),
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutTitleRow:has([dir="ltr"]),
+ytd-search[page-subtype="ai-search"] .ytShelfHeaderLayoutTitle:has([dir="ltr"]) {
+    direction: ltr !important;
+    text-align: left !important;
+}
 `;
-
 function isExtensionContextValid() {
     try {
         return typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
@@ -168,6 +199,10 @@ function youchatPanels() {
         });
     });
     return panels;
+}
+
+function aiSearchRoots() {
+    return Array.from(document.querySelectorAll(AI_SEARCH_SELECTOR));
 }
 
 function queryInPanel(panel, selector) {
@@ -376,6 +411,56 @@ function applyYoutubePanel(panel, rtlAlgorithm) {
     });
 }
 
+function pinShelfHeaderParents(element) {
+    const dir = element.getAttribute('dir');
+    if (dir !== 'rtl' && dir !== 'ltr') {
+        return;
+    }
+    let node = element.parentElement;
+    while (node) {
+        if (
+            node.classList?.contains('ytShelfHeaderLayoutTitle')
+            || node.classList?.contains('ytShelfHeaderLayoutTitleRow')
+            || node.classList?.contains('ytShelfHeaderLayoutLabelContainer')
+        ) {
+            node.setAttribute('data-ai-rtl-direction', dir);
+            node.setAttribute('dir', dir);
+            pinInlineDirection(node);
+        }
+        if (node.classList?.contains('ytShelfHeaderLayoutHost')) {
+            break;
+        }
+        node = node.parentElement;
+    }
+}
+
+function applyYoutubeAiSearch(root, rtlAlgorithm) {
+    queryInPanel(root, USER_TURN_SELECTOR).forEach((element) => {
+        applyUserTurn(element, rtlAlgorithm);
+    });
+
+    queryInPanel(root, TEXT_LINE_SELECTOR).forEach((element) => {
+        applyTextLine(element, rtlAlgorithm);
+        pinShelfHeaderParents(element);
+    });
+
+    queryInPanel(root, '.ytAiCompanionAttachmentViewModelDescription').forEach((element) => {
+        if (!hasVisibleText(element)) {
+            return;
+        }
+        applyRtlToElement(element, rtlAlgorithm, TEXT_LINE_OPTIONS);
+        pinInlineDirection(element);
+    });
+
+    queryInPanel(root, AI_SEARCH_INPUT_SELECTOR).forEach((element) => {
+        bindChatInput(element, rtlAlgorithm);
+    });
+
+    root.querySelectorAll('yt-icon, yt-icon-shape, .yt-icon-shape').forEach((icon) => {
+        icon.classList.remove('FontSet');
+    });
+}
+
 const PANEL_MARK_ATTRS = [
     'data-ai-rtl-direction',
     'data-text-length',
@@ -484,7 +569,7 @@ function removeYoutubePanelChrome() {
     if (document.body) {
         document.body.classList.remove('AsDonateOk');
     }
-    youchatPanels().forEach((panel) => {
+    [...youchatPanels(), ...aiSearchRoots()].forEach((panel) => {
         const boxes = [];
         walkDeep(panel, (element) => {
             if (element.classList && element.classList.contains('AsBox')) {
@@ -541,6 +626,9 @@ export function setYoutube(rtlAlgorithm = 'advanced_full') {
 
     youchatPanels().forEach((panel) => {
         applyYoutubePanel(panel, rtlAlgorithm);
+    });
+    aiSearchRoots().forEach((root) => {
+        applyYoutubeAiSearch(root, rtlAlgorithm);
     });
 }
 

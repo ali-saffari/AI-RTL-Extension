@@ -250,7 +250,7 @@ export const enMessages: Messages = {
             businessGemini: 'This site can feel a bit laggy because of how it is built. That slowness is not caused by this extension. It comes from the site’s own complex structure and how it renders the page.',
             aiStudio: 'Because of how this site is built, optimizing text for Persian can lag, and you may feel the same while scrolling. That comes from the site’s complex structure and how it renders the page.',
             googleDrive: 'Turning this on enables RTL for <strong>Gemini in Google Drive</strong>. The service covers Drive, Docs, Sheets, Slides, and Forms.',
-            youtube: 'RTL is applied only to the <strong>Ask about this video</strong> panel, not to the rest of YouTube.',
+            youtube: 'RTL applies to the <strong>Ask about this video</strong> panel and <strong>Ask YouTube</strong> AI search; the rest of YouTube is separate.',
             youCom: 'This service is not free, and because our access is limited the extension may not work well on every part of it. If you see a problem, message <strong>support</strong> so we can fix it.',
             writesonic: 'This service is not free, and because our access is limited the extension may not work well on every part of it. If you see a problem, message <strong>support</strong> so we can fix it.',
             synaps: 'Heavy animations on this site can make it open with lag. That slowness is not caused by this extension. It comes from the site’s own complex structure and animations.',
