@@ -4,10 +4,13 @@ import { applyRtlToContainer, applyRtlToElement } from '../utils/directionUtils/
 
 const INPUT_SELECTOR = '#chat-input';
 const TEXT_SELECTOR = '.markdown-prose, #user-message, [id^="response-content-"]';
+const ELEMENT_SELECTOR = '.line-clamp-1';
+const FONT_STYLE_ID = 'openwebui-font-style';
 const UI_MS = 1000;
 
 const INPUT_OPTIONS = {
     fontClass: 'FontSet',
+    processedClass: 'AsOk',
     setTextAlign: true
 };
 
@@ -25,7 +28,32 @@ let uiObserver = null;
 let uiLastRun = 0;
 let uiTimer = null;
 
+function ensureOpenWebuiFontStyle() {
+    if (document.getElementById(FONT_STYLE_ID)) {
+        return;
+    }
+    const style = document.createElement('style');
+    style.id = FONT_STYLE_ID;
+    style.textContent = `
+        html.ai-rtl-has-font, html.ai-rtl-has-font body,
+        html.ai-rtl-has-font body *:not(code):not(pre):not(kbd):not(samp):not(.katex):not(.katex-display):not(.katex *):not(.katex-display *):not(.cm-editor):not(.cm-editor *) {
+            font-family: var(--ai-rtl-font, iranyekan, sans-serif) !important;
+        }
+        html.ai-rtl-has-font :is(code, pre, kbd, samp, .cm-editor),
+        html.ai-rtl-has-font :is(code, pre, .cm-editor) * {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+        }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+}
+
 function setOpenWebui() {
+    ensureOpenWebuiFontStyle();
+
+    if (document.body && !document.body.classList.contains('FontSet')) {
+        document.body.classList.add('FontSet');
+    }
+
     if (chrome.runtime?.id) {
         const $host = AQ('#message-input-container').parent();
         if ($host.length) {
@@ -54,6 +82,10 @@ function setOpenWebui() {
 
     AQ(TEXT_SELECTOR).each(function () {
         applyRtlToContainer(this, rtlAlgorithm, TEXT_OPTIONS);
+    });
+
+    AQ(ELEMENT_SELECTOR).each(function () {
+        applyRtlToElement(this, rtlAlgorithm, INPUT_OPTIONS);
     });
 }
 
