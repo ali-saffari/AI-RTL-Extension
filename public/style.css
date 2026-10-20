@@ -90,6 +90,8 @@ html.ai-rtl-has-font .FontSet :is(
     [data-cds="Icon"],
     [data-not-prose],
     [data-not-prose] *,
+    .cm-editor,
+    .cm-editor *,
     .katex,
     .katex *,
     .katex-display,
@@ -110,6 +112,11 @@ body.rtl-algorithm-active [data-code-wrap] {
 
 html.ai-rtl-has-font .FontSet :is(pre, code, kbd, samp):not([data-not-prose] *) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+}
+
+html.ai-rtl-has-font .FontSet .cm-editor,
+html.ai-rtl-has-font .FontSet .cm-editor * {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
 }
 
 html.ai-rtl-has-font span.FontSet:not([data-cds="Icon"]),
