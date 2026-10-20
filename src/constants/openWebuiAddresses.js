@@ -21,6 +21,15 @@ export function formatOpenWebuiAddress(entry) {
     return `${entry.protocol}//${entry.hostname}${port}`;
 }
 
+export function isOpenWebuiLocation(hostname, port) {
+    const host = normalizeHostname(hostname);
+    const currentPort = port == null ? '' : String(port);
+    if (DEFAULT_HOSTS.includes(host) && DEFAULT_PORTS.includes(currentPort)) {
+        return true;
+    }
+    return matchesOpenWebuiCustom(host, currentPort);
+}
+
 export function isOpenWebuiDefaultAddress(entry) {
     return entry?.protocol === 'http:'
         && DEFAULT_HOSTS.includes(entry.hostname)

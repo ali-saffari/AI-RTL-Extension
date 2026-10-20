@@ -91,6 +91,30 @@ const SITES = {
             const match = className.match(/(?:^|\s)language-([^\s]+)/);
             return match ? match[1].replace(/-/g, ' ') : '';
         }
+    },
+
+    openwebui: {
+        readLanguage(el) {
+            const fromEditor = el.closest('[data-language]');
+            const dataLang = fromEditor && fromEditor.getAttribute('data-language');
+            if (dataLang && dataLang.trim()) {
+                return dataLang.trim();
+            }
+
+            let node = el;
+            while (node && node.nodeType === 1) {
+                const match = String(node.className || '').match(/(?:^|\s)language-([^\s]+)/);
+                if (match) {
+                    return match[1].replace(/-/g, ' ');
+                }
+                node = node.parentElement;
+            }
+
+            const editor = el.closest('.cm-editor');
+            const shell = editor && editor.parentElement && editor.parentElement.parentElement;
+            const label = shell && shell.parentElement && shell.parentElement.querySelector('span.truncate');
+            return label ? label.textContent.trim() : '';
+        }
     }
 };
 

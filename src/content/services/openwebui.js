@@ -15,7 +15,9 @@ const TEXT_OPTIONS = {
     fontClass: 'FontSet',
     processedClass: 'AsOkText',
     isContainer: true,
-    setTextAlign: true
+    setTextAlign: true,
+    siteConfig: 'openwebui',
+    walkSkipSelector: '.cm-editor'
 };
 
 let rtlAlgorithm = 'advanced_full';

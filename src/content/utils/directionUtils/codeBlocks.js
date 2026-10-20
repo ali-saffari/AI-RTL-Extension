@@ -31,6 +31,7 @@ import {
     setApplyAlgorithmToCodeEnabled,
     shouldApplyRtlToCodeBlock
 } from './settings.js';
+import { isOpenWebuiLocation } from '../../../constants/openWebuiAddresses.js';
 
 export const CM_DIR_STYLE_ID = 'ai-rtl-cm-code-direction';
 
@@ -62,6 +63,9 @@ function detectLiveCodeSite() {
     }
     if (/(^|\.)claude\.ai$/i.test(host)) {
         return 'claude';
+    }
+    if (isOpenWebuiLocation(host, location.port)) {
+        return 'openwebui';
     }
     return '';
 }
