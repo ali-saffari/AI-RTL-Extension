@@ -224,6 +224,7 @@ interface ServiceListProps {
     onOpenServiceKeyChange?: (serviceKey: string | null) => void;
     extensionEnabled?: boolean;
     onEnableExtension?: () => void;
+    initialChecked?: Record<string, boolean> | null;
 }
 
 export default function ServiceList({
@@ -232,44 +233,18 @@ export default function ServiceList({
     onOpenServiceKeyChange,
     extensionEnabled = true,
     onEnableExtension,
+    initialChecked = null,
 }: ServiceListProps) {
     const { t, dir } = useI18n();
     const contentAlign = dir === 'rtl' ? 'right' : 'left';
     const SERVICE_CATEGORIES = getServiceCategories(t);
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
-    const [checked, setChecked] = useState<CheckedState>({
-        chatGpt: true,
-        claude: true,
-        copilot: false,
-        githubCopilot: true,
-        // duckduckgo: true,
-        perplexity: true,
-        aiStudio: true,
-        deepseek: true,
-        youCom: true,
-        qwenlm: true,
-        poeCom: true,
-        monica: true,
-        gemini: true,
-        businessGemini: true,
-        mistral: true,
-        manus: true,
-        kimi: true,
-        blackbox: true,
-        googleNotebook: false,
-        zai: true,
-        arena: false,
-        openrouter: true,
-        minimax: true,
-        jules: true,
-        oneMinai: true,
-        digen: false,
-        lovable: true,
-        synaps: true,
-        writesonic: true,
-        ernie: true,
-        gamma: true,
+    const [checked, setChecked] = useState<CheckedState>(() => {
+        if (initialChecked) {
+            return { ...initialChecked };
+        }
+        return Object.fromEntries(services.map((service) => [service.key, false]));
     });
 
     const [helpModalOpen, setHelpModalOpen] = useState(false);
@@ -348,24 +323,35 @@ export default function ServiceList({
     const allowButtonText = getAllowButtonText();
 
     const pinOpenSiteInList = isPinOpenSiteEnabled(pinOpenSiteMode);
-    const activeCountTarget = extensionEnabled
-        ? Object.values(checked).filter(Boolean).length
-        : 0;
+    const [checkedHydrated, setCheckedHydrated] = useState(() => Boolean(initialChecked));
+    const activeSiteCount = services.reduce(
+        (count, service) => count + (checked[service.key] === true ? 1 : 0),
+        0
+    );
+    const activeCountTarget = extensionEnabled ? activeSiteCount : 0;
     const [displayedActiveCount, setDisplayedActiveCount] = useState(activeCountTarget);
     const displayedActiveCountRef = useRef(activeCountTarget);
-    const activeCountReadyRef = useRef(false);
+    const prevExtensionEnabledRef = useRef(extensionEnabled);
 
     useEffect(() => {
-        if (!activeCountReadyRef.current) {
-            activeCountReadyRef.current = true;
-            displayedActiveCountRef.current = activeCountTarget;
-            setDisplayedActiveCount(activeCountTarget);
+        // Defaults only cover part of the list; wait for storage before showing a count.
+        if (!checkedHydrated) {
             return;
         }
+
+        const extensionToggled = prevExtensionEnabledRef.current !== extensionEnabled;
+        prevExtensionEnabledRef.current = extensionEnabled;
 
         const from = displayedActiveCountRef.current;
         const to = activeCountTarget;
         if (from === to) {
+            return;
+        }
+
+        // Count-up only for the header master switch; snap on open / site toggles.
+        if (!extensionToggled) {
+            displayedActiveCountRef.current = to;
+            setDisplayedActiveCount(to);
             return;
         }
 
@@ -394,7 +380,7 @@ export default function ServiceList({
             cancelled = true;
             window.cancelAnimationFrame(frame);
         };
-    }, [activeCountTarget]);
+    }, [activeCountTarget, checkedHydrated, extensionEnabled]);
 
     // Detect the currently open tab. Prefer tabs.query so the pin appears on first
     // popup open, without waiting for the background cache / content script.
@@ -695,7 +681,14 @@ export default function ServiceList({
                     }
 
                     delete updatedData[SITE_SETTINGS_STORAGE_KEY];
-                    setChecked(updatedData);
+                    setChecked(() => {
+                        const next: CheckedState = {};
+                        services.forEach((service) => {
+                            next[service.key] = updatedData[service.key] === true;
+                        });
+                        return next;
+                    });
+                    setCheckedHydrated(true);
                 }
             );
         } catch (error) {
@@ -704,6 +697,7 @@ export default function ServiceList({
             if (isEdge) {
                 setChecked(prev => ({ ...prev, copilot: false, m365: false }));
             }
+            setCheckedHydrated(true);
         }
     }, [isEdge]);
 

@@ -228,6 +228,7 @@ function App() {
         applyFont: true
     });
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
+    const [serviceCheckedSeed, setServiceCheckedSeed] = React.useState<Record<string, boolean> | null>(null);
     const [manualRtlInfoDismissed, setManualRtlInfoDismissed] = React.useState<boolean>(false);
     const [activationHintDismissed, setActivationHintDismissed] = React.useState<boolean>(true);
     const [troubleshootingHintDismissed, setTroubleshootingHintDismissed] = React.useState<boolean>(true);
@@ -333,6 +334,17 @@ function App() {
                 } else {
                     setAlgorithmHintDismissed(result.algorithmHintDismissed === true);
                 }
+                const edge = navigator.userAgent.indexOf('Edg') > -1;
+                const seed: Record<string, boolean> = {};
+                services.forEach((service) => {
+                    seed[service.key] = result[service.key] === true;
+                });
+                if (edge) {
+                    seed.copilot = false;
+                    seed.m365 = false;
+                }
+                setServiceCheckedSeed(seed);
+
                 const revealPopup = () => {
                     try {
                         chrome.windows.getCurrent((win) => {
@@ -1251,6 +1263,7 @@ function App() {
                                     onOpenServiceKeyChange={handleOpenServiceKeyChange}
                                     extensionEnabled={extensionEnabled}
                                     onEnableExtension={() => handleExtensionEnabledChange(true)}
+                                    initialChecked={serviceCheckedSeed}
                                 />
                             </div>
                         </div>
