@@ -1081,7 +1081,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Note: This is called from popup onClick (user gesture context)
         (async () => {
             try {
-                const { serviceKey } = message;
+                const { serviceKey, openUrl } = message;
                 const service = DYNAMIC_SERVICES[serviceKey];
                 
                 if (!service || !service.origins) {
@@ -1102,6 +1102,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         storageUpdate.notebookNeedsReenable = false;
                     }
                     await chrome.storage.sync.set(storageUpdate);
+                    // Popup often closes during the permission prompt; open list URL here.
+                    try {
+                        const parsed = typeof openUrl === 'string' ? new URL(openUrl) : null;
+                        if (parsed && (parsed.protocol === 'http:' || parsed.protocol === 'https:')) {
+                            await chrome.tabs.create({ url: parsed.href });
+                        }
+                    } catch (openError) {
+                        devError('[Background] Error opening site after permission grant:', openError);
+                    }
                     devLog(`[Background] Service ${serviceKey} enabled after permission grant`);
                     sendResponse?.({ success: true, granted: true });
                 } else {

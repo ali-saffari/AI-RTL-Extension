@@ -1589,7 +1589,8 @@ export default function ServiceList({
                                 try {
                                     const response = await sendRuntimeMessage({
                                         action: 'requestPermissionsAndEnableService',
-                                        serviceKey: key
+                                        serviceKey: key,
+                                        openUrl: serviceInfo.url
                                     });
                                     
                                     if (response?.success) {
