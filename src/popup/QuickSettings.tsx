@@ -81,6 +81,7 @@ interface QuickSettingsProps {
     onManualRtlSettingsChange: (settings: ManualRtlSettings) => void;
     onClose?: () => void;
     activeServiceKey?: string | null;
+    settingsServiceKey?: string | null;
     focusSiteKey?: string | null;
     focusNonce?: number;
     extensionEnabled?: boolean;
@@ -165,6 +166,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
     onManualRtlSettingsChange,
     onClose,
     activeServiceKey = null,
+    settingsServiceKey = null,
     focusSiteKey = null,
     focusNonce = 0,
     extensionEnabled = true,
@@ -580,7 +582,7 @@ const QuickSettings: React.FC<QuickSettingsProps> = ({
                 */}
                 <SiteSettingsSection
                     isDarkMode={isDarkMode}
-                    activeServiceKey={activeServiceKey}
+                    activeServiceKey={settingsServiceKey || activeServiceKey}
                     focusSiteKey={focusSiteKey}
                     focusNonce={focusNonce}
                 />

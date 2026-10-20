@@ -158,6 +158,9 @@
         "http://127.0.0.1/*",
         "http://localhost/*"
     ],
+    "optional_host_permissions": [
+        "<all_urls>"
+    ],
     "description": "__MSG_extension_description__",
     "manifest_version": 3,
     "icons": {

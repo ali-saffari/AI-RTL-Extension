@@ -6,6 +6,13 @@ import {
     SITE_SETTINGS_STORAGE_KEY,
     normalizeSiteSettings,
 } from '../constants/siteSettings';
+import {
+    isOpenWebuiDefaultAddress,
+    isProtectedOpenWebuiPattern,
+    parseOpenWebuiAddress,
+    parseOpenWebuiAddressList,
+    serializeOpenWebuiAddresses,
+} from '../constants/openWebuiAddresses';
 import { useHarnessPluginPresent } from './harnessPluginPresence';
 import { useI18n } from '../i18n';
 import { siteUrl } from '../utils/siteUrl';
@@ -68,6 +75,8 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
     );
     const [rangeDraft, setRangeDraft] = React.useState<Record<string, string>>({});
     const [highlightedKey, setHighlightedKey] = React.useState<string | null>(null);
+    const [urlDraft, setUrlDraft] = React.useState('');
+    const [urlError, setUrlError] = React.useState('');
     const entry = registry.find((item) => item.serviceKey === activeServiceKey) || null;
     const harnessPluginPresent = useHarnessPluginPresent(entry?.serviceKey === 'harness');
 
@@ -131,6 +140,11 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
             window.clearTimeout(highlightTimer);
         };
     }, [activeServiceKey, focusSiteKey, focusNonce]);
+
+    React.useEffect(() => {
+        setUrlDraft('');
+        setUrlError('');
+    }, [entry?.serviceKey]);
 
     if (!entry) {
         return null;
@@ -201,6 +215,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
             if (field.type === 'range') {
                 return Number.isFinite(field.min) && Number.isFinite(field.max);
             }
+            if (field.type === 'urls') {
+                return true;
+            }
             return false;
         });
     const resolveFieldLabel = (field: SiteField) => {
@@ -227,6 +244,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         }
         if (field.key === 'titleMode') {
             return t('quickSettings.titleModeLabel');
+        }
+        if (entry.serviceKey === 'openwebui' && field.key === 'customUrls') {
+            return t('quickSettings.openwebuiCustomUrls');
         }
         return field.label;
     };
@@ -298,7 +318,8 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         background: isDarkMode ? 'rgba(74, 222, 128, 0.12)' : 'rgba(34, 197, 94, 0.12)',
     };
 
-    if (!switchFields.length && !choiceFields.length && !selectFields.length && !rangeFields.length) {
+    const hasUrlField = entry.fields.some((field) => field.type === 'urls');
+    if (!switchFields.length && !choiceFields.length && !selectFields.length && !rangeFields.length && !hasUrlField) {
         return null;
     }
 
@@ -479,6 +500,183 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
             {visibleOrderedFields.map((field, index) => {
                 const value = siteValues[field.key] || field.defaultValue;
                 const borderTop = index > 0 ? `1px solid ${cardBorder}` : 'none';
+
+                if (field.type === 'urls') {
+                    const addresses = parseOpenWebuiAddressList(value);
+                    const addCustomUrl = async () => {
+                        const parsed = parseOpenWebuiAddress(urlDraft);
+                        if (!parsed) {
+                            setUrlError(t('quickSettings.openwebuiCustomUrlsInvalid'));
+                            return;
+                        }
+                        if (isOpenWebuiDefaultAddress(parsed)) {
+                            setUrlError(t('quickSettings.openwebuiCustomUrlsDefault'));
+                            return;
+                        }
+                        if (addresses.some((item) => item.id === parsed.id)) {
+                            setUrlError(t('quickSettings.openwebuiCustomUrlsExists'));
+                            return;
+                        }
+                        if (addresses.length >= 20) {
+                            setUrlError(t('quickSettings.openwebuiCustomUrlsLimit'));
+                            return;
+                        }
+                        try {
+                            const granted = await chrome.permissions.request({
+                                permissions: ['scripting'],
+                                origins: [parsed.pattern],
+                            });
+                            if (!granted) {
+                                setUrlError(t('quickSettings.openwebuiCustomUrlsDenied'));
+                                return;
+                            }
+                        } catch (error) {
+                            setUrlError(t('quickSettings.openwebuiCustomUrlsDenied'));
+                            return;
+                        }
+                        updateField(field.key, serializeOpenWebuiAddresses([...addresses, parsed]));
+                        setUrlDraft('');
+                        setUrlError('');
+                    };
+                    const removeCustomUrl = (id: string) => {
+                        const removed = addresses.find((item) => item.id === id);
+                        const next = addresses.filter((item) => item.id !== id);
+                        updateField(field.key, serializeOpenWebuiAddresses(next));
+                        if (
+                            removed
+                            && !isProtectedOpenWebuiPattern(removed.pattern)
+                            && !next.some((item) => item.pattern === removed.pattern)
+                        ) {
+                            chrome.permissions.remove({ origins: [removed.pattern] }).catch(() => undefined);
+                        }
+                    };
+                    return (
+                        <Box
+                            key={field.key}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 0.75,
+                                px: 1.5,
+                                py: 1.25,
+                                borderTop,
+                            }}
+                        >
+                            <Typography className="quick-settings-label">{resolveFieldLabel(field)}</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', lineHeight: 1.7, color: mutedColor }}>
+                                {t('quickSettings.openwebuiCustomUrlsHint')}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.6, alignItems: 'center' }}>
+                                <Box
+                                    component="input"
+                                    value={urlDraft}
+                                    dir="ltr"
+                                    placeholder={t('quickSettings.openwebuiCustomUrlsPlaceholder')}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                        setUrlDraft(event.target.value);
+                                        if (urlError) {
+                                            setUrlError('');
+                                        }
+                                    }}
+                                    onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                                        if (event.key === 'Enter') {
+                                            event.preventDefault();
+                                            void addCustomUrl();
+                                        }
+                                    }}
+                                    sx={{
+                                        flex: 1,
+                                        minWidth: 0,
+                                        height: 32,
+                                        px: 1,
+                                        borderRadius: '8px',
+                                        border: `1px solid ${cardBorder}`,
+                                        background: fieldBg,
+                                        color: titleColor,
+                                        fontFamily: 'iranyekan',
+                                        fontSize: '0.72rem',
+                                        outline: 'none',
+                                        '&:focus': {
+                                            borderColor: accent,
+                                        },
+                                    }}
+                                />
+                                <Box
+                                    component="button"
+                                    type="button"
+                                    onClick={() => {
+                                        void addCustomUrl();
+                                    }}
+                                    sx={{
+                                        flexShrink: 0,
+                                        height: 32,
+                                        px: 1.1,
+                                        border: 0,
+                                        borderRadius: '8px',
+                                        background: accent,
+                                        color: isDarkMode ? '#041018' : '#ffffff',
+                                        fontFamily: 'iranyekan',
+                                        fontSize: '0.72rem',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {t('quickSettings.openwebuiCustomUrlsAdd')}
+                                </Box>
+                            </Box>
+                            {urlError ? (
+                                <Typography sx={{ fontSize: '0.68rem', lineHeight: 1.6, color: '#ef4444' }}>
+                                    {urlError}
+                                </Typography>
+                            ) : null}
+                            {addresses.map((address) => (
+                                <Box
+                                    key={address.id}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.6,
+                                        minWidth: 0,
+                                    }}
+                                >
+                                    <Typography
+                                        dir="ltr"
+                                        sx={{
+                                            flex: 1,
+                                            minWidth: 0,
+                                            fontSize: '0.7rem',
+                                            lineHeight: 1.5,
+                                            color: titleColor,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        {address.id}
+                                    </Typography>
+                                    <Box
+                                        component="button"
+                                        type="button"
+                                        aria-label={t('quickSettings.openwebuiCustomUrlsRemove', { url: address.id })}
+                                        onClick={() => removeCustomUrl(address.id)}
+                                        sx={{
+                                            flexShrink: 0,
+                                            border: 0,
+                                            background: 'transparent',
+                                            color: mutedColor,
+                                            fontFamily: 'iranyekan',
+                                            fontSize: '0.68rem',
+                                            cursor: 'pointer',
+                                            p: 0,
+                                        }}
+                                    >
+                                        {t('quickSettings.openwebuiCustomUrlsRemoveLabel')}
+                                    </Box>
+                                </Box>
+                            ))}
+                        </Box>
+                    );
+                }
 
                 if (field.type === 'choice') {
                     return (

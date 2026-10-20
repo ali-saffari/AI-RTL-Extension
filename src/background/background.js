@@ -1,5 +1,11 @@
 // Import dynamic services configuration
 import { DYNAMIC_SERVICES, getServiceNameFromHostname, serviceRequiresComplete } from '../constants/dynamicServices.js';
+import {
+    getOpenWebuiAddressCache,
+    originPatternForPage,
+    readOpenWebuiAddresses,
+    setOpenWebuiAddressCache,
+} from '../constants/openWebuiAddresses.js';
 import { UPDATE_MODAL_ENABLED, UPDATE_MODAL_ID, UPDATE_MODAL_STORAGE_KEY } from '../constants/updateModalConfig.js';
 import {
     consumeLastError,
@@ -1475,15 +1481,26 @@ async function pingOrInjectDynamicRtl(tabId) {
     await activateContentScriptForDynamicSites(tabId);
 }
 
+function openWebuiQueryPatterns() {
+    const extra = getOpenWebuiAddressCache().map((entry) => entry.pattern);
+    return [...new Set([...(DYNAMIC_SERVICES.openwebui?.origins || []), ...extra])];
+}
+
+async function refreshOpenWebuiAddressCache() {
+    const stored = await chrome.storage.sync.get(SITE_SETTINGS_STORAGE_KEY);
+    setOpenWebuiAddressCache(readOpenWebuiAddresses(stored?.[SITE_SETTINGS_STORAGE_KEY]));
+}
+
 async function activateDynamicServiceOnMatchingTabs(serviceKey) {
     const service = DYNAMIC_SERVICES[serviceKey];
     if (!service?.origins?.length) {
         return;
     }
 
+    const queryPatterns = serviceKey === 'openwebui' ? openWebuiQueryPatterns() : service.origins;
     let tabs = [];
     try {
-        tabs = await chrome.tabs.query({ url: service.origins });
+        tabs = await chrome.tabs.query({ url: queryPatterns });
     } catch (error) {
         devError('[Background] Error querying tabs for dynamic service:', error);
         try {
@@ -1580,7 +1597,9 @@ async function activateContentScriptForDynamicSites(tabId) {
         // Check required origins based on service
         const service = DYNAMIC_SERVICES[serviceName];
         let hasRequiredOrigins = false;
-        if (service) {
+        if (serviceName === 'openwebui') {
+            hasRequiredOrigins = await hasHostPermission([originPatternForPage(tab.url)]);
+        } else if (service) {
             hasRequiredOrigins = await hasHostPermission(service.origins);
         }
         
@@ -1798,6 +1817,21 @@ function setupEventListeners() {
             }
         }
 
+        if (changes[SITE_SETTINGS_STORAGE_KEY]) {
+            try {
+                const previous = readOpenWebuiAddresses(changes[SITE_SETTINGS_STORAGE_KEY].oldValue);
+                const next = readOpenWebuiAddresses(changes[SITE_SETTINGS_STORAGE_KEY].newValue);
+                setOpenWebuiAddressCache(next);
+                const previousIds = previous.map((entry) => entry.id).join('\n');
+                const nextIds = next.map((entry) => entry.id).join('\n');
+                if (previousIds !== nextIds) {
+                    await activateDynamicServiceOnMatchingTabs('openwebui');
+                }
+            } catch (error) {
+                devError('[Background] Error applying Open WebUI addresses:', error);
+            }
+        }
+
         for (const serviceKey of Object.keys(DYNAMIC_SERVICES)) {
             if (!changes[serviceKey] || changes[serviceKey].newValue !== true) {
                 continue;
@@ -1833,6 +1867,10 @@ function setupEventListeners() {
 
 
 setupEventListeners();
+
+refreshOpenWebuiAddressCache().catch((error) => {
+    devError('[Background] Error loading Open WebUI addresses:', error);
+});
 
 // Activate manual RTL for existing tabs on startup
 (async () => {

@@ -76,6 +76,7 @@ import { activateNotta } from './services/notta.js';
 import { activateRoboflow } from './services/roboflow.js';
 import { activateCodecraft } from './services/codecraft.js';
 import { activateHarness, stopHarness } from './services/harness.js';
+import { activateOpenWebui, stopOpenWebui } from './services/openwebui.js';
 import { activateGoogleDrive } from './services/google-drive.js';
 import { activateGoogleAnalytics } from './services/google-analytics.js';
 import { activateYoutubeStudio } from './services/youtube-studio.js';
@@ -91,6 +92,7 @@ import {
     normalizeSiteSettings,
     serviceHasSiteRtlAlgorithm,
 } from '../constants/siteSettings.js';
+import { matchesOpenWebuiCustom, readOpenWebuiAddresses, setOpenWebuiAddressCache } from '../constants/openWebuiAddresses.js';
 
 // Global variables
 let site = window.location.hostname;
@@ -450,6 +452,12 @@ const serviceConfig = {
         exact: true,
         activate: activateRoadmap
     },
+    openwebui: {
+        urls: ["127.0.0.1", "localhost"],
+        port: ["3000", "8080"],
+        exact: true,
+        activate: activateOpenWebui
+    },
     // google: {
     //     urls: ["google.com", "www.google.com"],
     //     activate: activateGoogle
@@ -458,7 +466,12 @@ const serviceConfig = {
 
 // Check if current site matches service URLs
 function isCurrentSite(urls, exact = false, port) {
-    if (port != null && String(port) !== '' && String(window.location.port || '') !== String(port)) {
+    const currentPort = String(window.location.port || '');
+    if (Array.isArray(port)) {
+        if (!port.map(String).includes(currentPort)) {
+            return false;
+        }
+    } else if (port != null && String(port) !== '' && currentPort !== String(port)) {
         return false;
     }
     if (Array.isArray(urls)) {
@@ -475,18 +488,37 @@ function isCurrentSite(urls, exact = false, port) {
     return urls === site;
 }
 
+function matchesConfiguredService(serviceKey, config) {
+    if (isCurrentSite(config.urls, config.exact === true, config.port)) {
+        return true;
+    }
+    if (serviceKey === 'openwebui') {
+        return matchesOpenWebuiCustom(window.location.hostname, window.location.port);
+    }
+    return false;
+}
+
 // Check if current site is in any serviceConfig
 function isCurrentSiteInServiceConfig() {
-    return Object.values(serviceConfig).some(config => isCurrentSite(config.urls, config.exact === true, config.port));
+    return Object.entries(serviceConfig).some(([serviceKey, config]) => matchesConfiguredService(serviceKey, config));
 }
 
 function getCurrentServiceKey() {
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (isCurrentSite(config.urls, config.exact === true, config.port)) {
+        if (matchesConfiguredService(serviceKey, config)) {
             return serviceKey;
         }
     }
     return null;
+}
+
+async function loadOpenWebuiAddresses() {
+    try {
+        const stored = await chrome.storage.sync.get(SITE_SETTINGS_STORAGE_KEY);
+        setOpenWebuiAddressCache(readOpenWebuiAddresses(stored[SITE_SETTINGS_STORAGE_KEY]));
+    } catch (error) {
+        setOpenWebuiAddressCache([]);
+    }
 }
 
 // ============================================
@@ -528,6 +560,7 @@ function deactivateCurrentRtl() {
     stopYoutube();
     stopNotion();
     stopHarness();
+    stopOpenWebui();
     stopChatGptRTL();
     stopClaude();
     stopRoadmap();
@@ -559,6 +592,8 @@ async function initializeAllServices(token = applyToken) {
         return;
     }
 
+    setOpenWebuiAddressCache(readOpenWebuiAddresses(results[SITE_SETTINGS_STORAGE_KEY]));
+
     const globalRtlAlgorithm = results.rtlAlgorithmMode || 'advanced_full';
     rtlAlgorithm = globalRtlAlgorithm;
     setMixedTitleDisplayMode(results.mixedTitleDisplayMode);
@@ -569,7 +604,7 @@ async function initializeAllServices(token = applyToken) {
     let activeService = null;
     
     for (const [serviceKey, config] of Object.entries(serviceConfig)) {
-        if (results[serviceKey] !== false && isCurrentSite(config.urls, config.exact === true, config.port)) {
+        if (results[serviceKey] !== false && matchesConfiguredService(serviceKey, config)) {
             activeService = serviceKey;
             rtlAlgorithm = getSiteRtlAlgorithm(
                 results[SITE_SETTINGS_STORAGE_KEY],
@@ -646,6 +681,7 @@ function requestRtlDisable() {
         stopYoutube();
         stopNotion();
         stopHarness();
+        stopOpenWebui();
         stopChatGptRTL();
         stopClaude();
         stopRoadmap();
@@ -709,6 +745,22 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
         return;
     }
 
+    if (changes[SITE_SETTINGS_STORAGE_KEY]) {
+        const wasCustom = matchesOpenWebuiCustom(window.location.hostname, window.location.port);
+        setOpenWebuiAddressCache(readOpenWebuiAddresses(changes[SITE_SETTINGS_STORAGE_KEY].newValue));
+        const nowCustom = matchesOpenWebuiCustom(window.location.hostname, window.location.port);
+        const defaultMatch = serviceConfig.openwebui
+            && isCurrentSite(serviceConfig.openwebui.urls, true, serviceConfig.openwebui.port);
+        if (extensionEnabled && !defaultMatch && !wasCustom && nowCustom) {
+            await requestRtlEnable();
+            return;
+        }
+        if (!defaultMatch && wasCustom && !nowCustom) {
+            await requestRtlDisable();
+            return;
+        }
+    }
+
     if (!extensionEnabled) {
         return;
     }
@@ -761,7 +813,7 @@ chrome.storage.sync.onChanged.addListener(async (changes) => {
     }
     
     for (const serviceKey of Object.keys(serviceConfig)) {
-        if (changes[serviceKey] && isCurrentSite(serviceConfig[serviceKey].urls, serviceConfig[serviceKey].exact === true, serviceConfig[serviceKey].port)) {
+        if (changes[serviceKey] && matchesConfiguredService(serviceKey, serviceConfig[serviceKey])) {
             if (changes[serviceKey].newValue === false) {
                 await requestRtlDisable();
             } else {
@@ -841,6 +893,7 @@ function initializeHalfSpaceHotkey() {
 
 async function bootContentScript() {
     await loadExtensionEnabled();
+    await loadOpenWebuiAddresses();
     await startExtensionFeatures();
 }
 

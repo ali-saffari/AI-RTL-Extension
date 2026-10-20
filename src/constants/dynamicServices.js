@@ -1,3 +1,5 @@
+import { matchesOpenWebuiCustom } from './openWebuiAddresses.js';
+
 // Services that are not in the browser manifests (dynamically injected).
 // requireComplete defaults to true. Set false to inject while the tab is still loading.
 export const DYNAMIC_SERVICES = {
@@ -282,6 +284,13 @@ export const DYNAMIC_SERVICES = {
         origins: ['*://roadmap.sh/*', '*://www.roadmap.sh/*'],
         hostnames: ['roadmap.sh', 'www.roadmap.sh'],
         exactHostnames: true
+    },
+    openwebui: {
+        name: 'Open WebUI',
+        origins: ['http://127.0.0.1/*', 'http://localhost/*'],
+        hostnames: ['127.0.0.1', 'localhost'],
+        ports: ['3000', '8080'],
+        exactHostnames: true
     }
 };
 
@@ -300,7 +309,11 @@ export function getServiceNameFromHostname(hostname, port) {
     const host = String(hostname || '').toLowerCase();
     const currentPort = port == null ? '' : String(port);
     for (const [key, service] of Object.entries(DYNAMIC_SERVICES)) {
-        if (service.port && String(service.port) !== currentPort) {
+        if (Array.isArray(service.ports) && service.ports.length) {
+            if (!service.ports.map(String).includes(currentPort)) {
+                continue;
+            }
+        } else if (service.port && String(service.port) !== currentPort) {
             continue;
         }
         if (service.hostnames.some((allowed) => {
@@ -314,6 +327,9 @@ export function getServiceNameFromHostname(hostname, port) {
         })) {
             return key;
         }
+    }
+    if (matchesOpenWebuiCustom(host, currentPort)) {
+        return 'openwebui';
     }
     return null;
 }

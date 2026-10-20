@@ -243,7 +243,9 @@ function App() {
     const channelInfo = getExtensionChannelInfo();
     const [extensionEnabled, setExtensionEnabled] = React.useState(true);
     const [siteSettingsFocus, setSiteSettingsFocus] = React.useState<{ key: string; nonce: number } | null>(null);
+    const [forcedSiteSettingsKey, setForcedSiteSettingsKey] = React.useState<string | null>(null);
     const [openServiceKey, setOpenServiceKey] = React.useState<string | null>(null);
+    const seenOpenServiceKey = React.useRef<string | null>(null);
     const [settingsHintActive, setSettingsHintActive] = React.useState(false);
     const settingsHintTimer = React.useRef<number | null>(null);
     const [sideMenuHovered, setSideMenuHovered] = React.useState(false);
@@ -618,12 +620,21 @@ function App() {
     }, []);
 
     const handleOpenSiteSettings = React.useCallback((serviceKey: string) => {
+        setForcedSiteSettingsKey(serviceKey === openServiceKey ? null : serviceKey);
         setSiteSettingsFocus((current) => ({
             key: serviceKey,
             nonce: (current?.nonce || 0) + 1,
         }));
         handleSettingsOpenChange(true);
-    }, [handleSettingsOpenChange]);
+    }, [handleSettingsOpenChange, openServiceKey]);
+
+    React.useEffect(() => {
+        if (seenOpenServiceKey.current === openServiceKey) {
+            return;
+        }
+        seenOpenServiceKey.current = openServiceKey;
+        setForcedSiteSettingsKey(null);
+    }, [openServiceKey]);
 
     const unlockHoverExpand = React.useCallback(() => {
         setHoverExpandLocked(false);
@@ -1452,6 +1463,7 @@ function App() {
                         onManualRtlSettingsChange={handleManualRtlSettingsChange}
                         onClose={settingsAlwaysOpen ? undefined : () => handleSettingsOpenChange(false)}
                         activeServiceKey={openServiceKey}
+                        settingsServiceKey={forcedSiteSettingsKey}
                         focusSiteKey={siteSettingsFocus?.key || null}
                         focusNonce={siteSettingsFocus?.nonce || 0}
                         extensionEnabled={extensionEnabled}

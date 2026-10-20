@@ -26,6 +26,7 @@ import {
 import { mdiInformationOutline, mdiOpenInNew, mdiMagnify, mdiClose, mdiChatOutline, mdiBookSearchOutline, mdiCodeTags, mdiImageMultipleOutline, mdiBriefcaseOutline, mdiDotsGrid, mdiWrenchOutline } from '@mdi/js';
 import { normalizeSiteSettings, serviceHasSiteSettings, SITE_SETTINGS_STORAGE_KEY } from '../constants/siteSettings';
 import { DYNAMIC_SERVICES } from '../constants/dynamicServices';
+import { matchesOpenWebuiCustom, originPatternForPage, readOpenWebuiAddresses } from '../constants/openWebuiAddresses';
 import { sendRuntimeMessage, sendTabMessage } from '../utils/chromeMessaging.js';
 import { hasHostPermission, hasServicePermissions } from '../utils/hasHostPermission';
 import { isFirefoxRuntime } from '../utils/isFirefox';
@@ -46,6 +47,7 @@ interface Service {
     keywords?: string[];
     hosts?: string[];
     port?: string;
+    ports?: string[];
 }
 
 interface CheckedState {
@@ -147,6 +149,7 @@ const services: Service[] = [
     { key: 'roboflow', name: 'Roboflow', icon: '/images/sites/roboflow.png', url: 'https://app.roboflow.com/', new: true, hosts: ['app.roboflow.com'], keywords: ['roboflow', 'ربو فلو', 'ربوفلو', 'vision', 'agent', 'بینایی'] },
     { key: 'codecraft', name: 'CodeCraft API', icon: '/images/sites/codecraft.png', url: 'https://codecraftapi.com/', new: true, hosts: ['codecraftapi.com'], keywords: ['codecraft', 'code craft', 'کدکرفت', 'کد کرفت', 'کدکرافت', 'api', 'اوپن ای آی', 'openai'] },
     { key: 'harness', name: 'DeepSeek Harness', icon: '/images/sites/harness.png', url: 'http://127.0.0.1:3080/', new: true, hosts: ['127.0.0.1', 'localhost'], port: '3080', keywords: ['harness', 'dsh', 'deepseek harness', 'دیپ سیک هارنس', 'دیپ‌سیک هارنس', 'هاردنس', 'هارنس', '3080'] },
+    { key: 'openwebui', name: 'Open WebUI', icon: '/images/sites/openwebui.png', url: 'http://localhost:8080/', new: true, hosts: ['127.0.0.1', 'localhost'], ports: ['3000', '8080'], keywords: ['openwebui', 'open webui', 'open-webui', 'اوپن وب یو آی', 'اوپن‌وب‌یوآی', 'وب یو آی', 'وب‌یوآی', 'ollama'] },
     { key: 'roadmap', name: 'roadmap.sh', icon: '/images/sites/roadmap.png', url: 'https://roadmap.sh/', new: true, hosts: ['roadmap.sh', 'www.roadmap.sh'], keywords: ['roadmap', 'رودمپ', 'رود مپ', 'نقشه راه', 'tutor', 'تیوتر'] }
 ];
 
@@ -165,6 +168,7 @@ const SERVICE_HELP_KEYS: Partial<Record<string, MessageKey>> = {
     synaps: 'list.help.synaps',
     fal: 'list.help.fal',
     harness: 'list.help.harness',
+    openwebui: 'list.help.openwebui',
 };
 
 
@@ -187,7 +191,7 @@ const CATEGORY_SERVICE_KEYS: Record<(typeof SERVICE_CATEGORY_DEFS)[number]['id']
     chat: [
         'chatGpt', 'claude', 'gemini', 'youtube', 'businessGemini', 'copilot', 'deepseek', 'grok',
         'meta', 'mistral', 'kimi', 'qwenlm', 'zai', 'ernie', 'longcat', 'pi',
-        'characterAi', 'lumo', 'sakana', 'notta', 'roboflow', 'harness', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
+        'characterAi', 'lumo', 'sakana', 'notta', 'roboflow', 'harness', 'openwebui', 't3chat', 'atxp', 'duckai', // 'duckduckgo',
     ],
     search: [
         'perplexity', 'genspark', 'youCom', 'consensus', 'scispace', 'elicit',
@@ -279,6 +283,7 @@ export default function ServiceList({
     const [searchQuery, setSearchQuery] = useState('');
     const [showPermissionsHint, setShowPermissionsHint] = useState(false);
     const [harnessEngine, setHarnessEngine] = useState('chrome');
+    const [openWebuiAddresses, setOpenWebuiAddresses] = useState(() => readOpenWebuiAddresses(undefined));
     const [openedServiceKey, setOpenedServiceKey] = useState<string | null>(null);
     const harnessPluginPresent = useHarnessPluginPresent(openedServiceKey === 'harness');
     const harnessSwitchIsMirror = harnessEngine === 'dsh' && harnessPluginPresent !== false;
@@ -310,6 +315,7 @@ export default function ServiceList({
             if (changes[SITE_SETTINGS_STORAGE_KEY]) {
                 const engine = (normalizeSiteSettings(changes[SITE_SETTINGS_STORAGE_KEY].newValue) as { harness?: { engine?: string } }).harness?.engine;
                 setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
+                setOpenWebuiAddresses(readOpenWebuiAddresses(changes[SITE_SETTINGS_STORAGE_KEY].newValue));
             }
         };
 
@@ -414,23 +420,37 @@ export default function ServiceList({
 
         const findMatchingService = (hostname: string, port?: string) => {
             const normalizedHostname = normalizeHost(hostname);
-            return services.find((service) => {
-                if (service.port && String(service.port) !== String(port || '')) {
+            const currentPort = String(port || '');
+            const listed = services.find((service) => {
+                const allowedPorts = service.ports?.length
+                    ? service.ports
+                    : (service.port ? [service.port] : null);
+                if (allowedPorts && !allowedPorts.includes(currentPort)) {
                     return false;
                 }
                 return getServiceHosts(service).some((host) => hostMatches(normalizedHostname, host));
             }) || null;
+            if (listed) {
+                return listed;
+            }
+            if (matchesOpenWebuiCustom(hostname, currentPort, openWebuiAddresses)) {
+                return services.find((service) => service.key === 'openwebui') || null;
+            }
+            return null;
         };
 
-        const canShowInLimitedMode = async (service: Service) => {
+        const canShowInLimitedMode = async (service: Service, pagePattern?: string) => {
             const dynamic = DYNAMIC_SERVICES[service.key as keyof typeof DYNAMIC_SERVICES];
             if (!dynamic?.origins) {
                 return true;
             }
+            if (service.key === 'openwebui' && pagePattern) {
+                return hasHostPermission([pagePattern]);
+            }
             return hasHostPermission(dynamic.origins);
         };
 
-        const applyHostname = async (hostname?: string | null, clearIfMissing = false, port?: string) => {
+        const applyHostname = async (hostname?: string | null, clearIfMissing = false, port?: string, pagePattern?: string) => {
             const seq = ++applySeq;
             if (!isMounted) {
                 return false;
@@ -452,7 +472,7 @@ export default function ServiceList({
                 return false;
             }
 
-            if (pinOpenSiteMode === 'limited' && !(await canShowInLimitedMode(service))) {
+            if (pinOpenSiteMode === 'limited' && !(await canShowInLimitedMode(service, pagePattern))) {
                 if (isMounted && seq === applySeq) {
                     publishOpenService(service.key);
                     publishPinnedService(null);
@@ -475,7 +495,7 @@ export default function ServiceList({
                 return applyHostname(null, clearIfMissing);
             }
             const parsed = new URL(url);
-            return applyHostname(parsed.hostname, clearIfMissing, parsed.port);
+            return applyHostname(parsed.hostname, clearIfMissing, parsed.port, originPatternForPage(url));
         };
 
         const hostnameFromTabs = async (tabs?: chrome.tabs.Tab[], clearIfMissing = false) => {
@@ -517,7 +537,12 @@ export default function ServiceList({
                 }
                 const pageInfo = await sendTabMessage(tab.id, { action: 'getPageInfo' });
                 if (pageInfo?.success && pageInfo.hostname) {
-                    return applyHostname(pageInfo.hostname, false, pageInfo.port);
+                    return applyHostname(
+                        pageInfo.hostname,
+                        false,
+                        pageInfo.port,
+                        pageInfo.url ? originPatternForPage(pageInfo.url) : undefined
+                    );
                 }
             }
             return false;
@@ -631,7 +656,7 @@ export default function ServiceList({
                 // Ignore
             }
         };
-    }, [onOpenServiceKeyChange, pinOpenSiteInList, pinOpenSiteMode]);
+    }, [onOpenServiceKeyChange, openWebuiAddresses, pinOpenSiteInList, pinOpenSiteMode]);
 
     useEffect(() => {
         try {
@@ -640,6 +665,7 @@ export default function ServiceList({
                 async (data) => {
                     const engine = (normalizeSiteSettings(data[SITE_SETTINGS_STORAGE_KEY]) as { harness?: { engine?: string } }).harness?.engine;
                     setHarnessEngine(engine === 'dsh' ? 'dsh' : 'chrome');
+                    setOpenWebuiAddresses(readOpenWebuiAddresses(data[SITE_SETTINGS_STORAGE_KEY]));
                     const updatedData = { ...data };
                     // If Edge, force Microsoft sites to be disabled
                     if (isEdge) {
@@ -1042,7 +1068,7 @@ export default function ServiceList({
                                     onClick={(event) => {
                                         event.preventDefault();
                                         event.stopPropagation();
-                                        if (service.key === activeServiceKey) {
+                                        if (service.key === activeServiceKey || service.key === 'openwebui') {
                                             onOpenSiteSettings?.(service.key);
                                             return;
                                         }

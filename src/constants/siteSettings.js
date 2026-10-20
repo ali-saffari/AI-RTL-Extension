@@ -1,4 +1,5 @@
 import { browserExtensionName } from '../utils/isFirefox.js';
+import { parseOpenWebuiAddressList, serializeOpenWebuiAddresses } from './openWebuiAddresses.js';
 
 export const SITE_SETTINGS_STORAGE_KEY = 'siteSettings';
 
@@ -155,6 +156,19 @@ export const SITE_SETTINGS_REGISTRY = [
             },
         ],
     },
+    {
+        serviceKey: 'openwebui',
+        title: 'Open WebUI',
+        icon: '/images/sites/openwebui.png',
+        fields: [
+            {
+                key: 'customUrls',
+                label: 'آدرس سفارشی',
+                type: 'urls',
+                defaultValue: '',
+            },
+        ],
+    },
 ];
 
 export function serviceHasSiteSettings(serviceKey) {
@@ -221,6 +235,11 @@ export function normalizeSiteSettings(stored) {
                     const clamped = Math.min(max, Math.max(min, numeric));
                     const snapped = Math.round(clamped / step) * step;
                     site[field.key] = String(snapped);
+                    return;
+                }
+                if (field.type === 'urls') {
+                    const source = typeof value === 'string' || Array.isArray(value) ? value : '';
+                    site[field.key] = serializeOpenWebuiAddresses(parseOpenWebuiAddressList(source));
                 }
             });
         }

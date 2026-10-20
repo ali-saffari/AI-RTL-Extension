@@ -92,6 +92,7 @@ const ITEMS = {
         '9': { text: 'Roboflow added', short: 'Roboflow' },
         '10': { text: 'CodeCraft API added', short: 'CodeCraft API' },
         '11': { text: 'DeepSeek Harness added', note: 'Right-to-left for the local harness on port 3080', short: 'DeepSeek Harness' },
+        '15': { text: 'Open WebUI added', note: 'Right-to-left for local and custom addresses', short: 'Open WebUI' },
     },
     ar: {
         '1': { text: 'تحديث ChatGPT', note: 'توافق الإضافة مع آخر إصدار وإصلاح المشكلات' },
@@ -114,6 +115,7 @@ const ITEMS = {
         '9': { text: 'إضافة موقع Roboflow', short: 'Roboflow' },
         '10': { text: 'إضافة موقع CodeCraft API', short: 'CodeCraft API' },
         '11': { text: 'إضافة موقع DeepSeek Harness', note: 'اتجاه Harness المحلي على المنفذ ٣٠٨٠ من اليمين إلى اليسار', short: 'DeepSeek Harness' },
+        '15': { text: 'إضافة موقع Open WebUI', note: 'اتجاه من اليمين للعناوين المحلية والمخصصة', short: 'Open WebUI' },
     },
 };
 
