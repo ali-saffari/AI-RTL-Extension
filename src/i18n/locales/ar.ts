@@ -108,6 +108,7 @@ export const arMessages: Messages = {
         siteSpecific: 'إعدادات خاصة بالموقع',
         youtubeFontScope: 'تطبيق الخط على الموقع كله',
         youtubeCaptionsRtl: 'محاذاة الترجمة لليمين',
+        youtubeMetadataRtl: 'محاذاة العناوين لليمين',
         youtubeCaptionFontSize: 'حجم خط الترجمة',
         notionSiteFont: 'تطبيق الخط على الموقع كله',
         notionTablesRtl: 'محاذاة الجداول لليمين',

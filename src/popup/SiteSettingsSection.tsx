@@ -227,6 +227,9 @@ const SiteSettingsSection: React.FC<SiteSettingsSectionProps> = ({
         if (entry.serviceKey === 'youtube' && field.key === 'captionsRtl') {
             return t('quickSettings.youtubeCaptionsRtl');
         }
+        if (entry.serviceKey === 'youtube' && field.key === 'metadataRtl') {
+            return t('quickSettings.youtubeMetadataRtl');
+        }
         if (entry.serviceKey === 'youtube' && field.key === 'captionFontScale') {
             return t('quickSettings.youtubeCaptionFontSize');
         }

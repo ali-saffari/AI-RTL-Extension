@@ -12,6 +12,12 @@ import {
     stopYoutubeCaptions,
     syncYoutubeCaptions,
 } from './youtubeCaptions.js';
+import {
+    installYoutubeMetadataWatcher,
+    stopYoutubeMetadata,
+    syncYoutubeMetadata,
+    tickYoutubeMetadata,
+} from './youtubeMetadata.js';
 
 const PANEL_SELECTOR = 'ytd-engagement-panel-section-list-renderer[target-id="PAyouchat"]';
 const MARKDOWN_SELECTOR = 'markdown-div';
@@ -507,6 +513,7 @@ export function stopYoutube() {
     youtubeSession += 1;
     stopYoutubeSiteFont();
     stopYoutubeCaptions();
+    stopYoutubeMetadata();
     if (youtubeInterval) {
         clearInterval(youtubeInterval);
         youtubeInterval = null;
@@ -530,6 +537,7 @@ export function setYoutube(rtlAlgorithm = 'advanced_full') {
     }
 
     applyYoutubeChrome();
+    tickYoutubeMetadata();
 
     youchatPanels().forEach((panel) => {
         applyYoutubePanel(panel, rtlAlgorithm);
@@ -543,6 +551,8 @@ export function activateYoutube(rtlAlgorithm = 'advanced_full') {
     syncYoutubeSiteFont();
     installYoutubeCaptionsWatcher();
     syncYoutubeCaptions();
+    installYoutubeMetadataWatcher();
+    syncYoutubeMetadata();
 
     const session = ++youtubeSession;
     if (youtubeInterval) {

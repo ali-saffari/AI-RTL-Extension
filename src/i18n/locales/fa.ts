@@ -106,6 +106,7 @@ export const faMessages = {
         siteSpecific: 'تنظیمات مخصوص',
         youtubeFontScope: 'اعمال فونت روی کل سایت',
         youtubeCaptionsRtl: 'راست‌چین کردن زیرنویس',
+        youtubeMetadataRtl: 'راست‌چین کردن عنوان‌ها',
         youtubeCaptionFontSize: 'اندازه فونت زیرنویس',
         notionSiteFont: 'اعمال فونت روی کل سایت',
         notionTablesRtl: 'اعمال راست‌چین روی جداول',

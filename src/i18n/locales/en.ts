@@ -108,6 +108,7 @@ export const enMessages: Messages = {
         siteSpecific: 'Site settings',
         youtubeFontScope: 'Apply the font to the whole site',
         youtubeCaptionsRtl: 'Right-to-left captions',
+        youtubeMetadataRtl: 'Right-to-left titles',
         youtubeCaptionFontSize: 'Caption font size',
         notionSiteFont: 'Apply the font to the whole site',
         notionTablesRtl: 'Right-to-left tables',

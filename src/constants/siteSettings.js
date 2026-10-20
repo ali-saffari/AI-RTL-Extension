@@ -9,6 +9,9 @@ export const YOUTUBE_FONT_SCOPE_SITE = 'site';
 export const YOUTUBE_CAPTIONS_RTL_ON = 'on';
 export const YOUTUBE_CAPTIONS_RTL_OFF = 'off';
 
+export const YOUTUBE_METADATA_RTL_ON = 'on';
+export const YOUTUBE_METADATA_RTL_OFF = 'off';
+
 export const NOTION_SETTING_ON = 'on';
 export const NOTION_SETTING_OFF = 'off';
 
@@ -85,6 +88,14 @@ export const SITE_SETTINGS_REGISTRY = [
                 defaultValue: YOUTUBE_CAPTIONS_RTL_OFF,
                 onValue: YOUTUBE_CAPTIONS_RTL_ON,
                 offValue: YOUTUBE_CAPTIONS_RTL_OFF,
+            },
+            {
+                key: 'metadataRtl',
+                label: 'راست‌چین کردن عنوان‌ها',
+                type: 'switch',
+                defaultValue: YOUTUBE_METADATA_RTL_OFF,
+                onValue: YOUTUBE_METADATA_RTL_ON,
+                offValue: YOUTUBE_METADATA_RTL_OFF,
             },
             {
                 key: 'captionFontScale',
@@ -254,6 +265,10 @@ export function getYoutubeFontScope(stored) {
 
 export function getYoutubeCaptionsRtl(stored) {
     return normalizeSiteSettings(stored).youtube.captionsRtl === YOUTUBE_CAPTIONS_RTL_ON;
+}
+
+export function getYoutubeMetadataRtl(stored) {
+    return normalizeSiteSettings(stored).youtube.metadataRtl === YOUTUBE_METADATA_RTL_ON;
 }
 
 export function getYoutubeCaptionFontScale(stored) {
