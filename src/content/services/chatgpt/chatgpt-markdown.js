@@ -6,9 +6,17 @@ import { applyRtlToContainer, applyRtlToElement } from '../../utils/directionUti
 export const MARKDOWN = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [data-assistant-markdown]';
 const DIL = '[class*="DilRenderer"], [class*="DilResponseRoot"]';
 const THROTTLE_MS = 400;
+const COMPLETE_MS = 200;
+const ASSURE_FIRST_MS = 5000;
+const ASSURE_NEXT_MS = 8000;
+const ASSURE_MAX = 5;
 
 let markdownPageObserver = null;
 let markdownViewportObserver = null;
+let turnObserver = null;
+const completeTimers = new Map();
+const inViewport = new Set();
+const assure = new Map();
 const streams = new Map();
 let lastRun = new WeakMap();
 const trailing = new Map();
@@ -70,7 +78,31 @@ function findDils(root) {
     return found;
 }
 
+function stopAssure(root) {
+    const slot = assure.get(root);
+    if (!slot) {
+        return;
+    }
+    if (slot.timer) {
+        clearTimeout(slot.timer);
+    }
+    assure.delete(root);
+}
+
+function fireAssure(root, rtlAlgorithm) {
+    const slot = assure.get(root);
+    if (!slot || !root.isConnected || !inViewport.has(root) || slot.count >= ASSURE_MAX) {
+        stopAssure(root);
+        return;
+    }
+    assure.set(root, { count: slot.count + 1, timer: null });
+    applyMarkdown(root, rtlAlgorithm, { why: 'assure' });
+}
+
 function applyMarkdown(element, rtlAlgorithm, reason) {
+    if (!element || element.nodeType !== 1) {
+        return;
+    }
     if (
         reason &&
         reason.why === 'change' &&
@@ -86,13 +118,24 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
         return;
     }
     const targets = element.matches && element.matches(DIL) ? [element] : findDils(element);
+    let applied = false;
     (targets.length ? targets : [element]).forEach((target) => {
+        // Finished turn keeps the same text length, so the length gate would skip.
+        const force = reason && reason.why === 'complete';
+        if (force) {
+            AQ(target).removeAttr('data-text-length');
+            AQ(target).find('.AsOk').addBack().removeClass('AsOk');
+        }
         const elapsed = Date.now() - (lastRun.get(target) || 0);
-        if (elapsed < THROTTLE_MS) {
+        if (!force && elapsed < THROTTLE_MS) {
             const pending = trailing.get(target);
             if (pending) {
                 if (reason && reason.changes) {
-                    pending.reason.changes.push(...reason.changes);
+                    if (pending.reason && pending.reason.changes) {
+                        pending.reason.changes.push(...reason.changes);
+                    } else {
+                        pending.reason = { why: reason.why, changes: reason.changes.slice() };
+                    }
                 }
                 return;
             }
@@ -124,6 +167,7 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             onlyCss: '.ProseMirror[contenteditable]',
             forceCodeLtr: rtlAlgorithm === 'advanced_full',
         });
+        applied = true;
 
         target.querySelectorAll('p[data-d-component="text"]').forEach((paragraph) => {
             if (!paragraph.querySelector('[data-d-text-flow="word"]')) {
@@ -148,6 +192,40 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             }, JOIN_MS));
         });
     });
+    if (!applied) {
+        return;
+    }
+    const root = element.matches(MARKDOWN) ? element : element.closest(MARKDOWN);
+    if (!root) {
+        return;
+    }
+    if (reason && reason.why === 'assure') {
+        const slot = assure.get(root);
+        if (!slot || !inViewport.has(root) || slot.count >= ASSURE_MAX) {
+            stopAssure(root);
+            return;
+        }
+        if (slot.timer) {
+            clearTimeout(slot.timer);
+        }
+        assure.set(root, {
+            count: slot.count,
+            timer: setTimeout(() => fireAssure(root, rtlAlgorithm), ASSURE_NEXT_MS)
+        });
+        return;
+    }
+    if (!inViewport.has(root)) {
+        stopAssure(root);
+        return;
+    }
+    const prev = assure.get(root);
+    if (prev && prev.timer) {
+        clearTimeout(prev.timer);
+    }
+    assure.set(root, {
+        count: 0,
+        timer: setTimeout(() => fireAssure(root, rtlAlgorithm), ASSURE_FIRST_MS)
+    });
 }
 
 export function stopMarkdown() {
@@ -159,6 +237,15 @@ export function stopMarkdown() {
         markdownViewportObserver.disconnect();
         markdownViewportObserver = null;
     }
+    if (turnObserver) {
+        turnObserver.disconnect();
+        turnObserver = null;
+    }
+    completeTimers.forEach((timer) => clearTimeout(timer));
+    completeTimers.clear();
+    assure.forEach((slot) => slot.timer && clearTimeout(slot.timer));
+    assure.clear();
+    inViewport.clear();
     streams.forEach((list) => list.forEach((observer) => observer.disconnect()));
     streams.clear();
     trailing.forEach((slot) => clearTimeout(slot.timer));
@@ -177,6 +264,8 @@ export function startMarkdown(rtlAlgorithm) {
         entries.forEach((entry) => {
             const root = entry.target;
             if (!entry.isIntersecting) {
+                inViewport.delete(root);
+                stopAssure(root);
                 const list = streams.get(root);
                 if (list) {
                     list.forEach((observer) => observer.disconnect());
@@ -184,6 +273,7 @@ export function startMarkdown(rtlAlgorithm) {
                 }
                 return;
             }
+            inViewport.add(root);
             if (streams.has(root)) {
                 return;
             }
@@ -202,7 +292,7 @@ export function startMarkdown(rtlAlgorithm) {
                             changes.push({
                                 type: 'characterData',
                                 from: (mutation.oldValue || '').slice(-80),
-                                to: (mutation.target.textContent || '').slice(-80)
+                                to: (mutation.target && mutation.target.textContent || '').slice(-80)
                             });
                             return;
                         }
@@ -213,13 +303,32 @@ export function startMarkdown(rtlAlgorithm) {
                             changes.push({ type: 'removed', text: (removed.textContent || '').slice(0, 80) });
                         });
                     });
+                    if (!root.isConnected) {
+                        return;
+                    }
                     const dilsNow = findDils(root);
                     dilsNow.forEach((dil) => attach(dil));
-                    if (dilsNow.length && byNode.has(root)) {
-                        byNode.get(root).disconnect();
-                        byNode.delete(root);
+                    if (dilsNow.length) {
+                        if (byNode.has(root)) {
+                            byNode.get(root).disconnect();
+                            byNode.delete(root);
+                        }
+                    } else {
+                        // Stream finished / Dil fell back to plain MarkdownRoot — watch root again.
+                        byNode.forEach((observer, watched) => {
+                            if (watched === root) {
+                                return;
+                            }
+                            observer.disconnect();
+                            byNode.delete(watched);
+                            const index = observers.indexOf(observer);
+                            if (index >= 0) {
+                                observers.splice(index, 1);
+                            }
+                        });
+                        attach(root);
                     }
-                    applyMarkdown(node, rtlAlgorithm, { why: 'change', changes });
+                    applyMarkdown(dilsNow[0] || root, rtlAlgorithm, { why: 'change', changes });
                 });
                 stream.observe(node, watchOptions);
                 byNode.set(node, stream);
@@ -253,5 +362,39 @@ export function startMarkdown(rtlAlgorithm) {
     markdownPageObserver.observe(document.body, { childList: true, subtree: true });
     document.querySelectorAll(MARKDOWN).forEach((element) => {
         markdownViewportObserver.observe(element);
+    });
+
+    turnObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            const turn = mutation.target;
+            if (!turn || turn.nodeType !== 1 || turn.getAttribute('data-talvt-turn-state') !== 'complete') {
+                return;
+            }
+            const pending = completeTimers.get(turn);
+            if (pending) {
+                clearTimeout(pending);
+            }
+            completeTimers.set(turn, setTimeout(() => {
+                completeTimers.delete(turn);
+                if (!turn.isConnected || turn.getAttribute('data-talvt-turn-state') !== 'complete') {
+                    return;
+                }
+                const roots = [];
+                if (turn.matches(MARKDOWN)) {
+                    roots.push(turn);
+                }
+                turn.querySelectorAll(MARKDOWN).forEach((element) => {
+                    roots.push(element);
+                });
+                roots.forEach((element) => {
+                    applyMarkdown(element, rtlAlgorithm, { why: 'complete' });
+                });
+            }, COMPLETE_MS));
+        });
+    });
+    turnObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['data-talvt-turn-state'],
+        subtree: true
     });
 }

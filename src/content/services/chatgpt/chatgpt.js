@@ -25,7 +25,6 @@ export function stopChatGptRTL() {
 
 export function activateChatGptRTL(algorithm = 'advanced_full') {
     console.log('AI RTL activated with algorithm:', algorithm);
-    console.log('ChatGPT RTL: new');
     stopChatGptRTL();
     rtlAlgorithm = algorithm;
 
@@ -42,7 +41,6 @@ export function activateChatGptRTL(algorithm = 'advanced_full') {
         const elapsed = Date.now() - uiLastRun;
         const run = () => {
             uiLastRun = Date.now();
-            console.log('ChatGPT uiObserver');
             setPageFont();
             applySmallBlocks(rtlAlgorithm);
             applySidebarHistory(rtlAlgorithm);
