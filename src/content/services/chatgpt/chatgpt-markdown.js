@@ -7,20 +7,21 @@ export const MARKDOWN = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [d
 const DIL = '[class*="DilRenderer"], [class*="DilResponseRoot"]';
 const THROTTLE_MS = 400;
 const COMPLETE_MS = 200;
-const ASSURE_FIRST_MS = 5000;
-const ASSURE_NEXT_MS = 8000;
 const ASSURE_MAX = 5;
+const FLASH_MS = 700;
 
 let markdownPageObserver = null;
 let markdownViewportObserver = null;
 let turnObserver = null;
 const completeTimers = new Map();
 const inViewport = new Set();
+const freshComplete = new Set();
 const assure = new Map();
 const streams = new Map();
 let lastRun = new WeakMap();
 const trailing = new Map();
 const paragraphJoin = new Map();
+const flashTimers = new Map();
 const JOIN_MS = 500;
 
 // Neighboring word spans in the same parent become one text node.
@@ -78,8 +79,13 @@ function findDils(root) {
     return found;
 }
 
+function assureAllowed(root) {
+    return inViewport.has(root) || freshComplete.has(root);
+}
+
 function stopAssure(root) {
     const slot = assure.get(root);
+    freshComplete.delete(root);
     if (!slot) {
         return;
     }
@@ -91,12 +97,16 @@ function stopAssure(root) {
 
 function fireAssure(root, rtlAlgorithm) {
     const slot = assure.get(root);
-    if (!slot || !root.isConnected || !inViewport.has(root) || slot.count >= ASSURE_MAX) {
+    if (!slot || !root.isConnected || !assureAllowed(root) || slot.count >= ASSURE_MAX) {
         stopAssure(root);
         return;
     }
-    assure.set(root, { count: slot.count + 1, timer: null });
-    applyMarkdown(root, rtlAlgorithm, { why: 'assure' });
+    const pass = slot.count + 1;
+    assure.set(root, { count: pass, timer: null });
+    applyMarkdown(root, rtlAlgorithm, {
+        why: 'assure',
+        color: pass === 1 ? '#6ecbff' : pass === 2 ? '#0b3d91' : 'red'
+    });
 }
 
 function applyMarkdown(element, rtlAlgorithm, reason) {
@@ -152,6 +162,15 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             return;
         }
         lastRun.set(target, Date.now());
+        const prevFlash = flashTimers.get(target);
+        if (prevFlash) {
+            clearTimeout(prevFlash);
+        }
+        target.style.outline = '2px solid ' + ((reason && reason.color) || 'red');
+        flashTimers.set(target, setTimeout(() => {
+            flashTimers.delete(target);
+            target.style.outline = '';
+        }, FLASH_MS));
         applyRtlToContainer(target, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             codeFontClass: 'FontSetCodeBlocksGPT',
@@ -201,7 +220,7 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
     }
     if (reason && reason.why === 'assure') {
         const slot = assure.get(root);
-        if (!slot || !inViewport.has(root) || slot.count >= ASSURE_MAX) {
+        if (!slot || !assureAllowed(root) || slot.count >= ASSURE_MAX) {
             stopAssure(root);
             return;
         }
@@ -210,11 +229,11 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
         }
         assure.set(root, {
             count: slot.count,
-            timer: setTimeout(() => fireAssure(root, rtlAlgorithm), ASSURE_NEXT_MS)
+            timer: setTimeout(() => fireAssure(root, rtlAlgorithm), 1700 + Math.random() * 800)
         });
         return;
     }
-    if (!inViewport.has(root)) {
+    if (!assureAllowed(root)) {
         stopAssure(root);
         return;
     }
@@ -224,7 +243,7 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
     }
     assure.set(root, {
         count: 0,
-        timer: setTimeout(() => fireAssure(root, rtlAlgorithm), ASSURE_FIRST_MS)
+        timer: setTimeout(() => fireAssure(root, rtlAlgorithm), 1200 + Math.random() * 500)
     });
 }
 
@@ -246,12 +265,18 @@ export function stopMarkdown() {
     assure.forEach((slot) => slot.timer && clearTimeout(slot.timer));
     assure.clear();
     inViewport.clear();
+    freshComplete.clear();
     streams.forEach((list) => list.forEach((observer) => observer.disconnect()));
     streams.clear();
     trailing.forEach((slot) => clearTimeout(slot.timer));
     trailing.clear();
     paragraphJoin.forEach((timer) => clearTimeout(timer));
     paragraphJoin.clear();
+    flashTimers.forEach((timer, el) => {
+        clearTimeout(timer);
+        el.style.outline = '';
+    });
+    flashTimers.clear();
     lastRun = new WeakMap();
 }
 
@@ -265,7 +290,9 @@ export function startMarkdown(rtlAlgorithm) {
             const root = entry.target;
             if (!entry.isIntersecting) {
                 inViewport.delete(root);
-                stopAssure(root);
+                if (!freshComplete.has(root)) {
+                    stopAssure(root);
+                }
                 const list = streams.get(root);
                 if (list) {
                     list.forEach((observer) => observer.disconnect());
@@ -281,6 +308,12 @@ export function startMarkdown(rtlAlgorithm) {
             const byNode = new Map();
             const observers = [];
             const watchOptions = { childList: true, subtree: true, characterData: true, characterDataOldValue: true };
+            const rootWatchOptions = {
+                ...watchOptions,
+                attributes: true,
+                attributeOldValue: true,
+                attributeFilter: ['class', 'data-markdown-animated']
+            };
             const attach = (node) => {
                 if (byNode.has(node)) {
                     return;
@@ -306,6 +339,32 @@ export function startMarkdown(rtlAlgorithm) {
                     if (!root.isConnected) {
                         return;
                     }
+                    // Stream end swaps word spans for one span. Text length stays, so the length gate would skip.
+                    const streaming = root.hasAttribute('data-markdown-animated')
+                        || /(^|\s)AdaptiveStreaming-/.test(root.className || '');
+                    const streamEnded = mutations.some((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.target === root) {
+                            if (mutation.attributeName === 'data-markdown-animated') {
+                                return mutation.oldValue !== null && !root.hasAttribute('data-markdown-animated');
+                            }
+                            if (mutation.attributeName === 'class') {
+                                const had = /(^|\s)AdaptiveStreaming-/.test(mutation.oldValue || '');
+                                return had && !/(^|\s)AdaptiveStreaming-/.test(root.className || '');
+                            }
+                        }
+                        if (streaming || mutation.type !== 'childList') {
+                            return false;
+                        }
+                        return Array.from(mutation.removedNodes).some((removed) => {
+                            if (removed.nodeType !== 1) {
+                                return false;
+                            }
+                            if ((removed.getAttribute('style') || '').includes('--fade-delay')) {
+                                return true;
+                            }
+                            return Boolean(removed.querySelector && removed.querySelector('[style*="--fade-delay"]'));
+                        });
+                    });
                     const dilsNow = findDils(root);
                     dilsNow.forEach((dil) => attach(dil));
                     if (dilsNow.length) {
@@ -328,9 +387,13 @@ export function startMarkdown(rtlAlgorithm) {
                         });
                         attach(root);
                     }
-                    applyMarkdown(dilsNow[0] || root, rtlAlgorithm, { why: 'change', changes });
+                    applyMarkdown(streamEnded ? root : (dilsNow[0] || root), rtlAlgorithm, {
+                        why: streamEnded ? 'complete' : 'change',
+                        color: streamEnded ? 'purple' : undefined,
+                        changes
+                    });
                 });
-                stream.observe(node, watchOptions);
+                stream.observe(node, node === root ? rootWatchOptions : watchOptions);
                 byNode.set(node, stream);
                 observers.push(stream);
             };
@@ -367,7 +430,13 @@ export function startMarkdown(rtlAlgorithm) {
     turnObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             const turn = mutation.target;
-            if (!turn || turn.nodeType !== 1 || turn.getAttribute('data-talvt-turn-state') !== 'complete') {
+            if (
+                !turn
+                || turn.nodeType !== 1
+                || mutation.oldValue == null
+                || mutation.oldValue === 'complete'
+                || turn.getAttribute('data-talvt-turn-state') !== 'complete'
+            ) {
                 return;
             }
             const pending = completeTimers.get(turn);
@@ -387,13 +456,15 @@ export function startMarkdown(rtlAlgorithm) {
                     roots.push(element);
                 });
                 roots.forEach((element) => {
-                    applyMarkdown(element, rtlAlgorithm, { why: 'complete' });
+                    freshComplete.add(element);
+                    applyMarkdown(element, rtlAlgorithm, { why: 'complete', color: 'orange' });
                 });
             }, COMPLETE_MS));
         });
     });
     turnObserver.observe(document.body, {
         attributes: true,
+        attributeOldValue: true,
         attributeFilter: ['data-talvt-turn-state'],
         subtree: true
     });

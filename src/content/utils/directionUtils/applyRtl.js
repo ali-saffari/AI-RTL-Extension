@@ -206,6 +206,9 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         //     : 0;
         // if (processedElementsCount < 2) { ... force shouldProcess ... }
 
+        
+
+        
         const reasons = [];
         if (storedLength === null) {
             reasons.push('no-stored-length');
@@ -213,9 +216,25 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
         if (lengthDifference > 3) {
             reasons.push(`length-delta>${3} (${lengthDifference})`);
         }
+        // Descendants only, and only when length would have skipped. First hit is enough.
+        if (!reasons.length) {
+            const bareOrigDir = $element.find('[data-ai-rtl-orig-dir="auto"]:not([dir])');
+            if (bareOrigDir.length) {
+                reasons.push(`orig-dir-auto-without-dir (${bareOrigDir.length})`);
+                bareOrigDir.each(function () {
+                    console.log('[AI-RTL] orig-dir=auto without dir', this);
+                });
+            } else {
+                const bareDirAuto = $element.find('[dir="auto"]:not([data-ai-rtl-orig-dir])');
+                if (bareDirAuto.length) {
+                    reasons.push(`dir-auto-without-orig (${bareDirAuto.length})`);
+                    bareDirAuto.each(function () {
+                        console.log('[AI-RTL] dir=auto without orig-dir', this);
+                    });
+                }
+            }
+        }
 
-        // Containers: decide only by text length (first visit or delta > 3).
-        // کانتینرها: فقط بر اساس طول متن تصمیم گرفته می‌شود (اولین بار یا اختلاف بیشتر از ۳).
         const shouldProcess = reasons.length > 0;
         const skipReason = shouldProcess
             ? null
