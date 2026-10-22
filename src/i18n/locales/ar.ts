@@ -594,6 +594,8 @@ export const arMessages: Messages = {
         generalTitle: 'إعدادات عامة',
         hideSupport: 'إخفاء نص الدعم',
         hideSupportHint: 'يدل هذا النص على أن الإضافة تعمل على الموقع',
+        markdownDebug: 'تصحيح',
+        markdownDebugHint: 'حدود ملونة وسجل وحدة التحكم عند تطبيق Markdown في ChatGPT',
         pinOpenSite: 'إظهار الموقع المفتوح أعلى القائمة',
         export: 'تصدير الإعدادات',
         exportHint: 'حفظ كل الإعدادات في ملف JSON',

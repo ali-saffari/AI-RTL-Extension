@@ -592,6 +592,8 @@ export const faMessages = {
         generalTitle: 'تنظیمات عمومی',
         hideSupport: 'مخفی کردن متن حمایت',
         hideSupportHint: 'این متن نشان‌دهنده فعال بودن افزونه روی سایت است',
+        markdownDebug: 'دیباگ',
+        markdownDebugHint: 'بوردر رنگی و لاگ کنسول هنگام اعمال مارک‌داون در ChatGPT',
         pinOpenSite: 'نمایش سایت باز در بالای لیست',
         export: 'خروجی گرفتن از تنظیمات',
         exportHint: 'ذخیره تمام تنظیمات در یک فایل JSON',

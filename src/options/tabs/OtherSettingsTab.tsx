@@ -46,6 +46,8 @@ import { useI18n } from '../../i18n';
 interface OtherSettingsTabProps {
     supportHide: boolean;
     onSupportChange: (enabled: boolean) => void;
+    markdownDebug: boolean;
+    onMarkdownDebugChange: (enabled: boolean) => void;
     pinOpenSiteMode: PinOpenSiteMode;
     onPinOpenSiteModeChange: (mode: PinOpenSiteMode) => void;
     isDarkMode: boolean;
@@ -56,6 +58,8 @@ interface OtherSettingsTabProps {
 const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
     supportHide,
     onSupportChange,
+    markdownDebug,
+    onMarkdownDebugChange,
     pinOpenSiteMode,
     onPinOpenSiteModeChange,
     isDarkMode,
@@ -494,6 +498,27 @@ const OtherSettingsTab: React.FC<OtherSettingsTabProps> = ({
                                     >
                                         {t('otherSettings.showUpdates')}
                                     </Button>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText
+                                    primary={t('otherSettings.markdownDebug')}
+                                    secondary={t('otherSettings.markdownDebugHint')}
+                                />
+                                <ListItemSecondaryAction>
+                                    <Switch
+                                        checked={markdownDebug}
+                                        onChange={(e) => onMarkdownDebugChange(e.target.checked)}
+                                        sx={{
+                                            '& .MuiSwitch-switchBase.Mui-checked': {
+                                                color: isDarkMode ? '#00e9ff' : '#387af2',
+                                            },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                backgroundColor: isDarkMode ? '#00e9ff' : '#387af2',
+                                            },
+                                        }}
+                                    />
                                 </ListItemSecondaryAction>
                             </ListItem>
                         </List>

@@ -54,6 +54,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
     const [selectedFont, setSelectedFont] = React.useState(DEFAULT_FONT_ID);
     const [fontScale, setFontScale] = React.useState(DEFAULT_FONT_SCALE);
     const [supportHide, setSupportHide] = React.useState(false);
+    const [markdownDebug, setMarkdownDebug] = React.useState(false);
     const [pinOpenSiteMode, setPinOpenSiteMode] = React.useState<PinOpenSiteMode>(getDefaultPinOpenSiteMode());
     const [analytics, setAnalytics] = React.useState(true);
     const [previewEnabled, setPreviewEnabled] = React.useState(true);
@@ -79,6 +80,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.get([
                 'rtlAlgorithmMode', 
                 'supportHide',
+                'markdownDebug',
                 PIN_OPEN_SITE_STORAGE_KEY, 
                 'manualRtlSettings',
                 'analytics',
@@ -101,6 +103,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (result.supportHide !== undefined) {
                     setSupportHide(result.supportHide);
+                }
+                if (result.markdownDebug !== undefined) {
+                    setMarkdownDebug(result.markdownDebug === true);
                 }
                 if (result[PIN_OPEN_SITE_STORAGE_KEY] !== undefined) {
                     setPinOpenSiteMode(normalizePinOpenSiteMode(result[PIN_OPEN_SITE_STORAGE_KEY]));
@@ -171,6 +176,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                 }
                 if (changes.supportHide) {
                     setSupportHide(changes.supportHide.newValue);
+                }
+                if (changes.markdownDebug) {
+                    setMarkdownDebug(changes.markdownDebug.newValue === true);
                 }
                 if (changes[PIN_OPEN_SITE_STORAGE_KEY]) {
                     setPinOpenSiteMode(normalizePinOpenSiteMode(changes[PIN_OPEN_SITE_STORAGE_KEY].newValue));
@@ -284,6 +292,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
             chrome.storage.sync.set({ supportHide: enabled });
         } catch (error) {
             console.log('Failed to save support setting:', error);
+        }
+    };
+
+    const handleMarkdownDebugChange = (enabled: boolean) => {
+        setMarkdownDebug(enabled);
+        try {
+            chrome.storage.sync.set({ markdownDebug: enabled });
+        } catch (error) {
+            console.log('Failed to save markdown debug setting:', error);
         }
     };
 
@@ -438,6 +455,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({ isDarkMode }) => {
                     <OtherSettingsTab
                         supportHide={supportHide}
                         onSupportChange={handleSupportChange}
+                        markdownDebug={markdownDebug}
+                        onMarkdownDebugChange={handleMarkdownDebugChange}
                         pinOpenSiteMode={pinOpenSiteMode}
                         onPinOpenSiteModeChange={handlePinOpenSiteModeChange}
                         isDarkMode={isDarkMode}

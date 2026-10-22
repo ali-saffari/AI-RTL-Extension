@@ -7,8 +7,9 @@ export const MARKDOWN = '[class^="MarkdownRoot-"], [class*=" MarkdownRoot-"], [d
 const DIL = '[class*="DilRenderer"], [class*="DilResponseRoot"]';
 const THROTTLE_MS = 400;
 const COMPLETE_MS = 200;
-const ASSURE_MAX = 5;
+const ASSURE_MAX = 2;
 const FLASH_MS = 700;
+let markdownDebug = false;
 
 let markdownPageObserver = null;
 let markdownViewportObserver = null;
@@ -22,6 +23,34 @@ let lastRun = new WeakMap();
 const trailing = new Map();
 const paragraphJoin = new Map();
 const flashTimers = new Map();
+
+function logMarkdown(status, note) {
+    if (!markdownDebug) {
+        return;
+    }
+    console.log('applyMarkdown', status, note);
+}
+
+try {
+    chrome.storage.sync.get('markdownDebug', (result) => {
+        markdownDebug = result.markdownDebug === true;
+    });
+    chrome.storage.sync.onChanged.addListener((changes) => {
+        if (!changes.markdownDebug) {
+            return;
+        }
+        markdownDebug = changes.markdownDebug.newValue === true;
+        if (!markdownDebug) {
+            flashTimers.forEach((timer, el) => {
+                clearTimeout(timer);
+                el.style.outline = '';
+            });
+            flashTimers.clear();
+        }
+    });
+} catch (error) {
+    markdownDebug = false;
+}
 const JOIN_MS = 500;
 
 // Neighboring word spans in the same parent become one text node.
@@ -105,12 +134,24 @@ function fireAssure(root, rtlAlgorithm) {
     assure.set(root, { count: pass, timer: null });
     applyMarkdown(root, rtlAlgorithm, {
         why: 'assure',
+        pass,
         color: pass === 1 ? '#6ecbff' : pass === 2 ? '#0b3d91' : 'red'
     });
 }
 
+function markdownNote(reason) {
+    const why = (reason && reason.why) || 'unknown';
+    const pass = reason && reason.pass ? ' ' + reason.pass : '';
+    const changeTypes = reason && reason.changes && reason.changes.length
+        ? ' ' + reason.changes.map((change) => change.type).join(',')
+        : '';
+    return why + pass + changeTypes;
+}
+
 function applyMarkdown(element, rtlAlgorithm, reason) {
+    const note = markdownNote(reason);
     if (!element || element.nodeType !== 1) {
+        logMarkdown('skip not-element', note);
         return;
     }
     if (
@@ -122,9 +163,13 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
             if (change.type === 'characterData') {
                 return !(change.to || '').trim() && !(change.from || '').trim();
             }
+            if (String(change.type || '').indexOf('attr:') === 0) {
+                return false;
+            }
             return !(change.text || '').trim();
         })
     ) {
+        logMarkdown('skip empty', note);
         return;
     }
     const targets = element.matches && element.matches(DIL) ? [element] : findDils(element);
@@ -147,6 +192,7 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
                         pending.reason = { why: reason.why, changes: reason.changes.slice() };
                     }
                 }
+                logMarkdown('skip throttle', note);
                 return;
             }
             const slot = {
@@ -159,18 +205,22 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
                 applyMarkdown(target, rtlAlgorithm, slot.reason);
             }, THROTTLE_MS - elapsed);
             trailing.set(target, slot);
+            logMarkdown('skip throttle', note);
             return;
         }
         lastRun.set(target, Date.now());
-        const prevFlash = flashTimers.get(target);
-        if (prevFlash) {
-            clearTimeout(prevFlash);
+        logMarkdown('run', note);
+        if (markdownDebug) {
+            const prevFlash = flashTimers.get(target);
+            if (prevFlash) {
+                clearTimeout(prevFlash);
+            }
+            target.style.outline = '2px solid ' + ((reason && reason.color) || 'red');
+            flashTimers.set(target, setTimeout(() => {
+                flashTimers.delete(target);
+                target.style.outline = '';
+            }, FLASH_MS));
         }
-        target.style.outline = '2px solid ' + ((reason && reason.color) || 'red');
-        flashTimers.set(target, setTimeout(() => {
-            flashTimers.delete(target);
-            target.style.outline = '';
-        }, FLASH_MS));
         applyRtlToContainer(target, rtlAlgorithm, {
             fontClass: 'FontSetGPT',
             codeFontClass: 'FontSetCodeBlocksGPT',
@@ -233,10 +283,10 @@ function applyMarkdown(element, rtlAlgorithm, reason) {
         });
         return;
     }
-    if (!assureAllowed(root)) {
-        stopAssure(root);
+    if (!reason || reason.why !== 'complete') {
         return;
     }
+    freshComplete.add(root);
     const prev = assure.get(root);
     if (prev && prev.timer) {
         clearTimeout(prev.timer);
@@ -327,6 +377,10 @@ export function startMarkdown(rtlAlgorithm) {
                                 from: (mutation.oldValue || '').slice(-80),
                                 to: (mutation.target && mutation.target.textContent || '').slice(-80)
                             });
+                            return;
+                        }
+                        if (mutation.type === 'attributes') {
+                            changes.push({ type: 'attr:' + (mutation.attributeName || '') });
                             return;
                         }
                         mutation.addedNodes.forEach((added) => {

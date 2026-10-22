@@ -594,6 +594,8 @@ export const enMessages: Messages = {
         generalTitle: 'General settings',
         hideSupport: 'Hide the support note',
         hideSupportHint: 'This note shows that the extension is active on the site',
+        markdownDebug: 'Debug',
+        markdownDebugHint: 'Colored borders and console logs when ChatGPT markdown is applied',
         pinOpenSite: 'Show the open site at the top of the list',
         export: 'Export settings',
         exportHint: 'Save all settings to a JSON file',
