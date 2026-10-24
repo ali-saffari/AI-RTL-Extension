@@ -225,7 +225,12 @@ export function applyRtlToContainer(element, rtlAlgorithm, options = {}) {
                     console.log('[AI-RTL] orig-dir=auto without dir', this);
                 });
             } else {
-                const bareDirAuto = $element.find('[dir="auto"]:not([data-ai-rtl-orig-dir])');
+                let bareDirAuto = $element.find('[dir="auto"]:not([data-ai-rtl-orig-dir])');
+                if (typeof nestedSelector === 'string' && nestedSelector) {
+                    bareDirAuto = bareDirAuto.filter(function () {
+                        return !this.closest(nestedSelector);
+                    });
+                }
                 if (bareDirAuto.length) {
                     reasons.push(`dir-auto-without-orig (${bareDirAuto.length})`);
                     bareDirAuto.each(function () {

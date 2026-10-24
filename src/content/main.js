@@ -862,6 +862,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: false, error: 'extension disabled' });
             return true;
         }
+        if (isRtlEngineActive() && document.body && document.body.classList.contains('rtl-algorithm-active')) {
+            sendResponse({ success: true });
+            return true;
+        }
         requestRtlEnable()
             .then(() => sendResponse({ success: true }))
             .catch((error) => sendResponse({ success: false, error: error?.message }));
